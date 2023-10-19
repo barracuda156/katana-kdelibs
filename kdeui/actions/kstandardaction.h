@@ -159,7 +159,6 @@ namespace KStandardAction
     ConfigureNotifications,
     FullScreen,
     Clear,
-    PasteText,
     SwitchApplicationLanguage
   };
 
@@ -345,13 +344,6 @@ namespace KStandardAction
    * position.
    */
   KDEUI_EXPORT KAction *paste(const QObject *recvr, const char *slot, QObject *parent);
-
-  /**
-   * Paste the contents of clipboard at the current mouse or cursor
-   * position. Provide a button on the toolbar with the clipboard history
-   * menu if Klipper is running.
-   */
-  KDEUI_EXPORT KAction *pasteText(const QObject *recvr, const char *slot, QObject *parent);
 
   /**
    * Clear the content of the focus widget

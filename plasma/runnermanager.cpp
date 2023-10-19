@@ -233,19 +233,12 @@ public:
         if (runner) {
             runner->setParent(q);
         } else {
-            const QString api = service->property("X-Plasma-API").toString();
-
-            if (api.isEmpty()) {
-                QVariantList args;
-                args << service->storageId();
-                QString error;
-                runner = service->createInstance<AbstractRunner>(q, args, &error);
-                if (!runner) {
-                    kDebug() << "Failed to load runner:" << service->name() << ". error reported:" << error;
-                }
-            } else {
-                //kDebug() << "got a script runner known as" << api;
-                runner = new AbstractRunner(service, q);
+            QVariantList args;
+            args << service->storageId();
+            QString error;
+            runner = service->createInstance<AbstractRunner>(q, args, &error);
+            if (!runner) {
+                kDebug() << "Failed to load runner:" << service->name() << ". error reported:" << error;
             }
         }
 

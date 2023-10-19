@@ -154,16 +154,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="3" >
-       <widget class="QCheckBox" name="systrayCheck" >
-        <property name="whatsThis" >
-         <string>Check this option if you want to have a system tray handle for your application.</string>
-        </property>
-        <property name="text" >
-         <string>&amp;Place in system tray</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>

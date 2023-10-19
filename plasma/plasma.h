@@ -148,27 +148,6 @@ enum PopupPlacement {
 };
 
 /**
- * Flip enumeration
- */
-enum FlipDirection {
-    NoFlip = 0,          /**< Do not flip */
-    HorizontalFlip = 1,  /**< Flip horizontally */
-    VerticalFlip = 2     /**< Flip vertically */
-};
-Q_DECLARE_FLAGS(Flip, FlipDirection)
-
-/**
- * Zoom levels that Plasma is aware of...
- **/
-enum ZoomLevel {
-    DesktopZoom = 0, /**< Normal desktop usage, plasmoids are painted normally
-                        and have full interaction */
-    GroupZoom,       /**< Plasmoids are shown as icons in visual groups; drag
-                        and drop and limited context menu interaction only */
-    OverviewZoom     /**< Groups become icons themselves */
-};
-
-/**
  * Possible timing alignments
  **/
 enum IntervalAlignment {
@@ -254,17 +233,6 @@ enum ItemStatus {
 };
 Q_ENUMS(ItemStatus)
 
-enum AnnouncementMethod {
-    NoAnnouncement = 0, /**< No announcements **/
-    ZeroconfAnnouncement = 1 /**< Announcements via ZeroConf **/
-};
-Q_DECLARE_FLAGS(AnnouncementMethods, AnnouncementMethod)
-
-/**
- * @return the scaling factor (0..1) for a ZoomLevel
- **/
-PLASMA_EXPORT qreal scalingFactor(ZoomLevel level);
-
 /**
  * Converts a location to a direction. Handy for figuring out which way to send a popup based on
  * location or to point arrows and other directional items.
@@ -309,7 +277,6 @@ PLASMA_EXPORT QList<QAction*> actionsFromMenu(QMenu *menu,
 } // Plasma namespace
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::Constraints)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::Flip)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::ComponentTypes)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::MessageButtons)
 

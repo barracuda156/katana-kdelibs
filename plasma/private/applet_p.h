@@ -39,7 +39,6 @@ namespace Plasma
 
 class Dialog;
 class FrameSvg;
-class AppletScript;
 class Wallpaper;
 class BusyWidget;
 class PushButton;
@@ -96,11 +95,7 @@ public:
     AppletPrivate(KService::Ptr service, const KPluginInfo *info, int uniqueID, Applet *applet);
     ~AppletPrivate();
 
-    void init(const QString &packagePath = QString());
-
-    // put all setup routines for script here. at this point we can assume that
-    // package exists and that we have a script engin
-    void setupScriptSupport();
+    void init();
 
     /**
      * Sets whether or not this Applet is acting as a Containment
@@ -140,7 +135,6 @@ public:
     static uint s_maxAppletId;
     static int s_maxZValue;
     static int s_minZValue;
-    static PackageStructure::Ptr packageStructure;
 
     //TODO: examine the usage of memory here; there's a pretty large
     //      number of members at this point.
@@ -176,10 +170,7 @@ public:
     QWeakPointer<Plasma::PushButton> messageCancelButton;
     QWeakPointer<QAction> messageCloseAction;
 
-    // sripting and package stuff
-    AppletScript *script;
-    Package *package;
-    ConfigLoader *configLoader;
+    // package stuff
     QWeakPointer<AppletHandle> handle;
 
     // actions stuff; put activationAction into actions?
@@ -203,13 +194,12 @@ public:
     QBasicTimer *modificationsTimer;
 
     // a great green field of booleans :)
-    bool hasConfigurationInterface : 1;
-    bool failed : 1;
-    bool isContainment : 1;
-    bool square : 1;
-    bool transient : 1;
-    bool needsConfig : 1;
-    bool started : 1;
+    bool hasConfigurationInterface;
+    bool failed;
+    bool isContainment;
+    bool transient ;
+    bool needsConfig;
+    bool started;
 };
 
 } // Plasma namespace

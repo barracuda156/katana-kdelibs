@@ -57,7 +57,6 @@ static const KStandardActionInfo g_rgActionInfo[] =
   { Cut,           KStandardShortcut::Cut, "edit_cut", I18N_NOOP("Cu&t"), I18N_NOOP("Cut selection to clipboard"), "edit-cut" },
   { Copy,          KStandardShortcut::Copy, "edit_copy", I18N_NOOP("&Copy"), I18N_NOOP("Copy selection to clipboard"), "edit-copy" },
   { Paste,         KStandardShortcut::Paste, "edit_paste", I18N_NOOP("&Paste"), I18N_NOOP("Paste clipboard content"), "edit-paste" },
-  { PasteText,     KStandardShortcut::Paste, "edit_paste", I18N_NOOP("&Paste"), I18N_NOOP("Paste clipboard content"), "edit-paste" },
   { Clear,         KStandardShortcut::Clear, "edit_clear", I18N_NOOP("C&lear"), 0, "edit-clear" },
   { SelectAll,     KStandardShortcut::SelectAll, "edit_select_all", I18N_NOOP("Select &All"), 0, "edit-select-all" },
   { Deselect,      KStandardShortcut::Deselect, "edit_deselect", I18N_NOOP("Dese&lect"), 0, 0 },

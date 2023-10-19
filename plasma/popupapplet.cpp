@@ -27,7 +27,6 @@
 #include <QGraphicsLinearLayout>
 #include <QTimer>
 #include <QVBoxLayout>
-#include <QDeclarativeItem>
 
 #include <kicon.h>
 #include <kiconloader.h>
@@ -45,7 +44,6 @@
 #include "plasma/extenders/extenderitem.h"
 #include "plasma/package.h"
 #include "plasma/theme.h"
-#include "plasma/scripting/appletscript.h"
 #include "plasma/tooltipmanager.h"
 #include "plasma/widgets/iconwidget.h"
 
@@ -54,12 +52,6 @@ namespace Plasma
 
 PopupApplet::PopupApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
-      d(new PopupAppletPrivate(this))
-{
-}
-
-PopupApplet::PopupApplet(const QString &packagePath, uint appletId, const QVariantList &args)
-    : Plasma::Applet(packagePath, appletId, args),
       d(new PopupAppletPrivate(this))
 {
 }
@@ -90,16 +82,7 @@ void PopupApplet::setPopupIcon(const QIcon &icon)
 
 void PopupApplet::setPopupIcon(const QString &iconName)
 {
-    // Attempt 1: is it in the plasmoid package?
-    if (package()) {
-        const QString file = package()->filePath("images", iconName);
-        if (!file.isEmpty()) {
-            setPopupIcon(KIcon(file));
-            return;
-        }
-    }
-
-    // Attempt 2: is it a svg in the icons directory?
+    // Is it a svg in the icons directory?
     const QString name = QString("icons/") + iconName.split("-").first();
     if (!Plasma::Theme::defaultTheme()->imagePath(name).isEmpty()) {
         d->createIconWidget();
@@ -237,21 +220,19 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
             minimum = qWidget->minimumSizeHint();
         }
 
-        //99% of the times q->parentWidget() is the containment, but using it  we can also manage the applet-in-applet case (i.e. systray)
-        //there are also cases where the parentlayoutitem is bigger than the containment (e.g. newspaper)
-        QDeclarativeItem *di = qobject_cast<QDeclarativeItem *>(q->parentObject());
+        // 99% of the times q->parentWidget() is the containment, but using it  we can also manage
+        // the applet-in-applet case (i.e. systray) there are also cases where the parentlayoutitem
+        // is bigger than the containment
         if (q->parentLayoutItem()) {
             parentSize = q->parentLayoutItem()->geometry().size();
         } else if (q->parentWidget()) {
             parentSize = q->parentWidget()->size();
-        } else if (di) {
-            parentSize = QSizeF(di->width(), di->height());
         }
 
-        //check if someone did the nasty trick of applets in applets, in this case we always want to be collapsed
+        // check if someone did the nasty trick of applets in applets, in this case we always want to be collapsed
         QGraphicsWidget *candidateParentApplet = q;
         Plasma::Applet *parentApplet = 0;
-        //this loop should be executed normally a single time, at most 2-3 times for quite complex containments
+        // this loop should be executed normally a single time, at most 2-3 times for quite complex containments
         while (candidateParentApplet) {
             candidateParentApplet = candidateParentApplet->parentWidget();
             parentApplet = qobject_cast<Plasma::Applet *>(candidateParentApplet);
@@ -666,9 +647,6 @@ Qt::AlignmentFlag PopupApplet::popupAlignment() const
 
 void PopupApplet::popupEvent(bool popped)
 {
-    if (Applet::d->script) {
-        emit Applet::d->script->popupEvent(popped);
-    }
 }
 
 void PopupApplet::setPassivePopup(bool passive)

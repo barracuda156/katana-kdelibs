@@ -30,19 +30,6 @@
 namespace Plasma
 {
 
-class PlasmoidPackage : public PackageStructure
-{
-    Q_OBJECT
-public:
-    explicit PlasmoidPackage(QObject *parent = 0);
-    ~PlasmoidPackage();
-
-protected:
-    void pathChanged();
-
-private:
-};
-
 class ThemePackage : public PackageStructure
 {
     Q_OBJECT
@@ -84,8 +71,6 @@ class ContainmentActionsPackage : public PackageStructure
 public:
     explicit ContainmentActionsPackage(QObject *parent = 0);
 };
-
-PackageStructure::Ptr defaultPackageStructure(ComponentType type);
 
 } // namespace Plasma
 

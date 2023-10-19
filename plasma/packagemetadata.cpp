@@ -49,7 +49,6 @@ class PackageMetadataPrivate
         QString pluginName;
         QString type;
         QString serviceType;
-        QString api;
 };
 
 PackageMetadata::PackageMetadata(const PackageMetadata &other)
@@ -102,7 +101,6 @@ void PackageMetadata::write(const QString &filename) const
     config.writeEntry("X-KDE-PluginInfo-Website", d->website);
     config.writeEntry("X-KDE-PluginInfo-License", d->license);
     config.writeEntry("X-KDE-PluginInfo-Category", d->category);
-    config.writeEntry("X-Plasma-API", d->api);
     config.writeEntry("X-KDE-ParentApp", d->app);
     config.writeEntry("Type", d->type);
 }
@@ -147,7 +145,6 @@ void PackageMetadata::read(const QString &filename)
     d->website = config.readEntry("X-KDE-PluginInfo-Website", d->website);
     d->license = config.readEntry("X-KDE-PluginInfo-License", d->license);
     d->category = config.readEntry("X-KDE-PluginInfo-Category", d->category);
-    d->api = config.readEntry("X-Plasma-API", d->api);
     d->app = config.readEntry("X-KDE-ParentApp", d->app);
     d->type = config.readEntry("Type", d->type);
 }
@@ -225,16 +222,6 @@ QStringList PackageMetadata::keywords() const
 QString PackageMetadata::type() const
 {
     return d->type;
-}
-
-QString PackageMetadata::implementationApi() const
-{
-    return d->api;
-}
-
-void PackageMetadata::setImplementationApi(const QString &api)
-{
-    d->api = api;
 }
 
 QString PackageMetadata::pluginName() const

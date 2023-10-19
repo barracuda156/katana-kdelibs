@@ -35,59 +35,6 @@
 namespace Plasma
 {
 
-PlasmoidPackage::PlasmoidPackage(QObject *parent)
-    : Plasma::PackageStructure(parent, QString("Plasmoid"))
-{
-    QStringList platform;
-    platform << "platformcontents/desktop" << "contents";
-    setContentsPrefixPaths(platform);
-
-    addDirectoryDefinition("images", "images", i18n("Images"));
-    addDirectoryDefinition("theme",  "theme",  i18n("Themed Images"));
-    QStringList mimetypes;
-    mimetypes << "image/svg+xml" << "image/png" << "image/jpeg";
-    setMimetypes("images", mimetypes);
-    setMimetypes("theme",  mimetypes);
-
-    addDirectoryDefinition("config", "config", i18n("Configuration Definitions"));
-    mimetypes.clear();
-    mimetypes << "text/xml";
-    setMimetypes("config", mimetypes);
-
-    addDirectoryDefinition("ui", "ui", i18n("User Interface"));
-    setMimetypes("ui", mimetypes);
-
-    addDirectoryDefinition("data", "data", i18n("Data Files"));
-
-    addDirectoryDefinition("scripts", "code", i18n("Executable Scripts"));
-    mimetypes.clear();
-    mimetypes << "text/plain";
-    setMimetypes("scripts", mimetypes);
-
-    addDirectoryDefinition("translations", "locale", i18n("Translations"));
-
-    addFileDefinition("mainconfigui", "ui/config.ui", i18n("Main Config UI File"));
-    addFileDefinition("mainconfigxml", "config/main.xml", i18n("Configuration XML file"));
-    addFileDefinition("mainscript", "code/main", i18n("Main Script File"));
-    addFileDefinition("defaultconfig", "config/default-configrc", i18n("Default configuration"));
-    setRequired("mainscript", true);
-}
-
-PlasmoidPackage::~PlasmoidPackage()
-{
-}
-
-void PlasmoidPackage::pathChanged()
-{
-    KDesktopFile config(path() + "/metadata.desktop");
-    KConfigGroup cg = config.desktopGroup();
-    QString mainScript = cg.readEntry("X-Plasma-MainScript", QString());
-    if (!mainScript.isEmpty()) {
-        addFileDefinition("mainscript", mainScript, i18n("Main Script File"));
-        setRequired("mainscript", true);
-    }
-}
-
 ThemePackage::ThemePackage(QObject *parent)
     : Plasma::PackageStructure(parent, QString("Plasma Theme"))
 {

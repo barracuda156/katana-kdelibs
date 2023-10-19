@@ -457,7 +457,6 @@ add_subdirectory( cmake )
 
 add_subdirectory( includes )
 add_subdirectory( interfaces )
-add_subdirectory( kdeclarative )
 add_subdirectory( kdecore )
 add_subdirectory( kded )
 add_subdirectory( kdeui )

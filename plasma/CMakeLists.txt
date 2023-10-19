@@ -9,8 +9,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${KDE4_KDECORE_INCLUDES}
     ${KDE4_KDEUI_INCLUDES}
-    ${CMAKE_SOURCE_DIR}/kdeclarative
-    ${CMAKE_BINARY_DIR}/kdeclarative
     ${CMAKE_SOURCE_DIR}/plasma/extenders
     # for the export headers
     ${CMAKE_BINARY_DIR}/kutils
@@ -25,11 +23,6 @@ if(NOT PLASMA_NO_SOLID)
     include_directories(${CMAKE_BINARY_DIR}/solid/)
     include_directories(${CMAKE_SOURCE_DIR}/solid/)
     set(PLASMA_EXTRA_LIBS ${PLASMA_EXTRA_LIBS} solid)
-endif()
-
-if(NOT PLASMA_NO_KUTILS)
-    include_directories(${CMAKE_SOURCE_DIR}/kutils)
-    set(PLASMA_EXTRA_LIBS ${PLASMA_EXTRA_LIBS} kcmutils)
 endif()
 
 configure_file(
@@ -62,7 +55,6 @@ set(plasma_LIB_SRCS
     animations/widgetsnapshot.cpp
     animations/zoom.cpp
     applet.cpp
-    configloader.cpp
     containment.cpp
     containmentactions.cpp
     containmentactionspluginsconfig.cpp
@@ -84,7 +76,6 @@ set(plasma_LIB_SRCS
     private/applethandle.cpp
     private/associatedapplicationmanager.cpp
     private/datacontainer_p.cpp
-    private/dataenginebindings.cpp
     private/dataengineconsumer.cpp
     private/extenderapplet.cpp
     private/extenderitemmimedata.cpp
@@ -100,8 +91,6 @@ set(plasma_LIB_SRCS
     runnercontext.cpp
     runnermanager.cpp
     runnersyntax.cpp
-    scripting/appletscript.cpp
-    scripting/scriptengine.cpp
     service.cpp
     servicejob.cpp
     svg.cpp
@@ -113,7 +102,6 @@ set(plasma_LIB_SRCS
     windoweffects.cpp
     widgets/checkbox.cpp
     widgets/combobox.cpp
-    widgets/declarativewidget.cpp
     widgets/flashinglabel.cpp
     widgets/frame.cpp
     widgets/groupbox.cpp
@@ -153,16 +141,11 @@ set_source_files_properties(
 add_library(plasma SHARED ${plasma_LIB_SRCS})
 
 target_link_libraries(plasma PUBLIC
-    ${QT_QTUITOOLS_LIBRARY}
-    ${QT_QTSCRIPT_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTXML_LIBRARY}
     ${QT_QTSVG_LIBRARY}
-    ${QT_QTDECLARATIVE_LIBRARY}
     ${PLASMA_EXTRA_LIBS}
     kdecore
     kdeui
-    kdeclarative
 )
 
 target_link_libraries(plasma PRIVATE ${X11_LIBRARIES})
@@ -192,7 +175,6 @@ install(
     animations/animation.h
     animator.h
     applet.h
-    configloader.h
     containment.h
     containmentactions.h
     containmentactionspluginsconfig.h
@@ -232,7 +214,6 @@ install(
     FILES
     widgets/checkbox.h
     widgets/combobox.h
-    widgets/declarativewidget.h
     widgets/flashinglabel.h
     widgets/frame.h
     widgets/groupbox.h
@@ -262,13 +243,6 @@ install(
 
 install(
     FILES
-    scripting/appletscript.h
-    scripting/scriptengine.h
-    DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/plasma/scripting
-)
-
-install(
-    FILES
     animations/animation.h
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/plasma/animations
 )
@@ -282,7 +256,6 @@ install(
     data/servicetypes/plasma-containmentactions.desktop
     data/servicetypes/plasma-dataengine.desktop
     data/servicetypes/plasma-runner.desktop
-    data/servicetypes/plasma-scriptengine.desktop
     data/servicetypes/plasma-toolbox.desktop
     data/servicetypes/plasma-wallpaper.desktop
     DESTINATION ${KDE4_SERVICETYPES_INSTALL_DIR}

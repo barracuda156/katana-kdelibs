@@ -34,7 +34,7 @@
 #include <QEvent>
 #include <QFile>
 #include <QGraphicsGridLayout>
-#include <QtGui/qgraphicssceneevent.h>
+#include <QGraphicsSceneHoverEvent>
 #include <QGraphicsView>
 #include <QLabel>
 #include <QList>
@@ -42,9 +42,8 @@
 #include <QPainter>
 #include <QRegExp>
 #include <QSize>
-#include <QtGui/qstyleoption.h>
+#include <QStyleOptionGraphicsItem>
 #include <QTextDocument>
-#include <QUiLoader>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -64,20 +63,13 @@
 #include <kwindowsystem.h>
 #include <kpushbutton.h>
 #include <krandom.h>
-
-#ifndef PLASMA_NO_KUTILS
-#include <kcmoduleinfo.h>
-#include <kcmoduleproxy.h>
-#else
-#include <kcmodule.h>
-#endif
+#include <kconfigskeleton.h>
 
 #ifndef PLASMA_NO_SOLID
 #include <solid/powermanagement.h>
 #endif
 
 #include "abstracttoolbox.h"
-#include "configloader.h"
 #include "containment.h"
 #include "corona.h"
 #include "dataenginemanager.h"
@@ -86,7 +78,6 @@
 #include "extenders/extenderitem.h"
 #include "package.h"
 #include "plasma.h"
-#include "scripting/appletscript.h"
 #include "svg.h"
 #include "framesvg.h"
 #include "popupapplet.h"
@@ -188,14 +179,6 @@ Applet::Applet(QObject *parentObject, const QVariantList &args)
     // inflexibility of KService::createInstance
 }
 
-Applet::Applet(const QString &packagePath, uint appletId, const QVariantList &args)
-    : QGraphicsWidget(0),
-      d(new AppletPrivate(KService::Ptr(new KService(packagePath + "/metadata.desktop")), 0, appletId, this))
-{
-    Q_UNUSED(args) // FIXME?
-    d->init(packagePath);
-}
-
 Applet::~Applet()
 {
     //let people know that i will die
@@ -223,25 +206,9 @@ Applet::~Applet()
     delete d;
 }
 
-PackageStructure::Ptr Applet::packageStructure()
-{
-    if (!AppletPrivate::packageStructure) {
-        AppletPrivate::packageStructure = new PlasmoidPackage();
-    }
-
-    return AppletPrivate::packageStructure;
-}
-
 void Applet::init()
 {
     setFlag(ItemIsMovable, true);
-    if (d->script) {
-        d->setupScriptSupport();
-
-        if (!d->script->init() && !d->failed) {
-            setFailedToLaunch(true, i18n("Script initialization failed"));
-        }
-    }
 }
 
 uint Applet::id() const
@@ -290,14 +257,6 @@ void Applet::save(KConfigGroup &g) const
 
     KConfigGroup appletConfigGroup(&group, "Configuration");
     saveState(appletConfigGroup);
-
-    if (d->configLoader) {
-        // we're saving so we know its changed, we don't need or want the configChanged
-        // signal bubbling up at this point due to that
-        disconnect(d->configLoader, SIGNAL(configChanged()), this, SLOT(propagateConfigChanged()));
-        d->configLoader->writeConfig();
-        connect(d->configLoader, SIGNAL(configChanged()), this, SLOT(propagateConfigChanged()));
-    }
 }
 
 void Applet::restore(KConfigGroup &group)
@@ -414,10 +373,6 @@ void Applet::setFailedToLaunch(bool failed, const QString &reason)
 
 void Applet::saveState(KConfigGroup &group) const
 {
-    if (d->script) {
-        emit d->script->saveState(group);
-    }
-
     if (group.config()->name() != config().config()->name()) {
         // we're being saved to a different file!
         // let's just copy the current values in our configuration over
@@ -533,10 +488,6 @@ void AppletPrivate::cleanUpAndDelete()
                 break;
             }
         }
-    }
-
-    if (configLoader) {
-        configLoader->setDefaults();
     }
 
     resetConfigurationObject();
@@ -661,19 +612,9 @@ void AppletPrivate::destroyMessageOverlay()
     }
 }
 
-ConfigLoader *Applet::configScheme() const
-{
-    return d->configLoader;
-}
-
 DataEngine *Applet::dataEngine(const QString &name) const
 {
     return d->dataEngine(name);
-}
-
-const Package *Applet::package() const
-{
-    return d->package;
 }
 
 QGraphicsView *Applet::view() const
@@ -744,22 +685,15 @@ void Applet::constraintsEvent(Plasma::Constraints constraints)
     Q_UNUSED(constraints)
     //kDebug() << constraints << "constraints are FormFactor: " << formFactor()
     //         << ", Location: " << location();
-    if (d->script) {
-        d->script->constraintsEvent(constraints);
-    }
 }
 
 void Applet::initExtenderItem(ExtenderItem *item)
 {
-    if (d->script) {
-        emit extenderItemRestored(item);
-    } else {
-        kWarning() << "Missing implementation of initExtenderItem in the applet "
-                   << item->config().readEntry("SourceAppletPluginName", "")
-                   << "!\n Any applet that uses extenders should implement initExtenderItem to "
-                   << "instantiate a widget. Destroying the item...";
-        item->destroy();
-    }
+    kWarning() << "Missing implementation of initExtenderItem in the applet "
+               << item->config().readEntry("SourceAppletPluginName", "")
+               << "!\n Any applet that uses extenders should implement initExtenderItem to "
+               << "instantiate a widget. Destroying the item...";
+    item->destroy();
 }
 
 Extender *Applet::extender() const
@@ -834,6 +768,7 @@ QString Applet::pluginName() const
 
 bool Applet::shouldConserveResources() const
 {
+#warning TODO: remove this method, applets should use the solid method
 #ifndef PLASMA_NO_SOLID
     return Solid::PowerManagement::appShouldConserveResources();
 #else
@@ -1360,7 +1295,7 @@ int Applet::type() const
 QList<QAction*> Applet::contextualActions()
 {
     //kDebug() << "empty context actions";
-    return d->script ? d->script->contextualActions() : QList<QAction*>();
+    return QList<QAction*>();
 }
 
 QAction *Applet::action(const QString &name) const
@@ -1445,11 +1380,7 @@ void Applet::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 
 void Applet::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect)
 {
-    if (d->script) {
-        d->script->paintInterface(painter, option, contentsRect);
-    } else {
-        //kDebug() << "Applet::paintInterface() default impl";
-    }
+    //kDebug() << "Applet::paintInterface() default impl";
 }
 
 FormFactor Applet::formFactor() const
@@ -1832,91 +1763,9 @@ void Applet::showConfigurationInterface()
         return;
     }
 
-    if (d->package) {
-        KConfigDialog *dialog = 0;
-
-        const QString uiFile = d->package->filePath("mainconfigui");
-        KDesktopFile df(d->package->path() + "/metadata.desktop");
-        const QStringList kcmPlugins = df.desktopGroup().readEntry("X-Plasma-ConfigPlugins", QStringList());
-        if (!uiFile.isEmpty() || !kcmPlugins.isEmpty()) {
-            KConfigSkeleton *configLoader = d->configLoader ? d->configLoader : new KConfigSkeleton();
-            dialog = new AppletConfigDialog(0, d->configDialogId(), configLoader);
-
-            if (!d->configLoader) {
-                // delete the temporary when this dialog is done
-                configLoader->setParent(dialog);
-            }
-
-            dialog->setWindowTitle(d->configWindowTitle());
-            dialog->setAttribute(Qt::WA_DeleteOnClose, true);
-            bool hasPages = false;
-
-            QFile f(uiFile);
-            QUiLoader loader;
-            QWidget *w = loader.load(&f);
-            if (w) {
-                dialog->addPage(w, i18n("Settings"), icon(), i18n("%1 Settings", name()));
-                hasPages = true;
-            }
-
-            foreach (const QString &kcm, kcmPlugins) {
-#ifndef PLASMA_NO_KUTILS
-                KCModuleProxy *module = new KCModuleProxy(kcm);
-                if (module->realModule()) {
-                    //preemptively load modules to prevent save() crashing on some kcms, like powerdevil ones
-                    module->load();
-                    connect(module, SIGNAL(changed(bool)), dialog, SLOT(settingsModified(bool)));
-                    connect(dialog, SIGNAL(okClicked()),
-                            module->realModule(), SLOT(save()));
-                    connect(dialog, SIGNAL(applyClicked()),
-                            module->realModule(), SLOT(save()));
-                    dialog->addPage(module, module->moduleInfo().moduleName(), module->moduleInfo().icon());
-                    hasPages = true;
-                } else {
-                    delete module;
-                }
-#else
-                KService::Ptr service = KService::serviceByStorageId(kcm);
-                if (service) {
-                    QString error;
-                    KCModule *module = service->createInstance<KCModule>(dialog, QVariantList(), &error);
-                    if (module) {
-                        module->load();
-                        connect(module, SIGNAL(changed(bool)), dialog, SLOT(settingsModified(bool)));
-                        connect(dialog, SIGNAL(okClicked()),
-                                module, SLOT(save()));
-                        connect(dialog, SIGNAL(applyClicked()), 
-                                module, SLOT(save()));
-                        dialog->addPage(module, service->name(), service->icon());
-                        hasPages = true;
-                    } else {
-#ifndef NDEBUG
-                        kDebug() << "failed to load kcm" << kcm << "for" << name();
-#endif
-                    }
-                }
-#endif
-            }
-
-            if (hasPages) {
-                d->addGlobalShortcutsPage(dialog);
-                dialog->show();
-            } else {
-                delete dialog;
-                dialog = 0;
-            }
-        }
-
-        if (!dialog && d->script) {
-            d->script->showConfigurationInterface();
-        }
-    } else if (d->script) {
-        d->script->showConfigurationInterface();
-    } else {
-        KConfigDialog *dialog = d->generateGenericConfigDialog();
-        d->addStandardConfigurationPages(dialog);
-        showConfigurationInterface(dialog);
-    }
+    KConfigDialog *dialog = d->generateGenericConfigDialog();
+    d->addStandardConfigurationPages(dialog);
+    showConfigurationInterface(dialog);
 
     emit releaseVisualFocus();
 }
@@ -2021,12 +1870,9 @@ void AppletPrivate::configDialogFinished()
     }
 
 
-    if (!configLoader) {
-        // the config loader will trigger this for us, so we don't need to.
-        propagateConfigChanged();
-        if (KConfigDialog *dialog = qobject_cast<KConfigDialog *>(q->sender())) {
-            dialog->enableButton(KDialog::Apply, false);
-        }
+    propagateConfigChanged();
+    if (KConfigDialog *dialog = qobject_cast<KConfigDialog *>(q->sender())) {
+        dialog->enableButton(KDialog::Apply, false);
     }
 }
 
@@ -2071,12 +1917,6 @@ void AppletPrivate::propagateConfigChanged()
 
 void Applet::configChanged()
 {
-    if (d->script) {
-        if (d->configLoader) {
-            d->configLoader->readConfig();
-        }
-        d->script->configChanged();
-    }
 }
 
 void Applet::createConfigurationInterface(KConfigDialog *parent)
@@ -2229,24 +2069,6 @@ QStringList Applet::listCategories(const QString &parentApp, bool visibleOnly)
     return categories;
 }
 
-Applet *Applet::loadPlasmoid(const QString &path, uint appletId, const QVariantList &args)
-{
-    if (QFile::exists(path + "/metadata.desktop")) {
-        KService service(path + "/metadata.desktop");
-        const QStringList& types = service.serviceTypes();
-
-        if (types.contains("Plasma/Containment")) {
-            return new Containment(path, appletId, args);
-        } else if (types.contains("Plasma/PopupApplet")) {
-            return new PopupApplet(path, appletId, args);
-        } else {
-            return new Applet(path, appletId, args);
-        }
-    }
-
-    return 0;
-}
-
 Applet *Applet::load(const QString &appletName, uint appletId, const QVariantList &args)
 {
     return PluginLoader::loadApplet(appletName, appletId, args);
@@ -2323,15 +2145,6 @@ QVariant Applet::itemChange(GraphicsItemChange change, const QVariant &value)
     };
 
     return ret;
-}
-
-QPainterPath Applet::shape() const
-{
-    if (d->script) {
-        return d->script->shape();
-    }
-
-    return QGraphicsWidget::shape();
 }
 
 QSizeF Applet::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
@@ -2484,9 +2297,6 @@ AppletPrivate::AppletPrivate(KService::Ptr service, const KPluginInfo *info, int
           messageOverlay(0),
           messageOverlayProxy(0),
           busyWidget(0),
-          script(0),
-          package(0),
-          configLoader(0),
           actions(AppletPrivate::defaultActions(applet)),
           activationAction(0),
           itemStatus(UnknownStatus),
@@ -2515,18 +2325,12 @@ AppletPrivate::~AppletPrivate()
 
     delete extender.data();
 
-    delete script;
-    script = 0;
-    delete package;
-    package = 0;
-    delete configLoader;
-    configLoader = 0;
     delete mainConfig;
     mainConfig = 0;
     delete modificationsTimer;
 }
 
-void AppletPrivate::init(const QString &packagePath)
+void AppletPrivate::init()
 {
     // WARNING: do not access config() OR globalConfig() in this method!
     //          that requires a scene, which is not available at this point
@@ -2568,73 +2372,6 @@ void AppletPrivate::init(const QString &packagePath)
     }
     //kDebug() << "size" << size;
     q->resize(size);
-
-    QString api = appletDescription.property("X-Plasma-API").toString();
-
-    // we have a scripted plasmoid
-    if (!api.isEmpty()) {
-        // find where the Package is
-        QString path = packagePath.isEmpty() ? appletDescription.pluginName() : packagePath;
-        // create the package and see if we have something real
-        PackageStructure::Ptr structure = Plasma::packageStructure(api, Plasma::AppletComponent);
-        package = new Package(path, structure);
-        //kDebug() << "***** package is" << package->path();
-
-        if (package->isValid()) {
-            // now we try and set up the script engine.
-            // it will be parented to this applet and so will get
-            // deleted when the applet does
-
-            script = Plasma::loadScriptEngine(api, q);
-            if (!script) {
-                delete package;
-                package = 0;
-                q->setFailedToLaunch(true,
-                        i18nc("API or programming language the widget was written in, name of the widget",
-                              "Could not create a %1 ScriptEngine for the %2 widget.",
-                              api, appletDescription.name()));
-            }
-        } else {
-            q->setFailedToLaunch(true, i18nc("Package file, name of the widget",
-                                 "Could not open the %1 package required for the %2 widget.",
-                                 appletDescription.pluginName(), appletDescription.name()));
-            delete package;
-            package = 0;
-        }
-    }
-}
-
-// put all setup routines for script here. at this point we can assume that
-// package exists and that we have a script engine
-void AppletPrivate::setupScriptSupport()
-{
-    if (!package) {
-        return;
-    }
-
-    kDebug() << "setting up script support, package is in" << package->path()
-        << "which is a" << package->structure()->type() << "package"
-        << ", main script is" << package->filePath("mainscript");
-
-    QString translationsPath = package->filePath("translations");
-    if (!translationsPath.isEmpty()) {
-        //FIXME: we should _probably_ use a KComponentData to segregate the applets
-        //       from each other; but I want to get the basics working first :)
-        KGlobal::dirs()->addResourceDir("locale", translationsPath);
-        KGlobal::locale()->insertCatalog(package->metadata().pluginName());
-    }
-
-    QString xmlPath = package->filePath("mainconfigxml");
-    if (!xmlPath.isEmpty()) {
-        QFile file(xmlPath);
-        KConfigGroup config = q->config();
-        configLoader = new ConfigLoader(&config, &file);
-        QObject::connect(configLoader, SIGNAL(configChanged()), q, SLOT(propagateConfigChanged()));
-    }
-
-    if (!package->filePath("mainconfigui").isEmpty()) {
-        q->setHasConfigurationInterface(true);
-    }
 }
 
 QString AppletPrivate::globalName() const
@@ -2689,7 +2426,6 @@ KConfigGroup *AppletPrivate::mainConfigGroup()
         return mainConfig;
     }
 
-    bool newGroup = false;
     if (isContainment) {
         Corona *corona = qobject_cast<Corona*>(q->scene());
         KConfigGroup containmentConfig;
@@ -2699,10 +2435,6 @@ KConfigGroup *AppletPrivate::mainConfigGroup()
             containmentConfig = KConfigGroup(corona->config(), "Containments");
         } else {
             containmentConfig =  KConfigGroup(KGlobal::config(), "Containments");
-        }
-
-        if (package && !containmentConfig.hasGroup(QString::number(appletId))) {
-            newGroup = true;
         }
 
         mainConfig = new KConfigGroup(&containmentConfig, QString::number(appletId));
@@ -2725,21 +2457,7 @@ KConfigGroup *AppletPrivate::mainConfigGroup()
             appletConfig = KConfigGroup(KGlobal::config(), "Applets");
         }
 
-        if (package && !appletConfig.hasGroup(QString::number(appletId))) {
-            newGroup = true;
-        }
-
         mainConfig = new KConfigGroup(&appletConfig, QString::number(appletId));
-    }
-
-    if (newGroup) {
-        //see if we have a default configuration in our package
-        const QString defaultConfigFile = q->package()->filePath("defaultconfig");
-        if (!defaultConfigFile.isEmpty()) {
-            kDebug() << "copying default config: " << q->package()->filePath("defaultconfig");
-            KConfigGroup defaultConfig(KSharedConfig::openConfig(defaultConfigFile)->group("Configuration"));
-            defaultConfig.copyTo(mainConfig);
-        }
     }
 
     return mainConfig;
@@ -2811,7 +2529,6 @@ void ContainmentPrivate::checkRemoveAction()
 uint AppletPrivate::s_maxAppletId = 0;
 int AppletPrivate::s_maxZValue = 0;
 int AppletPrivate::s_minZValue = 0;
-PackageStructure::Ptr AppletPrivate::packageStructure(0);
 
 AppletOverlayWidget::AppletOverlayWidget(QGraphicsWidget *parent)
     : QGraphicsWidget(parent),

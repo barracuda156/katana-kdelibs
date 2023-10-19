@@ -79,8 +79,6 @@ install(
     KDEDModule
     KDEPrintDialog
     KCalendarWidget
-    KDBusMenuExporter
-    KDBusMenuImporter
     KDesktopFile
     KDialog
     KDialogButtonBox
@@ -201,7 +199,6 @@ install(
     KPassivePopup
     KPassivePopupMessageHandler
     KPasswordDialog
-    KPasteTextAction
     KPixmap
     KPixmapWidget
     KPluginFactory
@@ -261,14 +258,12 @@ install(
     KStartupInfoId
     KStatusBar
     KStatusBarJobTracker
-    KStatusNotifierItem
     KStringHandler
     KStyle
     KSycoca
     KSycocaEntry
     KSystemEventFilter
     KSystemTimeZones
-    KSystemTrayIcon
     KTabBar
     KTabWidget
     KTempDir
@@ -477,18 +472,15 @@ install(
     Plasma/Animation
     Plasma/Animator
     Plasma/Applet
-    Plasma/AppletScript
     Plasma/BusyWidget
     Plasma/CheckBox
     Plasma/ComboBox
-    Plasma/ConfigLoader
     Plasma/Containment
     Plasma/ContainmentActions
     Plasma/Corona
     Plasma/DataContainer
     Plasma/DataEngine
     Plasma/DataEngineManager
-    Plasma/DeclarativeWidget
     Plasma/Delegate
     Plasma/Dialog
     Plasma/DialogShadows
@@ -516,7 +508,6 @@ install(
     Plasma/RadioButton
     Plasma/RunnerContext
     Plasma/RunnerManager
-    Plasma/ScriptEngine
     Plasma/ScrollBar
     Plasma/ScrollWidget
     Plasma/Separator

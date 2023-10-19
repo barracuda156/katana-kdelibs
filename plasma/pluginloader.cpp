@@ -72,22 +72,6 @@ Applet *PluginLoader::loadApplet(const QString &name, uint appletId, const QVari
     QVariantList allArgs;
     allArgs << offer->storageId() << appletId << args;
 
-    if (!offer->property("X-Plasma-API").toString().isEmpty()) {
-        kDebug() << "we have a script using the"
-                 << offer->property("X-Plasma-API").toString() << "API";
-        if (isContainment) {
-            return new Containment(0, allArgs);
-        } else {
-            if (offer->serviceTypes().contains("Plasma/Containment")) {
-                return new Containment(0, allArgs);
-            } else if (offer->serviceTypes().contains("Plasma/PopupApplet")) {
-                return new PopupApplet(0, allArgs);
-            } else {
-                return new Applet(0, allArgs);
-            }
-        }
-    }
-
     Applet *applet = 0;
     QString error;
     if (name == "internal:extender") {
@@ -117,13 +101,8 @@ DataEngine *PluginLoader::loadDataEngine(const QString &name)
     } else {
         QVariantList allArgs;
         allArgs << offers.first()->storageId();
-        QString api = offers.first()->property("X-Plasma-API").toString();
-        if (api.isEmpty()) {
-            if (offers.first()) {
-                engine = offers.first()->createInstance<Plasma::DataEngine>(0, allArgs, &error);
-            }
-        } else {
-            engine = new DataEngine(0, offers.first());
+        if (offers.first()) {
+            engine = offers.first()->createInstance<Plasma::DataEngine>(0, allArgs, &error);
         }
     }
 

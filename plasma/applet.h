@@ -28,13 +28,12 @@
 #include <QWidget>
 #include <QGraphicsView>
 
+#include <kurl.h>
 #include <kconfiggroup.h>
 #include <kplugininfo.h>
 #include <kshortcut.h>
 #include <kdeversion.h>
 
-#include <plasma/configloader.h>
-#include <plasma/packagestructure.h>
 #include <plasma/plasma.h>
 #include <plasma/animator.h>
 #include <plasma/framesvg.h>
@@ -51,8 +50,6 @@ class Context;
 class DataEngine;
 class Extender;
 class ExtenderItem;
-class Package;
-
 
 /**
  * @class Applet plasma/applet.h <Plasma/Applet>
@@ -66,9 +63,8 @@ class Package;
  * management of data engines (e.g. all data engines accessed via
  * Applet::dataEngine(const QString&) are properly deref'd on Applet
  * destruction), background painting (allowing for consistent and complex
- * look and feel in just one line of code for applets), loading and starting
- * of scripting support for each applet, providing access to the associated
- * plasmoid package (if any) and access to configuration data.
+ * look and feel in just one line of code for applets), providing access to
+ * the to configuration data.
  */
 class PLASMA_EXPORT Applet : public QGraphicsWidget
 {
@@ -108,11 +104,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         Q_DECLARE_FLAGS(BackgroundHints, BackgroundHint)
 
         ~Applet();
-
-        /**
-         * @return a package structure representing an Applet
-         */
-        static PackageStructure::Ptr packageStructure();
 
         /**
          * @return the id of this applet
@@ -169,14 +160,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         KConfigGroup globalConfig() const;
 
         /**
-         * Returns the config skeleton object from this applet's package,
-         * if any.
-         *
-         * @return config skeleton object, or 0 if none
-         **/
-        ConfigLoader *configScheme() const;
-
-        /**
          * Loads the given DataEngine
          *
          * Tries to load the data engine given by @p name.  Each engine is
@@ -194,14 +177,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          *         could not be loaded
          */
         Q_INVOKABLE DataEngine *dataEngine(const QString &name) const;
-
-        /**
-         * Accessor for the associated Package object if any.
-         * Generally, only Plasmoids come in a Package.
-         *
-         * @return the Package object, or 0 if none
-         **/
-        const Package *package() const;
 
         /**
          * Returns the view this widget is visible on, or 0 if none can be found.
@@ -324,23 +299,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          */
         static QStringList listCategories(const QString &parentApp = QString(),
                                           bool visibleOnly = true);
-
-        /**
-         * Attempts to load an applet from a package
-         *
-         * Returns a pointer to the applet if successful.
-         * The caller takes responsibility for the applet, including
-         * deleting it when no longer needed.
-         *
-         * @param path the path to the package
-         * @param appletId unique ID to assign the applet, or zero to have one
-         *        assigned automatically.
-         * @param args to send the applet extra arguments
-         * @return a pointer to the loaded applet, or 0 on load failure
-         * @since 4.3
-         **/
-        static Applet *loadPlasmoid(const QString &path, uint appletId = 0,
-                                    const QVariantList &args = QVariantList());
 
         /**
          * Attempts to load an applet
@@ -1031,11 +989,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
         /**
-         * Reimplemented from QGraphicsItem
-         */
-        QPainterPath shape() const;
-
-        /**
          * Reimplemented from QGraphicsLayoutItem
          */
         QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF()) const;
@@ -1045,18 +998,7 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          */
         void timerEvent(QTimerEvent *event);
 
-
     private:
-        /**
-         * @internal This constructor is to be used with the Package loading system.
-         *
-         * @param parent a QObject parent; you probably want to pass in 0
-         * @param args a list of strings containing two entries: the service id
-         *      and the applet id
-         * @since 4.3
-         */
-        Applet(const QString &packagePath, uint appletId, const QVariantList &args);
-
         Q_PRIVATE_SLOT(d, void setFocus())
         Q_PRIVATE_SLOT(d, void themeChanged())
         Q_PRIVATE_SLOT(d, void cleanUpAndDelete())
@@ -1081,7 +1023,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         friend class CoronaPrivate;
         friend class Containment;
         friend class ContainmentPrivate;
-        friend class AppletScript;
         friend class AppletHandle;
         friend class AppletPrivate;
         friend class PluginLoader;

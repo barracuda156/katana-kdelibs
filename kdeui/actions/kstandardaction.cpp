@@ -40,7 +40,6 @@
 #include "kdualaction.h"
 #include "krecentfilesaction.h"
 #include "ktogglefullscreenaction.h"
-#include "kpastetextaction.h"
 #include "kactioncollection.h"
 
 namespace KStandardAction
@@ -155,9 +154,6 @@ KAction *create(StandardAction id, const QObject *recvr, const char *slot, QObje
      case FullScreen:
       pAction = new KToggleFullScreenAction(parent);
       pAction->setCheckable(true);
-      break;
-    case PasteText:
-      pAction = new KPasteTextAction(parent);
       break;
     // Same as default, but with the app icon
     case AboutApp:
@@ -304,11 +300,6 @@ KAction *copy( const QObject *recvr, const char *slot, QObject *parent )
 KAction *paste( const QObject *recvr, const char *slot, QObject *parent )
 {
   return KStandardAction::create( Paste, recvr, slot, parent );
-}
-
-KAction *pasteText( const QObject *recvr, const char *slot, QObject *parent )
-{
-  return KStandardAction::create( PasteText, recvr, slot, parent );
 }
 
 KAction *clear( const QObject *recvr, const char *slot, QObject *parent )

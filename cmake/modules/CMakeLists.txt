@@ -32,7 +32,6 @@ set(cmakeFiles
     FindFontconfig.cmake
     FindGettextPO.cmake
     FindGLIB2.cmake
-    FindGMP.cmake
     FindGphoto2.cmake
     FindKmod.cmake
     FindLibATASmart.cmake
@@ -44,10 +43,8 @@ set(cmakeFiles
     FindLibSSH.cmake
     FindLibTorrent.cmake
     FindLibUSB.cmake
-    FindLibVNCServer.cmake
     FindLightDM.cmake
     FindLibGit2.cmake
-    FindMPFR.cmake
     FindMtp.cmake
     FindPCIUTILS.cmake
     FindPoppler.cmake

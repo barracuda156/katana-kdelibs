@@ -126,16 +126,6 @@ Containment::Containment(QObject *parent, const QVariantList &args)
     setBackgroundHints(NoBackground);
 }
 
-Containment::Containment(const QString &packagePath, uint appletId, const QVariantList &args)
-    : Plasma::Applet(packagePath, appletId, args),
-      d(new ContainmentPrivate(this))
-{
-    // WARNING: do not access config() OR globalConfig() in this method!
-    //          that requires a scene, which is not available at this point
-    setPos(0, 0);
-    setBackgroundHints(NoBackground);
-}
-
 Containment::~Containment()
 {
     // Applet touches our dptr if we are a containment and is the superclass (think of dtors)

@@ -291,21 +291,10 @@ void SvgPrivate::createRenderer()
 
     //kDebug() << kBacktrace();
     if (themed && path.isEmpty() && !themeFailed) {
-        Applet *applet = qobject_cast<Applet*>(q->parent());
-        if (applet && applet->package()) {
-            path = applet->package()->filePath("images", themePath + ".svg");
-
-            if (path.isEmpty()) {
-                path = applet->package()->filePath("images", themePath + ".svgz");
-            }
-        }
-
-        if (path.isEmpty()) {
-            path = actualTheme()->imagePath(themePath);
-            themeFailed = path.isEmpty();
-            if (themeFailed) {
-                kWarning() << "No image path found for" << themePath;
-            }
+        path = actualTheme()->imagePath(themePath);
+        themeFailed = path.isEmpty();
+        if (themeFailed) {
+            kWarning() << "No image path found for" << themePath;
         }
     }
 

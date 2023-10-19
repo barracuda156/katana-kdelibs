@@ -89,7 +89,6 @@ public:
     QString application() const;
     QString category() const;
     QString pluginName() const;
-    QString implementationApi() const;
 
     QString type() const;
 
@@ -186,11 +185,6 @@ public:
      * @endcode
      */
     void setPluginName(const QString &name);
-
-    /**
-     * Set the implementation API this package uses.
-     */
-    void setImplementationApi(const QString &api);
 
 private:
     PackageMetadataPrivate * const d;

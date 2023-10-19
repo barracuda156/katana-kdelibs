@@ -2989,8 +2989,6 @@ public:
         , m_terminalBool(false)
         , m_suidBool(false)
         , m_startupBool(false)
-        , m_systrayBool(false)
-        , m_canSystrayBool(false)
     {
     }
     ~KDesktopPropsPluginPrivate()
@@ -3009,8 +3007,6 @@ public:
     bool m_terminalBool;
     bool m_suidBool;
     bool m_startupBool;
-    bool m_systrayBool;
-    bool m_canSystrayBool;
 };
 
 KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *props)
@@ -3067,12 +3063,6 @@ KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *props)
     QString genNameStr = _config.readGenericName();
     QString commentStr = _config.readComment();
     QString commandStr = config.readEntry("Exec", QString());
-    if (commandStr.endsWith(QLatin1String(" -tray"))) {
-        commandStr.chop(6);
-        d->m_systrayBool = true;
-    } else {
-        d->m_systrayBool = false;
-    }
 
     d->m_origCommandStr = commandStr;
     QString pathStr = config.readEntry("Path", QString()); // not readPathEntry, see kservice.cpp
@@ -3082,7 +3072,6 @@ KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *props)
     d->m_suidUserStr = config.readEntry("X-KDE-Username");
     d->m_startupBool = config.readEntry("StartupNotify", false);
     d->m_startupClassStr = config.readEntry("StartupWMClass", QString());
-    d->m_canSystrayBool = config.readEntry("X-KDE-HasTrayOption", false);
 
     const QStringList mimeTypes = config.readXdgListEntry("MimeType");
 
@@ -3219,11 +3208,7 @@ void KDesktopPropsPlugin::applyChanges()
     config.writeEntry("GenericName", d->w->genNameEdit->text() );
     config.writeEntry("GenericName", d->w->genNameEdit->text(), KConfigGroup::Persistent | KConfigGroup::Localized ); // for compat
 
-    if (d->m_systrayBool) {
-        config.writeEntry("Exec", d->w->commandEdit->text().append(" -tray"));
-    } else {
-        config.writeEntry("Exec", d->w->commandEdit->text());
-    }
+    config.writeEntry("Exec", d->w->commandEdit->text());
     config.writeEntry("Path", d->w->pathEdit->lineEdit()->text()); // not writePathEntry, see kservice.cpp
 
     // Write mimeTypes
@@ -3253,7 +3238,6 @@ void KDesktopPropsPlugin::applyChanges()
     config.writeEntry("X-KDE-Username", d->m_suidUserStr);
     config.writeEntry("StartupNotify", d->m_startupBool);
     config.writeEntry("StartupWMClass", d->m_startupClassStr);
-    config.writeEntry("X-KDE-HasTrayOption", d->m_canSystrayBool);
     config.sync();
 
     // KSycoca update needed?
@@ -3326,8 +3310,6 @@ void KDesktopPropsPlugin::slotAdvanced()
     w.startupClassEdit->setText(d->m_startupClassStr);
     w.startupClassEdit->setEnabled(d->m_startupBool);
     w.startupClassLabel->setEnabled(d->m_startupBool);
-    w.systrayCheck->setChecked(d->m_systrayBool);
-    w.systrayCheck->setEnabled(d->m_canSystrayBool);
 
     // Provide username completion up to 1000 users.
     KCompletion *kcom = new KCompletion;
@@ -3353,7 +3335,6 @@ void KDesktopPropsPlugin::slotAdvanced()
     connect(w.suidEdit, SIGNAL(textChanged(QString)), this, SIGNAL(changed()) );
     connect(w.startupInfoCheck, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
     connect(w.startupClassEdit, SIGNAL(textChanged(QString)), this, SIGNAL(changed()) );
-    connect(w.systrayCheck, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
 
     if (dlg.exec() == QDialog::Accepted) {
         d->m_terminalOptionStr = w.terminalEdit->text().trimmed();
@@ -3362,7 +3343,6 @@ void KDesktopPropsPlugin::slotAdvanced()
         d->m_suidUserStr = w.suidEdit->text().trimmed();
         d->m_startupBool = w.startupInfoCheck->isChecked();
         d->m_startupClassStr = w.startupClassEdit->text().trimmed();
-        d->m_systrayBool = w.systrayCheck->isChecked();
 
         if (w.terminalCloseCheck->isChecked()) {
             d->m_terminalOptionStr.append(" --noclose");

@@ -211,16 +211,6 @@ protected:
     void timerEvent(QTimerEvent *event);
 
 private:
-    /**
-     * @internal This constructor is to be used with the Package loading system.
-     *
-     * @param parent a QObject parent; you probably want to pass in 0
-     * @param args a list of strings containing two entries: the service id
-     *      and the applet id
-     * @since 4.3
-     */
-    PopupApplet(const QString &packagePath, uint appletId, const QVariantList &args);
-
     Q_PRIVATE_SLOT(d, void internalTogglePopup())
     Q_PRIVATE_SLOT(d, void hideTimedPopup())
     Q_PRIVATE_SLOT(d, void clearPopupLostFocus())

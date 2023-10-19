@@ -132,6 +132,3 @@ Type=bool
 
 [PropertyDef::X-KDE-Protocols]
 Type=QStringList
-
-[PropertyDef::X-KDE-HasTrayOption]
-Type=bool

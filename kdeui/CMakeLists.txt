@@ -55,7 +55,6 @@ set(kdeui_LIB_SRCS
     actions/kdualaction.cpp
     actions/kfontaction.cpp
     actions/kfontsizeaction.cpp
-    actions/kpastetextaction.cpp
     actions/krecentfilesaction.cpp
     actions/kselectaction.cpp
     actions/kstandardaction.cpp
@@ -154,12 +153,6 @@ set(kdeui_LIB_SRCS
     notifications/knotification.cpp
     notifications/knotificationconfigwidget.cpp
     notifications/knotificationrestrictions.cpp
-    notifications/kdbusmenuexporter.cpp
-    notifications/kdbusmenuimporter.cpp
-    notifications/kdbusmenu_p.cpp
-    notifications/ksystemtrayicon.cpp
-    notifications/kstatusnotifieritem.cpp
-    notifications/kstatusnotifieritemdbus_p.cpp
     paged/kpagedialog.cpp
     paged/kpageview.cpp
     paged/kpageview_p.cpp
@@ -255,17 +248,6 @@ set(kdeui_LIB_SRCS
     windowmanagement/kwindowsystem_x11.cpp
     windowmanagement/kwindowinfo_x11.cpp
     windowmanagement/netwm.cpp
-)
-
-qt4_add_dbus_interface(kdeui_LIB_SRCS
-    notifications/org.kde.StatusNotifierWatcher.xml
-    statusnotifierwatcher_interface
-)
-
-qt4_add_dbus_adaptor(kdeui_LIB_SRCS
-    notifications/org.kde.StatusNotifierItem.xml
-    notifications/kstatusnotifieritemdbus_p.h
-    KStatusNotifierItemDBus
 )
 
 if (X11_Xkb_FOUND AND X11_Xkbfile_FOUND)
@@ -383,7 +365,6 @@ install(
     actions/kcodecaction.h
     actions/kfontaction.h
     actions/kfontsizeaction.h
-    actions/kpastetextaction.h
     actions/krecentfilesaction.h
     actions/kselectaction.h
     actions/kstandardaction.h
@@ -461,13 +442,9 @@ install(
     kernel/kglobalsettings.h
     kernel/ksystemeventfilter.h
     kernel/ktoolinvocation.h
-    notifications/kstatusnotifieritem.h
-    notifications/ksystemtrayicon.h
     notifications/knotification.h
     notifications/knotificationconfigwidget.h
     notifications/knotificationrestrictions.h
-    notifications/kdbusmenuexporter.h
-    notifications/kdbusmenuimporter.h
     paged/kpagedialog.h
     paged/kpageview.h
     paged/kpagewidget.h
@@ -585,7 +562,5 @@ install(
     FILES
     jobs/org.kde.JobViewServer.xml
     jobs/org.kde.JobView.xml
-    notifications/org.kde.StatusNotifierItem.xml
-    notifications/org.kde.StatusNotifierWatcher.xml
     DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR}
 )

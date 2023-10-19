@@ -73,8 +73,6 @@ void KAutostartTest::testStartphase_data()
     QTest::addColumn<int>("startPhase");
     if ( KAutostart::isServiceRegistered("plasma-desktop") )
         QTest::newRow("plasma-desktop") << "plasma-desktop" << (int)KAutostart::BaseDesktop;
-    if ( KAutostart::isServiceRegistered("klipper") )
-        QTest::newRow("klipper") << "klipper" << (int)KAutostart::Applications;
     QTest::newRow("does not exist") << "doesnotexist"
                                     << (int)KAutostart::Applications;
 }

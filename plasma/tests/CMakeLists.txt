@@ -12,9 +12,6 @@ MACRO(PLASMA_UNIT_TESTS)
 ENDMACRO(PLASMA_UNIT_TESTS)
 
 PLASMA_UNIT_TESTS(
-    packagestructuretest
     packagemetadatatest
-    plasmoidpackagetest
     runnercontexttest
-    configloadertest
 )
