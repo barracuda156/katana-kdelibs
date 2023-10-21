@@ -1252,10 +1252,7 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
             item->setExtender(applet->extender());
         }
     } else if (KUrl::List::canDecode(mimeData)) {
-        //TODO: collect the mimetypes of available script engines and offer
-        //      to create widgets out of the matching URLs, if any
-        const KUrl::List urls = KUrl::List::fromMimeData(mimeData);
-        foreach (const KUrl &url, urls) {
+        foreach (const KUrl &url, KUrl::List::fromMimeData(mimeData)) {
 #ifndef PLASMA_NO_KIO
             KMimeType::Ptr mime = KMimeType::findByUrl(url);
             QString mimeName = mime->name();

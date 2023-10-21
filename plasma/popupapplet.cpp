@@ -42,7 +42,6 @@
 #include "plasma/dialog.h"
 #include "plasma/extenders/extender.h"
 #include "plasma/extenders/extenderitem.h"
-#include "plasma/package.h"
 #include "plasma/theme.h"
 #include "plasma/tooltipmanager.h"
 #include "plasma/widgets/iconwidget.h"

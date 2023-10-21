@@ -53,11 +53,11 @@ public:
     QSizeF targetSize;
     QList<KUrl> pendingUrls;
     QList<QAction*> contextActions;
-    bool cacheRendering : 1;
-    bool initialized : 1;
-    bool needsConfig : 1;
-    bool previewing : 1;
-    bool needsPreviewDuringConfiguration : 1;
+    bool cacheRendering;
+    bool initialized;
+    bool needsConfig;
+    bool previewing;
+    bool needsPreviewDuringConfiguration;
 };
 
 } // namespace Plasma

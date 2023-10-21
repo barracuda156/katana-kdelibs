@@ -28,7 +28,6 @@
 
 #include <plasma/plasma_export.h>
 #include <plasma/plasma.h>
-#include "packagemetadata.h"
 
 #include <QGraphicsObject>
 #include <QIODevice>
@@ -274,7 +273,6 @@ private:
 
     friend class Applet;
     friend class DataEnginePrivate;
-    friend class PackagePrivate;
 };
 
 } // namespace Plasma

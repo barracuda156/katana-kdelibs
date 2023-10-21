@@ -31,24 +31,20 @@ public:
     ContainmentActionsPrivate(KService::Ptr service, ContainmentActions *containmentActions) :
         q(containmentActions),
         containmentActionsDescription(service),
-        package(0),
         initialized(false),
         needsConfig(false),
-        containment(0)
+        containment(nullptr)
     {
     };
 
-    static PackageStructure::Ptr s_packageStructure;
-
     ContainmentActions *q;
     KPluginInfo containmentActionsDescription;
-    Package *package;
     KServiceAction mode;
-    bool initialized : 1;
-    bool needsConfig : 1;
+    bool initialized;
+    bool needsConfig;
     Containment *containment;
 };
 
 } // namespace Plasma
-#endif //PLASMA_CONTAINMENTACTIONSPRIVATE_H
 
+#endif //PLASMA_CONTAINMENTACTIONSPRIVATE_H

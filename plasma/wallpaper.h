@@ -556,8 +556,6 @@ class PLASMA_EXPORT Wallpaper : public QObject
     private:
         friend class WallpaperPackage;
         friend class WallpaperPrivate;
-        friend class WallpaperScript;
-        friend class WallpaperWithPaint;
         friend class ContainmentPrivate;
         WallpaperPrivate *const d;
 };

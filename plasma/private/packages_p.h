@@ -64,14 +64,6 @@ private:
     Wallpaper::ResizeMethod m_resizeMethod;
 };
 
-class ContainmentActionsPackage : public PackageStructure
-{
-    Q_OBJECT
-
-public:
-    explicit ContainmentActionsPackage(QObject *parent = 0);
-};
-
 } // namespace Plasma
 
 #endif // LIBS_PLASMA_PACKAGES_P_H

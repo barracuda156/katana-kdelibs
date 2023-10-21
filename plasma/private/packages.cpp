@@ -257,12 +257,6 @@ void WallpaperPackage::paperDestroyed()
     m_paper = 0;
 }
 
-ContainmentActionsPackage::ContainmentActionsPackage(QObject *parent)
-    : Plasma::PackageStructure(parent, QString("ContainmentActions"))
-{
-    //FIXME how do I do the mimetypes stuff?
-}
-
 } // namespace Plasma
 
 #include "moc_packages_p.cpp"

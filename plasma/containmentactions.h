@@ -27,7 +27,6 @@
 #include <kdeversion.h>
 
 #include <plasma/plasma.h>
-#include <plasma/packagestructure.h>
 
 namespace Plasma
 {
@@ -100,11 +99,6 @@ class PLASMA_EXPORT ContainmentActions : public QObject
          * @return a pointer to the loaded containmentactions, or 0 on load failure
          **/
         static ContainmentActions *load(Containment *parent, const KPluginInfo &info, const QVariantList &args = QVariantList());
-
-        /**
-         * Returns the Package specialization for containmentactions.
-         */
-        static PackageStructure::Ptr packageStructure();
 
         /**
          * Returns the user-visible name for the containmentactions, as specified in the
@@ -254,7 +248,6 @@ class PLASMA_EXPORT ContainmentActions : public QObject
         void paste(QPointF scenePos, QPoint screenPos);
 
     private:
-        friend class ContainmentActionsPackage;
         friend class ContainmentActionsPrivate;
         ContainmentActionsPrivate *const d;
 };

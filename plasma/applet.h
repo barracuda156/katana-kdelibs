@@ -714,11 +714,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         void newStatus(Plasma::ItemStatus status);
 
         /**
-         * Emitted when an ExtenderItem in a scripting applet needs to be initialized
-         */
-        void extenderItemRestored(Plasma::ExtenderItem *item);
-
-        /**
          * Emitted when the immutability changes
          * @since 4.4
          */

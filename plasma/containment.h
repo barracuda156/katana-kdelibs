@@ -507,7 +507,6 @@ Q_SIGNALS:
         void configChanged();
 
     protected:
-        //FIXME plasma2: those should be public to allow scripted containments access them
         /**
          * Sets the type of this containment.
          */

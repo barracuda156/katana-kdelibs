@@ -197,7 +197,7 @@ public:
     bool hasConfigurationInterface;
     bool failed;
     bool isContainment;
-    bool transient ;
+    bool transient;
     bool needsConfig;
     bool started;
 };

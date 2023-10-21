@@ -34,7 +34,6 @@ namespace Plasma
 {
 
 class DataContainer;
-class Package;
 class Service;
 class DataEnginePrivate;
 
@@ -176,10 +175,7 @@ NoAlignment) const;
 
         /**
          * Retrieves a pointer to the DataContainer for a given source. This method
-         * should not be used if possible. An exception is for script engines that
-         * can not provide a QMetaObject as required by connectSource for the initial
-         * call to dataUpdated. Using this method, such engines can provide their own
-         * connectSource API.
+         * should not be used if possible.
          *
          * @param source the name of the source.
          * @return pointer to a DataContainer, or zero on failure

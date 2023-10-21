@@ -17,7 +17,7 @@
 *   Boston, MA 02110-1301, USA.                                               *
 *******************************************************************************/
 
-#ifndef PACKAGEMETADATATEST_H
+#ifndef RUNNERCONTEXTTEST_H
 
 #include <qtest_kde.h>
 

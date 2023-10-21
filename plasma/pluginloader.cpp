@@ -29,7 +29,6 @@
 #include "applet.h"
 #include "abstractrunner.h"
 #include "containment.h"
-#include "packagestructure.h"
 #include "popupapplet.h"
 #include "private/applet_p.h"
 #include "private/extenderapplet_p.h"

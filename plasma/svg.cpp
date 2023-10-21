@@ -35,7 +35,6 @@
 #include <ksharedptr.h>
 
 #include "applet.h"
-#include "package.h"
 #include "theme.h"
 
 namespace Plasma
