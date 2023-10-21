@@ -24,7 +24,6 @@
 #include "vfolder_menu.h"
 
 #include <config.h>
-#include <config-kded.h>
 
 #include <kservice.h>
 #include <kmimetype.h>
@@ -43,10 +42,8 @@
 #include <klocale.h>
 #include <kaboutdata.h>
 #include <kcmdlineargs.h>
-#ifndef KBUILDSYCOCA_NO_KCRASH
 #include <kde_file.h>
 #include <kcrash.h>
-#endif
 
 #include <QDir>
 #include <QFileInfo>
@@ -658,9 +655,7 @@ int main(int argc, char **argv)
    QCoreApplication k(argc, argv);
    KComponentData mainComponent(d);
 
-#ifndef KBUILDSYCOCA_NO_KCRASH
    KCrash::setCrashHandler(crashHandler);
-#endif
 
    // force generating of KLocale object. if not, the database will get
    // be translated

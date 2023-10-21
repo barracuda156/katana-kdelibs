@@ -1,33 +1,11 @@
-if(KDE_PLATFORM_FEATURE_BINARY_COMPATIBLE_FEATURE_REDUCTION)
-    set(PLASMA_NO_SOLID TRUE)
-    set(PLASMA_NO_KIO TRUE)
-    set(PLASMA_NO_KUTILS TRUE)
-    set(PLASMA_NO_GLOBAL_SHORTCUTS TRUE)
-endif()
-
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${KDE4_KDECORE_INCLUDES}
     ${KDE4_KDEUI_INCLUDES}
+    ${KDE4_KIO_INCLUDES}
     ${CMAKE_SOURCE_DIR}/plasma/extenders
     # for the export headers
     ${CMAKE_BINARY_DIR}/kutils
-)
-
-if(NOT PLASMA_NO_KIO)
-   include_directories(${KDE4_KIO_INCLUDES})
-   set(PLASMA_EXTRA_LIBS ${PLASMA_EXTRA_LIBS} kio)
-endif()
-
-if(NOT PLASMA_NO_SOLID)
-    include_directories(${CMAKE_BINARY_DIR}/solid/)
-    include_directories(${CMAKE_SOURCE_DIR}/solid/)
-    set(PLASMA_EXTRA_LIBS ${PLASMA_EXTRA_LIBS} solid)
-endif()
-
-configure_file(
-    config-plasma.h.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/config-plasma.h
 )
 
 if(ENABLE_TESTING)
@@ -143,9 +121,9 @@ add_library(plasma SHARED ${plasma_LIB_SRCS})
 target_link_libraries(plasma PUBLIC
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTSVG_LIBRARY}
-    ${PLASMA_EXTRA_LIBS}
     kdecore
     kdeui
+    kio
 )
 
 target_link_libraries(plasma PRIVATE ${X11_LIBRARIES})

@@ -19,7 +19,9 @@
 *******************************************************************************/
 
 #include "package.h"
-#include "config-plasma.h"
+#include "packagemetadata.h"
+#include "private/package_p.h"
+#include "private/service_p.h"
 
 #include <QDir>
 #include <QFile>
@@ -31,10 +33,6 @@
 #include <kplugininfo.h>
 #include <kstandarddirs.h>
 #include <kdebug.h>
-
-#include "packagemetadata.h"
-#include "private/package_p.h"
-#include "private/service_p.h"
 
 namespace Plasma
 {

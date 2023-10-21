@@ -21,8 +21,22 @@
 
 #include "containment.h"
 #include "private/containment_p.h"
-
-#include "config-plasma.h"
+#include "abstracttoolbox.h"
+#include "animator.h"
+#include "containmentactions.h"
+#include "containmentactionspluginsconfig.h"
+#include "corona.h"
+#include "extender.h"
+#include "extenderitem.h"
+#include "svg.h"
+#include "wallpaper.h"
+#include "private/applet_p.h"
+#include "private/containmentactionspluginsconfig_p.h"
+#include "private/extenderitemmimedata_p.h"
+#include "private/extenderapplet_p.h"
+#include "private/wallpaper_p.h"
+#include "plasma/plasma.h"
+#include "animations/animation.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -45,31 +59,9 @@
 #include <ktemporaryfile.h>
 #include <kwindowsystem.h>
 #include <kdebug.h>
-
-#ifndef PLASMA_NO_KIO
 #include "kio/jobclasses.h" // for KIO::JobFlags
 #include "kio/job.h"
 #include "kio/scheduler.h"
-#endif
-
-#include "abstracttoolbox.h"
-#include "animator.h"
-#include "containmentactions.h"
-#include "containmentactionspluginsconfig.h"
-#include "corona.h"
-#include "extender.h"
-#include "extenderitem.h"
-#include "svg.h"
-#include "wallpaper.h"
-
-#include "private/applet_p.h"
-#include "private/containmentactionspluginsconfig_p.h"
-#include "private/extenderitemmimedata_p.h"
-#include "private/extenderapplet_p.h"
-#include "private/wallpaper_p.h"
-
-#include "plasma/plasma.h"
-#include "animations/animation.h"
 
 namespace Plasma
 {
@@ -1253,7 +1245,6 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
         }
     } else if (KUrl::List::canDecode(mimeData)) {
         foreach (const KUrl &url, KUrl::List::fromMimeData(mimeData)) {
-#ifndef PLASMA_NO_KIO
             KMimeType::Ptr mime = KMimeType::findByUrl(url);
             QString mimeName = mime->name();
             QRectF geom(pos, QSize());
@@ -1282,7 +1273,6 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
             }
 
             dropMenus[job] = choices;
-#endif
         }
 
         if (dropEvent) {
@@ -1368,18 +1358,15 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
 
 void ContainmentPrivate::clearDataForMimeJob(KIO::Job *job)
 {
-#ifndef PLASMA_NO_KIO
     QObject::disconnect(job, 0, q, 0);
     dropPoints.remove(job);
     KMenu *choices = dropMenus.take(job);
     delete choices;
     job->kill();
-#endif // PLASMA_NO_KIO
 }
 
 void ContainmentPrivate::dropJobResult(KJob *job)
 {
-#ifndef PLASMA_NO_KIO
     KIO::TransferJob* tjob = qobject_cast<KIO::TransferJob*>(job);
     if (!tjob) {
         kDebug() << "job is not a KIO::TransferJob, won't handle the drop...";
@@ -1392,12 +1379,10 @@ void ContainmentPrivate::dropJobResult(KJob *job)
     // We call mimetypeRetrieved since there might be other mechanisms
     // for finding suitable applets. Cleanup happens there as well.
     mimeTypeRetrieved(qobject_cast<KIO::Job *>(job), QString());
-#endif // PLASMA_NO_KIO
 }
 
 void ContainmentPrivate::mimeTypeRetrieved(KIO::Job *job, const QString &mimetype)
 {
-#ifndef PLASMA_NO_KIO
     kDebug() << "Mimetype Job returns." << mimetype;
     KIO::TransferJob* tjob = qobject_cast<KIO::TransferJob*>(job);
     if (!tjob) {
@@ -1518,7 +1503,6 @@ void ContainmentPrivate::mimeTypeRetrieved(KIO::Job *job, const QString &mimetyp
     }
 
     clearDataForMimeJob(job);
-#endif // PLASMA_NO_KIO
 }
 
 

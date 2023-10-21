@@ -19,8 +19,11 @@
  */
 
 #include "wallpaper.h"
-
-#include "config-plasma.h"
+#include "plasma/plasma.h"
+#include "plasma/package.h"
+#include "plasma/private/dataengineconsumer_p.h"
+#include "plasma/private/packages_p.h"
+#include "plasma/private/wallpaper_p.h"
 
 #include <QColor>
 #include <QFile>
@@ -37,16 +40,7 @@
 #include <kglobal.h>
 #include <kservicetypetrader.h>
 #include <kstandarddirs.h>
-
-#ifndef PLASMA_NO_KIO
 #include <kio/job.h>
-#endif
-
-#include "plasma/plasma.h"
-#include "plasma/package.h"
-#include "plasma/private/dataengineconsumer_p.h"
-#include "plasma/private/packages_p.h"
-#include "plasma/private/wallpaper_p.h"
 
 static const QByteArray imageFormat = QImageWriter::defaultImageFormat();
 
@@ -598,11 +592,7 @@ void Wallpaper::insertIntoCache(const QString& key, const QImage &image)
 
     if (d->cacheRendering) {
         if (image.isNull()) {
-#ifndef PLASMA_NO_KIO
             KIO::file_delete(d->cachePath(key));
-#else
-            QFile::remove(d->cachePath(key));
-#endif
         } else {
             image.save(d->cachePath(key), imageFormat, 100);
         }

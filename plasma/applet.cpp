@@ -21,14 +21,40 @@
  */
 
 #include "applet.h"
+#include "abstracttoolbox.h"
+#include "containment.h"
+#include "corona.h"
+#include "dataenginemanager.h"
+#include "dialog.h"
+#include "extenders/extender.h"
+#include "extenders/extenderitem.h"
+#include "package.h"
+#include "plasma.h"
+#include "svg.h"
+#include "framesvg.h"
+#include "popupapplet.h"
+#include "theme.h"
+#include "view.h"
+#include "widgets/iconwidget.h"
+#include "widgets/label.h"
+#include "widgets/pushbutton.h"
+#include "widgets/busywidget.h"
+#include "tooltipmanager.h"
+#include "wallpaper.h"
+#include "paintutils.h"
+#include "pluginloader.h"
+#include "animations/animation.h"
 #include "private/applet_p.h"
-
-#include "config-plasma.h"
-
-#include <plasma/animations/animation.h>
-
-#include <cmath>
-#include <limits>
+#include "private/applethandle_p.h"
+#include "private/extenderitem_p.h"
+#include "private/framesvg_p.h"
+#include "private/associatedapplicationmanager_p.h"
+#include "private/containment_p.h"
+#include "private/extenderapplet_p.h"
+#include "private/package_p.h"
+#include "private/packages_p.h"
+#include "private/popupapplet_p.h"
+#include "private/service_p.h"
 
 #include <QApplication>
 #include <QEvent>
@@ -65,44 +91,8 @@
 #include <krandom.h>
 #include <kconfigskeleton.h>
 
-#ifndef PLASMA_NO_SOLID
-#include <solid/powermanagement.h>
-#endif
-
-#include "abstracttoolbox.h"
-#include "containment.h"
-#include "corona.h"
-#include "dataenginemanager.h"
-#include "dialog.h"
-#include "extenders/extender.h"
-#include "extenders/extenderitem.h"
-#include "package.h"
-#include "plasma.h"
-#include "svg.h"
-#include "framesvg.h"
-#include "popupapplet.h"
-#include "theme.h"
-#include "view.h"
-#include "widgets/iconwidget.h"
-#include "widgets/label.h"
-#include "widgets/pushbutton.h"
-#include "widgets/busywidget.h"
-#include "tooltipmanager.h"
-#include "wallpaper.h"
-#include "paintutils.h"
-#include "pluginloader.h"
-
-#include "private/applethandle_p.h"
-#include "private/extenderitem_p.h"
-#include "private/framesvg_p.h"
-#include "private/associatedapplicationmanager_p.h"
-#include "private/containment_p.h"
-#include "private/extenderapplet_p.h"
-#include "private/package_p.h"
-#include "private/packages_p.h"
-#include "private/popupapplet_p.h"
-#include "private/service_p.h"
-
+#include <cmath>
+#include <limits>
 
 namespace Plasma
 {
@@ -764,16 +754,6 @@ QString Applet::pluginName() const
     }
 
     return d->appletDescription.pluginName();
-}
-
-bool Applet::shouldConserveResources() const
-{
-#warning TODO: remove this method, applets should use the solid method
-#ifndef PLASMA_NO_SOLID
-    return Solid::PowerManagement::appShouldConserveResources();
-#else
-    return true;
-#endif
 }
 
 QString Applet::category() const
@@ -1836,7 +1816,6 @@ void AppletPrivate::addStandardConfigurationPages(KConfigDialog *dialog)
 
 void AppletPrivate::addGlobalShortcutsPage(KConfigDialog *dialog)
 {
-#ifndef PLASMA_NO_GLOBAL_SHORTCUTS
     if (isContainment) {
         return;
     }
@@ -1856,7 +1835,6 @@ void AppletPrivate::addGlobalShortcutsPage(KConfigDialog *dialog)
 
     QObject::connect(dialog, SIGNAL(applyClicked()), q, SLOT(configDialogFinished()), Qt::UniqueConnection);
     QObject::connect(dialog, SIGNAL(okClicked()), q, SLOT(configDialogFinished()), Qt::UniqueConnection);
-#endif
 }
 
 void AppletPrivate::configDialogFinished()

@@ -20,8 +20,9 @@
  */
 
 #include "runnermanager.h"
-
-#include "config-plasma.h"
+#include "private/runnerjobs_p.h"
+#include "pluginloader.h"
+#include "querymatch.h"
 
 #include <QMutex>
 #include <QTimer>
@@ -32,10 +33,6 @@
 #include <kplugininfo.h>
 #include <kservicetypetrader.h>
 #include <kstandarddirs.h>
-
-#include "private/runnerjobs_p.h"
-#include "pluginloader.h"
-#include "querymatch.h"
 
 //#define MEASURE_PREPTIME
 

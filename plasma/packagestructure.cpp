@@ -18,8 +18,9 @@
 *******************************************************************************/
 
 #include "packagestructure.h"
-
-#include "config-plasma.h"
+#include "package.h"
+#include "private/packages_p.h"
+#include "theme.h"
 
 #include <QDirIterator>
 #include <QDir>
@@ -29,18 +30,12 @@
 
 #include <kconfiggroup.h>
 #include <kdebug.h>
-#ifndef PLASMA_NO_KIO
 #include <kio/job.h>
-#endif
 #include <kmimetype.h>
 #include <kstandarddirs.h>
 #include <kservicetypetrader.h>
 #include <ktemporaryfile.h>
 #include <kurl.h>
-
-#include "package.h"
-#include "private/packages_p.h"
-#include "theme.h"
 
 namespace Plasma
 {
@@ -157,9 +152,7 @@ PackageStructure::Ptr PackageStructure::load(const QString &packageFormat)
     if (url.isLocalFile()) {
         KConfig config(url.toLocalFile(), KConfig::SimpleConfig);
         structure->read(&config);
-    }
-#ifndef PLASMA_NO_KIO
-    else {
+    } else {
         KTemporaryFile tmp;
         if (tmp.open()) {
             KIO::Job *job = KIO::file_copy(url, KUrl(tmp.fileName()),
@@ -170,7 +163,6 @@ PackageStructure::Ptr PackageStructure::load(const QString &packageFormat)
             }
         }
     }
-#endif
 
     return structure;
 }

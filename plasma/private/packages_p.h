@@ -24,9 +24,6 @@
 #include "plasma/wallpaper.h"
 #include "plasma/plasma.h"
 
-#include "config-plasma.h"
-
-
 namespace Plasma
 {
 

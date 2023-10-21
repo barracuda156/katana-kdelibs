@@ -79,7 +79,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
     Q_PROPERTY(bool busy READ isBusy WRITE setBusy)
     Q_PROPERTY(bool configurationRequired READ configurationRequired WRITE setConfigurationRequired)
     Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry)
-    Q_PROPERTY(bool shouldConserveResources READ shouldConserveResources)
     Q_PROPERTY(uint id READ id CONSTANT)
     Q_PROPERTY(bool userConfiguring READ isUserConfiguring)
     Q_PROPERTY(BackgroundHints backgroundHints READ backgroundHints WRITE setBackgroundHints)
@@ -375,14 +374,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          * Returns the plugin name for the applet
          */
         QString pluginName() const;
-
-        /**
-         * Whether the applet should conserve resources. If true, try to avoid doing stuff which
-         * is computationally heavy. Try to conserve power and resources.
-         *
-         * @return true if it should conserve resources, false if it does not.
-         */
-        bool shouldConserveResources() const;
 
         /**
          * Returns the icon related to this applet

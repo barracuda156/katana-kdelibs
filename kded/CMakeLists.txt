@@ -6,15 +6,6 @@ endif()
 
 include_directories(${KDE4_KIO_INCLUDES})
 
-if(KDE_PLATFORM_FEATURE_BINARY_COMPATIBLE_FEATURE_REDUCTION)
-    set(KBUILDSYCOCA_NO_KCRASH TRUE)
-endif()
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/config-kded.h.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/config-kded.h
-)
-
 ########### next target ###############
 
 set(kded_SRCS
