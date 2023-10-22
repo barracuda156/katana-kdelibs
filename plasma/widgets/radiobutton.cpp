@@ -37,7 +37,7 @@ class RadioButtonPrivate : public ThemedWidgetInterface<RadioButton>
 public:
     RadioButtonPrivate(RadioButton *radio)
         : ThemedWidgetInterface<RadioButton>(radio),
-         svg(0)
+         svg(nullptr)
     {
     }
 
@@ -105,17 +105,13 @@ void RadioButton::setImage(const QString &path)
     }
 
     delete d->svg;
-    d->svg = 0;
+    d->svg = nullptr;
     d->imagePath = path;
 
-    bool absolutePath = !path.isEmpty() &&
-                            (path[0] == '/' || path.startsWith(QLatin1String(":/")))
-        ;
-
+    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
     if (absolutePath) {
         d->absImagePath = path;
     } else {
-        //TODO: package support
         d->absImagePath = Theme::defaultTheme()->imagePath(path);
     }
 

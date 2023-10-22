@@ -30,8 +30,6 @@
 
 #include "containmentactions.h"
 
-using namespace Plasma;
-
 namespace Plasma
 {
 

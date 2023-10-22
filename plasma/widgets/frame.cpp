@@ -164,14 +164,10 @@ void Frame::setImage(const QString &path)
     delete d->pixmap;
     d->pixmap = 0;
 
-    bool absolutePath = !path.isEmpty() &&
-                            (path[0] == '/' || path.startsWith(QLatin1String(":/")))
-        ;
-
+    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
     if (absolutePath) {
         d->absImagePath = path;
     } else {
-        //TODO: package support
         d->absImagePath = Theme::defaultTheme()->imagePath(path);
     }
 

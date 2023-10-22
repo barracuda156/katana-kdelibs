@@ -37,7 +37,7 @@ class CheckBoxPrivate : public ThemedWidgetInterface<CheckBox>
 public:
     CheckBoxPrivate(CheckBox *c)
         : ThemedWidgetInterface<CheckBox>(c),
-          svg(0)
+          svg(nullptr)
     {
     }
 
@@ -50,7 +50,7 @@ public:
     {
         if (imagePath.isEmpty()) {
             delete svg;
-            svg = 0;
+            svg = nullptr;
             return;
         }
 
@@ -69,7 +69,7 @@ public:
             svg->paint(&p, pm.rect());
         } else {
             delete svg;
-            svg = 0;
+            svg = nullptr;
             pm = QPixmap(absImagePath);
         }
 
@@ -116,17 +116,13 @@ void CheckBox::setImage(const QString &path)
     }
 
     delete d->svg;
-    d->svg = 0;
+    d->svg = nullptr;
     d->imagePath = path;
 
-    bool absolutePath = !path.isEmpty() &&
-                            (path[0] == '/' || path.startsWith(QLatin1String(":/")))
-        ;
-
+    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
     if (absolutePath) {
         d->absImagePath = path;
     } else {
-        //TODO: package support
         d->absImagePath = Theme::defaultTheme()->imagePath(path);
     }
 

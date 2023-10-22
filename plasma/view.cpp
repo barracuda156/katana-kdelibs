@@ -31,8 +31,6 @@
 #include "private/containment_p.h"
 #include "wallpaper.h"
 
-using namespace Plasma;
-
 namespace Plasma
 {
 

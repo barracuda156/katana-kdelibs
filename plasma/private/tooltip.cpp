@@ -137,16 +137,17 @@ private:
 
 class ToolTipPrivate
 {
-    public:
-        ToolTipPrivate()
+public:
+    ToolTipPrivate()
         : text(nullptr),
-          imageWidget(nullptr),
-          preview(nullptr),
-          background(nullptr),
-          animation(nullptr),
-          direction(Plasma::Up),
-          autohide(true)
-    { }
+        imageWidget(nullptr),
+        preview(nullptr),
+        background(nullptr),
+        animation(nullptr),
+        direction(Plasma::Up),
+        autohide(true)
+    {
+    }
 
     TipTextWidget *text;
     KPixmapWidget *imageWidget;

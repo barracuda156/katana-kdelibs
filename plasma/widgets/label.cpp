@@ -43,7 +43,7 @@ class LabelPrivate : public ThemedWidgetInterface<Label>
 public:
     LabelPrivate(Label *label)
         : ThemedWidgetInterface<Label>(label),
-          svg(0),
+          svg(nullptr),
           textSelectable(false),
           hasLinks(false)
     {
@@ -58,7 +58,7 @@ public:
     {
         if (imagePath.isEmpty()) {
             delete svg;
-            svg = 0;
+            svg = nullptr;
             return;
         }
 
@@ -77,7 +77,7 @@ public:
             svg->paint(&p, pm.rect());
         } else {
             delete svg;
-            svg = 0;
+            svg = nullptr;
             pm = QPixmap(absImagePath);
         }
 
@@ -87,8 +87,8 @@ public:
     QString imagePath;
     QString absImagePath;
     Svg *svg;
-    bool textSelectable : 1;
-    bool hasLinks : 1;
+    bool textSelectable;
+    bool hasLinks;
 };
 
 Label::Label(QGraphicsWidget *parent)
@@ -133,17 +133,13 @@ void Label::setImage(const QString &path)
     }
 
     delete d->svg;
-    d->svg = 0;
+    d->svg = nullptr;
     d->imagePath = path;
 
-    bool absolutePath = !path.isEmpty() &&
-                            (path[0] == '/' || path.startsWith(QLatin1String(":/")))
-        ;
-
+    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
     if (absolutePath) {
         d->absImagePath = path;
     } else {
-        //TODO: package support
         d->absImagePath = Theme::defaultTheme()->imagePath(path);
     }
 

@@ -51,8 +51,6 @@
 #include "private/containment_p.h"
 #include "tooltipmanager.h"
 
-using namespace Plasma;
-
 namespace Plasma
 {
 

@@ -35,9 +35,10 @@
 #include <plasma/animations/animation.h>
 #include <plasma/theme.h>
 
-using namespace Plasma;
+namespace Plasma
+{
 
-class Plasma::FlashingLabelPrivate
+class FlashingLabelPrivate
 {
     public:
         enum FlashingLabelType {
@@ -325,5 +326,7 @@ void FlashingLabelPrivate::setPalette()
     color = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     q->update();
 }
+
+} // namespace Plasma
 
 #include "moc_flashinglabel.cpp"

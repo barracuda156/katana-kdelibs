@@ -35,7 +35,7 @@ class <Name>Private
 public:
     <Name>Private(<Name> *w)
         : q(w),
-          svg(0)
+          svg(nullptr)
     {
     }
 
@@ -48,7 +48,7 @@ public:
     {
         if (imagePath.isEmpty()) {
             delete svg;
-            svg = 0;
+            svg = nullptr;
             return;
         }
 
@@ -67,7 +67,7 @@ public:
             svg->paint(&p, pm.rect());
         } else {
             delete svg;
-            svg = 0;
+            svg = nullptr;
             pm = QPixmap(absImagePath);
         }
 
@@ -115,15 +115,13 @@ void <Name>::setImage(const QString &path)
     }
 
     delete d->svg;
-    d->svg = 0;
+    d->svg = nullptr;
     d->imagePath = path;
 
-    bool absolutePath = !path.isEmpty() && (path[0] == '/' || path.startsWith(":/"));
-
+    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
     if (absolutePath) {
         d->absImagePath = path;
     } else {
-        //TODO: package support
         d->absImagePath = Theme::defaultTheme()->imagePath(path);
     }
 
