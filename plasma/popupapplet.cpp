@@ -740,7 +740,7 @@ void PopupAppletPrivate::internalTogglePopup(bool fromActivatedSignal)
         if (q->graphicsWidget() &&
             q->graphicsWidget() == static_cast<Applet*>(q)->d->extender.data() &&
             static_cast<Applet*>(q)->d->extender.data()->isEmpty()) {
-            // we have nothing to show, so let's not.
+            // nothing to show, so let's not.
             if (!fromActivatedSignal) {
                 QObject::disconnect(q, SIGNAL(activate()), q, SLOT(appletActivated()));
                 emit q->activate();

@@ -1423,7 +1423,7 @@ void IconWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void IconWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     if (~d->states & IconWidgetPrivate::PressedState) {
-        QGraphicsWidget::mouseMoveEvent(event);
+        QGraphicsWidget::mouseReleaseEvent(event);
         return;
     }
 
