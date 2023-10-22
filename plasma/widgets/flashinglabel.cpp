@@ -64,8 +64,6 @@ class Plasma::FlashingLabelPrivate
             QObject::connect(Theme::defaultTheme(), SIGNAL(themeChanged()), q, SLOT(setPalette()));
         }
 
-        ~FlashingLabelPrivate() { }
-
         void renderPixmap(const QSize &size);
         void setupFlash(int duration);
         void elementAnimationFinished();

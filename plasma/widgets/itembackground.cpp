@@ -22,14 +22,13 @@
 #include <QPainter>
 #include <QTimer>
 #include <QtGui/qstyleoption.h>
-
 #include <QPropertyAnimation>
 
 #include <kdebug.h>
-
 #include <plasma/framesvg.h>
 #include <plasma/animator.h>
 #include <plasma/theme.h>
+
 namespace Plasma
 {
 

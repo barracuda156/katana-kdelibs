@@ -24,6 +24,12 @@
 
 #include "iconwidget.h"
 #include "iconwidget_p.h"
+#include "animator.h"
+#include "animations/animation.h"
+#include "paintutils.h"
+#include "private/themedwidgetinterface_p.h"
+#include "theme.h"
+#include "svg.h"
 
 #include <QAction>
 #include <QApplication>
@@ -43,21 +49,6 @@
 #include <kiconloader.h>
 #include <kmimetype.h>
 #include <kurl.h>
-
-#include "animator.h"
-#include "animations/animation.h"
-#include "paintutils.h"
-#include "private/themedwidgetinterface_p.h"
-#include "theme.h"
-
-#include "svg.h"
-
-/*
-TODO:
-    Add these to a UrlIcon class
-    void setUrl(const KUrl& url);
-    KUrl url() const;
-*/
 
 namespace Plasma
 {

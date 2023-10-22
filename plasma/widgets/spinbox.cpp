@@ -48,7 +48,7 @@ SpinBox::SpinBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new SpinBoxPrivate(this))
 {
-    KIntSpinBox *native = new KIntSpinBox;
+    KIntSpinBox *native = new KIntSpinBox();
 
     connect(native, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
     connect(native, SIGNAL(editingFinished()), this, SIGNAL(editingFinished()));

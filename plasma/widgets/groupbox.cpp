@@ -49,7 +49,7 @@ GroupBox::GroupBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new GroupBoxPrivate(this))
 {
-    QGroupBox *native = new QGroupBox;
+    QGroupBox *native = new QGroupBox();
     d->setWidget(native);
     native->setWindowIcon(QIcon());
     native->setAttribute(Qt::WA_NoSystemBackground);

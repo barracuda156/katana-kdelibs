@@ -82,10 +82,6 @@ public:
     {
     }
 
-    ~TabBarPrivate()
-    {
-    }
-
     void updateTabWidgetMode();
     void slidingCompleted(QGraphicsItem *item);
     void slidingNewPageCompleted();

@@ -36,15 +36,11 @@ class BusyWidgetPrivate
 {
 public:
     BusyWidgetPrivate()
-        : svg(0),
+        : svg(nullptr),
           timerId(0),
-          rotationAngle(0),
-          rotation(0),
+          rotationAngle(0.0),
+          rotation(0.0),
           running(true)
-    {
-    }
-
-    ~BusyWidgetPrivate()
     {
     }
 
@@ -71,7 +67,7 @@ public:
 
 BusyWidget::BusyWidget(QGraphicsWidget *parent)
     : QGraphicsWidget(parent),
-      d(new BusyWidgetPrivate)
+      d(new BusyWidgetPrivate())
 {
     d->svg = new Plasma::Svg(this);
     d->svg->setImagePath("widgets/busywidget");

@@ -40,7 +40,7 @@ TreeView::TreeView(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new TreeViewPrivate)
 {
-    QTreeView *native = new QTreeView;
+    QTreeView *native = new QTreeView();
     setWidget(native);
     native->setWindowIcon(QIcon());
     native->setAttribute(Qt::WA_NoSystemBackground);

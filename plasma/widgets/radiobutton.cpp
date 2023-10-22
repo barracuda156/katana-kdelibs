@@ -75,7 +75,7 @@ RadioButton::RadioButton(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new RadioButtonPrivate(this))
 {
-    QRadioButton *native = new QRadioButton;
+    QRadioButton *native = new QRadioButton();
     connect(native, SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
     d->setWidget(native);
     native->setWindowIcon(QIcon());

@@ -68,7 +68,6 @@ public:
         }
     }
 
-    QTextBrowser *native;
     Plasma::Style::Ptr style;
     int savedMinimumHeight;
     int savedMaximumHeight;
@@ -79,13 +78,12 @@ TextBrowser::TextBrowser(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new TextBrowserPrivate(this))
 {
-    QTextBrowser *native = new QTextBrowser;
+    QTextBrowser *native = new QTextBrowser();
     native->setWindowFlags(native->windowFlags()|Qt::BypassGraphicsProxyWidget);
     connect(native, SIGNAL(textChanged()), this, SIGNAL(textChanged()));
     connect(native, SIGNAL(textChanged()), this, SLOT(setFixedHeight()));
     native->setWindowIcon(QIcon());
     d->setWidget(native);
-    d->native = native;
     native->setAttribute(Qt::WA_NoSystemBackground);
     native->setFrameShape(QFrame::NoFrame);
     native->setTextBackgroundColor(Qt::transparent);

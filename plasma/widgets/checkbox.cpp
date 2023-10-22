@@ -85,7 +85,7 @@ CheckBox::CheckBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new CheckBoxPrivate(this))
 {
-    QCheckBox *native = new QCheckBox;
+    QCheckBox *native = new QCheckBox();
     connect(native, SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
     d->setWidget(native);
     native->setWindowIcon(QIcon());

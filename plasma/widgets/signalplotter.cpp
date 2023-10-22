@@ -50,10 +50,7 @@ class SignalPlotterPrivate
 {
 public:
     SignalPlotterPrivate()
-        : svgBackground(0)
-    { }
-
-    ~SignalPlotterPrivate()
+        : svgBackground(nullptr)
     {
     }
 
@@ -103,15 +100,15 @@ public:
     QList<PlotColor> plotColors;
     QList<QList<double> > plotData;
 
-    bool fillPlots : 1;
-    bool showLabels : 1;
-    bool showTopBar : 1;
-    bool stackPlots : 1;
-    bool useAutoRange : 1;
-    bool showThinFrame : 1;
+    bool fillPlots;
+    bool showLabels;
+    bool showTopBar;
+    bool stackPlots;
+    bool useAutoRange;
+    bool showThinFrame;
 
-    bool showVerticalLines : 1;
-    bool verticalLinesScroll : 1;
+    bool showVerticalLines;
+    bool verticalLinesScroll;
 };
 
 SignalPlotter::SignalPlotter(QGraphicsItem *parent)

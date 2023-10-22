@@ -129,12 +129,10 @@ QSizeF SvgWidget::sizeHint(Qt::SizeHint which, const QSizeF & constraint) const
     if (d->svg && which == Qt::PreferredSize) {
         if (d->elementID.isNull()) {
             return d->svg->size();
-        } else {
-            return d->svg->elementSize(d->elementID);
         }
-    } else {
-        return QGraphicsWidget::sizeHint(which, constraint);
+        return d->svg->elementSize(d->elementID);
     }
+    return QGraphicsWidget::sizeHint(which, constraint);
 }
 
 } // Plasma namespace

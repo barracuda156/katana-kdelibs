@@ -109,7 +109,7 @@ PushButton::PushButton(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new PushButtonPrivate(this))
 {
-    KPushButton *native = new KPushButton;
+    KPushButton *native = new KPushButton();
     connect(native, SIGNAL(pressed()), this, SIGNAL(pressed()));
     connect(native, SIGNAL(released()), this, SIGNAL(released()));
     connect(native, SIGNAL(clicked()), this, SIGNAL(clicked()));

@@ -1453,8 +1453,8 @@ bool ScrollWidget::sceneEventFilter(QGraphicsItem *i, QEvent *e)
     stealThisEvent &= (e->type() == QEvent::GraphicsSceneMousePress ||
                        e->type() == QEvent::GraphicsSceneMouseRelease);
 #if DEBUG
-    qDebug()<<"sceneEventFilter = " <<i<<", "
-            <<QTime::currentTime().toString(QString::fromLatin1("hh:mm:ss.zzz"));
+    qDebug() << "sceneEventFilter = " << i <<", "
+             << QTime::currentTime().toString(QString::fromLatin1("hh:mm:ss.zzz"));
 #endif
     switch (e->type()) {
         case QEvent::GraphicsSceneMousePress: {

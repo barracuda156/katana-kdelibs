@@ -45,10 +45,6 @@ public:
     {
     }
 
-    ~TextEditPrivate()
-    {
-    }
-
     Plasma::Style::Ptr style;
 };
 
@@ -56,7 +52,7 @@ TextEdit::TextEdit(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new TextEditPrivate(this))
 {
-    setNativeWidget(new KTextEdit);
+    setNativeWidget(new KTextEdit());
     d->style = Plasma::Style::sharedStyle();
     d->initTheming();
 }
