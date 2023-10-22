@@ -79,7 +79,6 @@ public:
     QGroupBox *nativeWidget() const;
 
 protected:
-    void resizeEvent(QGraphicsSceneResizeEvent *event);
     void changeEvent(QEvent *event);
 
 private:

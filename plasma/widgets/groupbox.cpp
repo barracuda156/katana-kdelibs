@@ -86,11 +86,6 @@ QGroupBox *GroupBox::nativeWidget() const
     return static_cast<QGroupBox*>(widget());
 }
 
-void GroupBox::resizeEvent(QGraphicsSceneResizeEvent *event)
-{
-    QGraphicsProxyWidget::resizeEvent(event);
-}
-
 void GroupBox::changeEvent(QEvent *event)
 {
     d->changeEvent(event);
