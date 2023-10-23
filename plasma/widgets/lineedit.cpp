@@ -181,10 +181,10 @@ void LineEdit::focusOutEvent(QFocusEvent *event)
         applet->setStatus(Plasma::UnknownStatus);
     }
 
-    QEvent closeEvent(QEvent::CloseSoftwareInputPanel);
     if (qApp) {
         if (QGraphicsView *view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
             if (view->scene() && view->scene() == scene()) {
+                QEvent closeEvent(QEvent::CloseSoftwareInputPanel);
                 QApplication::sendEvent(view, &closeEvent);
             }
         }
