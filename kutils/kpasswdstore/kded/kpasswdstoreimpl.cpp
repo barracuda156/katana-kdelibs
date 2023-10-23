@@ -59,7 +59,7 @@ KPasswdStoreImpl::KPasswdStoreImpl(const QString &id)
     m_timeout(kpasswdstore_passtimeout * 60000),
     m_cacheonly(false),
     m_storeid(id),
-    m_passwdstore(KStandardDirs::locateLocal("data", "kpasswdstore.ini"))
+    m_passwdstore(KStandardDirs::locateLocal("data", "kpasswdstore"))
 #if defined(HAVE_OPENSSL)
     , m_opensslkeylen(0),
     m_opensslivlen(0),

@@ -148,7 +148,7 @@ bool KPasswdStore::storePasswd(const QByteArray &key, const QString &passwd, con
 
 QStringList KPasswdStore::stores()
 {
-    KSettings passwdstore(KStandardDirs::locateLocal("data", "kpasswdstore.ini"), KSettings::SimpleConfig);
+    KSettings passwdstore(KStandardDirs::locateLocal("data", "kpasswdstore"), KSettings::SimpleConfig);
     passwdstore.beginGroup("KPasswdStore");
     return passwdstore.groupKeys();
 }
