@@ -22,6 +22,7 @@
 #include "kdebug.h"
 #include "kde_file.h"
 
+#include <QStandardPaths>
 #include <QCoreApplication>
 #include <QThread>
 
@@ -50,7 +51,10 @@ KLockFilePrivate::KLockFilePrivate()
 KLockFile::KLockFile(const QString &file)
     : d(new KLockFilePrivate())
 {
-    d->m_lockfile = QFile::encodeName(KGlobal::dirs()->saveLocation("tmp"));
+    // NOTE: KConfig may attempt to create KLockFile from its destructor when KGlobal is no more
+    // thus QStandardPaths::writableLocation() is used here
+    d->m_lockfile = QFile::encodeName(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation));
+    d->m_lockfile.append('/');
     d->m_lockfile.append(QByteArray::number(qHash(file)));
     d->m_lockfile.append(".klockfile");
 }
