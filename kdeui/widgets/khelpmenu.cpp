@@ -41,6 +41,7 @@
 #include "ktoolinvocation.h"
 #include "kstandarddirs.h"
 #include "kpixmapwidget.h"
+#include "kglobalsettings.h"
 
 #include <QtCore/QTimer>
 #include <QtGui/QLabel>
@@ -48,13 +49,6 @@
 #include <QtGui/QWhatsThis>
 
 #include <config.h>
-#ifdef Q_WS_X11
-#include <QtGui/qx11embed_x11.h>
-#endif
-
-#include <kglobalsettings.h>
-
-using namespace KDEPrivate;
 
 class KHelpMenuPrivate
 {
@@ -84,7 +78,7 @@ public:
 
     KMenu *mMenu;
     KDialog *mAboutApp;
-    KAboutKdeDialog *mAboutKDE;
+    KDEPrivate::KAboutKdeDialog *mAboutKDE;
     KSwitchLanguageDialog *mSwitchApplicationLanguage;
 
     // TODO evaluate if we use static_cast<QWidget*>(parent()) instead of mParent to win that bit of memory
@@ -285,7 +279,7 @@ void KHelpMenu::aboutApplication()
 void KHelpMenu::aboutKDE()
 {
     if (!d->mAboutKDE) {
-        d->mAboutKDE = new KAboutKdeDialog(d->mParent);
+        d->mAboutKDE = new KDEPrivate::KAboutKdeDialog(d->mParent);
         connect(d->mAboutKDE, SIGNAL(finished()), this, SLOT(dialogFinished()));
     }
     d->mAboutKDE->show();
@@ -339,14 +333,6 @@ void KHelpMenu::menuDestroyed()
 void KHelpMenu::contextHelpActivated()
 {
     QWhatsThis::enterWhatsThisMode();
-    QWidget* w = QApplication::widgetAt( QCursor::pos() );
-#ifdef Q_WS_X11
-    while ( w && !w->isTopLevel() && !qobject_cast<QX11EmbedWidget*>(w)  )
-        w = w->parentWidget();
-#warning how to enter whats this mode for a QX11EmbedWidget?
-//      if ( w && qobject_cast<QX11EmbedWidget*>(w) )
-//          (( QX11EmbedWidget*) w )->enterWhatsThisMode();
-#endif
 }
 
 #include "moc_khelpmenu.cpp"
