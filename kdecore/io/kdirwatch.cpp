@@ -121,21 +121,12 @@ bool KDirWatch::contains(const QString &path) const
 
 int KDirWatch::interval() const
 {
-#if QT_VERSION < 0x041400
-    // same as the default of Katie
-    return 1000;
-#else
     return d->watcher->interval();
-#endif
 }
 
 void KDirWatch::setInterval(int interval)
 {
-#if QT_VERSION < 0x041400
-    Q_UNUSED(interval);
-#else
     d->watcher->setInterval(interval);
-#endif
 }
 
 void KDirWatch::setDirty(const QString &file)
