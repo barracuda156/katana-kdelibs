@@ -155,7 +155,7 @@ QStringList KPasswdStore::stores()
 
 QByteArray KPasswdStore::makeKey(const QString &string)
 {
-    return QCryptographicHash::hash(string.toUtf8(), QCryptographicHash::KAT).toHex();
+    return QCryptographicHash::hash(string.toUtf8()).toHex();
 }
 
 #include "moc_kpasswdstore.cpp"
