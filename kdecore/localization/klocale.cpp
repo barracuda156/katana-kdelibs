@@ -50,6 +50,7 @@ static QStringList s_defaultcatalogs = QStringList()
     << QString::fromLatin1("kdeqt");
 
 static const QLatin1Char s_localeexponentc = QLatin1Char('e');
+static const QLatin1String s_defaultlanguage = QLatin1String("en_US");
 
 static QString kGetDuration(const KLocaleDuration which, const int duration)
 {
@@ -111,7 +112,7 @@ public:
 
 static bool kIsDefaultLocale(const KLocalePrivate *locale)
 {
-    return (locale->locale.name() == KLocale::defaultLanguage());
+    return (locale->locale.name() == s_defaultlanguage);
 }
 
 static bool kInsertCatalog(KLocalePrivate *locale, const QString &catalogname, const QString &cataloglanguage)
@@ -181,7 +182,7 @@ KLocalePrivate::KLocalePrivate(const QString &_catalog, const QString &language,
     locale = QLocale(language);
     // fallback to the default
     if (locale.language() == QLocale::C) {
-        locale = QLocale(KLocale::defaultLanguage());
+        locale = QLocale(s_defaultlanguage);
     }
 
     if (config) {
@@ -625,7 +626,7 @@ void KLocale::translateRaw(const char *ctxt, const char *msg, QString *lang, QSt
     dumpKLocaleCatalogs(d);
 #endif
     if (lang) {
-        *lang = KLocale::defaultLanguage();
+        *lang = s_defaultlanguage;
     }
     *trans = QString::fromUtf8(msg);
 }
@@ -651,7 +652,7 @@ void KLocale::translateRaw(const char *ctxt, const char *singular, const char *p
     dumpKLocaleCatalogs(d);
 #endif
     if (lang) {
-        *lang = KLocale::defaultLanguage();
+        *lang = s_defaultlanguage;
     }
     if (!plural || n == 1) {
         *trans = QString::fromUtf8(singular);
@@ -765,7 +766,7 @@ QString KLocale::localizedFilePath(const QString &filePath) const
     const QString fileName = fileInfo.fileName();
     foreach(const QString &lang, languageList()) {
         // Stop when the default language is reached.
-        if (lang == KLocale::defaultLanguage()) {
+        if (lang == s_defaultlanguage) {
             return filePath;
         }
         const QString locFilePath = locDirPath + QLatin1Char('/') + lang + QLatin1Char('/') + fileName;
@@ -793,14 +794,15 @@ void KLocale::reparseConfiguration()
         // locale from the config overrides everything (not Unix-like but that's how it should be)
         const QString configlanguage = d->configgroup.readEntry("Language", QString());
         d->locale = QLocale(configlanguage);
-        // if no locale was specified or QLocale does not support the specified language use the system
-        // locale
+        // if no locale was specified or QLocale does not support the specified language use the
+        // system locale
         if (d->locale.language() == QLocale::C) {
             d->locale = QLocale::system();
         }
-        // finally, if the locale is C for compat fallback to KLocale::defaultLanguage()
+        // finally, if the locale is C for compat fallback to what KLocale::defaultLanguage()
+        // returns
         if (d->locale.language() == QLocale::C) {
-            d->locale = QLocale(KLocale::defaultLanguage());
+            d->locale = QLocale(s_defaultlanguage);
         }
     }
 
@@ -834,8 +836,8 @@ void KLocale::reparseConfiguration()
     // the locale name itself (e.g. "en_US")
     d->languagelist.append(localename);
     // default as fallback, unless the locale language is the default
-    if (localename != KLocale::defaultLanguage()) {
-        d->languagelist.append(KLocale::defaultLanguage());
+    if (localename != s_defaultlanguage) {
+        d->languagelist.append(s_defaultlanguage);
     }
     // qDebug() << Q_FUNC_INFO << d->languagelist;
 
@@ -895,7 +897,7 @@ bool KLocale::isApplicationTranslatedInto(const QString &lang)
     if (lang.isEmpty()) {
         return false;
     }
-    if (lang == KLocale::defaultLanguage()) {
+    if (lang == s_defaultlanguage) {
         // default language is always "installed"
         return true;
     }
@@ -952,5 +954,5 @@ void KLocale::splitLocale(const QString &locale, QString &language, QString &cou
 
 QString KLocale::defaultLanguage()
 {
-    return QString::fromLatin1("en_US");
+    return s_defaultlanguage;
 }
