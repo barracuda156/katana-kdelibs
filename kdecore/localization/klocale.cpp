@@ -267,9 +267,7 @@ QLocale::MeasurementSystem KLocale::measureSystem() const
 QString KLocale::formatNumber(double num, int precision) const
 {
     if (precision <= 0) {
-        // NOTE: kcalc for example passes 0 for precision but the constants should no be round
-        // otherwise the whole meaning of Pi (3.14) being non-rounded number is lost so instead of
-        // forcing a number rounding the precision is automatically chosen here
+        // precision is automatically chosen here for prettiness
         return d->locale.toString(num, 'f', qRound(num) == num ? 0 : 2);
     }
     const QString cnum = QString::number(num);
