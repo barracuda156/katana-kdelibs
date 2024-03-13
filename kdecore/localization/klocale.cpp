@@ -49,7 +49,6 @@ static QStringList s_defaultcatalogs = QStringList()
     << QString::fromLatin1("kdelibs4")
     << QString::fromLatin1("kdeqt");
 
-static const QLatin1String s_localenamec = QLatin1String("C");
 static const QLatin1Char s_localeexponentc = QLatin1Char('e');
 
 static QString kGetDuration(const KLocaleDuration which, const int duration)
@@ -181,7 +180,7 @@ KLocalePrivate::KLocalePrivate(const QString &_catalog, const QString &language,
 {
     locale = QLocale(language);
     // fallback to the default
-    if (locale.name() == s_localenamec) {
+    if (locale.language() == QLocale::C) {
         locale = QLocale(KLocale::defaultLanguage());
     }
 
@@ -796,11 +795,11 @@ void KLocale::reparseConfiguration()
         d->locale = QLocale(configlanguage);
         // if no locale was specified or QLocale does not support the specified language use the system
         // locale
-        if (d->locale.name() == s_localenamec) {
+        if (d->locale.language() == QLocale::C) {
             d->locale = QLocale::system();
         }
         // finally, if the locale is C for compat fallback to KLocale::defaultLanguage()
-        if (d->locale.name() == s_localenamec) {
+        if (d->locale.language() == QLocale::C) {
             d->locale = QLocale(KLocale::defaultLanguage());
         }
     }
