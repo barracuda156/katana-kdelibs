@@ -126,7 +126,7 @@ KAuthorization::~KAuthorization()
 
 bool KAuthorization::isAuthorized(const QString &helper)
 {
-    kDebug() << "Checking if" << helper << "is authorized";
+    kDebug(s_kauthorizationarea) << "Checking if" << helper << "is authorized";
     KLockFile authorizationlock(helper);
     authorizationlock.lock();
     QDBusInterface kauthorizationinterface(
