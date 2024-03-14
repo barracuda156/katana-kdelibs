@@ -143,10 +143,11 @@ protected:
                 return 0;
             }
             // TODO: insert type somewhere
-            writefile.write(m_header.constData(), m_header.size());
-            writefile.write(": ", 2);
-            writefile.write(data, len);
-            writefile.write("\n", 1);
+            QByteArray writedata(m_header);
+            writedata.append(": ", 2);
+            writedata.append(data, len);
+            writedata.append("\n", 1);
+            writefile.write(writedata.constData(), writedata.size());
             if (m_abortfatal && m_type == QtFatalMsg) {
                 ::abort();
             }
