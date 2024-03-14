@@ -31,6 +31,9 @@
 #include <QCheckBox>
 #include <QGroupBox>
 
+static const bool s_spellbydefault = false;
+static const QStringList s_wordsbydefault = QStringList();
+
 class KSpellConfigWidgetPrivate
 {
 public:
@@ -96,9 +99,9 @@ KSpellConfigWidget::KSpellConfigWidget(KConfig *config, QWidget *parent)
         return;
     }
     KConfigGroup spellgroup = config->group("Spelling");
-    d->enablebox->setChecked(spellgroup.readEntry("checkerEnabledByDefault", false));
+    d->enablebox->setChecked(spellgroup.readEntry("checkerEnabledByDefault", s_spellbydefault));
     d->dictionarybox->setCurrentByDictionary(spellgroup.readEntry("defaultLanguage", KSpeller::defaultLanguage()));
-    d->wordslistedit->setItems(spellgroup.readEntry("personalWords", QStringList()));
+    d->wordslistedit->setItems(spellgroup.readEntry("personalWords", s_wordsbydefault));
 }
 
 KSpellConfigWidget::~KSpellConfigWidget()
@@ -123,9 +126,12 @@ void KSpellConfigWidget::slotDefault()
         return;
     }
     KConfigGroup spellgroup = d->config->group("Spelling");
-    spellgroup.writeEntry("checkerEnabledByDefault", false);
+    spellgroup.writeEntry("checkerEnabledByDefault", s_spellbydefault);
     spellgroup.writeEntry("defaultLanguage", KSpeller::defaultLanguage());
-    spellgroup.writeEntry("personalWords", QStringList());
+    spellgroup.writeEntry("personalWords", s_wordsbydefault);
+    d->enablebox->setChecked(spellgroup.readEntry("checkerEnabledByDefault", s_spellbydefault));
+    d->dictionarybox->setCurrentByDictionary(KSpeller::defaultLanguage());
+    d->wordslistedit->setItems(s_wordsbydefault);
 }
 
 #include "moc_kspellconfigwidget.cpp"
