@@ -196,8 +196,7 @@ private Q_SLOTS:
 
         // Prepare m_allGlobs
         const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", "globs");
-        QStringList parsedFiles;
-        m_allGlobs = KMimeGlobsFileParser::parseGlobFiles(globFiles, parsedFiles);
+        m_allGlobs = KMimeGlobsFileParser::parseGlobs(globFiles);
         m_patternsMap = m_allGlobs.patternsMap();
         const int patCount = m_allGlobs.m_highWeightGlobs.count() + m_allGlobs.m_lowWeightGlobs.count();
         kDebug() << m_patternsMap.count() << "mimetypes," << patCount << "patterns";

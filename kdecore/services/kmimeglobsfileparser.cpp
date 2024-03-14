@@ -38,13 +38,7 @@ KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs()
     return parseGlobs(globFiles);
 }
 
-KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs(const QStringList& globFiles)
-{
-    QStringList parsedFiles;
-    return parseGlobFiles(globFiles, parsedFiles);
-}
-
-KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobFiles(const QStringList& globFiles, QStringList& parsedFiles)
+KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs(const QStringList &globFiles)
 {
     KMimeGlobsFileParser::AllGlobs allGlobs;
     QListIterator<QString> globIter(globFiles);
@@ -59,7 +53,6 @@ KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobFiles(const QStrin
             fileName = fileNamev2;
             format = Globs2WithWeight;
         }
-        parsedFiles << fileName;
         QFile globFile(fileName);
         //kDebug() << "Now parsing" << fileName;
         parseGlobFile(&globFile, format, allGlobs);

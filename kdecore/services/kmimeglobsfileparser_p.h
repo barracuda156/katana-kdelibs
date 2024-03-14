@@ -37,13 +37,13 @@ public:
     class AllGlobs;
 
     // Read globs (patterns) files
-    AllGlobs parseGlobs();
+    static AllGlobs parseGlobs();
 
     // Separate method, for unit test
-    AllGlobs parseGlobs(const QStringList&);
+    static AllGlobs parseGlobs(const QStringList &globFiles);
 
     struct Glob {
-        Glob(const QString& mime, int w = 50, const QString& pat = QString(), bool cs = false)
+        Glob(const QString &mime, int w = 50, const QString &pat = QString(), bool cs = false)
             : weight(w), casesensitive(cs), pattern(pat), mimeType(mime) {}
         int weight;
         bool casesensitive;
@@ -54,7 +54,7 @@ public:
     class GlobList : public QList<Glob>
     {
     public:
-        bool hasPattern(const QString& mime, const QString& pattern) const {
+        bool hasPattern(const QString &mime, const QString &pattern) const {
             const_iterator it = begin();
             const const_iterator myend = end();
             for (; it != myend; ++it)
@@ -85,8 +85,8 @@ public:
     class AllGlobs
     {
     public:
-        void addGlob(const Glob& glob);
-        void removeMime(const QString& mime);
+        void addGlob(const Glob &glob);
+        void removeMime(const QString &mime);
         PatternsMap patternsMap() const; // for KMimeTypeFactory
 
         GlobList m_highWeightGlobs; // >= 50 patterns
@@ -94,8 +94,7 @@ public:
     };
     enum Format { OldGlobs, Globs2WithWeight };
 
-    static AllGlobs parseGlobFiles(const QStringList& globFiles, QStringList& parsedFiles);
-    static bool parseGlobFile(QIODevice* file, Format format, AllGlobs& globs);
+    static bool parseGlobFile(QIODevice *file, Format format, AllGlobs &globs);
 
 private:
     AllGlobs m_mimeTypeGlobs;
