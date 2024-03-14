@@ -203,6 +203,7 @@ void KNotificationConfigWidget::save()
 void KNotificationConfigWidget::setNotification(const QString &notification)
 {
     d->treewidget->clear();
+    d->notificationchanges.clear();
 
     const QString notifyconfig = KStandardDirs::locate("config", "notifications/" + notification + ".notifyrc");
     if (notifyconfig.isEmpty()) {
