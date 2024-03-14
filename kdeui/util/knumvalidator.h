@@ -92,10 +92,10 @@ class KDEUI_EXPORT KIntValidator : public QValidator {
 /**
    @short A locale-aware QDoubleValidator
 
-   KDoubleValidator extends QDoubleValidator to be
-   locale-aware. That means that - subject to not being disabled -
-   the system locale decimal point, thousand separator, positive
-   and negative sign are used for validation.
+   KDoubleValidator extends QDoubleValidator to be locale-aware. That
+   means that - subject to not being disabled - the system locale
+   decimal point, thousand separator, positive and negative sign are
+   used for validation.
 
    @author Marc Mutz <mutz@kde.org>
    @see KIntValidator
@@ -113,13 +113,10 @@ public:
       top] and a precision of @p decimals decimals after the decimal
       point.  */
   KDoubleValidator( double bottom, double top, int decimals,
-		    QObject * parent );
+                    QObject * parent );
   /** Destructs the validator.
    */
   virtual ~KDoubleValidator();
-
-  /** Overloaded for internal reasons. The API is not affected. */
-  virtual QValidator::State validate( QString & input, int & pos ) const;
 
   /** @return whether localized numbers are accepted (default: true) */
   bool acceptLocalizedNumbers() const;
@@ -127,7 +124,6 @@ public:
   void setAcceptLocalizedNumbers( bool accept );
 
 private:
-  typedef QDoubleValidator base;
   class KDoubleValidatorPrivate;
   KDoubleValidatorPrivate * const d;
 };

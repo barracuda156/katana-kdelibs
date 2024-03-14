@@ -176,11 +176,20 @@ int KIntValidator::base() const
 //  Implementation of KDoubleValidator
 //
 
+static void kAcceptLocalizedNumbers(KDoubleValidator *validator, const bool accept)
+{
+    if (accept) {
+        validator->setLocale(KGlobal::locale()->toLocale());
+    } else {
+        validator->setLocale(QLocale::c());
+    }
+}
+
 class KDoubleValidator::KDoubleValidatorPrivate
 {
 public:
-    KDoubleValidatorPrivate(bool accept = true)
-        : acceptLocalizedNumbers(accept)
+    KDoubleValidatorPrivate()
+        : acceptLocalizedNumbers(true)
     {
     }
 
@@ -191,12 +200,14 @@ KDoubleValidator::KDoubleValidator(QObject *parent)
     : QDoubleValidator(parent),
     d(new KDoubleValidatorPrivate())
 {
+    kAcceptLocalizedNumbers(this, true);
 }
 
 KDoubleValidator::KDoubleValidator(double bottom, double top, int decimals, QObject *parent)
     : QDoubleValidator(bottom, top, decimals, parent),
     d(new KDoubleValidatorPrivate())
 {
+    kAcceptLocalizedNumbers(this, true);
 }
 
 KDoubleValidator::~KDoubleValidator()
@@ -212,60 +223,7 @@ bool KDoubleValidator::acceptLocalizedNumbers() const
 void KDoubleValidator::setAcceptLocalizedNumbers(bool accept)
 {
     d->acceptLocalizedNumbers = accept;
-}
-
-QValidator::State KDoubleValidator::validate(QString &input, int &p) const
-{
-    QString s = input;
-    if (acceptLocalizedNumbers()) {
-        KLocale* l = KGlobal::locale();
-        const QLocale ll = l->toLocale();
-        // ok, we have to re-format the number to have:
-        // 1. decimalPoint == '.'
-        // 2. negativeSign  == '-'
-        // 3. positiveSign  == <empty>
-        // 4. groupSeparator() == <empty> (we don't check that there
-        //    are exactly three decimals between each separator):
-        QString d = ll.decimalPoint();
-        QString n = ll.negativeSign();
-        QString p = ll.positiveSign();
-        QString t = ll.groupSeparator();
-        // first, delete p's and t's:
-        if (!p.isEmpty()) {
-            for (int idx = s.indexOf(p); idx >= 0; idx = s.indexOf(p, idx)) {
-                s.remove(idx, p.length());
-            }
-        }
-
-
-        if (!t.isEmpty()) {
-            for (int idx = s.indexOf(t); idx >= 0; idx = s.indexOf(t, idx)) {
-                s.remove(idx, t.length());
-            }
-        }
-
-        // then, replace the d's and n's
-        if ((!n.isEmpty() && n.indexOf('.') != -1) || (!d.isEmpty() && d.indexOf('-') != -1)) {
-            // make sure we don't replace something twice:
-            kWarning() << "KDoubleValidator: decimal symbol contains '-' or "
-                       "negative sign contains '.' -> improve algorithm";
-            return QValidator::Invalid;
-        }
-
-        if (!d.isEmpty() && d != ".") {
-            for (int idx = s.indexOf(d); idx >= 0; idx = s.indexOf(d, idx + 1)) {
-                s.replace(idx, d.length(), '.');
-            }
-        }
-
-        if (!n.isEmpty() && n != "-") {
-            for (int idx = s.indexOf(n); idx >= 0; idx = s.indexOf(n, idx + 1)) {
-                s.replace(idx, n.length(), '-');
-            }
-        }
-    }
-
-    return base::validate(s, p);
+    kAcceptLocalizedNumbers(this, accept);
 }
 
 #include "moc_knumvalidator.cpp"
