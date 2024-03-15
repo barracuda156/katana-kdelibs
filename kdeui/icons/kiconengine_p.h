@@ -34,7 +34,7 @@ class KIconLoader;
  *
  * @author Hamish Rodda <rodda@kde.org>
  */
-class KIconEngine : public QIconEngineV2
+class KIconEngine : public QIconEngine
 {
   public:
     /**
@@ -61,7 +61,7 @@ class KIconEngine : public QIconEngineV2
 
     QString key() const final;
     QString iconName() const final;
-    QIconEngineV2 *clone() const final;
+    QIconEngine *clone() const final;
     bool read(QDataStream &in) final;
     bool write(QDataStream &out) const final;
 

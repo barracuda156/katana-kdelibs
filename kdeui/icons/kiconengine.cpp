@@ -153,7 +153,7 @@ QString KIconEngine::iconName() const
     return mIconName;
 }
 
-QIconEngineV2 *KIconEngine::clone() const
+QIconEngine *KIconEngine::clone() const
 {
     return new KIconEngine(mIconName, mIconLoader.data(), mOverlays);
 }
