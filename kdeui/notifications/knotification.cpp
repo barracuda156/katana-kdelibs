@@ -41,6 +41,7 @@
 // see kdebug.areas
 static const int s_knotificationarea = 299;
 static const QString s_notifications = QString::fromLatin1("org.freedesktop.Notifications");
+static const int s_closedelay = 1000; // ms
 
 class KNotificationManager : public QObject
 {
@@ -401,7 +402,7 @@ void KNotification::send()
     const bool persistent = (flags() & KNotification::Persistent);
     kNotificationManager->send(this, persistent);
     if (!persistent) {
-        QTimer::singleShot(500, this, SLOT(close()));
+        QTimer::singleShot(s_closedelay, this, SLOT(close()));
     }
 }
 
@@ -443,7 +444,7 @@ bool KNotification::eventFilter(QObject *watched, QEvent *event)
         if (event->type() == QEvent::WindowActivate
             && d->flags & KNotification::CloseWhenWidgetActivated) {
             kDebug(s_knotificationarea) << "closing due to widget activation" << d->eventid;
-            QTimer::singleShot(500, this, SLOT(close()));
+            QTimer::singleShot(s_closedelay, this, SLOT(close()));
         }
     }
     return false;
