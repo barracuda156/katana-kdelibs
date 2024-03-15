@@ -42,13 +42,6 @@
  * \endcode
  */
 
-/**
- * @def KDE_IMPORT
- * @ingroup KDEMacros
- */
-
 #define KDE_EXPORT Q_DECL_EXPORT
-
-#define KDE_IMPORT Q_DECL_IMPORT
 
 #endif /* _KDE_MACROS_H_ */
