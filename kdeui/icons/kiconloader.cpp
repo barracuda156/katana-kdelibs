@@ -55,15 +55,11 @@
 #include "kiconeffect.h"
 
 /**
- * Checks for relative paths quickly on UNIX-alikes, slowly on everything else.
+ * Checks for relative paths quickly on UNIX-alikes
  */
 static bool pathIsRelative(const QString &path)
 {
-#ifdef Q_OS_UNIX
     return (!path.isEmpty() && path[0] != QChar('/'));
-#else
-    return QDir::isRelativePath(path);
-#endif
 }
 
 /**

@@ -443,7 +443,6 @@ void FileUndoManagerTest::testTrashFiles()
 
 static void setTimeStamp( const QString& path )
 {
-#ifdef Q_OS_UNIX
     // Put timestamp in the past so that we can check that the
     // copy actually preserves it.
     struct timeval tp;
@@ -453,7 +452,6 @@ static void setTimeStamp( const QString& path )
     utbuf.modtime = tp.tv_sec + 60; // 60 second in the future
     utime( QFile::encodeName( path ), &utbuf );
     qDebug( "Time changed for %s", qPrintable( path ) );
-#endif
 }
 
 void FileUndoManagerTest::testModifyFileBeforeUndo()

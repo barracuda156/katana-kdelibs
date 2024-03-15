@@ -43,14 +43,12 @@ QDateTime s_referenceTimeStamp;
 
 static void setTimeStamp( const QString& path, const QDateTime& mtime )
 {
-#ifdef Q_OS_UNIX
     // Put timestamp in the past so that we can check that the listing is correct
     struct utimbuf utbuf;
     utbuf.actime = mtime.toTime_t();
     utbuf.modtime = utbuf.actime;
     utime( QFile::encodeName( path ), &utbuf );
     //qDebug( "Time changed for %s", qPrintable( path ) );
-#endif
 }
 
 static void createTestFile( const QString& path, bool plainText = false )

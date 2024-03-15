@@ -1192,15 +1192,11 @@ void KConfigTest::testReparent()
 
 static void ageTimeStamp(const QString& path, int nsec)
 {
-#ifdef Q_OS_UNIX
     QDateTime mtime = QFileInfo(path).lastModified().addSecs(-nsec);
     struct utimbuf utbuf;
     utbuf.actime = mtime.toTime_t();
     utbuf.modtime = utbuf.actime;
     utime(QFile::encodeName(path), &utbuf);
-#else
-    QTest::qSleep(nsec * 1000);
-#endif
 }
 
 void KConfigTest::testWriteOnSync()

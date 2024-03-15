@@ -185,13 +185,11 @@ static QList< QWeakPointer< QWidget > > *x11Filter = 0;
    */
 static void installSigpipeHandler()
 {
-#ifdef Q_OS_UNIX
     struct sigaction act;
     act.sa_handler = SIG_IGN;
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
     sigaction(SIGPIPE, &act, 0);
-#endif
 }
 
 void KApplication::installX11EventFilter( QWidget* filter )

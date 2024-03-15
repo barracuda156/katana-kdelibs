@@ -480,7 +480,6 @@ bool KConfigIniBackend::writeConfig(const QByteArray& locale, KEntryMap& entryMa
         }
     } else {
         // Open existing file. *DON'T* create it if it suddenly does not exist!
-#ifdef Q_OS_UNIX
         int fd = KDE_open(QFile::encodeName(filePath()), O_WRONLY | O_TRUNC);
         if (fd < 0) {
             return false;
@@ -498,15 +497,6 @@ bool KConfigIniBackend::writeConfig(const QByteArray& locale, KEntryMap& entryMa
         writeEntries(locale, f, writeMap);
         f.close();
         fclose(fp);
-#else
-        QFile f( filePath() );
-        // XXX This is broken - it DOES create the file if it is suddenly gone.
-        if (!f.open( QIODevice::WriteOnly | QIODevice::Truncate )) {
-            return false;
-        }
-        f.setTextModeEnabled(true);
-        writeEntries(locale, f, writeMap);
-#endif
     }
     return true;
 }

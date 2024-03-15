@@ -68,7 +68,6 @@ void KMountPointTest::testCurrentMountPoints()
     QVERIFY(!found);
 
     // Check findByPath
-#ifdef Q_OS_UNIX
     const KMountPoint::Ptr rootMountPoint = mountPoints.findByPath("/");
     QVERIFY(rootMountPoint);
     QCOMPARE(rootMountPoint->mountPoint(), QString("/"));
@@ -89,7 +88,6 @@ void KMountPointTest::testCurrentMountPoints()
     } else {
         kDebug() << "/home doesn't seem to exist, skipping test";
     }
-#endif
 }
 
 void KMountPointTest::testPossibleMountPoints()
@@ -119,13 +117,11 @@ void KMountPointTest::testPossibleMountPoints()
 
     QVERIFY(mountWithDevice);
 
-#ifdef Q_OS_UNIX
     const KMountPoint::Ptr rootMountPoint = mountPoints.findByPath("/");
     QVERIFY(rootMountPoint);
     QCOMPARE(rootMountPoint->mountPoint(), QString("/"));
     QVERIFY(rootMountPoint->realDeviceName().startsWith(QLatin1String("/dev"))); // portable?
     QVERIFY(!rootMountPoint->mountOptions().contains("noauto")); // how would this work?
     QVERIFY(!rootMountPoint->probablySlow());
-#endif
 }
 

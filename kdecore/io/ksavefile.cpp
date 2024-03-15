@@ -102,7 +102,6 @@ bool KSaveFile::open(OpenMode flags)
     tempFile.setAutoRemove(false);
     tempFile.setFileTemplate(d->realFileName + QLatin1String("XXXXXX.new"));
     if (!tempFile.open()) {
-#ifdef Q_OS_UNIX
         if (d->directWriteFallback && errno == EACCES) {
             QFile::setFileName(d->realFileName);
             if (QFile::open(flags)) {
@@ -112,7 +111,6 @@ bool KSaveFile::open(OpenMode flags)
                 return true;
             }
         }
-#endif
 
         // we only check here if the directory can be written to
         // the actual filename isn't written to, but replaced later
@@ -214,7 +212,6 @@ bool KSaveFile::finalize()
     }
 
     bool success = false;
-#ifdef Q_OS_UNIX
     static const bool extraSync = (::getenv("KDE_EXTRA_FSYNC") != 0 ? true : false);
     if (extraSync) {
         if (flush()) {
@@ -233,7 +230,6 @@ bool KSaveFile::finalize()
             }
         }
     }
-#endif
 
     close();
 

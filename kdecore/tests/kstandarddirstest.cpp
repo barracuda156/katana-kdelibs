@@ -213,7 +213,6 @@ void KStandarddirsTest::testFindExe()
     QString klauncherexe = KGlobal::dirs()->locate( "exe", "klauncher4" );
     QVERIFY2(klauncherexe.endsWith("bin/klauncher4" EXT, PATH_SENSITIVITY), qPrintable(klauncherexe));
 
-#ifdef Q_OS_UNIX
     // findExe with a result in libexec
     const QString kioslave = KGlobal::dirs()->findExe( "kioslave" );
     QVERIFY( !kioslave.isEmpty() );
@@ -234,21 +233,16 @@ void KStandarddirsTest::testFindExe()
     }
     QVERIFY(possibleResults.contains(sh));
     QDir::setCurrent(pwd);
-#endif
 
-#ifdef Q_OS_UNIX
     QFile home( m_kdehome );
     const QString target = m_kdehome + "/linktodir";
     home.link( target );
     QVERIFY( KGlobal::dirs()->findExe( target ).isEmpty() );
-#endif
 
-#ifdef Q_OS_UNIX
     // findExe for a binary not part of KDE
     const QString ls = KGlobal::dirs()->findExe( "ls" );
     QVERIFY( !ls.isEmpty() );
     QVERIFY( ls.endsWith( QLatin1String( "bin/ls" ) ) );
-#endif
 
     // findExe with no result
     const QString idontexist = KGlobal::dirs()->findExe( "idontexist" );

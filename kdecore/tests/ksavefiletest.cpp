@@ -186,7 +186,6 @@ void KSaveFileTest::transactionalWriteNoPermissionsOnDir_data()
 
 void KSaveFileTest::transactionalWriteNoPermissionsOnDir()
 {
-#ifdef Q_OS_UNIX
     QFETCH(bool, directWriteFallback);
     // Restore permissions so that the QTemporaryDir cleanup can happen
     class PermissionRestorer
@@ -255,10 +254,7 @@ void KSaveFileTest::transactionalWriteNoPermissionsOnDir()
         QVERIFY(!file.open(QIODevice::WriteOnly));
         QCOMPARE((int)file.error(), (int)QFile::PermissionsError);
     }
-#endif
 }
-
-
 
 void KSaveFileTest::test_backupFile()
 {

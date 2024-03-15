@@ -63,21 +63,14 @@ static QString recurse(QProcess::ProcessChannelMode how)
 
 void KProcessTest::test_channels()
 {
-#ifdef Q_OS_UNIX
     QString e, a;
     TESTCHAN(SeparateChannels, "separate", "", EO, EE);
     TESTCHAN(ForwardedChannels, "forwarded", EO EE, "", "");
     TESTCHAN(MergedChannels, "merged", "", EO EE, "");
-#else
-    QSKIP("This test needs a UNIX system", SkipSingle);
-#endif
 }
 
 void KProcessTest::test_setShellCommand()
 {
-#if !defined(Q_OS_UNIX)
-    QSKIP("This test needs a free UNIX system", SkipSingle);
-#else
     KProcess p;
 
     p.setShellCommand("cat");
@@ -86,7 +79,6 @@ void KProcessTest::test_setShellCommand()
     QVERIFY(p.program().at(0).endsWith("/bin/cat"));
     p.setShellCommand("true || false");
     QCOMPARE(p.program(), QStringList() << "/bin/sh" << "-c" << "true || false");
-#endif
 }
 
 static void recursor(char **argv)
