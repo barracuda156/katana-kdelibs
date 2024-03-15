@@ -129,7 +129,7 @@ void KSpellConfigWidget::slotDefault()
     spellgroup.writeEntry("checkerEnabledByDefault", s_spellbydefault);
     spellgroup.writeEntry("defaultLanguage", KSpeller::defaultLanguage());
     spellgroup.writeEntry("personalWords", s_wordsbydefault);
-    d->enablebox->setChecked(spellgroup.readEntry("checkerEnabledByDefault", s_spellbydefault));
+    d->enablebox->setChecked(s_spellbydefault);
     d->dictionarybox->setCurrentByDictionary(KSpeller::defaultLanguage());
     d->wordslistedit->setItems(s_wordsbydefault);
 }
