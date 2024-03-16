@@ -16,16 +16,111 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "http.h"
-#include "kdebug.h"
+#include "kio_curl.h"
 #include "kcomponentdata.h"
+#include "kmimetype.h"
+#include "kdebug.h"
 
 #include <QApplication>
 #include <QHostAddress>
 #include <QHostInfo>
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
+#define KIO_CURL_ERROR(CODE) \
+    const QString curlerror = QString::fromAscii(curl_easy_strerror(CODE)); \
+    kWarning(7103) << "curl error" << curlerror; \
+    error(KIO::ERR_SLAVE_DEFINED, curlerror);
+
+// for reference:
+// https://linux.die.net/man/3/strmode
+// https://datatracker.ietf.org/doc/html/rfc959
+// https://curl.se/libcurl/c/pop3-stat.html
+
+// TODO: what is the limit?
+static const int filepathmax = 1024;
+
+static inline int ftpUserModeFromChar(const char modechar, const int rmode, const int wmode, const int xmode)
+{
+     mode_t result = 0;
+     switch (modechar) {
+         case '-': {
+             break;
+         }
+         case 'r': {
+             result |= rmode;
+             break;
+         }
+         case 'w': {
+             result |= wmode;
+             break;
+         }
+         case 'x': {
+             result |= xmode;
+             break;
+         }
+         default: {
+             kWarning(7103) << "Invalid FTP mode char" << modechar;
+             break;
+          }
+      }
+      return result;
+}
+
+static inline mode_t ftpModeFromString(const char* modestring)
+{
+     mode_t result = 0;
+     switch (modestring[0]) {
+         case '-': {
+             result |= S_IFREG;
+             break;
+          }
+          case 'b': {
+             result |= S_IFBLK;
+             break;
+          }
+          case 'c': {
+             result |= S_IFCHR;
+             break;
+          }
+          case 'd': {
+             result |= S_IFDIR;
+             break;
+         }
+         case 'l': {
+             result |= S_IFLNK;
+             break;
+         }
+         case 'p': {
+             result |= S_IFIFO;
+             break;
+         }
+         case 's': {
+             result |= S_IFSOCK;
+             break;
+         }
+         default: {
+             kWarning(7103) << "Invalid FTP mode string" << modestring;
+             break;
+         }
+     }
+
+     result |= ftpUserModeFromChar(modestring[1], S_IRUSR, S_IWUSR, S_IXUSR);
+     result |= ftpUserModeFromChar(modestring[2], S_IRUSR, S_IWUSR, S_IXUSR);
+     result |= ftpUserModeFromChar(modestring[3], S_IRUSR, S_IWUSR, S_IXUSR);
+
+     result |= ftpUserModeFromChar(modestring[4], S_IRGRP, S_IWGRP, S_IXGRP);
+     result |= ftpUserModeFromChar(modestring[5], S_IRGRP, S_IWGRP, S_IXGRP);
+     result |= ftpUserModeFromChar(modestring[6], S_IRGRP, S_IWGRP, S_IXGRP);
+
+     result |= ftpUserModeFromChar(modestring[7], S_IROTH, S_IWOTH, S_IXOTH);
+     result |= ftpUserModeFromChar(modestring[8], S_IROTH, S_IWOTH, S_IXOTH);
+     result |= ftpUserModeFromChar(modestring[9], S_IROTH, S_IWOTH, S_IXOTH);
+
+     return result;
+}
 
 static inline QByteArray curlProxyBytes(const QString &proxy)
 {
@@ -171,68 +266,52 @@ static inline KIO::Error curlToKIOError(const CURLcode curlcode, CURL *curl)
 
 size_t curlWriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
-    HttpProtocol* httpprotocol = static_cast<HttpProtocol*>(userdata);
-    if (!httpprotocol) {
+    CurlProtocol* curlprotocol = static_cast<CurlProtocol*>(userdata);
+    if (!curlprotocol) {
         return 0;
     }
     // size should always be 1
     Q_ASSERT(size == 1);
-    httpprotocol->slotData(ptr, nmemb);
+    curlprotocol->slotData(ptr, nmemb);
     return nmemb;
-}
-
-size_t curlReadCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-    HttpProtocol* httpprotocol = static_cast<HttpProtocol*>(userdata);
-    if (!httpprotocol) {
-        return 0;
-    }
-    httpprotocol->dataReq();
-    QByteArray kioreadbuffer;
-    const int kioreadresult = httpprotocol->readData(kioreadbuffer);
-    if (kioreadbuffer.size() > nmemb) {
-        kWarning(7103) << "Request data size larger than the buffer size";
-        return 0;
-    }
-    ::memcpy(ptr, kioreadbuffer.constData(), kioreadbuffer.size() * sizeof(char));
-    return kioreadresult;
 }
 
 int curlXFERCallback(void *userdata, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
-    HttpProtocol* httpprotocol = static_cast<HttpProtocol*>(userdata);
-    if (!httpprotocol) {
+    CurlProtocol* curlprotocol = static_cast<CurlProtocol*>(userdata);
+    if (!curlprotocol) {
         return CURLE_BAD_FUNCTION_ARGUMENT;
     }
-    if (httpprotocol->aborttransfer) {
+    if (curlprotocol->aborttransfer) {
         return CURLE_HTTP_RETURNED_ERROR;
     }
-    httpprotocol->slotProgress(KIO::filesize_t(dlnow), KIO::filesize_t(dltotal));
+    curlprotocol->slotProgress(KIO::filesize_t(dlnow), KIO::filesize_t(dltotal));
     return CURLE_OK;
 }
 
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    KComponentData componentData("kio_http", "kdelibs4");
+    KComponentData componentData("kio_curl", "kdelibs4");
 
     kDebug(7103) << "Starting" << ::getpid();
 
     if (argc != 2) {
-        ::fprintf(stderr, "Usage: kio_http app-socket\n");
+        ::fprintf(stderr, "Usage: kio_curl app-socket\n");
         ::exit(-1);
     }
 
-    HttpProtocol slave(argv[1]);
+    CurlProtocol slave(argv[1]);
     slave.dispatchLoop();
 
     kDebug(7103) << "Done";
     return 0;
 }
 
-HttpProtocol::HttpProtocol(const QByteArray &app)
-    : SlaveBase("http", app),
-    aborttransfer(false), m_emitmime(true),
+CurlProtocol::CurlProtocol(const QByteArray &app)
+    : SlaveBase("curl", app),
+    aborttransfer(false),
+    m_emitmime(true), m_ishttp(false), m_isftp(false), m_issftp(false), m_collectdata(false),
     m_curl(nullptr), m_curlheaders(nullptr)
 {
     m_curl = curl_easy_init();
@@ -242,7 +321,7 @@ HttpProtocol::HttpProtocol(const QByteArray &app)
     }
 }
 
-HttpProtocol::~HttpProtocol()
+CurlProtocol::~CurlProtocol()
 {
     if (m_curlheaders) {
         curl_slist_free_all(m_curlheaders);
@@ -252,9 +331,9 @@ HttpProtocol::~HttpProtocol()
     }
 }
 
-void HttpProtocol::stat(const KUrl &url)
+void CurlProtocol::stat(const KUrl &url)
 {
-    kDebug(7103) << "URL" << url.prettyUrl();
+    kDebug(7103) << "Stat URL" << url.prettyUrl();
 
     if (redirectUrl(url)) {
         return;
@@ -264,9 +343,18 @@ void HttpProtocol::stat(const KUrl &url)
         return;
     }
 
-    // NOTE: do not set CURLOPT_NOBODY, server may not send some headers
-    CURLcode curlresult = curl_easy_perform(m_curl);
-    kDebug(7103) << "Transfer result" << curlresult;
+    CURLcode curlresult = CURLE_OK;
+    // NOTE: do not set CURLOPT_NOBODY for HTTP, server may not send some headers
+    if (m_isftp || m_issftp) {
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return;
+        }
+    }
+
+    curlresult = curl_easy_perform(m_curl);
+    kDebug(7103) << "Stat result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
@@ -279,12 +367,14 @@ void HttpProtocol::stat(const KUrl &url)
     }
 
     QString httpmimetype;
-    char *curlcontenttype = nullptr;
-    curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
-    if (curlresult == CURLE_OK) {
-        httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
-    } else {
-        kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
+    if (m_ishttp) {
+        char *curlcontenttype = nullptr;
+        curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
+        if (curlresult == CURLE_OK) {
+            httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
+        } else {
+            kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
+        }
     }
 
     curl_off_t curlfiletime = 0;
@@ -300,9 +390,9 @@ void HttpProtocol::stat(const KUrl &url)
     }
 
     KIO::UDSEntry kioudsentry;
-    kDebug(7103) << "HTTP last-modified" << curlfiletime;
-    kDebug(7103) << "HTTP content-length" << curlcontentlength;
-    kDebug(7103) << "HTTP content-type" << httpmimetype;
+    kDebug(7103) << "File time" << curlfiletime;
+    kDebug(7103) << "Content length" << curlcontentlength;
+    kDebug(7103) << "MIME type" << httpmimetype;
     kioudsentry.insert(KIO::UDSEntry::UDS_NAME, url.fileName());
     kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, qlonglong(curlcontentlength));
     kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, qlonglong(curlfiletime));
@@ -314,9 +404,111 @@ void HttpProtocol::stat(const KUrl &url)
     finished();
 }
 
-void HttpProtocol::get(const KUrl &url)
+void CurlProtocol::listDir(const KUrl &url)
 {
-    kDebug(7103) << "URL" << url.prettyUrl();
+    kDebug(7103) << "List URL" << url.prettyUrl();
+
+    KUrl urlhack(url);
+    urlhack = KUrl(url.url(KUrl::AddTrailingSlash));
+    if (redirectUrl(urlhack)) {
+        return;
+    }
+
+    if (!setupCurl(urlhack)) {
+        return;
+    }
+
+    if (!m_isftp && !m_issftp) {
+        // only for FTP or SFTP
+        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        return;
+    }
+
+    m_collectdata = true;
+
+    CURLcode curlresult = curl_easy_perform(m_curl);
+    kDebug(7103) << "List result" << curlresult;
+    if (curlresult != CURLE_OK) {
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
+            if (authUrl(url)) {
+                return;
+            }
+        }
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    KIO::UDSEntry statentry;
+    char ftpmode[11];
+    int ftpint1 = 0;
+    char ftpowner[128];
+    char ftpgroup[128];
+    int ftpsize = 0;
+    char ftpmonth[4];
+    int ftpday = 0;
+    char ftpyearortime[6];
+    char ftpfilepath[filepathmax];
+    char ftplinkpath[filepathmax];
+    foreach(const QByteArray &line, m_writedata.split('\n')) {
+        if (line.isEmpty()) {
+            continue;
+        }
+
+        ::memset(ftpmode, 0, sizeof(ftpmode) * sizeof(char));
+        ftpint1 = 0;
+        ::memset(ftpowner, 0, sizeof(ftpowner) * sizeof(char));
+        ::memset(ftpgroup, 0, sizeof(ftpgroup) * sizeof(char));
+        ftpsize = 0;
+        ::memset(ftpmonth, 0, sizeof(ftpmonth) * sizeof(char));
+        ftpday = 0;
+        ::memset(ftpyearortime, 0, sizeof(ftpyearortime) * sizeof(char));
+        ::memset(ftpfilepath, 0, filepathmax * sizeof(char));
+        ::memset(ftplinkpath, 0, filepathmax * sizeof(char));
+        const int sscanfresult = ::sscanf(
+            line.constData(),
+            "%s %d %s %s %d %s %d %s %s -> %s",
+            ftpmode, &ftpint1, ftpowner, ftpgroup, &ftpsize, ftpmonth, &ftpday, ftpyearortime, ftpfilepath, ftplinkpath
+        );
+        // qDebug() << Q_FUNC_INFO << ftpmode << ftpint1 << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftpyearortime << ftpfilepath << ftplinkpath;
+        if (sscanfresult == 10) {
+            const mode_t stdmode = ftpModeFromString(ftpmode);
+            statentry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(ftpfilepath));
+            statentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
+            statentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
+            statentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
+            statentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
+            statentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
+            // link paths to current path causes KIO to do strange things
+            if (ftplinkpath[0] != '.' && ftplinkpath[1] != 0) {
+                statentry.insert(KIO::UDSEntry::UDS_LINK_DEST, QFile::decodeName(ftplinkpath));
+            }
+            if (ftpsize <= 0) {
+                statentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QString::fromLatin1("application/x-zerosize"));
+            }
+            listEntry(statentry, false);
+        } else if (sscanfresult == 9) {
+            const mode_t stdmode = ftpModeFromString(ftpmode);
+            statentry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(ftpfilepath));
+            statentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
+            statentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
+            statentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
+            statentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
+            statentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
+            listEntry(statentry, false);
+        } else {
+            kWarning(7103) << "Invalid FTP data line" << line << sscanfresult;
+        }
+    }
+    statentry.clear();
+    listEntry(statentry, true);
+
+    finished();
+}
+
+void CurlProtocol::get(const KUrl &url)
+{
+    kDebug(7103) << "Get URL" << url.prettyUrl();
 
     if (redirectUrl(url)) {
         return;
@@ -327,7 +519,7 @@ void HttpProtocol::get(const KUrl &url)
     }
 
     CURLcode curlresult = curl_easy_perform(m_curl);
-    kDebug(7103) << "Transfer result" << curlresult;
+    kDebug(7103) << "Get result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
@@ -342,74 +534,46 @@ void HttpProtocol::get(const KUrl &url)
     finished();
 }
 
-
-void HttpProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
-{
-    kDebug(7103) << "URL" << url.prettyUrl();
-
-    // no permissions to set, it is POST
-    Q_UNUSED(permissions);
-    Q_UNUSED(flags);
-
-    if (redirectUrl(url)) {
-        return;
-    }
-
-    if (!setupCurl(url)) {
-        return;
-    }
-
-    CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_POST, 1L);
-    if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
-        return;
-    }
-
-    curlresult = curl_easy_perform(m_curl);
-    kDebug(7103) << "Transfer result" << curlresult;
-    if (curlresult != CURLE_OK) {
-        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            if (authUrl(url)) {
-                return;
-            }
-        }
-        error(kioerror, url.prettyUrl());
-        return;
-    }
-
-    finished();
-}
-
-void HttpProtocol::slotData(const char* curldata, const size_t curldatasize)
+void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
 {
     if (aborttransfer) {
         kDebug(7103) << "Transfer still in progress";
         return;
     }
 
+    const QByteArray bytedata = QByteArray::fromRawData(curldata, curldatasize);
+
     if (m_emitmime) {
         m_emitmime = false;
 
-        // if it's HTTP error do not send data and MIME, abort transfer
-        const long httpcode = HTTPCode(m_curl);
-        if (httpcode >= 400) {
-            aborttransfer = true;
-            return;
-        }
+        if (m_ishttp) {
+            // if it's HTTP error do not send data and MIME, abort transfer
+            const long httpcode = HTTPCode(m_curl);
+            if (httpcode >= 400) {
+                aborttransfer = true;
+                return;
+            }
 
-        QString httpmimetype = QString::fromLatin1("application/octet-stream");
-        char *curlcontenttype = nullptr;
-        CURLcode curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
-        if (curlresult == CURLE_OK) {
-            httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
+            QString httpmimetype = QString::fromLatin1("application/octet-stream");
+            char *curlcontenttype = nullptr;
+            CURLcode curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
+            if (curlresult == CURLE_OK) {
+                httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
+            } else {
+                kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
+            }
+            mimeType(httpmimetype);
         } else {
-            kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
+            KMimeType::Ptr kmimetype = KMimeType::findByNameAndContent(m_url.url(), bytedata);
+            mimeType(kmimetype->name());
         }
-        mimeType(httpmimetype);
     }
 
-    data(QByteArray::fromRawData(curldata, curldatasize));
+    if (m_collectdata) {
+        m_writedata.append(bytedata);
+    } else {
+        data(bytedata);
+    }
 
     curl_off_t curlspeeddownload = 0;
     CURLcode curlresult = curl_easy_getinfo(m_curl, CURLINFO_SPEED_DOWNLOAD_T, &curlspeeddownload);
@@ -421,7 +585,7 @@ void HttpProtocol::slotData(const char* curldata, const size_t curldatasize)
     }
 }
 
-void HttpProtocol::slotProgress(KIO::filesize_t received, KIO::filesize_t total)
+void CurlProtocol::slotProgress(KIO::filesize_t received, KIO::filesize_t total)
 {
     kDebug(7103) << "Received" << received << "from" << total;
     processedSize(received);
@@ -430,7 +594,7 @@ void HttpProtocol::slotProgress(KIO::filesize_t received, KIO::filesize_t total)
     }
 }
 
-bool HttpProtocol::redirectUrl(const KUrl &url)
+bool CurlProtocol::redirectUrl(const KUrl &url)
 {
     // curl cannot verify certs if the host is address, CURLOPT_USE_SSL set to CURLUSESSL_TRY
     // does not bypass such cases so resolving it manually
@@ -452,7 +616,7 @@ bool HttpProtocol::redirectUrl(const KUrl &url)
     return false;
 }
 
-bool HttpProtocol::setupCurl(const KUrl &url)
+bool CurlProtocol::setupCurl(const KUrl &url)
 {
     if (Q_UNLIKELY(!m_curl)) {
         error(KIO::ERR_OUT_OF_MEMORY, QString::fromLatin1("Null context"));
@@ -461,6 +625,13 @@ bool HttpProtocol::setupCurl(const KUrl &url)
 
     aborttransfer = false;
     m_emitmime = true;
+    const QString urlprotocol = url.protocol();
+    m_ishttp = (urlprotocol == QLatin1String("http") || urlprotocol == QLatin1String("https"));
+    m_isftp = (urlprotocol == QLatin1String("ftp"));
+    m_issftp = (urlprotocol == QLatin1String("sftp"));
+    m_collectdata = false;
+    m_writedata.clear();
+    m_url = url;
     curl_easy_reset(m_curl);
     curl_easy_setopt(m_curl, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(m_curl, CURLOPT_FILETIME, 1L);
@@ -470,46 +641,47 @@ bool HttpProtocol::setupCurl(const KUrl &url)
     // curl_easy_setopt(m_curl, CURLOPT_IGNORE_CONTENT_LENGTH, 1L); // breaks XFER info, fixes transfer of chunked content
     curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, this);
     curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, curlWriteCallback);
-    curl_easy_setopt(m_curl, CURLOPT_READDATA, this);
-    curl_easy_setopt(m_curl, CURLOPT_READFUNCTION, curlReadCallback);
     curl_easy_setopt(m_curl, CURLOPT_NOPROGRESS, 0L); // otherwise the XFER info callback is not called
     curl_easy_setopt(m_curl, CURLOPT_XFERINFODATA, this);
     curl_easy_setopt(m_curl, CURLOPT_XFERINFOFUNCTION, curlXFERCallback);
     curl_easy_setopt(m_curl, CURLOPT_FAILONERROR, 1L);
+    // TODO: option for this, warning?
+    curl_easy_setopt(m_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_TRY);
     // curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); // debugging
 
     const QByteArray urlbytes = url.prettyUrl().toLocal8Bit();
     CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_URL, urlbytes.constData());
     if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+        KIO_CURL_ERROR(curlresult);
         return false;
     }
 
 #if CURL_AT_LEAST_VERSION(7, 85, 0)
-    static const char* const curlprotocols = "http,https";
+    static const char* const curlprotocols = "http,https,ftp,sftp";
 
     curlresult = curl_easy_setopt(m_curl, CURLOPT_PROTOCOLS_STR, curlprotocols);
     if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+        KIO_CURL_ERROR(curlresult);
         return false;
     }
 
     curlresult = curl_easy_setopt(m_curl, CURLOPT_REDIR_PROTOCOLS_STR, curlprotocols);
     if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+        KIO_CURL_ERROR(curlresult);
         return false;
     }
 #else
     // deprecated since v7.85.0
-    curlresult = curl_easy_setopt(m_curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    static const long const curlprotocols = (CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_FTP | CURLPROTO_SFTP);
+    curlresult = curl_easy_setopt(m_curl, CURLOPT_PROTOCOLS, curlprotocols);
     if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+        KIO_CURL_ERROR(curlresult);
         return false;
     }
 
-    curlresult = curl_easy_setopt(m_curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    curlresult = curl_easy_setopt(m_curl, CURLOPT_REDIR_PROTOCOLS, curlprotocols);
     if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+        KIO_CURL_ERROR(curlresult);
         return false;
     }
 #endif
@@ -520,7 +692,7 @@ bool HttpProtocol::setupCurl(const KUrl &url)
         const QByteArray useragentbytes = metaData("UserAgent").toAscii();
         curlresult = curl_easy_setopt(m_curl, CURLOPT_USERAGENT, useragentbytes.constData());
         if (curlresult != CURLE_OK) {
-            error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+            KIO_CURL_ERROR(curlresult);
             return false;
         }
     }
@@ -533,12 +705,12 @@ bool HttpProtocol::setupCurl(const KUrl &url)
         kDebug(7103) << "Proxy" << proxybytes << curlproxytype;
         curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXY, proxybytes.constData());
         if (curlresult != CURLE_OK) {
-            error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+            KIO_CURL_ERROR(curlresult);
             return false;
         }
         curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXYTYPE, curlproxytype);
         if (curlresult != CURLE_OK) {
-            error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+            KIO_CURL_ERROR(curlresult);
             return false;
         }
 
@@ -546,31 +718,32 @@ bool HttpProtocol::setupCurl(const KUrl &url)
         kDebug(7103) << "No proxy auth" << noproxyauth;
         curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXYAUTH, noproxyauth ? CURLAUTH_NONE : CURLAUTH_ANY);
         if (curlresult != CURLE_OK) {
-            error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+            KIO_CURL_ERROR(curlresult);
             return false;
         }
     }
 
     const bool nowwwauth = (noauth || metaData("no-www-auth") == QLatin1String("true"));
     kDebug(7103) << "No WWW auth" << nowwwauth;
-    curlresult = curl_easy_setopt(m_curl, CURLOPT_HTTPAUTH, nowwwauth ? CURLAUTH_NONE : CURLAUTH_ANY);
-    if (curlresult != CURLE_OK) {
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
-        return false;
+    if (m_ishttp) {
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_HTTPAUTH, nowwwauth ? CURLAUTH_NONE : CURLAUTH_ANY);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return false;
+        }
     }
-
     if (!nowwwauth) {
         const QByteArray urlusername = url.userName().toAscii();
         const QByteArray urlpassword = url.password().toAscii();
         if (!urlusername.isEmpty() && !urlpassword.isEmpty()) {
             curlresult = curl_easy_setopt(m_curl, CURLOPT_USERNAME, urlusername.constData());
             if (curlresult != CURLE_OK) {
-                error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+                KIO_CURL_ERROR(curlresult);
                 return false;
             }
             curlresult = curl_easy_setopt(m_curl, CURLOPT_PASSWORD, urlpassword.constData());
             if (curlresult != CURLE_OK) {
-                error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+                KIO_CURL_ERROR(curlresult);
                 return false;
             }
         }
@@ -581,7 +754,7 @@ bool HttpProtocol::setupCurl(const KUrl &url)
         const qlonglong resumeoffset = metaData(QLatin1String("resume")).toLongLong();
         curlresult = curl_easy_setopt(m_curl, CURLOPT_RESUME_FROM_LARGE, curl_off_t(resumeoffset));
         if (curlresult != CURLE_OK) {
-            error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
+            KIO_CURL_ERROR(curlresult);
             return false;
         } else {
             canResume();
@@ -593,34 +766,36 @@ bool HttpProtocol::setupCurl(const KUrl &url)
         m_curlheaders = nullptr;
     }
 
-    if (hasMetaData(QLatin1String("Languages"))) {
-        m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Language: ") + metaData("Languages").toAscii());
-    }
+    if (m_ishttp) {
+        if (hasMetaData(QLatin1String("Languages"))) {
+            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Language: ") + metaData("Languages").toAscii());
+        }
 
-    if (hasMetaData(QLatin1String("Charsets"))) {
-        m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Charset: ") + metaData("Charsets").toAscii());
-    }
+        if (hasMetaData(QLatin1String("Charsets"))) {
+            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Charset: ") + metaData("Charsets").toAscii());
+        }
 
-    if (hasMetaData(QLatin1String("accept"))) {
-        m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept: ") + metaData("accept").toAscii());
-    }
+        if (hasMetaData(QLatin1String("accept"))) {
+            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept: ") + metaData("accept").toAscii());
+        }
 
-    if (hasMetaData(QLatin1String("Authorization"))) {
-        m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Authorization: ") + metaData("Authorization").toAscii());
-    }
+        if (hasMetaData(QLatin1String("Authorization"))) {
+            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Authorization: ") + metaData("Authorization").toAscii());
+        }
 
-    curlresult = curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, m_curlheaders);
-    if (curlresult != CURLE_OK) {
-        curl_slist_free_all(m_curlheaders);
-        m_curlheaders = nullptr;
-        error(KIO::ERR_SLAVE_DEFINED, curl_easy_strerror(curlresult));
-        return false;
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, m_curlheaders);
+        if (curlresult != CURLE_OK) {
+            curl_slist_free_all(m_curlheaders);
+            m_curlheaders = nullptr;
+            KIO_CURL_ERROR(curlresult);
+            return false;
+        }
     }
 
     return true;
 }
 
-bool HttpProtocol::authUrl(const KUrl &url)
+bool CurlProtocol::authUrl(const KUrl &url)
 {
     KIO::AuthInfo kioauthinfo;
     kioauthinfo.url = url;

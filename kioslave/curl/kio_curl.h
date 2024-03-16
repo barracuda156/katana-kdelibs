@@ -24,15 +24,15 @@
 
 #include <curl/curl.h>
 
-class HttpProtocol : public KIO::SlaveBase
+class CurlProtocol : public KIO::SlaveBase
 {
 public:
-    HttpProtocol(const QByteArray &app);
-    ~HttpProtocol();
+    CurlProtocol(const QByteArray &app);
+    ~CurlProtocol();
 
     void stat(const KUrl &url) final;
+    void listDir(const KUrl &url) final;
     void get(const KUrl &url)  final;
-    void put(const KUrl &url, int permissions, KIO::JobFlags flags) final;
 
     void slotData(const char* curldata, const size_t curldatasize);
     void slotProgress(KIO::filesize_t received, KIO::filesize_t total);
@@ -45,6 +45,12 @@ private:
     bool authUrl(const KUrl &url);
 
     bool m_emitmime;
+    bool m_ishttp;
+    bool m_isftp;
+    bool m_issftp;
+    bool m_collectdata;
+    QByteArray m_writedata;
+    KUrl m_url;
     CURL* m_curl;
     struct curl_slist *m_curlheaders;
 };

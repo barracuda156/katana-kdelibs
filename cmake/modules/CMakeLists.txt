@@ -40,7 +40,6 @@ set(cmakeFiles
     FindLibLZMA.cmake
     FindLIBPARTED.cmake
     FindLibSpectre.cmake
-    FindLibSSH.cmake
     FindLibTorrent.cmake
     FindLibUSB.cmake
     FindLightDM.cmake

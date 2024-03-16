@@ -1,11 +1,11 @@
 [Protocol]
-exec=kio_http
+exec=kio_curl
 protocol=http
 copyToFile=false
 copyFromFile=false
 listing=false
 reading=true
-writing=true
+writing=false
 makedir=false
 deleting=false
 moving=false
@@ -15,5 +15,5 @@ maxInstances=20
 maxInstancesPerHost=5
 defaultMimetype=application/octet-stream
 determineMimetypeFromExtension=false
-X-DocPath=kioslave/http/index.html
+X-DocPath=kioslave/curl/index.html
 Class=:internet

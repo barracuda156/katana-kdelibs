@@ -1,0 +1,17 @@
+[Protocol]
+exec=kio_curl
+protocol=ftp
+copyToFile=false
+copyFromFile=false
+listing=true
+reading=true
+writing=false
+makedir=false
+deleting=false
+moving=false
+ProxiedBy=http
+Icon=folder-remote
+maxInstances=20
+maxInstancesPerHost=5
+X-DocPath=kioslave/curl/index.html
+Class=:internet
