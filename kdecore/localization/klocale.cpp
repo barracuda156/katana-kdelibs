@@ -100,6 +100,7 @@ public:
     std::array<QString, 3> timeFormats;
     std::array<QString, 3> dateTimeFormats;
     QLocale::MeasurementSystem measurementSystem;
+    bool isdefault;
     bool immutable;
     QLocale locale;
     QString catalog;
@@ -109,11 +110,6 @@ public:
     KConfigGroup configgroup;
     QMutex *mutex;
 };
-
-static bool kIsDefaultLocale(const KLocalePrivate *locale)
-{
-    return (locale->locale.name() == s_defaultlanguage);
-}
 
 static bool kInsertCatalog(KLocalePrivate *locale, const QString &catalogname, const QString &cataloglanguage)
 {
@@ -147,6 +143,7 @@ KLocalePrivate::KLocalePrivate(const KLocalePrivate &other)
     timeFormats(other.timeFormats),
     dateTimeFormats(other.dateTimeFormats),
     measurementSystem(other.measurementSystem),
+    isdefault(other.isdefault),
     immutable(other.immutable),
     locale(other.locale),
     catalog(other.catalog),
@@ -161,6 +158,7 @@ KLocalePrivate::KLocalePrivate(const KLocalePrivate &other)
 KLocalePrivate::KLocalePrivate(const QString &_catalog, KSharedConfig::Ptr config)
     : binaryUnitDialect(KLocale::IECBinaryDialect),
     measurementSystem(QLocale::MetricSystem),
+    isdefault(true),
     immutable(false),
     catalog(_catalog),
     mutex(new QMutex())
@@ -175,6 +173,7 @@ KLocalePrivate::KLocalePrivate(const QString &_catalog, KSharedConfig::Ptr confi
 KLocalePrivate::KLocalePrivate(const QString &_catalog, const QString &language, KConfig *config)
     : binaryUnitDialect(KLocale::IECBinaryDialect),
     measurementSystem(QLocale::MetricSystem),
+    isdefault(true),
     immutable(true),
     catalog(_catalog),
     mutex(new QMutex())
@@ -228,7 +227,7 @@ KLocale & KLocale::operator=(const KLocale &rhs)
 
 QString KLocale::language() const
 {
-    if (kIsDefaultLocale(d)) {
+    if (d->isdefault) {
         return d->locale.name();
     }
     return kGetLanguage(d->locale.name());
@@ -665,7 +664,7 @@ QString KLocale::translateQt(const char *context, const char *sourceText) const
 {
     // return empty according to Katie's expectations
     QString result;
-    if (kIsDefaultLocale(d)) {
+    if (d->isdefault) {
         return result;
     }
     QMutexLocker locker(d->mutex);
@@ -750,7 +749,7 @@ void KLocale::copyCatalogsTo(KLocale *locale)
 QString KLocale::localizedFilePath(const QString &filePath) const
 {
     // Stop here if the default language is primary.
-    if (kIsDefaultLocale(d)) {
+    if (d->isdefault) {
         return filePath;
     }
 
@@ -765,10 +764,6 @@ QString KLocale::localizedFilePath(const QString &filePath) const
     // Go through possible localized paths by priority of languages, return first that exists.
     const QString fileName = fileInfo.fileName();
     foreach(const QString &lang, languageList()) {
-        // Stop when the default language is reached.
-        if (lang == s_defaultlanguage) {
-            return filePath;
-        }
         const QString locFilePath = locDirPath + QLatin1Char('/') + lang + QLatin1Char('/') + fileName;
         QFileInfo locFileInfo(locFilePath);
         if (locFileInfo.isFile() && locFileInfo.isReadable()) {
@@ -805,6 +800,8 @@ void KLocale::reparseConfiguration()
             d->locale = QLocale(s_defaultlanguage);
         }
     }
+
+    d->isdefault = (d->locale.name() == s_defaultlanguage);
 
     d->binaryUnitDialect = static_cast<KLocale::BinaryUnitDialect>(
         d->configgroup.readEntry("BinaryUnitDialect", int(KLocale::IECBinaryDialect))
