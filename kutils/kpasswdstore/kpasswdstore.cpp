@@ -46,7 +46,7 @@ static QByteArray getCookie()
 
 static QString getLockName(const QByteArray &cookie, const QString &storeid)
 {
-    return QString::fromLatin1("%2-%3").arg(cookie, storeid);
+    return QString::fromLatin1("%1-%2").arg(cookie, storeid);
 }
 
 class KPasswdStorePrivate
