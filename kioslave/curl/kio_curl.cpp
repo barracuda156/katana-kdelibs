@@ -19,6 +19,7 @@
 #include "kio_curl.h"
 #include "kcomponentdata.h"
 #include "kmimetype.h"
+#include "kremoteencoding.h"
 #include "kdebug.h"
 
 #include <QApplication>
@@ -439,6 +440,8 @@ void CurlProtocol::listDir(const KUrl &url)
         return;
     }
 
+    kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
+
     KIO::UDSEntry statentry;
     char ftpmode[11];
     int ftpint1 = 0;
@@ -473,7 +476,7 @@ void CurlProtocol::listDir(const KUrl &url)
         // qDebug() << Q_FUNC_INFO << ftpmode << ftpint1 << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftpyearortime << ftpfilepath << ftplinkpath;
         if (sscanfresult == 10) {
             const mode_t stdmode = ftpModeFromString(ftpmode);
-            statentry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(ftpfilepath));
+            statentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
             statentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
             statentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
             statentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
@@ -481,7 +484,7 @@ void CurlProtocol::listDir(const KUrl &url)
             statentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
             // link paths to current path causes KIO to do strange things
             if (ftplinkpath[0] != '.' && ftplinkpath[1] != 0) {
-                statentry.insert(KIO::UDSEntry::UDS_LINK_DEST, QFile::decodeName(ftplinkpath));
+                statentry.insert(KIO::UDSEntry::UDS_LINK_DEST, remoteEncoding()->decode(ftplinkpath));
             }
             if (ftpsize <= 0) {
                 statentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QString::fromLatin1("application/x-zerosize"));
@@ -489,7 +492,7 @@ void CurlProtocol::listDir(const KUrl &url)
             listEntry(statentry, false);
         } else if (sscanfresult == 9) {
             const mode_t stdmode = ftpModeFromString(ftpmode);
-            statentry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(ftpfilepath));
+            statentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
             statentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
             statentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
             statentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
