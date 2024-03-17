@@ -82,7 +82,6 @@ static const int s_quit_signals[] = {
 // authenticated before)
 static QString authInfoUrl(const KUrl &authinfourl, const bool removeuser)
 {
-    // the key is the protocol, user, host and port
     const QString nullstring;
     KUrl cleanurl(authinfourl);
     if (removeuser) {
