@@ -413,13 +413,14 @@ void CurlProtocol::listDir(const KUrl &url)
 {
     kDebug(7103) << "List URL" << url.prettyUrl();
 
-    KUrl urlhack(url);
-    urlhack = KUrl(url.url(KUrl::AddTrailingSlash));
-    if (redirectUrl(urlhack)) {
+    // NOTE: listing has to be done via URL ending with a slash, otherwise it is like file query
+    KUrl dirurl(url);
+    dirurl = KUrl(url.url(KUrl::AddTrailingSlash));
+    if (redirectUrl(dirurl)) {
         return;
     }
 
-    if (!setupCurl(urlhack)) {
+    if (!setupCurl(dirurl)) {
         return;
     }
 

@@ -77,16 +77,34 @@ static const int s_quit_signals[] = {
     0
 };
 
-static QByteArray authInfoKey(const AuthInfo &authinfo)
+// two keys are used to store the auth info, the reason for doing so is to be able to automagically
+// fill user and password when none has been specified (e.g. ftp://foo.bar.com has been
+// authenticated before)
+static QString authInfoUrl(const KUrl &authinfourl, const bool removeuser)
 {
     // the key is the protocol, user, host and port
     const QString nullstring;
-    KUrl cleanurl(authinfo.url);
+    KUrl cleanurl(authinfourl);
+    if (removeuser) {
+        cleanurl.setUserName(nullstring);
+    }
     cleanurl.setPassword(nullstring);
     cleanurl.setPath(nullstring);
     cleanurl.setQuery(nullstring);
     cleanurl.setFragment(nullstring);
-    return KPasswdStore::makeKey(cleanurl.prettyUrl());
+    return cleanurl.prettyUrl();
+}
+
+static QByteArray authInfoKey(const AuthInfo &authinfo)
+{
+    // the key is the protocol, user, host and port
+    return KPasswdStore::makeKey(authInfoUrl(authinfo.url, false));
+}
+
+static QByteArray authInfoKey2(const AuthInfo &authinfo)
+{
+    // the key is the protocol, host and port
+    return KPasswdStore::makeKey(authInfoUrl(authinfo.url, true));
 }
 
 static QString authInfoToData(const AuthInfo &authinfo)
@@ -1052,7 +1070,13 @@ bool SlaveBase::checkCachedAuthentication(AuthInfo &info)
     KPasswdStore* passwdstore = d->passwdStore();
     Q_ASSERT(passwdstore);
     const qlonglong windowId = metaData(QLatin1String("window-id")).toLongLong();
-    const QByteArray authkey = authInfoKey(info);
+    QByteArray authkey = authInfoKey(info);
+    if (passwdstore->hasPasswd(authkey, windowId)) {
+        const QString passwd = passwdstore->getPasswd(authkey, windowId);
+        info = authInfoFromData(passwd.toLatin1());
+        return true;
+    }
+    authkey = authInfoKey2(info);
     if (passwdstore->hasPasswd(authkey, windowId)) {
         const QString passwd = passwdstore->getPasswd(authkey, windowId);
         info = authInfoFromData(passwd.toLatin1());
@@ -1065,7 +1089,10 @@ bool SlaveBase::cacheAuthentication(const AuthInfo &info)
 {
     KPasswdStore* passwdstore = d->passwdStore();
     Q_ASSERT(passwdstore);
-    passwdstore->storePasswd(authInfoKey(info), authInfoToData(info), metaData(QLatin1String("window-id")).toLongLong());
+    const qlonglong windowId = metaData(QLatin1String("window-id")).toLongLong();
+    const QString authInfoData = authInfoToData(info);
+    passwdstore->storePasswd(authInfoKey(info), authInfoData, windowId);
+    passwdstore->storePasswd(authInfoKey2(info), authInfoData, windowId);
     return true;
 }
 
