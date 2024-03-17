@@ -30,7 +30,7 @@
 #include <poppler/cpp/poppler-version.h>
 #include <sys/types.h>
 
-#if POPPLER_VERSION_MAJOR >= 22 && POPPLER_VERSION_MINOR >= 5
+#if POPPLER_VERSION_MAJOR >= 23
 typedef time_t popplertimetype;
 #else
 typedef poppler::time_type popplertimetype;
@@ -144,7 +144,7 @@ QList<KFileMetaInfoItem> KFileMetaDataPopplerPlugin::metaData(const QString &pat
             )
         );
     }
-#if POPPLER_VERSION_MAJOR >= 22 && POPPLER_VERSION_MINOR >= 5
+#if POPPLER_VERSION_MAJOR >= 23
     const QString popplercreationdate = getTime(popplerdocument->get_creation_date_t());
 #else
     const QString popplercreationdate = getTime(popplerdocument->get_creation_date());
@@ -157,7 +157,7 @@ QList<KFileMetaInfoItem> KFileMetaDataPopplerPlugin::metaData(const QString &pat
             )
         );
     }
-#if POPPLER_VERSION_MAJOR >= 22 && POPPLER_VERSION_MINOR >= 5
+#if POPPLER_VERSION_MAJOR >= 23
     const QString popplermodificationdate = getTime(popplerdocument->get_modification_date_t());
 #else
     const QString popplermodificationdate = getTime(popplerdocument->get_modification_date());
