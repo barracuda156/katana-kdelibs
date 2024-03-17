@@ -41,8 +41,9 @@
 // https://linux.die.net/man/3/strmode
 // https://datatracker.ietf.org/doc/html/rfc959
 // https://curl.se/libcurl/c/pop3-stat.html
+// https://curl.se/libcurl/c/CURLOPT_QUOTE.html
 
-// T_POSIX_PATH_MAX is 256, larger here on purpose
+// _POSIX_PATH_MAX is 256, larger on purpose
 static const int s_ftpfilepathmax = 1024;
 // LOGIN_NAME_MAX is 256, smaller on purpose
 static const int s_ftpownermax = 128;
