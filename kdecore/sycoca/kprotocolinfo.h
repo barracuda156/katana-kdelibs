@@ -80,7 +80,7 @@ public:
 
     /**
      * Returns the library / executable to open for the protocol @p protocol
-     * Example : "kio_ftp", meaning the executable "kio_ftp".
+     * Example : "kio_curl", meaning the executable "kio_curl".
      *
      * This corresponds to the "exec=" field in the protocol description file.
      * @param protocol the protocol to check

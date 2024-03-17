@@ -64,7 +64,6 @@
 7043        kio (bookmarks)
 7050        kio (KHTTP)
 7101        kio_file
-7102        kio_ftp
 7103        kio_curl
 7104        kidletime
 51003       kexiv2
@@ -99,7 +98,6 @@
 7024        kio (UIServer)
 7115        kio_thumbnail
 7116        kio_trash
-7120        kio_sftp
 7123        kio_camera
 7132        kio_mtp
 13000       Kate
