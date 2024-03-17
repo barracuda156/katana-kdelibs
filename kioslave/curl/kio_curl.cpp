@@ -367,7 +367,8 @@ void CurlProtocol::stat(const KUrl &url)
                 if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
                     curlresult = authUrl(url);
                     if (curlresult != CURLE_OK) {
-                        KIO_CURL_ERROR(curlresult);
+                        kioerror = curlToKIOError(curlresult, m_curl);
+                        error(kioerror, url.prettyUrl());
                         return;
                     }
                 }
@@ -449,7 +450,8 @@ void CurlProtocol::listDir(const KUrl &url)
                 if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
                     curlresult = authUrl(url);
                     if (curlresult != CURLE_OK) {
-                        KIO_CURL_ERROR(curlresult);
+                        kioerror = curlToKIOError(curlresult, m_curl);
+                        error(kioerror, url.prettyUrl());
                         return;
                     }
                 }
@@ -553,7 +555,8 @@ void CurlProtocol::get(const KUrl &url)
                 if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
                     curlresult = authUrl(url);
                     if (curlresult != CURLE_OK) {
-                        KIO_CURL_ERROR(curlresult);
+                        kioerror = curlToKIOError(curlresult, m_curl);
+                        error(kioerror, url.prettyUrl());
                         return;
                     }
                 }
@@ -847,7 +850,7 @@ CURLcode CurlProtocol::authUrlFromCache(const KUrl &url)
     kioauthinfo.username = url.userName();
     kioauthinfo.password = url.password();
     if (checkCachedAuthentication(kioauthinfo)) {
-        CURLcode curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
+        const CURLcode curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
         if (curlresult != CURLE_OK) {
             return curlresult;
         }
