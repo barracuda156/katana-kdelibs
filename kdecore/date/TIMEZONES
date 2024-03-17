@@ -134,6 +134,8 @@ i18n("America/Atikokan");
 i18n("Eastern Standard Time - Atikokan, Ontario and Southampton I, Nunavut");
 // i18n: comment to the previous timezone
 i18n("EST - ON (Atikokan); NU (Coral H)");
+// i18n: comment to the previous timezone
+i18n("EST - ON (Atikokan), NU (Coral H)");
 i18n("America/Atka");
 // i18n: comment to the previous timezone
 i18n("Aleutian Islands");
@@ -153,6 +155,8 @@ i18n("America/Belem");
 i18n("Amapa, E Para");
 // i18n: comment to the previous timezone
 i18n("Para (east); Amapa");
+// i18n: comment to the previous timezone
+i18n("Para (east), Amapa");
 i18n("America/Belize");
 i18n("America/Blanc-Sablon");
 // i18n: comment to the previous timezone
@@ -168,6 +172,8 @@ i18n("America/Boise");
 i18n("Mountain Time - south Idaho & east Oregon");
 // i18n: comment to the previous timezone
 i18n("Mountain - ID (south); OR (east)");
+// i18n: comment to the previous timezone
+i18n("Mountain - ID (south), OR (east)");
 i18n("America/Buenos_Aires");
 // i18n: comment to the previous timezone
 i18n("Buenos Aires (BA, CF)");
@@ -261,6 +267,8 @@ i18n("Mountain Time - Alberta, east British Columbia & west Saskatchewan");
 i18n("Mountain - AB; BC (E); SK (W)");
 // i18n: comment to the previous timezone
 i18n("Mountain - AB; BC (E); NT (E); SK (W)");
+// i18n: comment to the previous timezone
+i18n("Mountain - AB, BC(E), NT(E), SK(W)");
 i18n("America/Eirunepe");
 // i18n: comment to the previous timezone
 i18n("W Amazonas");
@@ -312,6 +320,8 @@ i18n("America/Halifax");
 i18n("Atlantic Time - Nova Scotia (most places), PEI");
 // i18n: comment to the previous timezone
 i18n("Atlantic - NS (most areas); PE");
+// i18n: comment to the previous timezone
+i18n("Atlantic - NS (most areas), PE");
 i18n("America/Havana");
 i18n("America/Hermosillo");
 // i18n: comment to the previous timezone
@@ -630,6 +640,8 @@ i18n("America/St_Johns");
 i18n("Newfoundland Time, including SE Labrador");
 // i18n: comment to the previous timezone
 i18n("Newfoundland; Labrador (southeast)");
+// i18n: comment to the previous timezone
+i18n("Newfoundland, Labrador (SE)");
 i18n("America/St_Kitts");
 i18n("America/St_Lucia");
 i18n("America/St_Thomas");
@@ -664,6 +676,8 @@ i18n("America/Toronto");
 i18n("Eastern Time - Ontario - most locations");
 // i18n: comment to the previous timezone
 i18n("Eastern - ON, QC (most areas)");
+// i18n: comment to the previous timezone
+i18n("Eastern - ON & QC (most areas)");
 i18n("America/Tortola");
 i18n("America/Vancouver");
 // i18n: comment to the previous timezone
@@ -681,6 +695,8 @@ i18n("America/Winnipeg");
 i18n("Central Time - Manitoba & west Ontario");
 // i18n: comment to the previous timezone
 i18n("Central - ON (west); Manitoba");
+// i18n: comment to the previous timezone
+i18n("Central - ON (west), Manitoba");
 i18n("America/Yakutat");
 // i18n: comment to the previous timezone
 i18n("Alaska Time - Alaska panhandle neck");
@@ -854,6 +870,8 @@ i18n("Irian Jaya & the Moluccas");
 i18n("west New Guinea (Irian Jaya) & Malukus (Moluccas)");
 // i18n: comment to the previous timezone
 i18n("New Guinea (West Papua / Irian Jaya); Malukus/Moluccas");
+// i18n: comment to the previous timezone
+i18n("New Guinea (West Papua / Irian Jaya), Malukus/Moluccas");
 i18n("Asia/Jerusalem");
 i18n("Asia/Kabul");
 i18n("Asia/Kamchatka");
@@ -905,6 +923,8 @@ i18n("east & south Borneo, Celebes, Bali, Nusa Tenggara, west Timor");
 i18n("east & south Borneo, Sulawesi (Celebes), Bali, Nusa Tenggara, west Timor");
 // i18n: comment to the previous timezone
 i18n("Borneo (east, south); Sulawesi/Celebes, Bali, Nusa Tengarra; Timor (west)");
+// i18n: comment to the previous timezone
+i18n("Borneo (east, south), Sulawesi/Celebes, Bali, Nusa Tengarra, Timor (west)");
 i18n("Asia/Manila");
 i18n("Asia/Muscat");
 i18n("Asia/Nicosia");
@@ -973,6 +993,8 @@ i18n("Asia/Srednekolymsk");
 i18n("MSK+08 - Sakha (E); North Kuril Is");
 // i18n: comment to the previous timezone
 i18n("MSK+08 - Sakha (E); N Kuril Is");
+// i18n: comment to the previous timezone
+i18n("MSK+08 - Sakha (E), N Kuril Is");
 i18n("Asia/Taipei");
 i18n("Asia/Tashkent");
 // i18n: comment to the previous timezone
