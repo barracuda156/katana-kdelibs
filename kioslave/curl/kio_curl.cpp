@@ -797,20 +797,36 @@ bool CurlProtocol::setupCurl(const KUrl &url)
 
 bool CurlProtocol::authUrl(const KUrl &url)
 {
+    // if there is a cached data it will be redirect to URL with the cached data, if the cached
+    // auth is not valid (username or password are not empty, this method is still called) then
+    // fill with the cached data but open a password dialog anyway for possible auth correction
+    const bool hasauth = (!url.userName().isEmpty() && !url.password().isEmpty());
     KIO::AuthInfo kioauthinfo;
     kioauthinfo.url = url;
-    if (!checkCachedAuthentication(kioauthinfo)) {
-        kioauthinfo.prompt = i18n("You need to supply a username and a password to access this URL.");
-        kioauthinfo.commentLabel = i18n("URL:");
-        kioauthinfo.comment = i18n("<b>%1</b>", url.prettyUrl());
-        if (openPasswordDialog(kioauthinfo)) {
-            KUrl newurl(url);
-            newurl.setUserName(kioauthinfo.username);
-            newurl.setPassword(kioauthinfo.password);
-            redirection(newurl);
-            finished();
-            return true;
+    kioauthinfo.keepPassword = true;
+    if (checkCachedAuthentication(kioauthinfo) && !hasauth) {
+        KUrl newurl(url);
+        newurl.setUserName(kioauthinfo.username);
+        newurl.setPassword(kioauthinfo.password);
+        redirection(newurl);
+        finished();
+        return true;
+    }
+    kioauthinfo.prompt = i18n("You need to supply a username and a password to access this URL.");
+    kioauthinfo.commentLabel = i18n("URL:");
+    kioauthinfo.comment = i18n("<b>%1</b>", url.prettyUrl());
+    if (openPasswordDialog(kioauthinfo)) {
+        KUrl newurl(url);
+        newurl.setUserName(kioauthinfo.username);
+        newurl.setPassword(kioauthinfo.password);
+        // user asked password be save/remembered
+        if (kioauthinfo.keepPassword)  {
+            kioauthinfo.url = newurl;
+            cacheAuthentication(kioauthinfo);
         }
+        redirection(newurl);
+        finished();
+        return true;
     }
     return false;
 }

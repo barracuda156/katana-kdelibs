@@ -49,9 +49,6 @@ UseProxy        string          URL representing the proxy settings (read by htt
 ProxyUrls       string          Comma separated list of proxy urls. The first url in this list
                                 matches one set in "UseProxy".
 
-textmode        bool            When true, switches FTP up/downloads to ascii transfer mode (read
-                                by ftp)
-
 recurse         bool            When true, del() will be able to delete non-empty directories.
                                 Otherwise, del() is supposed to give an error on non-empty
                                 directories. (read by file) 
