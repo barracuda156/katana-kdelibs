@@ -79,7 +79,15 @@ static const int s_quit_signals[] = {
 
 static QByteArray authInfoKey(const AuthInfo &authinfo)
 {
-    return KPasswdStore::makeKey(authinfo.url.prettyUrl());
+    // the key is the protocol, host and port
+    const QString nullstring;
+    KUrl cleanurl(authinfo.url);
+    cleanurl.setUserName(nullstring);
+    cleanurl.setPassword(nullstring);
+    cleanurl.setPath(nullstring);
+    cleanurl.setQuery(nullstring);
+    cleanurl.setFragment(nullstring);
+    return KPasswdStore::makeKey(cleanurl.prettyUrl());
 }
 
 static QString authInfoToData(const AuthInfo &authinfo)
