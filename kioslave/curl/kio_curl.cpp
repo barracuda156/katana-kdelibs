@@ -20,6 +20,7 @@
 #include "kcomponentdata.h"
 #include "kmimetype.h"
 #include "kremoteencoding.h"
+#include "kconfiggroup.h"
 #include "kdebug.h"
 
 #include <QApplication>
@@ -790,6 +791,17 @@ bool CurlProtocol::setupCurl(const KUrl &url)
         if (curlresult != CURLE_OK) {
             curl_slist_free_all(m_curlheaders);
             m_curlheaders = nullptr;
+            KIO_CURL_ERROR(curlresult);
+            return false;
+        }
+    }
+
+    if (m_isftp || m_issftp) {
+        // NOTE: this is stored in kio_ftprc
+        const long disablepassivemode = config()->readEntry("DisablePassiveMode", false);
+        kDebug(7103) << "Disable passive mode" << disablepassivemode;
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_FTP_SKIP_PASV_IP, disablepassivemode);
+        if (curlresult != CURLE_OK) {
             KIO_CURL_ERROR(curlresult);
             return false;
         }
