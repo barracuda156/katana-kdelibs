@@ -42,6 +42,12 @@ int Processor::number() const
     return m_device->deviceProperty(DevinfoDevice::DeviceName).right(1).toInt();
 }
 
+int Processor::minSpeed() const
+{
+#warning implement
+    return 0;
+}
+
 int Processor::maxSpeed() const
 {
     int result = 0;

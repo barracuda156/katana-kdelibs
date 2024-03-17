@@ -22,15 +22,16 @@
 #include "udevdevice.h"
 #include "cpuinfo.h"
 
-#include <QtCore/QFile>
-#include <QtCore/QDir>
+#include <QFile>
+#include <QDir>
+#include <qmath.h>
 
 using namespace Solid::Backends::UDev;
 
 Processor::Processor(UDevDevice *device)
     : DeviceInterface(device),
-      m_canChangeFrequency(NotChecked),
-      m_maxSpeed(-1)
+    m_minSpeed(-1),
+    m_maxSpeed(-1)
 {
 }
 
@@ -48,43 +49,25 @@ int Processor::number() const
 }
 
 // NOTE: do not parse /proc/cpuinfo for "cpu MHz", that may be current not maximum speed
+int Processor::minSpeed() const
+{
+    if (m_minSpeed == -1) {
+        m_minSpeed = getCPUInfo("/cpufreq/cpuinfo_min_freq");
+    }
+    return m_minSpeed;
+}
+
 int Processor::maxSpeed() const
 {
     if (m_maxSpeed == -1) {
-        QFile cpuMaxFreqFile(m_device->deviceName() + prefix() + "/cpufreq/cpuinfo_max_freq");
-        if (cpuMaxFreqFile.open(QIODevice::ReadOnly)) {
-            qlonglong maxFreq = cpuMaxFreqFile.readAll().trimmed().toLongLong();
-            if (maxFreq > 0) {
-                // cpuinfo_max_freq is in kHz
-                m_maxSpeed = static_cast<int>(maxFreq / 1000);
-            } else {
-                m_maxSpeed = 0;
-            }
-        }
+        m_maxSpeed = getCPUInfo("/cpufreq/cpuinfo_max_freq");
     }
     return m_maxSpeed;
 }
 
 bool Processor::canChangeFrequency() const
 {
-    if (m_canChangeFrequency == NotChecked) {
-        /* Note that cpufreq is the right information source here, rather than
-         * anything to do with throttling (ACPI T-states).  */
-
-        m_canChangeFrequency = CannotChangeFreq;
-
-        QFile cpuMinFreqFile(m_device->deviceName() + prefix() + "/cpufreq/cpuinfo_min_freq");
-        QFile cpuMaxFreqFile(m_device->deviceName() + prefix() + "/cpufreq/cpuinfo_max_freq");
-        if (cpuMinFreqFile.open(QIODevice::ReadOnly) && cpuMaxFreqFile.open(QIODevice::ReadOnly)) {
-            qlonglong minFreq = cpuMinFreqFile.readAll().trimmed().toLongLong();
-            qlonglong maxFreq = cpuMaxFreqFile.readAll().trimmed().toLongLong();
-            if (minFreq > 0 && maxFreq > minFreq) {
-                m_canChangeFrequency = CanChangeFreq;
-            }
-        }
-    }
-
-    return m_canChangeFrequency == CanChangeFreq;
+    return (minSpeed() > 0 && maxSpeed() > 0);
 }
 
 Solid::Processor::InstructionSets Processor::instructionSets() const
@@ -120,14 +103,25 @@ Solid::Processor::InstructionSets Processor::instructionSets() const
     return cpuinstructions;
 }
 
-QString Processor::prefix() const
+int Processor::getCPUInfo(const char* filename) const
 {
-    const QLatin1String sysPrefix("/sysdev");
-    if (QDir(m_device->deviceName() + sysPrefix).exists()) {
-        return sysPrefix;
-    }
+    static const QLatin1String sysPrefix("/sysdev");
 
-    return QString();
+    QString cpuFreqFileName(m_device->deviceName());
+    if (QDir(cpuFreqFileName + sysPrefix).exists()) {
+        cpuFreqFileName.append(sysPrefix);
+    }
+    cpuFreqFileName.append(QLatin1String(filename));
+
+    QFile cpuFreqFile(cpuFreqFileName);
+    if (cpuFreqFile.open(QIODevice::ReadOnly)) {
+        const qlonglong value = cpuFreqFile.readAll().trimmed().toLongLong();
+        if (value > 0) {
+            // value is in kHz
+            return qRound(value / 1000);
+        }
+    }
+    return 0;
 }
 
 #include "backends/udev/moc_udevprocessor.cpp"

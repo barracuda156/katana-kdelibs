@@ -41,6 +41,12 @@ int Solid::Processor::number() const
     return_SOLID_CALL(Ifaces::Processor *, d->backendObject(), 0, number());
 }
 
+int Solid::Processor::minSpeed() const
+{
+    Q_D(const Processor);
+    return_SOLID_CALL(Ifaces::Processor *, d->backendObject(), 0, minSpeed());
+}
+
 int Solid::Processor::maxSpeed() const
 {
     Q_D(const Processor);

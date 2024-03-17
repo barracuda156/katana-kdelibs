@@ -47,6 +47,13 @@ namespace Ifaces
         virtual int number() const = 0;
 
         /**
+         * Retrieves the minimum speed of the processor.
+         *
+         * @return the minimum speed in MHz
+         */
+        virtual int minSpeed() const = 0;
+
+        /**
          * Retrieves the maximum speed of the processor.
          *
          * @return the maximum speed in MHz

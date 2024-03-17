@@ -41,6 +41,7 @@ public:
 
 public Q_SLOTS:
     virtual int number() const;
+    virtual int minSpeed() const;
     virtual int maxSpeed() const;
     virtual bool canChangeFrequency() const;
     virtual Solid::Processor::InstructionSets instructionSets() const;

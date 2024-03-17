@@ -61,6 +61,7 @@ void FakeHardwareTest::testFakeBackend()
 
     QCOMPARE(processor->number(), 0);
     QCOMPARE(processor->canChangeFrequency(), true);
+    QCOMPARE((int)processor->minSpeed(), 1600);
     QCOMPARE((int)processor->maxSpeed(), 3200);
 
     Solid::Processor::InstructionSets instructionsets;

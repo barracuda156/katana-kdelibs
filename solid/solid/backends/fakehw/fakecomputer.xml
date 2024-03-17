@@ -90,6 +90,7 @@
             <property key="vendor">Acme Corporation</property>
             <property key="parent">/org/kde/solid/fakehw/computer</property>
             <property key="number">0</property>
+            <property key="minSpeed">1600</property>
             <property key="maxSpeed">3200</property>
             <property key="canChangeFrequency">true</property>
             <property key="instructionSets">mmx,sse</property>
@@ -100,6 +101,7 @@
             <property key="vendor">Acme Corporation</property>
             <property key="parent">/org/kde/solid/fakehw/computer</property>
             <property key="number">1</property>
+            <property key="minSpeed">1600</property>
             <property key="maxSpeed">3200</property>
             <property key="canChangeFrequency">true</property>
         </device>

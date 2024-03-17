@@ -42,19 +42,15 @@ public:
     virtual ~Processor();
 
     virtual int number() const;
+    virtual int minSpeed() const;
     virtual int maxSpeed() const;
     virtual bool canChangeFrequency() const;
     virtual Solid::Processor::InstructionSets instructionSets() const;
 
 private:
-    enum CanChangeFrequencyEnum {
-        NotChecked,
-        CanChangeFreq,
-        CannotChangeFreq
-    };
-    mutable CanChangeFrequencyEnum m_canChangeFrequency;
+    mutable int m_minSpeed;
     mutable int m_maxSpeed;
-    QString prefix() const;
+    int getCPUInfo(const char* filename) const;
 };
 }
 }

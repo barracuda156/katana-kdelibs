@@ -39,6 +39,7 @@ namespace Solid
         Q_ENUMS(InstructionSet)
         Q_FLAGS(InstructionSets)
         Q_PROPERTY(int number READ number)
+        Q_PROPERTY(qulonglong minSpeed READ minSpeed)
         Q_PROPERTY(qulonglong maxSpeed READ maxSpeed)
         Q_PROPERTY(bool canChangeFrequency READ canChangeFrequency)
         Q_PROPERTY(InstructionSets instructionSets READ instructionSets)
@@ -97,6 +98,14 @@ namespace Solid
          * @return the internal processor number in the system, starting from zero
          */
         int number() const;
+
+        /**
+         * Retrieves the minimum speed of the processor.
+         *
+         * @return the minimum speed in MHz, or 0 if the device can't be queried for this
+         * information.
+         */
+        int minSpeed() const;
 
         /**
          * Retrieves the maximum speed of the processor.

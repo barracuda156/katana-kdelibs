@@ -38,6 +38,11 @@ int FakeProcessor::number() const
     return fakeDevice()->property("number").toInt();
 }
 
+int FakeProcessor::minSpeed() const
+{
+    return fakeDevice()->property("minSpeed").toInt();
+}
+
 int FakeProcessor::maxSpeed() const
 {
     return fakeDevice()->property("maxSpeed").toInt();
