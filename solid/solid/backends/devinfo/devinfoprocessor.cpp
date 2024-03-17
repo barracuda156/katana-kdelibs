@@ -26,7 +26,7 @@
 using namespace Solid::Backends::Devinfo;
 
 // for reference:
-// freebsd-src/usr.sbin/powerd/powerd.c
+// https://cgit.freebsd.org/src/tree/usr.sbin/powerd/powerd.c
 
 Processor::Processor(DevinfoDevice *device)
     : DeviceInterface(device)
@@ -44,7 +44,7 @@ int Processor::number() const
 
 int Processor::minSpeed() const
 {
-#warning implement
+#warning TODO: implement
     return 0;
 }
 
