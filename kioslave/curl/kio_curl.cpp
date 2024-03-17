@@ -356,27 +356,19 @@ void CurlProtocol::stat(const KUrl &url)
         }
     }
 
-    curlresult = curl_easy_perform(m_curl);
+    KUrl redirecturl;
+    curlresult = performCurl(&redirecturl);
     kDebug(7103) << "Stat result" << curlresult;
     if (curlresult != CURLE_OK) {
-        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            curlresult = authUrlFromCache(url);
-            if (curlresult != CURLE_OK) {
-                kioerror = curlToKIOError(curlresult, m_curl);
-                if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-                    curlresult = authUrl(url);
-                    if (curlresult != CURLE_OK) {
-                        kioerror = curlToKIOError(curlresult, m_curl);
-                        error(kioerror, url.prettyUrl());
-                        return;
-                    }
-                }
-            }
-        } else {
-            error(kioerror, url.prettyUrl());
-            return;
-        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
     }
 
     QString httpmimetype;
@@ -439,27 +431,19 @@ void CurlProtocol::listDir(const KUrl &url)
 
     m_collectdata = true;
 
-    CURLcode curlresult = curl_easy_perform(m_curl);
+    KUrl redirecturl;
+    CURLcode curlresult = performCurl(&redirecturl);
     kDebug(7103) << "List result" << curlresult;
     if (curlresult != CURLE_OK) {
-        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            curlresult = authUrlFromCache(url);
-            if (curlresult != CURLE_OK) {
-                kioerror = curlToKIOError(curlresult, m_curl);
-                if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-                    curlresult = authUrl(url);
-                    if (curlresult != CURLE_OK) {
-                        kioerror = curlToKIOError(curlresult, m_curl);
-                        error(kioerror, url.prettyUrl());
-                        return;
-                    }
-                }
-            }
-        } else {
-            error(kioerror, url.prettyUrl());
-            return;
-        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
     }
 
     kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
@@ -544,27 +528,19 @@ void CurlProtocol::get(const KUrl &url)
         return;
     }
 
-    CURLcode curlresult = curl_easy_perform(m_curl);
+    KUrl redirecturl;
+    CURLcode curlresult = performCurl(&redirecturl);
     kDebug(7103) << "Get result" << curlresult;
     if (curlresult != CURLE_OK) {
-        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            curlresult = authUrlFromCache(url);
-            if (curlresult != CURLE_OK) {
-                kioerror = curlToKIOError(curlresult, m_curl);
-                if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-                    curlresult = authUrl(url);
-                    if (curlresult != CURLE_OK) {
-                        kioerror = curlToKIOError(curlresult, m_curl);
-                        error(kioerror, url.prettyUrl());
-                        return;
-                    }
-                }
-            }
-        } else {
-            error(kioerror, url.prettyUrl());
-            return;
-        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
     }
 
     finished();
@@ -821,6 +797,71 @@ bool CurlProtocol::setupCurl(const KUrl &url)
     return true;
 }
 
+// NOTE: redirection is done so that the URL in navigation is corrected, notably its user and
+// password part
+CURLcode CurlProtocol::performCurl(KUrl *redirecturl)
+{
+    CURLcode curlresult = curl_easy_perform(m_curl);
+    const QString urlusername = m_url.userName();
+    KIO::AuthInfo kioauthinfo;
+    kioauthinfo.url = m_url;
+    kioauthinfo.username = urlusername;
+    kioauthinfo.password = m_url.password();
+    if (curlresult != CURLE_OK) {
+        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
+            kDebug(7103) << "Authorizing from cache" << m_url.prettyUrl();
+            if (checkCachedAuthentication(kioauthinfo)) {
+                curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
+                if (curlresult != CURLE_OK) {
+                    return curlresult;
+                }
+                curlresult = curl_easy_perform(m_curl);
+                kioerror = curlToKIOError(curlresult, m_curl);
+                if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
+                    kDebug(7103) << "Going to redirect for cache authorization";
+                    KUrl newurl(m_url);
+                    newurl.setUserName(kioauthinfo.username);
+                    newurl.setPassword(kioauthinfo.password);
+                    *redirecturl = newurl;
+                }
+            }
+        }
+    }
+
+    if (curlresult != CURLE_OK) {
+        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
+            kDebug(7103) << "Authorizing" << m_url.prettyUrl();
+            kioauthinfo.keepPassword = true;
+            kioauthinfo.prompt = i18n("You need to supply a username and a password to access this URL.");
+            kioauthinfo.commentLabel = i18n("URL:");
+            kioauthinfo.comment = i18n("<b>%1</b>", m_url.prettyUrl());
+            if (openPasswordDialog(kioauthinfo)) {
+                curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
+                if (curlresult != CURLE_OK) {
+                    return curlresult;
+                }
+                if (kioauthinfo.keepPassword) {
+                    kDebug(7103) << "Caching authorization";
+                    cacheAuthentication(kioauthinfo);
+                }
+                curlresult = curl_easy_perform(m_curl);
+                kioerror = curlToKIOError(curlresult, m_curl);
+                if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
+                    kDebug(7103) << "Going to redirect for authorization";
+                    KUrl newurl(m_url);
+                    newurl.setUserName(kioauthinfo.username);
+                    newurl.setPassword(kioauthinfo.password);
+                    *redirecturl = newurl;
+                }
+            }
+        }
+    }
+
+    return curlresult;
+}
+
 CURLcode CurlProtocol::setupAuth(const QString &username, const QString &password)
 {
     CURLcode curlresult = CURLE_OK;
@@ -839,47 +880,4 @@ CURLcode CurlProtocol::setupAuth(const QString &username, const QString &passwor
         }
     }
     return curlresult;
-}
-
-CURLcode CurlProtocol::authUrlFromCache(const KUrl &url)
-{
-    kDebug(7103) << "Authorizing from cache" << url.prettyUrl();
-
-    KIO::AuthInfo kioauthinfo;
-    kioauthinfo.url = url;
-    kioauthinfo.username = url.userName();
-    kioauthinfo.password = url.password();
-    if (checkCachedAuthentication(kioauthinfo)) {
-        const CURLcode curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
-        if (curlresult != CURLE_OK) {
-            return curlresult;
-        }
-        return curl_easy_perform(m_curl);
-    }
-    return CURLE_AUTH_ERROR;
-}
-
-CURLcode CurlProtocol::authUrl(const KUrl &url)
-{
-    kDebug(7103) << "Authorizing" << url.prettyUrl();
-
-    KIO::AuthInfo kioauthinfo;
-    kioauthinfo.url = url;
-    kioauthinfo.username = url.userName();
-    kioauthinfo.password = url.password();
-    kioauthinfo.prompt = i18n("You need to supply a username and a password to access this URL.");
-    kioauthinfo.commentLabel = i18n("URL:");
-    kioauthinfo.comment = i18n("<b>%1</b>", url.prettyUrl());
-    if (openPasswordDialog(kioauthinfo)) {
-        CURLcode curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
-        if (curlresult != CURLE_OK) {
-            return curlresult;
-        }
-        curlresult = curl_easy_perform(m_curl);
-        if (kioauthinfo.keepPassword)  {
-            cacheAuthentication(kioauthinfo);
-        }
-        return curlresult;
-    }
-    return CURLE_AUTH_ERROR;
 }

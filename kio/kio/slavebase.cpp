@@ -79,10 +79,9 @@ static const int s_quit_signals[] = {
 
 static QByteArray authInfoKey(const AuthInfo &authinfo)
 {
-    // the key is the protocol, host and port
+    // the key is the protocol, user, host and port
     const QString nullstring;
     KUrl cleanurl(authinfo.url);
-    cleanurl.setUserName(nullstring);
     cleanurl.setPassword(nullstring);
     cleanurl.setPath(nullstring);
     cleanurl.setQuery(nullstring);

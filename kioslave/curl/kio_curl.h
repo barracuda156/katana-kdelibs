@@ -42,9 +42,8 @@ public:
 private:
     bool redirectUrl(const KUrl &url);
     bool setupCurl(const KUrl &url);
+    CURLcode performCurl(KUrl *redirecturl);
     CURLcode setupAuth(const QString &username, const QString &password);
-    CURLcode authUrlFromCache(const KUrl &url);
-    CURLcode authUrl(const KUrl &url);
 
     bool m_emitmime;
     bool m_ishttp;
