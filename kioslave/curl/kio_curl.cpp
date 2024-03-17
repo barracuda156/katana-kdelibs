@@ -40,8 +40,10 @@
 // https://datatracker.ietf.org/doc/html/rfc959
 // https://curl.se/libcurl/c/pop3-stat.html
 
-// TODO: what is the limit?
-static const int filepathmax = 1024;
+// T_POSIX_PATH_MAX is 256, larger here on purpose
+static const int s_ftpfilepathmax = 1024;
+// LOGIN_NAME_MAX is 256, smaller on purpose
+static const int s_ftpownermax = 128;
 
 static inline int ftpUserModeFromChar(const char modechar, const int rmode, const int wmode, const int xmode)
 {
@@ -442,17 +444,18 @@ void CurlProtocol::listDir(const KUrl &url)
 
     kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
 
+    // NOTE: keep in sync with the constants
     KIO::UDSEntry statentry;
     char ftpmode[11];
     int ftpint1 = 0;
-    char ftpowner[128];
-    char ftpgroup[128];
+    char ftpowner[s_ftpownermax];
+    char ftpgroup[s_ftpownermax];
     int ftpsize = 0;
     char ftpmonth[4];
     int ftpday = 0;
     char ftpyearortime[6];
-    char ftpfilepath[filepathmax];
-    char ftplinkpath[filepathmax];
+    char ftpfilepath[s_ftpfilepathmax];
+    char ftplinkpath[s_ftpfilepathmax];
     foreach(const QByteArray &line, m_writedata.split('\n')) {
         if (line.isEmpty()) {
             continue;
@@ -466,11 +469,11 @@ void CurlProtocol::listDir(const KUrl &url)
         ::memset(ftpmonth, 0, sizeof(ftpmonth) * sizeof(char));
         ftpday = 0;
         ::memset(ftpyearortime, 0, sizeof(ftpyearortime) * sizeof(char));
-        ::memset(ftpfilepath, 0, filepathmax * sizeof(char));
-        ::memset(ftplinkpath, 0, filepathmax * sizeof(char));
+        ::memset(ftpfilepath, 0, sizeof(ftpfilepath) * sizeof(char));
+        ::memset(ftplinkpath, 0, sizeof(ftplinkpath) * sizeof(char));
         const int sscanfresult = ::sscanf(
             line.constData(),
-            "%s %d %s %s %d %s %d %s %s -> %s",
+            "%10s %d %127s %127s %d %3s %d %5s %1023s -> %1023s",
             ftpmode, &ftpint1, ftpowner, ftpgroup, &ftpsize, ftpmonth, &ftpday, ftpyearortime, ftpfilepath, ftplinkpath
         );
         // qDebug() << Q_FUNC_INFO << ftpmode << ftpint1 << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftpyearortime << ftpfilepath << ftplinkpath;
