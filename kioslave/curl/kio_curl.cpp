@@ -26,6 +26,7 @@
 #include <QApplication>
 #include <QHostAddress>
 #include <QHostInfo>
+#include <QDir>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -339,26 +340,29 @@ void CurlProtocol::stat(const KUrl &url)
 {
     kDebug(7103) << "Stat URL" << url.prettyUrl();
 
-    if (redirectUrl(url)) {
+    KUrl staturl(url);
+    QString statfilename = QLatin1String(".");
+    if (!staturl.path().endsWith(QDir::separator())) {
+        statfilename = staturl.fileName();
+        staturl.setFileName(QString());
+        staturl = KUrl(staturl.url(KUrl::AddTrailingSlash));
+    }
+    kDebug(7103) << "Actual stat URL" << staturl << "filename" << statfilename;
+
+    if (redirectUrl(staturl)) {
         return;
     }
 
-    if (!setupCurl(url)) {
+    if (!setupCurl(staturl)) {
         return;
     }
 
-    CURLcode curlresult = CURLE_OK;
-    // NOTE: do not set CURLOPT_NOBODY for HTTP, server may not send some headers
     if (m_isftp || m_issftp) {
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
-        if (curlresult != CURLE_OK) {
-            KIO_CURL_ERROR(curlresult);
-            return;
-        }
+        m_collectdata = true;
     }
 
     KUrl redirecturl;
-    curlresult = performCurl(&redirecturl);
+    CURLcode curlresult = performCurl(&redirecturl);
     kDebug(7103) << "Stat result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -372,15 +376,26 @@ void CurlProtocol::stat(const KUrl &url)
         return;
     }
 
-    QString httpmimetype;
-    if (m_ishttp) {
-        char *curlcontenttype = nullptr;
-        curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
-        if (curlresult == CURLE_OK) {
-            httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
-        } else {
-            kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
+    if (m_isftp || m_issftp) {
+        foreach (const KIO::UDSEntry &kioudsentry, udsEntries()) {
+            if (kioudsentry.stringValue(KIO::UDSEntry::UDS_NAME) == statfilename) {
+                statEntry(kioudsentry);
+                finished();
+                return;
+            }
         }
+        kWarning(7103) << "Could not find entry for" << statfilename;
+        error(KIO::ERR_COULD_NOT_STAT, url.prettyUrl());
+        return;
+    }
+
+    QString httpmimetype;
+    char *curlcontenttype = nullptr;
+    curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
+    if (curlresult == CURLE_OK) {
+        httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
+    } else {
+        kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
     }
 
     curl_off_t curlfiletime = 0;
@@ -448,72 +463,11 @@ void CurlProtocol::listDir(const KUrl &url)
         return;
     }
 
-    kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
-
-    // NOTE: keep in sync with the constants
-    KIO::UDSEntry statentry;
-    char ftpmode[11];
-    int ftpint1 = 0;
-    char ftpowner[s_ftpownermax];
-    char ftpgroup[s_ftpownermax];
-    int ftpsize = 0;
-    char ftpmonth[4];
-    int ftpday = 0;
-    char ftpyearortime[6];
-    char ftpfilepath[s_ftpfilepathmax];
-    char ftplinkpath[s_ftpfilepathmax];
-    foreach(const QByteArray &line, m_writedata.split('\n')) {
-        if (line.isEmpty()) {
-            continue;
-        }
-
-        ::memset(ftpmode, 0, sizeof(ftpmode) * sizeof(char));
-        ftpint1 = 0;
-        ::memset(ftpowner, 0, sizeof(ftpowner) * sizeof(char));
-        ::memset(ftpgroup, 0, sizeof(ftpgroup) * sizeof(char));
-        ftpsize = 0;
-        ::memset(ftpmonth, 0, sizeof(ftpmonth) * sizeof(char));
-        ftpday = 0;
-        ::memset(ftpyearortime, 0, sizeof(ftpyearortime) * sizeof(char));
-        ::memset(ftpfilepath, 0, sizeof(ftpfilepath) * sizeof(char));
-        ::memset(ftplinkpath, 0, sizeof(ftplinkpath) * sizeof(char));
-        const int sscanfresult = ::sscanf(
-            line.constData(),
-            "%10s %d %127s %127s %d %3s %d %5s %1023s -> %1023s",
-            ftpmode, &ftpint1, ftpowner, ftpgroup, &ftpsize, ftpmonth, &ftpday, ftpyearortime, ftpfilepath, ftplinkpath
-        );
-        // qDebug() << Q_FUNC_INFO << ftpmode << ftpint1 << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftpyearortime << ftpfilepath << ftplinkpath;
-        if (sscanfresult == 10) {
-            const mode_t stdmode = ftpModeFromString(ftpmode);
-            statentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
-            statentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
-            statentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
-            statentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
-            statentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
-            statentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
-            // link paths to current path causes KIO to do strange things
-            if (ftplinkpath[0] != '.' && ftplinkpath[1] != 0) {
-                statentry.insert(KIO::UDSEntry::UDS_LINK_DEST, remoteEncoding()->decode(ftplinkpath));
-            }
-            if (ftpsize <= 0) {
-                statentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QString::fromLatin1("application/x-zerosize"));
-            }
-            listEntry(statentry, false);
-        } else if (sscanfresult == 9) {
-            const mode_t stdmode = ftpModeFromString(ftpmode);
-            statentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
-            statentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
-            statentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
-            statentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
-            statentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
-            statentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
-            listEntry(statentry, false);
-        } else {
-            kWarning(7103) << "Invalid FTP data line" << line << sscanfresult;
-        }
+    foreach (const KIO::UDSEntry &kioudsentry, udsEntries()) {
+        listEntry(kioudsentry, false);
     }
-    statentry.clear();
-    listEntry(statentry, true);
+    KIO::UDSEntry kioudsentry;
+    listEntry(kioudsentry, true);
 
     finished();
 }
@@ -769,7 +723,6 @@ bool CurlProtocol::setupCurl(const KUrl &url)
         curl_slist_free_all(m_curlheaders);
         m_curlheaders = nullptr;
     }
-
     if (m_ishttp) {
         if (hasMetaData(QLatin1String("Languages"))) {
             m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Language: ") + metaData("Languages").toAscii());
@@ -893,4 +846,75 @@ CURLcode CurlProtocol::setupAuth(const QString &username, const QString &passwor
         }
     }
     return curlresult;
+}
+
+QList<KIO::UDSEntry> CurlProtocol::udsEntries()
+{
+    QList<KIO::UDSEntry> result;
+
+    kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
+
+    // NOTE: keep in sync with the constants
+    KIO::UDSEntry kioudsentry;
+    char ftpmode[11];
+    int ftpint1 = 0;
+    char ftpowner[s_ftpownermax];
+    char ftpgroup[s_ftpownermax];
+    int ftpsize = 0;
+    char ftpmonth[4];
+    int ftpday = 0;
+    char ftpyearortime[6];
+    char ftpfilepath[s_ftpfilepathmax];
+    char ftplinkpath[s_ftpfilepathmax];
+    foreach(const QByteArray &line, m_writedata.split('\n')) {
+        if (line.isEmpty()) {
+            continue;
+        }
+
+        ::memset(ftpmode, 0, sizeof(ftpmode) * sizeof(char));
+        ftpint1 = 0;
+        ::memset(ftpowner, 0, sizeof(ftpowner) * sizeof(char));
+        ::memset(ftpgroup, 0, sizeof(ftpgroup) * sizeof(char));
+        ftpsize = 0;
+        ::memset(ftpmonth, 0, sizeof(ftpmonth) * sizeof(char));
+        ftpday = 0;
+        ::memset(ftpyearortime, 0, sizeof(ftpyearortime) * sizeof(char));
+        ::memset(ftpfilepath, 0, sizeof(ftpfilepath) * sizeof(char));
+        ::memset(ftplinkpath, 0, sizeof(ftplinkpath) * sizeof(char));
+        const int sscanfresult = ::sscanf(
+            line.constData(),
+            "%10s %d %127s %127s %d %3s %d %5s %1023s -> %1023s",
+            ftpmode, &ftpint1, ftpowner, ftpgroup, &ftpsize, ftpmonth, &ftpday, ftpyearortime, ftpfilepath, ftplinkpath
+        );
+        // qDebug() << Q_FUNC_INFO << ftpmode << ftpint1 << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftpyearortime << ftpfilepath << ftplinkpath;
+        if (sscanfresult == 10) {
+            const mode_t stdmode = ftpModeFromString(ftpmode);
+            kioudsentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
+            kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
+            kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
+            kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
+            kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
+            kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
+            // link paths to current path causes KIO to do strange things
+            if (ftplinkpath[0] != '.' && ftplinkpath[1] != 0) {
+                kioudsentry.insert(KIO::UDSEntry::UDS_LINK_DEST, remoteEncoding()->decode(ftplinkpath));
+            }
+            if (ftpsize <= 0) {
+                kioudsentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QString::fromLatin1("application/x-zerosize"));
+            }
+            result.append(kioudsentry);
+        } else if (sscanfresult == 9) {
+            const mode_t stdmode = ftpModeFromString(ftpmode);
+            kioudsentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
+            kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
+            kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
+            kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
+            kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
+            kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
+            result.append(kioudsentry);
+        } else {
+            kWarning(7103) << "Invalid FTP data line" << line << sscanfresult;
+        }
+    }
+    return result;
 }

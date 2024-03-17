@@ -32,7 +32,7 @@ public:
 
     void stat(const KUrl &url) final;
     void listDir(const KUrl &url) final;
-    void get(const KUrl &url)  final;
+    void get(const KUrl &url) final;
 
     void slotData(const char* curldata, const size_t curldatasize);
     void slotProgress(KIO::filesize_t received, KIO::filesize_t total);
@@ -44,6 +44,7 @@ private:
     bool setupCurl(const KUrl &url);
     CURLcode performCurl(KUrl *redirecturl);
     CURLcode setupAuth(const QString &username, const QString &password);
+    QList<KIO::UDSEntry> udsEntries();
 
     bool m_emitmime;
     bool m_ishttp;
