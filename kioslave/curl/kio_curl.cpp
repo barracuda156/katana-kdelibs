@@ -362,11 +362,7 @@ void CurlProtocol::stat(const KUrl &url)
     }
     kDebug(7103) << "Actual stat URL" << staturl << "filename" << statfilename;
 
-    if (redirectUrl(staturl)) {
-        return;
-    }
-
-    if (!setupCurl(staturl)) {
+    if (!setupCurl(staturl, false)) {
         return;
     }
 
@@ -446,17 +442,7 @@ void CurlProtocol::listDir(const KUrl &url)
     KUrl listurl(url);
     listurl.adjustPath(KUrl::AddTrailingSlash);
 
-    if (redirectUrl(listurl)) {
-        return;
-    }
-
-    if (!setupCurl(listurl)) {
-        return;
-    }
-
-    if (!m_isftp && !m_issftp) {
-        // only for FTP or SFTP
-        error(KIO::ERR_INTERNAL, url.prettyUrl());
+    if (!setupCurl(listurl, true)) {
         return;
     }
 
@@ -490,11 +476,7 @@ void CurlProtocol::get(const KUrl &url)
 {
     kDebug(7103) << "Get URL" << url.prettyUrl();
 
-    if (redirectUrl(url)) {
-        return;
-    }
-
-    if (!setupCurl(url)) {
+    if (!setupCurl(url, false)) {
         return;
     }
 
@@ -531,17 +513,7 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
     const QByteArray chmodpermissions = ftpPermissions(permissions);
     kDebug(7103) << "Actual chmod URL" << chmodurl << "filename" << chmodfilename << "permissions" << chmodpermissions;
 
-    if (redirectUrl(chmodurl)) {
-        return;
-    }
-
-    if (!setupCurl(chmodurl)) {
-        return;
-    }
-
-    if (!m_isftp && !m_issftp) {
-        // only for FTP or SFTP
-        error(KIO::ERR_INTERNAL, url.prettyUrl());
+    if (!setupCurl(chmodurl, true)) {
         return;
     }
 
@@ -590,17 +562,7 @@ void CurlProtocol::mkdir(const KUrl &url, int permissions)
     const QByteArray mkdirpermissions = ftpPermissions(permissions);
     kDebug(7103) << "Actual mkdir URL" << mkdirurl << "filename" << mkdirfilename << "permissions" << mkdirpermissions;
 
-    if (redirectUrl(mkdirurl)) {
-        return;
-    }
-
-    if (!setupCurl(mkdirurl)) {
-        return;
-    }
-
-    if (!m_isftp && !m_issftp) {
-        // only for FTP or SFTP
-        error(KIO::ERR_INTERNAL, url.prettyUrl());
+    if (!setupCurl(mkdirurl, true)) {
         return;
     }
 
@@ -649,17 +611,7 @@ void CurlProtocol::del(const KUrl &url, bool isfile)
     }
     kDebug(7103) << "Actual Delete URL" << delurl << "filename" << delfilename;
 
-    if (redirectUrl(delurl)) {
-        return;
-    }
-
-    if (!setupCurl(delurl)) {
-        return;
-    }
-
-    if (!m_isftp && !m_issftp) {
-        // only for FTP or SFTP
-        error(KIO::ERR_INTERNAL, url.prettyUrl());
+    if (!setupCurl(delurl, true)) {
         return;
     }
 
@@ -759,8 +711,13 @@ void CurlProtocol::slotProgress(KIO::filesize_t received, KIO::filesize_t total)
     }
 }
 
-bool CurlProtocol::redirectUrl(const KUrl &url)
+bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
 {
+    if (Q_UNLIKELY(!m_curl)) {
+        error(KIO::ERR_OUT_OF_MEMORY, QString::fromLatin1("Null context"));
+        return false;
+    }
+
     // curl cannot verify certs if the host is address, CURLOPT_USE_SSL set to CURLUSESSL_TRY
     // does not bypass such cases so resolving it manually
     const QHostAddress urladdress(url.host());
@@ -772,20 +729,10 @@ bool CurlProtocol::redirectUrl(const KUrl &url)
             kDebug(7103) << "Rewrote" << url << "to" << newurl;
             redirection(newurl);
             finished();
-            return true;
+            return false;
         } else {
             kWarning() << "Could not resolve" << url.host();
-            return false;
         }
-    }
-    return false;
-}
-
-bool CurlProtocol::setupCurl(const KUrl &url)
-{
-    if (Q_UNLIKELY(!m_curl)) {
-        error(KIO::ERR_OUT_OF_MEMORY, QString::fromLatin1("Null context"));
-        return false;
     }
 
     aborttransfer = false;
@@ -797,6 +744,13 @@ bool CurlProtocol::setupCurl(const KUrl &url)
     m_collectdata = false;
     m_writedata.clear();
     m_url = url;
+
+    if (ftporsftp && !m_isftp && !m_issftp) {
+        // only for FTP or SFTP
+        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        return false;
+    }
+
     curl_easy_reset(m_curl);
     curl_easy_setopt(m_curl, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(m_curl, CURLOPT_FILETIME, 1L);

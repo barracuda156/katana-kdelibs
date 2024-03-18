@@ -43,8 +43,7 @@ public:
     bool aborttransfer;
 
 private:
-    bool redirectUrl(const KUrl &url);
-    bool setupCurl(const KUrl &url);
+    bool setupCurl(const KUrl &url, const bool ftporsftp);
     CURLcode performCurl(const KUrl &url, KUrl *redirecturl);
     CURLcode setupAuth(const QString &username, const QString &password);
     QList<KIO::UDSEntry> udsEntries();
