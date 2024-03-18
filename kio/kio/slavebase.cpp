@@ -79,9 +79,7 @@ static const int s_quit_signals[] = {
 
 // two keys are used to store the auth info, the reason for doing so is to be able to automagically
 // fill user and password when none has been specified (e.g. ftp://foo.bar.com has been
-// authenticated before)
-// TODO: port trickery to conveniently match URLs without specified port to URL with default port
-// (e.g. 21 for FTP)
+// authenticated before). the same goes for the port
 static QString authInfoUrl(const KUrl &authinfourl, const bool removeuser)
 {
     const QString nullstring;
@@ -90,6 +88,7 @@ static QString authInfoUrl(const KUrl &authinfourl, const bool removeuser)
         cleanurl.setUserName(nullstring);
     }
     cleanurl.setPassword(nullstring);
+    cleanurl.setPort(-1);
     cleanurl.setPath(nullstring);
     cleanurl.setQuery(nullstring);
     cleanurl.setFragment(nullstring);
@@ -98,13 +97,13 @@ static QString authInfoUrl(const KUrl &authinfourl, const bool removeuser)
 
 static QByteArray authInfoKey(const AuthInfo &authinfo)
 {
-    // the key is the protocol, user, host and port
+    // the key is the protocol, user and host
     return KPasswdStore::makeKey(authInfoUrl(authinfo.url, false));
 }
 
 static QByteArray authInfoKey2(const AuthInfo &authinfo)
 {
-    // the key is the protocol, host and port
+    // the key is the protocol and host
     return KPasswdStore::makeKey(authInfoUrl(authinfo.url, true));
 }
 
