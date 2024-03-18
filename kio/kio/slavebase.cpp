@@ -80,6 +80,8 @@ static const int s_quit_signals[] = {
 // two keys are used to store the auth info, the reason for doing so is to be able to automagically
 // fill user and password when none has been specified (e.g. ftp://foo.bar.com has been
 // authenticated before)
+// TODO: port trickery to conveniently match URLs without specified port to URL with default port
+// (e.g. 21 for FTP)
 static QString authInfoUrl(const KUrl &authinfourl, const bool removeuser)
 {
     const QString nullstring;
