@@ -343,10 +343,14 @@ void CurlProtocol::stat(const KUrl &url)
 
     KUrl staturl(url);
     QString statfilename = QLatin1String(".");
-    if (!staturl.path().endsWith(QDir::separator())) {
-        statfilename = staturl.fileName();
-        staturl.setFileName(QString());
-        staturl = KUrl(staturl.url(KUrl::AddTrailingSlash));
+    const QString staturlfilename = staturl.fileName();
+    const QString staturlprotocol = staturl.protocol();
+    if (staturlprotocol == QLatin1String("ftp") || staturlprotocol == QLatin1String("sftp")) {
+        if (!staturl.path().endsWith(QDir::separator())) {
+            statfilename = staturlfilename;
+            staturl.setFileName(QString());
+            staturl.adjustPath(KUrl::AddTrailingSlash);
+        }
     }
     kDebug(7103) << "Actual stat URL" << staturl << "filename" << statfilename;
 
@@ -363,7 +367,7 @@ void CurlProtocol::stat(const KUrl &url)
     }
 
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(&redirecturl);
+    CURLcode curlresult = performCurl(staturl, &redirecturl);
     kDebug(7103) << "Stat result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -415,7 +419,7 @@ void CurlProtocol::stat(const KUrl &url)
     kDebug(7103) << "File time" << curlfiletime;
     kDebug(7103) << "Content length" << curlcontentlength;
     kDebug(7103) << "MIME type" << httpmimetype;
-    kioudsentry.insert(KIO::UDSEntry::UDS_NAME, url.fileName());
+    kioudsentry.insert(KIO::UDSEntry::UDS_NAME, staturlfilename);
     kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, qlonglong(curlcontentlength));
     kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, qlonglong(curlfiletime));
     if (!httpmimetype.isEmpty()) {
@@ -430,14 +434,14 @@ void CurlProtocol::listDir(const KUrl &url)
 {
     kDebug(7103) << "List URL" << url.prettyUrl();
 
-    // NOTE: listing has to be done via URL ending with a slash, otherwise it is like file query
-    KUrl dirurl(url);
-    dirurl = KUrl(url.url(KUrl::AddTrailingSlash));
-    if (redirectUrl(dirurl)) {
+    // listing has to be done via URL ending with a slash, otherwise it is like file query
+    KUrl listurl(url);
+    listurl.adjustPath(KUrl::AddTrailingSlash);
+    if (redirectUrl(listurl)) {
         return;
     }
 
-    if (!setupCurl(dirurl)) {
+    if (!setupCurl(listurl)) {
         return;
     }
 
@@ -450,7 +454,7 @@ void CurlProtocol::listDir(const KUrl &url)
     m_collectdata = true;
 
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(&redirecturl);
+    CURLcode curlresult = performCurl(listurl, &redirecturl);
     kDebug(7103) << "List result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -486,7 +490,7 @@ void CurlProtocol::get(const KUrl &url)
     }
 
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(&redirecturl);
+    CURLcode curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Get result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -534,6 +538,8 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
             mimeType(httpmimetype);
         } else {
             KMimeType::Ptr kmimetype = KMimeType::findByNameAndContent(m_url.url(), bytedata);
+            // default MIME type should be returned in the worst case
+            Q_ASSERT(kmimetype);
             mimeType(kmimetype->name());
         }
     }
@@ -766,18 +772,18 @@ bool CurlProtocol::setupCurl(const KUrl &url)
 
 // NOTE: redirection is done so that the URL in navigation is corrected, notably its user and
 // password part
-CURLcode CurlProtocol::performCurl(KUrl *redirecturl)
+CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
 {
     CURLcode curlresult = curl_easy_perform(m_curl);
-    const QString urlusername = m_url.userName();
+    const QString urlusername = url.userName();
     KIO::AuthInfo kioauthinfo;
-    kioauthinfo.url = m_url;
+    kioauthinfo.url = url;
     kioauthinfo.username = urlusername;
-    kioauthinfo.password = m_url.password();
+    kioauthinfo.password = url.password();
     if (curlresult != CURLE_OK) {
         KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            kDebug(7103) << "Authorizing from cache" << m_url.prettyUrl();
+            kDebug(7103) << "Authorizing from cache" << url.prettyUrl();
             if (checkCachedAuthentication(kioauthinfo)) {
                 curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
                 if (curlresult != CURLE_OK) {
@@ -787,7 +793,7 @@ CURLcode CurlProtocol::performCurl(KUrl *redirecturl)
                 kioerror = curlToKIOError(curlresult, m_curl);
                 if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
                     kDebug(7103) << "Going to redirect for cache authorization";
-                    KUrl newurl(m_url);
+                    KUrl newurl(url);
                     newurl.setUserName(kioauthinfo.username);
                     newurl.setPassword(kioauthinfo.password);
                     *redirecturl = newurl;
@@ -799,11 +805,11 @@ CURLcode CurlProtocol::performCurl(KUrl *redirecturl)
     if (curlresult != CURLE_OK) {
         KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            kDebug(7103) << "Authorizing" << m_url.prettyUrl();
+            kDebug(7103) << "Authorizing" << url.prettyUrl();
             kioauthinfo.keepPassword = true;
             kioauthinfo.prompt = i18n("You need to supply a username and a password to access this URL.");
             kioauthinfo.commentLabel = i18n("URL:");
-            kioauthinfo.comment = i18n("<b>%1</b>", m_url.prettyUrl());
+            kioauthinfo.comment = i18n("<b>%1</b>", url.prettyUrl());
             if (openPasswordDialog(kioauthinfo)) {
                 curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
                 if (curlresult != CURLE_OK) {
@@ -817,7 +823,7 @@ CURLcode CurlProtocol::performCurl(KUrl *redirecturl)
                 kioerror = curlToKIOError(curlresult, m_curl);
                 if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
                     kDebug(7103) << "Going to redirect for authorization";
-                    KUrl newurl(m_url);
+                    KUrl newurl(url);
                     newurl.setUserName(kioauthinfo.username);
                     newurl.setPassword(kioauthinfo.password);
                     *redirecturl = newurl;
