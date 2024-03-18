@@ -29,10 +29,6 @@
 // MINMUM SIZE FOR ABORTED DOWNLOAD TO BE KEPT
 #define DEFAULT_MINIMUM_KEEP_SIZE         5120  //  5 Kbs
 
-// PORT DEFAULTS
-#define DEFAULT_FTP_PORT                    21
-#define DEFAULT_SFTP_PORT                   22
-
 // DEFAULT USER AGENT KEY - ENABLES OS NAME
 #define DEFAULT_USER_AGENT_KEYS         "om"            // Show OS, Machine
 
