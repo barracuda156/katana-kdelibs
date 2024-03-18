@@ -24,8 +24,6 @@
 
 #include <curl/curl.h>
 
-// #define KIO_ENABLE_EXPERIMENTAL
-
 class CurlProtocol : public KIO::SlaveBase
 {
 public:
@@ -36,9 +34,6 @@ public:
     void listDir(const KUrl &url) final;
     void get(const KUrl &url) final;
     void chmod(const KUrl &url, int permissions) final;
-#if defined(KIO_ENABLE_EXPERIMENTAL)
-    void chown(const KUrl &url, const QString &owner, const QString &group) final;
-#endif
     void mkdir(const KUrl &url, int permissions) final;
     void del(const KUrl &url, bool isfile) final;
 

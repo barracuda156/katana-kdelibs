@@ -575,66 +575,6 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
     finished();
 }
 
-#if defined(KIO_ENABLE_EXPERIMENTAL)
-void CurlProtocol::chown(const KUrl &url, const QString &owner, const QString &group)
-{
-    kDebug(7103) << "Chown URL" << url.prettyUrl() << owner << group;
-
-    KUrl chownurl(url);
-    chownurl.adjustPath(KUrl::RemoveTrailingSlash);
-    QString chownfilename = chownurl.fileName();
-    if (chownfilename.isEmpty()) {
-        // must be the root directory
-        chownfilename = QLatin1String(".");
-    }
-    kDebug(7103) << "Actual chown URL" << chownurl << "filename" << chownfilename;
-
-    if (redirectUrl(chownurl)) {
-        return;
-    }
-
-    if (!setupCurl(chownurl)) {
-        return;
-    }
-
-    if (!m_isftp && !m_issftp) {
-        // only for FTP or SFTP
-        error(KIO::ERR_INTERNAL, url.prettyUrl());
-        return;
-    }
-
-    const QByteArray chownfilenamebytes = remoteEncoding()->encode(chownfilename);
-    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("CHOWN ") + owner.toAscii() + " " + chownfilenamebytes);
-    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("CHGRP ") + group.toAscii() + " " + chownfilenamebytes);
-    CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
-    if (curlresult != CURLE_OK) {
-        KIO_CURL_ERROR(curlresult);
-        return;
-    }
-
-    KUrl redirecturl;
-    curlresult = performCurl(chownurl, &redirecturl);
-    kDebug(7103) << "Chown result" << curlresult;
-    if (curlresult != CURLE_OK) {
-        if (curlresult == CURLE_QUOTE_ERROR) {
-            error(KIO::ERR_CANNOT_CHOWN, url.prettyUrl());
-            return;
-        }
-        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-        error(kioerror, url.prettyUrl());
-        return;
-    }
-
-    if (redirecturl.isValid()) {
-        redirection(redirecturl);
-        finished();
-        return;
-    }
-
-    finished();
-}
-#endif // KIO_ENABLE_EXPERIMENTAL
-
 void CurlProtocol::mkdir(const KUrl &url, int permissions)
 {
     kDebug(7103) << "Mkdir URL" << url.prettyUrl() << permissions;
@@ -697,7 +637,7 @@ void CurlProtocol::mkdir(const KUrl &url, int permissions)
 
 void CurlProtocol::del(const KUrl &url, bool isfile)
 {
-    kDebug(7103) << "Del URL" << url.prettyUrl() << isfile;
+    kDebug(7103) << "Delete URL" << url.prettyUrl() << isfile;
 
     KUrl delurl(url);
     QString delfilename = delurl.path();
@@ -707,7 +647,7 @@ void CurlProtocol::del(const KUrl &url, bool isfile)
         // must be the root directory
         delfilename = QLatin1String(".");
     }
-    kDebug(7103) << "Actual del URL" << delurl << "filename" << delfilename;
+    kDebug(7103) << "Actual Delete URL" << delurl << "filename" << delfilename;
 
     if (redirectUrl(delurl)) {
         return;
@@ -737,7 +677,7 @@ void CurlProtocol::del(const KUrl &url, bool isfile)
 
     KUrl redirecturl;
     curlresult = performCurl(delurl, &redirecturl);
-    kDebug(7103) << "Del result" << curlresult;
+    kDebug(7103) << "Delete result" << curlresult;
     if (curlresult != CURLE_OK) {
         if (curlresult == CURLE_QUOTE_ERROR) {
             error(KIO::ERR_CANNOT_DELETE, url.prettyUrl());
