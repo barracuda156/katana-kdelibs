@@ -46,7 +46,6 @@ kde4_bool_to_01(X11_XSync_FOUND HAVE_XSYNC)                           # kidletim
 # macro.  Note that some symbols require multiple includes in a
 # specific order.  Refer to the man page for each symbol for which a
 # check is to be added to get the proper set of headers.
-check_symbol_exists(strtoll         "stdlib.h"           HAVE_STRTOLL)      # kioslave
 check_symbol_exists(strmode         "string.h"           HAVE_STRMODE)      # karchive
 
 check_function_exists(backtrace          HAVE_BACKTRACE)                    # kdecore, kio
