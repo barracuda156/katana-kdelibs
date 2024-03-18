@@ -24,6 +24,8 @@
 
 #include <curl/curl.h>
 
+// #define KIO_ENABLE_EXPERIMENTAL
+
 class CurlProtocol : public KIO::SlaveBase
 {
 public:
@@ -33,6 +35,10 @@ public:
     void stat(const KUrl &url) final;
     void listDir(const KUrl &url) final;
     void get(const KUrl &url) final;
+    void chmod(const KUrl &url, int permissions) final;
+#if defined(KIO_ENABLE_EXPERIMENTAL)
+    void chown(const KUrl &url, const QString &owner, const QString &group) final;
+#endif
 
     void slotData(const char* curldata, const size_t curldatasize);
     void slotProgress(KIO::filesize_t received, KIO::filesize_t total);
@@ -54,7 +60,8 @@ private:
     QByteArray m_writedata;
     KUrl m_url;
     CURL* m_curl;
-    struct curl_slist *m_curlheaders;
+    struct curl_slist* m_curlheaders;
+    struct curl_slist* m_curlquotes;
 };
 
 #endif // KDELIBS_HTTP_H

@@ -48,6 +48,11 @@ static const int s_ftpfilepathmax = 1024;
 // LOGIN_NAME_MAX is 256, smaller on purpose
 static const int s_ftpownermax = 128;
 
+static inline QByteArray ftpFilePermissions(const int permissions)
+{
+    return QByteArray::number(permissions & 07777, 8);
+}
+
 static inline int ftpUserModeFromChar(const char modechar, const int rmode, const int wmode, const int xmode)
 {
      mode_t result = 0;
@@ -318,7 +323,7 @@ CurlProtocol::CurlProtocol(const QByteArray &app)
     : SlaveBase("curl", app),
     aborttransfer(false),
     m_emitmime(true), m_ishttp(false), m_isftp(false), m_issftp(false), m_collectdata(false),
-    m_curl(nullptr), m_curlheaders(nullptr)
+    m_curl(nullptr), m_curlheaders(nullptr), m_curlquotes(nullptr)
 {
     m_curl = curl_easy_init();
     if (!m_curl) {
@@ -331,6 +336,9 @@ CurlProtocol::~CurlProtocol()
 {
     if (m_curlheaders) {
         curl_slist_free_all(m_curlheaders);
+    }
+    if (m_curlquotes) {
+        curl_slist_free_all(m_curlquotes);
     }
     if (m_curl) {
         curl_easy_cleanup(m_curl);
@@ -437,6 +445,7 @@ void CurlProtocol::listDir(const KUrl &url)
     // listing has to be done via URL ending with a slash, otherwise it is like file query
     KUrl listurl(url);
     listurl.adjustPath(KUrl::AddTrailingSlash);
+
     if (redirectUrl(listurl)) {
         return;
     }
@@ -506,6 +515,124 @@ void CurlProtocol::get(const KUrl &url)
 
     finished();
 }
+
+void CurlProtocol::chmod(const KUrl &url, int permissions)
+{
+    kDebug(7103) << "Chmod URL" << url.prettyUrl();
+
+    KUrl chmodurl(url);
+    QString chmodfilename = chmodurl.path();
+    chmodurl.setPath(QString());
+    chmodurl.adjustPath(KUrl::AddTrailingSlash);
+    if (chmodfilename.isEmpty() || chmodfilename == QDir::separator()) {
+        // must be the root directory
+        chmodfilename = QLatin1String(".");
+    }
+    kDebug(7103) << "Actual chmod URL" << chmodurl << "filename" << chmodfilename;
+
+    if (redirectUrl(chmodurl)) {
+        return;
+    }
+
+    if (!setupCurl(chmodurl)) {
+        return;
+    }
+
+    if (!m_isftp && !m_issftp) {
+        // only for FTP or SFTP
+        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        return;
+    }
+
+    const QByteArray chmodfilenamebytes = remoteEncoding()->encode(chmodfilename);
+    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + ftpFilePermissions(permissions) + " " + chmodfilenamebytes);
+    CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
+    if (curlresult != CURLE_OK) {
+        KIO_CURL_ERROR(curlresult);
+        return;
+    }
+
+    KUrl redirecturl;
+    curlresult = performCurl(chmodurl, &redirecturl);
+    kDebug(7103) << "Chmod result" << curlresult;
+    if (curlresult != CURLE_OK) {
+        if (curlresult == CURLE_QUOTE_ERROR) {
+            error(KIO::ERR_CANNOT_CHMOD, url.prettyUrl());
+            return;
+        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
+    }
+
+    finished();
+}
+
+#if defined(KIO_ENABLE_EXPERIMENTAL)
+void CurlProtocol::chown(const KUrl &url, const QString &owner, const QString &group)
+{
+    kDebug(7103) << "Chown URL" << url.prettyUrl();
+
+    KUrl chownurl(url);
+    chownurl.adjustPath(KUrl::RemoveTrailingSlash);
+    QString chownfilename = chownurl.fileName();
+    if (chownfilename.isEmpty()) {
+        // must be the root directory
+        chownfilename = QLatin1String(".");
+    }
+    kDebug(7103) << "Actual chown URL" << chownurl << "filename" << chownfilename;
+
+    if (redirectUrl(chownurl)) {
+        return;
+    }
+
+    if (!setupCurl(chownurl)) {
+        return;
+    }
+
+    if (!m_isftp && !m_issftp) {
+        // only for FTP or SFTP
+        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        return;
+    }
+
+    const QByteArray chownfilenamebytes = remoteEncoding()->encode(chownfilename);
+    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("CHOWN ") + owner.toAscii() + " " + chownfilenamebytes);
+    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("CHGRP ") + group.toAscii() + " " + chownfilenamebytes);
+    CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
+    if (curlresult != CURLE_OK) {
+        KIO_CURL_ERROR(curlresult);
+        return;
+    }
+
+    KUrl redirecturl;
+    curlresult = performCurl(chownurl, &redirecturl);
+    kDebug(7103) << "Chown result" << curlresult;
+    if (curlresult != CURLE_OK) {
+        if (curlresult == CURLE_QUOTE_ERROR) {
+            error(KIO::ERR_CANNOT_CHOWN, url.prettyUrl());
+            return;
+        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
+    }
+
+    finished();
+}
+#endif // KIO_ENABLE_EXPERIMENTAL
 
 void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
 {
@@ -756,6 +883,10 @@ bool CurlProtocol::setupCurl(const KUrl &url)
         }
     }
 
+    if (m_curlquotes) {
+        curl_slist_free_all(m_curlquotes);
+        m_curlquotes = nullptr;
+    }
     if (m_isftp || m_issftp) {
         // NOTE: this is stored in kio_ftprc
         const long disablepassivemode = config()->readEntry("DisablePassiveMode", false);
