@@ -1006,6 +1006,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
 
     kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
 
+    static const QByteArray linkseparator = QByteArray("->");
     foreach(const QByteArray &line, m_writedata.split('\n')) {
         if (line.isEmpty()) {
             continue;
@@ -1028,7 +1029,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
 
         // take out the link parts, if any
         QByteArray ftplinkpath;
-        const int linkseparatorindex = lineparts.indexOf(QByteArray("->"));
+        const int linkseparatorindex = lineparts.indexOf(linkseparator);
         if (linkseparatorindex > 0) {
             foreach (const QByteArray &linkpart, lineparts.mid(linkseparatorindex)) {
                 ftplinkpath.append(linkpart);
