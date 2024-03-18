@@ -1072,5 +1072,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
             kWarning(7103) << "Invalid FTP data line" << line << sscanfresult;
         }
     }
+    // at this point the transfer should be complete, release the memory
+    m_writedata.clear();
     return result;
 }
