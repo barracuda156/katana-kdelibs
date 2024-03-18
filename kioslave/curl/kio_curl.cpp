@@ -726,7 +726,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
             finished();
             return false;
         } else {
-            kWarning() << "Could not resolve" << url.host();
+            kWarning(7103) << "Could not resolve" << url.host();
         }
     }
 
