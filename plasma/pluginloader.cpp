@@ -45,12 +45,8 @@ Applet *PluginLoader::loadApplet(const QString &name, uint appletId, const QVari
     const QString constraint = QString("[X-KDE-PluginInfo-Name] == '%1'").arg(name);
     KService::List offers = KServiceTypeTrader::self()->query("Plasma/Applet", constraint);
 
-    bool isContainment = false;
     if (offers.isEmpty()) {
         offers = KServiceTypeTrader::self()->query("Plasma/Containment", constraint);
-        if (offers.count() > 0) {
-            isContainment = true;
-        }
     }
 
     /* if (offers.count() > 1) {

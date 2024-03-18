@@ -51,9 +51,9 @@ public:
 
 KSpellerPrivate::KSpellerPrivate(KConfig *kconfig)
     : config(kconfig),
+    interrupt(false),
     enchantbroker(nullptr),
-    enchantdict(nullptr),
-    interrupt(false)
+    enchantdict(nullptr)
 {
     enchantbroker = enchant_broker_init();
     if (!enchantbroker) {
