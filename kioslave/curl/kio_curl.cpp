@@ -1082,6 +1082,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         ::memset(ftpyearortime, 0, sizeof(ftpyearortime) * sizeof(char));
         ::memset(ftpfilepath, 0, sizeof(ftpfilepath) * sizeof(char));
         ::memset(ftplinkpath, 0, sizeof(ftplinkpath) * sizeof(char));
+#warning FIXME: directories with space in their filename are not scanned properly
         const int sscanfresult = ::sscanf(
             line.constData(),
             "%10s %d %127s %127s %d %3s %d %5s %1023s -> %1023s",
