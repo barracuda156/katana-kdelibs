@@ -763,7 +763,9 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
     curl_easy_setopt(m_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_TRY);
     // curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); // debugging
 
-    const QByteArray urlbytes = url.prettyUrl().toLocal8Bit();
+    // NOTE: the URL path has to be percentage-encoded, otherwise curl will reject it if it
+    // contains whitespace for example
+    const QByteArray urlbytes = url.toEncoded();
     CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_URL, urlbytes.constData());
     if (curlresult != CURLE_OK) {
         KIO_CURL_ERROR(curlresult);
