@@ -48,7 +48,7 @@ static const int s_ftpfilepathmax = 1024;
 // LOGIN_NAME_MAX is 256, smaller on purpose
 static const int s_ftpownermax = 128;
 
-static inline QByteArray ftpFilePermissions(const int permissions)
+static inline QByteArray ftpPermissions(const int permissions)
 {
     return QByteArray::number(permissions & 0777, 8);
 }
@@ -80,7 +80,7 @@ static inline int ftpUserModeFromChar(const char modechar, const int rmode, cons
       return result;
 }
 
-static inline mode_t ftpModeFromString(const char* modestring)
+static inline mode_t ftpModeFromString(const char* const modestring)
 {
      mode_t result = 0;
      switch (modestring[0]) {
@@ -528,7 +528,7 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
         // must be the root directory
         chmodfilename = QLatin1String(".");
     }
-    const QByteArray chmodpermissions = ftpFilePermissions(permissions);
+    const QByteArray chmodpermissions = ftpPermissions(permissions);
     kDebug(7103) << "Actual chmod URL" << chmodurl << "filename" << chmodfilename << "permissions" << chmodpermissions;
 
     if (redirectUrl(chmodurl)) {
@@ -587,7 +587,7 @@ void CurlProtocol::mkdir(const KUrl &url, int permissions)
         // must be the root directory
         mkdirfilename = QLatin1String(".");
     }
-    const QByteArray mkdirpermissions = ftpFilePermissions(permissions);
+    const QByteArray mkdirpermissions = ftpPermissions(permissions);
     kDebug(7103) << "Actual mkdir URL" << mkdirurl << "filename" << mkdirfilename << "permissions" << mkdirpermissions;
 
     if (redirectUrl(mkdirurl)) {
