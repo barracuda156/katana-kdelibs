@@ -38,14 +38,14 @@ public:
     void del(const KUrl &url, bool isfile) final;
 
     void slotData(const char* curldata, const size_t curldatasize);
-    void slotProgress(KIO::filesize_t received, KIO::filesize_t total);
+    void slotProgress(const KIO::filesize_t received, const KIO::filesize_t total);
 
     bool aborttransfer;
 
 private:
+    CURLcode setupAuth(const QString &username, const QString &password);
     bool setupCurl(const KUrl &url, const bool ftporsftp);
     CURLcode performCurl(const KUrl &url, KUrl *redirecturl);
-    CURLcode setupAuth(const QString &username, const QString &password);
     QList<KIO::UDSEntry> udsEntries();
 
     bool m_emitmime;

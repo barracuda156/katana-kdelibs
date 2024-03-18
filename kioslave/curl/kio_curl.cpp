@@ -697,13 +697,33 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
     }
 }
 
-void CurlProtocol::slotProgress(KIO::filesize_t received, KIO::filesize_t total)
+void CurlProtocol::slotProgress(const KIO::filesize_t received, const KIO::filesize_t total)
 {
     kDebug(7103) << "Received" << received << "from" << total;
     processedSize(received);
     if (total > 0 && received != total) {
         totalSize(total);
     }
+}
+
+CURLcode CurlProtocol::setupAuth(const QString &username, const QString &password)
+{
+    CURLcode curlresult = CURLE_OK;
+    const QByteArray urlusernamebytes = username.toAscii();
+    if (!urlusernamebytes.isEmpty()) {
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_USERNAME, urlusernamebytes.constData());
+        if (curlresult != CURLE_OK) {
+            return curlresult;
+        }
+    }
+    const QByteArray urlpasswordbytes = password.toAscii();
+    if (!urlpasswordbytes.isEmpty()) {
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_PASSWORD, urlpasswordbytes.constData());
+        if (curlresult != CURLE_OK) {
+            return curlresult;
+        }
+    }
+    return curlresult;
 }
 
 bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
@@ -977,26 +997,6 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
         }
     }
 
-    return curlresult;
-}
-
-CURLcode CurlProtocol::setupAuth(const QString &username, const QString &password)
-{
-    CURLcode curlresult = CURLE_OK;
-    const QByteArray urlusernamebytes = username.toAscii();
-    if (!urlusernamebytes.isEmpty()) {
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_USERNAME, urlusernamebytes.constData());
-        if (curlresult != CURLE_OK) {
-            return curlresult;
-        }
-    }
-    const QByteArray urlpasswordbytes = password.toAscii();
-    if (!urlpasswordbytes.isEmpty()) {
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_PASSWORD, urlpasswordbytes.constData());
-        if (curlresult != CURLE_OK) {
-            return curlresult;
-        }
-    }
     return curlresult;
 }
 
