@@ -50,7 +50,7 @@ static const int s_ftpownermax = 128;
 
 static inline QByteArray ftpFilePermissions(const int permissions)
 {
-    return QByteArray::number(permissions & 07777, 8);
+    return QByteArray::number(permissions & 0777, 8);
 }
 
 static inline int ftpUserModeFromChar(const char modechar, const int rmode, const int wmode, const int xmode)
@@ -518,7 +518,7 @@ void CurlProtocol::get(const KUrl &url)
 
 void CurlProtocol::chmod(const KUrl &url, int permissions)
 {
-    kDebug(7103) << "Chmod URL" << url.prettyUrl();
+    kDebug(7103) << "Chmod URL" << url.prettyUrl() << permissions;
 
     KUrl chmodurl(url);
     QString chmodfilename = chmodurl.path();
@@ -528,7 +528,8 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
         // must be the root directory
         chmodfilename = QLatin1String(".");
     }
-    kDebug(7103) << "Actual chmod URL" << chmodurl << "filename" << chmodfilename;
+    const QByteArray chmodpermissions = ftpFilePermissions(permissions);
+    kDebug(7103) << "Actual chmod URL" << chmodurl << "filename" << chmodfilename << "permissions" << chmodpermissions;
 
     if (redirectUrl(chmodurl)) {
         return;
@@ -545,7 +546,7 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
     }
 
     const QByteArray chmodfilenamebytes = remoteEncoding()->encode(chmodfilename);
-    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + ftpFilePermissions(permissions) + " " + chmodfilenamebytes);
+    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + chmodpermissions + " " + chmodfilenamebytes);
     CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
     if (curlresult != CURLE_OK) {
         KIO_CURL_ERROR(curlresult);
@@ -577,7 +578,7 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
 #if defined(KIO_ENABLE_EXPERIMENTAL)
 void CurlProtocol::chown(const KUrl &url, const QString &owner, const QString &group)
 {
-    kDebug(7103) << "Chown URL" << url.prettyUrl();
+    kDebug(7103) << "Chown URL" << url.prettyUrl() << owner << group;
 
     KUrl chownurl(url);
     chownurl.adjustPath(KUrl::RemoveTrailingSlash);
@@ -633,6 +634,128 @@ void CurlProtocol::chown(const KUrl &url, const QString &owner, const QString &g
     finished();
 }
 #endif // KIO_ENABLE_EXPERIMENTAL
+
+void CurlProtocol::mkdir(const KUrl &url, int permissions)
+{
+    kDebug(7103) << "Mkdir URL" << url.prettyUrl() << permissions;
+
+    KUrl mkdirurl(url);
+    QString mkdirfilename = mkdirurl.path();
+    mkdirurl.setPath(QString());
+    mkdirurl.adjustPath(KUrl::AddTrailingSlash);
+    if (mkdirfilename.isEmpty() || mkdirfilename == QDir::separator()) {
+        // must be the root directory
+        mkdirfilename = QLatin1String(".");
+    }
+    const QByteArray mkdirpermissions = ftpFilePermissions(permissions);
+    kDebug(7103) << "Actual mkdir URL" << mkdirurl << "filename" << mkdirfilename << "permissions" << mkdirpermissions;
+
+    if (redirectUrl(mkdirurl)) {
+        return;
+    }
+
+    if (!setupCurl(mkdirurl)) {
+        return;
+    }
+
+    if (!m_isftp && !m_issftp) {
+        // only for FTP or SFTP
+        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        return;
+    }
+
+    const QByteArray mkdirfilenamebytes = remoteEncoding()->encode(mkdirfilename);
+    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("MKD ") + mkdirfilenamebytes);
+    m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + mkdirpermissions + " " + mkdirfilenamebytes);
+    CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
+    if (curlresult != CURLE_OK) {
+        KIO_CURL_ERROR(curlresult);
+        return;
+    }
+
+    KUrl redirecturl;
+    curlresult = performCurl(mkdirurl, &redirecturl);
+    kDebug(7103) << "Mkdir result" << curlresult;
+    if (curlresult != CURLE_OK) {
+        if (curlresult == CURLE_QUOTE_ERROR) {
+            error(KIO::ERR_COULD_NOT_MKDIR, url.prettyUrl());
+            return;
+        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
+    }
+
+    finished();
+}
+
+void CurlProtocol::del(const KUrl &url, bool isfile)
+{
+    kDebug(7103) << "Del URL" << url.prettyUrl() << isfile;
+
+    KUrl delurl(url);
+    QString delfilename = delurl.path();
+    delurl.setPath(QString());
+    delurl.adjustPath(KUrl::AddTrailingSlash);
+    if (delfilename.isEmpty() || delfilename == QDir::separator()) {
+        // must be the root directory
+        delfilename = QLatin1String(".");
+    }
+    kDebug(7103) << "Actual del URL" << delurl << "filename" << delfilename;
+
+    if (redirectUrl(delurl)) {
+        return;
+    }
+
+    if (!setupCurl(delurl)) {
+        return;
+    }
+
+    if (!m_isftp && !m_issftp) {
+        // only for FTP or SFTP
+        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        return;
+    }
+
+    const QByteArray delfilenamebytes = remoteEncoding()->encode(delfilename);
+    if (isfile) {
+        m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("DELE ") + delfilenamebytes);
+    } else {
+        m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("RMD ") + delfilenamebytes);
+    }
+    CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
+    if (curlresult != CURLE_OK) {
+        KIO_CURL_ERROR(curlresult);
+        return;
+    }
+
+    KUrl redirecturl;
+    curlresult = performCurl(delurl, &redirecturl);
+    kDebug(7103) << "Del result" << curlresult;
+    if (curlresult != CURLE_OK) {
+        if (curlresult == CURLE_QUOTE_ERROR) {
+            error(KIO::ERR_CANNOT_DELETE, url.prettyUrl());
+            return;
+        }
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
+    }
+
+    finished();
+}
 
 void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
 {

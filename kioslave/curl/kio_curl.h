@@ -39,6 +39,8 @@ public:
 #if defined(KIO_ENABLE_EXPERIMENTAL)
     void chown(const KUrl &url, const QString &owner, const QString &group) final;
 #endif
+    void mkdir(const KUrl &url, int permissions) final;
+    void del(const KUrl &url, bool isfile) final;
 
     void slotData(const char* curldata, const size_t curldatasize);
     void slotProgress(KIO::filesize_t received, KIO::filesize_t total);
