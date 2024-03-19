@@ -33,6 +33,7 @@ public:
     void stat(const KUrl &url) final;
     void listDir(const KUrl &url) final;
     void get(const KUrl &url) final;
+    void put(const KUrl &url, int permissions, KIO::JobFlags flags) final;
     void chmod(const KUrl &url, int permissions) final;
     void mkdir(const KUrl &url, int permissions) final;
     void del(const KUrl &url, bool isfile) final;

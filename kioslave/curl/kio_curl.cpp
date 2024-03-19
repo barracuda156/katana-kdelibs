@@ -284,6 +284,23 @@ size_t curlWriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
     return nmemb;
 }
 
+size_t curlReadCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    CurlProtocol* curlprotocol = static_cast<CurlProtocol*>(userdata);
+    if (!curlprotocol) {
+        return 0;
+    }
+    curlprotocol->dataReq();
+    QByteArray kioreadbuffer;
+    const int kioreadresult = curlprotocol->readData(kioreadbuffer);
+    if (kioreadbuffer.size() > nmemb) {
+        kWarning(7103) << "Request data size larger than the buffer size";
+        return 0;
+    }
+    ::memcpy(ptr, kioreadbuffer.constData(), kioreadbuffer.size() * sizeof(char));
+    return kioreadresult;
+}
+
 int curlXFERCallback(void *userdata, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
     CurlProtocol* curlprotocol = static_cast<CurlProtocol*>(userdata);
@@ -480,6 +497,53 @@ void CurlProtocol::get(const KUrl &url)
     KUrl redirecturl;
     CURLcode curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Get result" << curlresult;
+    if (curlresult != CURLE_OK) {
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        error(kioerror, url.prettyUrl());
+        return;
+    }
+
+    if (redirecturl.isValid()) {
+        redirection(redirecturl);
+        finished();
+        return;
+    }
+
+    finished();
+}
+
+void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
+{
+    // TODO: permissions and job flags for ftp/sftp only, check if URL exists on server
+    // NOTE: CURLOPT_NEW_FILE_PERMS is documented to work only for some protocols, ftp is not one
+    // of them but sftp is
+    Q_UNUSED(permissions);
+    Q_UNUSED(flags);
+
+    kDebug(7103) << "Put URL" << url.prettyUrl() << permissions << flags;
+
+    if (!setupCurl(url, false)) {
+        return;
+    }
+
+    CURLcode curlresult = CURLE_OK;
+    if (m_ishttp) {
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_POST, 1L);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return;
+        }
+    } else {
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_UPLOAD, 1L);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return;
+        }
+    }
+
+    KUrl redirecturl;
+    curlresult = performCurl(url, &redirecturl);
+    kDebug(7103) << "Put result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         error(kioerror, url.prettyUrl());
@@ -777,6 +841,8 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
     // curl_easy_setopt(m_curl, CURLOPT_IGNORE_CONTENT_LENGTH, 1L); // breaks XFER info, fixes transfer of chunked content
     curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, this);
     curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, curlWriteCallback);
+    curl_easy_setopt(m_curl, CURLOPT_READDATA, this);
+    curl_easy_setopt(m_curl, CURLOPT_READFUNCTION, curlReadCallback);
     curl_easy_setopt(m_curl, CURLOPT_NOPROGRESS, 0L); // otherwise the XFER info callback is not called
     curl_easy_setopt(m_curl, CURLOPT_XFERINFODATA, this);
     curl_easy_setopt(m_curl, CURLOPT_XFERINFOFUNCTION, curlXFERCallback);
