@@ -128,6 +128,25 @@ static inline mode_t ftpModeFromString(const char* const modestring)
      return result;
 }
 
+// for reference:
+// https://files.stairways.com/other/ftp-list-specs-info.txt
+qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday, const QByteArray &ftphouroryear)
+{
+    const QString ftptimestring = ftpmonth + QLatin1Char(' ') + ftpday + QLatin1Char(' ') + ftphouroryear;
+    QDateTime ftpdatetime;
+    if (ftphouroryear.contains(':')) {
+        ftpdatetime = QDateTime::fromString(ftptimestring, "MMM d hh:mm");
+        // year is the last occurance of that date, when is that?
+        const QDate ftpdate = ftpdatetime.date();
+        const QDate currentdate = QDate::currentDate();
+        ftpdatetime.setDate(QDate(currentdate.year(), ftpdate.month(), ftpdate.day()));
+    } else {
+        ftpdatetime = QDateTime::fromString(ftptimestring, "MMM d yyyy");
+    }
+    // qDebug() << Q_FUNC_INFO << ftptimestring << ftpdatetime.toString();
+    return ftpdatetime.toTime_t();
+}
+
 static inline QByteArray curlProxyBytes(const QString &proxy)
 {
     const KUrl proxyurl(proxy);
@@ -1089,6 +1108,8 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
 
     kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
 
+    // sample line:
+    // drwxr-xr-x   1 nobody   nobody          512 Mar 19 19:17 .
     static const QByteArray linkseparator = QByteArray("->");
     foreach(const QByteArray &line, m_writedata.split('\n')) {
         if (line.isEmpty()) {
@@ -1133,6 +1154,10 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         const QByteArray ftpowner = lineparts.at(2);
         const QByteArray ftpgroup = lineparts.at(3);
         const qlonglong ftpsize = lineparts.at(4).toLongLong();
+        const QByteArray ftpmonth = lineparts.at(5);
+        const QByteArray ftpday = lineparts.at(6);
+        const QByteArray ftphouroryear = lineparts.at(7);
+
         lineparts = lineparts.mid(8);
 
         // and finally the filepath parts
@@ -1143,16 +1168,18 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         }
         ftpfilepath.chop(1);
 
-        // qDebug() << Q_FUNC_INFO << ftpmode << ftpowner << ftpgroup << ftpsize << ftpfilepath << ftplinkpath;
+        // qDebug() << Q_FUNC_INFO << ftpmode << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftphouroryear << ftpfilepath << ftplinkpath;
 
         KIO::UDSEntry kioudsentry;
         const mode_t stdmode = ftpModeFromString(ftpmode);
+        const qlonglong ftpmodtime = ftpTimeFromString(ftpmonth, ftpday, ftphouroryear);
         kioudsentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
         kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
         kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
         kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
+        kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, ftpmodtime);
         if (!ftplinkpath.isEmpty()) {
             // link paths to current path causes KIO to do strange things
             if (ftplinkpath.at(0) != '.' && ftplinkpath.size() != 1) {
