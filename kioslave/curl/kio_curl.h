@@ -16,8 +16,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef KDELIBS_HTTP_H
-#define KDELIBS_HTTP_H
+#ifndef KIO_CURL_H
+#define KIO_CURL_H
 
 #include <kurl.h>
 #include <kio/slavebase.h>
@@ -60,4 +60,4 @@ private:
     struct curl_slist* m_curlquotes;
 };
 
-#endif // KDELIBS_HTTP_H
+#endif // KIO_CURL_H

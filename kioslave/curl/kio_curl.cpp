@@ -1045,13 +1045,14 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
             continue;
         }
 
+        // now take out everything but the filepath parts
         const QByteArray ftpmode = lineparts.at(0);
         const QByteArray ftpowner = lineparts.at(2);
         const QByteArray ftpgroup = lineparts.at(3);
         const qlonglong ftpsize = lineparts.at(4).toLongLong();
-
-        // now take out everything but the filepath parts
         lineparts = lineparts.mid(8);
+
+        // and finally the filepath parts
         QByteArray ftpfilepath;
         foreach (const QByteArray &filepart, lineparts) {
             ftpfilepath.append(filepart);
