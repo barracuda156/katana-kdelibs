@@ -514,10 +514,9 @@ void CurlProtocol::get(const KUrl &url)
 
 void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
 {
-    // TODO: permissions and job flags for ftp/sftp only, check if URL exists on server
+    // TODO: job flags for ftp/sftp only, check if URL exists on server
     // NOTE: CURLOPT_NEW_FILE_PERMS is documented to work only for some protocols, ftp is not one
     // of them but sftp is
-    Q_UNUSED(permissions);
     Q_UNUSED(flags);
 
     kDebug(7103) << "Put URL" << url.prettyUrl() << permissions << flags;
@@ -539,12 +538,28 @@ void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
             KIO_CURL_ERROR(curlresult);
             return;
         }
+
+        const QString putfilename = url.path();
+        const QByteArray putpermissions = ftpPermissions(permissions);
+        kDebug(7103) << "Filename" << putfilename << "permissions" << putpermissions;
+
+        const QByteArray putfilenamebytes = remoteEncoding()->encode(putfilename);
+        m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + putpermissions + " " + putfilenamebytes);
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_POSTQUOTE, m_curlquotes);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return;
+        }
     }
 
     KUrl redirecturl;
     curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Put result" << curlresult;
     if (curlresult != CURLE_OK) {
+        if (curlresult == CURLE_QUOTE_ERROR) {
+            error(KIO::ERR_CANNOT_CHMOD, url.prettyUrl());
+            return;
+        }
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         error(kioerror, url.prettyUrl());
         return;
