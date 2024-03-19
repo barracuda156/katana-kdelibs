@@ -227,9 +227,11 @@ static inline KIO::Error curlToKIOError(const CURLcode curlcode, CURL *curl)
             return KIO::ERR_UNKNOWN_PROXY_HOST;
         }
         case CURLE_AUTH_ERROR:
-        case CURLE_LOGIN_DENIED:
-        case CURLE_REMOTE_ACCESS_DENIED: {
+        case CURLE_LOGIN_DENIED: {
             return KIO::ERR_COULD_NOT_LOGIN;
+        }
+        case CURLE_REMOTE_ACCESS_DENIED: {
+            return KIO::ERR_ACCESS_DENIED;
         }
         case CURLE_FILE_COULDNT_READ_FILE:
         case CURLE_READ_ERROR: {
