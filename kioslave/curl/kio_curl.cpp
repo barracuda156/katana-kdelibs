@@ -524,8 +524,22 @@ void CurlProtocol::get(const KUrl &url)
         return;
     }
 
+    CURLcode curlresult = CURLE_OK;
+    if (hasMetaData(QLatin1String("resume"))) {
+        Q_ASSERT(sizeof(qlonglong) == sizeof(curl_off_t));
+        const qlonglong resumeoffset = metaData(QLatin1String("resume")).toLongLong();
+        kDebug(7103) << "Resume offset" << resumeoffset;
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_RESUME_FROM_LARGE, curl_off_t(resumeoffset));
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return;
+        } else {
+            canResume();
+        }
+    }
+
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(url, &redirecturl);
+    curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Get result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -544,10 +558,8 @@ void CurlProtocol::get(const KUrl &url)
 
 void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
 {
-    // TODO: job flags for ftp/sftp only, check if URL exists on server
     // NOTE: CURLOPT_NEW_FILE_PERMS is documented to work only for some protocols, ftp is not one
     // of them but sftp is
-    Q_UNUSED(flags);
 
     kDebug(7103) << "Put URL" << url.prettyUrl() << permissions << flags;
 
@@ -567,6 +579,16 @@ void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
         if (curlresult != CURLE_OK) {
             KIO_CURL_ERROR(curlresult);
             return;
+        }
+
+        if (flags & KIO::Resume) {
+            // it is optional anyway
+            kWarning(7103) << "Resuming not supported";
+        }
+
+        if (!(flags & KIO::Overwrite)) {
+            kWarning(7103) << "Not overwriting not supported";
+            // TODO: check if destination exists, emit ERR_DIR_ALREADY_EXIST or ERR_FILE_ALREADY_EXIST
         }
 
         const QString putfilename = url.path();
@@ -808,11 +830,11 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
     }
 }
 
-void CurlProtocol::slotProgress(const KIO::filesize_t received, const KIO::filesize_t total)
+void CurlProtocol::slotProgress(const KIO::filesize_t progress, const KIO::filesize_t total)
 {
-    kDebug(7103) << "Received" << received << "from" << total;
-    processedSize(received);
-    if (total > 0 && received != total) {
+    kDebug(7103) << "Progress is" << progress << "from" << total;
+    processedSize(progress);
+    if (total > 0 && progress != total) {
         totalSize(total);
     }
 }
@@ -986,18 +1008,6 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
     if (curlresult != CURLE_OK) {
         KIO_CURL_ERROR(curlresult);
         return false;
-    }
-
-    if (hasMetaData(QLatin1String("resume"))) {
-        Q_ASSERT(sizeof(qlonglong) == sizeof(curl_off_t));
-        const qlonglong resumeoffset = metaData(QLatin1String("resume")).toLongLong();
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_RESUME_FROM_LARGE, curl_off_t(resumeoffset));
-        if (curlresult != CURLE_OK) {
-            KIO_CURL_ERROR(curlresult);
-            return false;
-        } else {
-            canResume();
-        }
     }
 
     if (m_curlheaders) {

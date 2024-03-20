@@ -39,7 +39,7 @@ public:
     void del(const KUrl &url, bool isfile) final;
 
     void slotData(const char* curldata, const size_t curldatasize);
-    void slotProgress(const KIO::filesize_t received, const KIO::filesize_t total);
+    void slotProgress(const KIO::filesize_t progress, const KIO::filesize_t total);
 
     bool aborttransfer;
 
