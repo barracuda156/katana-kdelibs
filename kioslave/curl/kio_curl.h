@@ -42,6 +42,7 @@ public:
     void slotProgress(const KIO::filesize_t progress, const KIO::filesize_t total);
 
     bool aborttransfer;
+    bool upload;
 
 private:
     CURLcode setupAuth(const QString &username, const QString &password);

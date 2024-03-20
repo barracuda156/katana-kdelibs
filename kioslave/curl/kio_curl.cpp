@@ -329,7 +329,11 @@ int curlXFERCallback(void *userdata, curl_off_t dltotal, curl_off_t dlnow, curl_
     if (curlprotocol->aborttransfer) {
         return CURLE_HTTP_RETURNED_ERROR;
     }
-    curlprotocol->slotProgress(KIO::filesize_t(dlnow), KIO::filesize_t(dltotal));
+    if (curlprotocol->upload) {
+        curlprotocol->slotProgress(KIO::filesize_t(ulnow), KIO::filesize_t(ultotal));
+    } else {
+        curlprotocol->slotProgress(KIO::filesize_t(dlnow), KIO::filesize_t(dltotal));
+    }
     return CURLE_OK;
 }
 
@@ -354,7 +358,7 @@ int main(int argc, char **argv)
 
 CurlProtocol::CurlProtocol(const QByteArray &app)
     : SlaveBase("curl", app),
-    aborttransfer(false),
+    aborttransfer(false), upload(false),
     m_emitmime(true), m_ishttp(false), m_isftp(false), m_issftp(false), m_collectdata(false),
     m_curl(nullptr), m_curlheaders(nullptr), m_curlquotes(nullptr)
 {
@@ -566,6 +570,8 @@ void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
     if (!setupCurl(url, false)) {
         return;
     }
+
+    upload = true;
 
     CURLcode curlresult = CURLE_OK;
     if (m_ishttp) {
@@ -884,6 +890,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
     }
 
     aborttransfer = false;
+    upload = false;
     m_emitmime = true;
     const QString urlprotocol = url.protocol();
     m_ishttp = (urlprotocol == QLatin1String("http") || urlprotocol == QLatin1String("https"));
