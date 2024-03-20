@@ -404,7 +404,7 @@ void CurlProtocol::stat(const KUrl &url)
     }
 
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(staturl, &redirecturl);
+    CURLcode curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Stat result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -482,7 +482,7 @@ void CurlProtocol::listDir(const KUrl &url)
     m_collectdata = true;
 
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(listurl, &redirecturl);
+    CURLcode curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "List result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
@@ -621,7 +621,7 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
     }
 
     KUrl redirecturl;
-    curlresult = performCurl(chmodurl, &redirecturl);
+    curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Chmod result" << curlresult;
     if (curlresult != CURLE_OK) {
         if (curlresult == CURLE_QUOTE_ERROR) {
@@ -671,7 +671,7 @@ void CurlProtocol::mkdir(const KUrl &url, int permissions)
     }
 
     KUrl redirecturl;
-    curlresult = performCurl(mkdirurl, &redirecturl);
+    curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Mkdir result" << curlresult;
     if (curlresult != CURLE_OK) {
         if (curlresult == CURLE_QUOTE_ERROR) {
@@ -723,7 +723,7 @@ void CurlProtocol::del(const KUrl &url, bool isfile)
     }
 
     KUrl redirecturl;
-    curlresult = performCurl(delurl, &redirecturl);
+    curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Delete result" << curlresult;
     if (curlresult != CURLE_OK) {
         if (curlresult == CURLE_QUOTE_ERROR) {
