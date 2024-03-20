@@ -359,7 +359,7 @@ int main(int argc, char **argv)
 CurlProtocol::CurlProtocol(const QByteArray &app)
     : SlaveBase("curl", app),
     aborttransfer(false), upload(false),
-    m_emitmime(true), m_ishttp(false), m_isftp(false), m_issftp(false), m_collectdata(false),
+    m_emitmime(true), m_ishttp(false), m_isftp(false), m_collectdata(false),
     m_curl(nullptr), m_curlheaders(nullptr), m_curlquotes(nullptr)
 {
     m_curl = curl_easy_init();
@@ -401,7 +401,7 @@ void CurlProtocol::stat(const KUrl &url)
         return;
     }
 
-    if (m_isftp || m_issftp) {
+    if (m_isftp) {
         m_collectdata = true;
     }
 
@@ -420,7 +420,7 @@ void CurlProtocol::stat(const KUrl &url)
         return;
     }
 
-    if (m_isftp || m_issftp) {
+    if (m_isftp) {
         foreach (const KIO::UDSEntry &kioudsentry, udsEntries()) {
             if (kioudsentry.stringValue(KIO::UDSEntry::UDS_NAME) == staturlfilename) {
                 statEntry(kioudsentry);
@@ -865,7 +865,7 @@ CURLcode CurlProtocol::setupAuth(const QString &username, const QString &passwor
     return curlresult;
 }
 
-bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
+bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
 {
     if (Q_UNLIKELY(!m_curl)) {
         error(KIO::ERR_OUT_OF_MEMORY, QString::fromLatin1("Null context"));
@@ -894,13 +894,12 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
     m_emitmime = true;
     const QString urlprotocol = url.protocol();
     m_ishttp = (urlprotocol == QLatin1String("http") || urlprotocol == QLatin1String("https"));
-    m_isftp = (urlprotocol == QLatin1String("ftp"));
-    m_issftp = (urlprotocol == QLatin1String("sftp"));
+    m_isftp = (urlprotocol == QLatin1String("ftp") || urlprotocol == QLatin1String("sftp"));
     m_collectdata = false;
     m_writedata.clear();
     m_url = url;
 
-    if (ftporsftp && !m_isftp && !m_issftp) {
+    if (ftp && !m_isftp) {
         // only for FTP or SFTP
         error(KIO::ERR_INTERNAL, url.prettyUrl());
         return false;
@@ -1051,7 +1050,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftporsftp)
         curl_slist_free_all(m_curlquotes);
         m_curlquotes = nullptr;
     }
-    if (m_isftp || m_issftp) {
+    if (m_isftp) {
         // NOTE: this is stored in kio_ftprc
         const long disablepassivemode = config()->readEntry("DisablePassiveMode", false);
         kDebug(7103) << "Disable passive mode" << disablepassivemode;

@@ -46,14 +46,13 @@ public:
 
 private:
     CURLcode setupAuth(const QString &username, const QString &password);
-    bool setupCurl(const KUrl &url, const bool ftporsftp);
+    bool setupCurl(const KUrl &url, const bool ftp);
     CURLcode performCurl(const KUrl &url, KUrl *redirecturl);
     QList<KIO::UDSEntry> udsEntries();
 
     bool m_emitmime;
     bool m_ishttp;
     bool m_isftp;
-    bool m_issftp;
     bool m_collectdata;
     QByteArray m_writedata;
     KUrl m_url;
