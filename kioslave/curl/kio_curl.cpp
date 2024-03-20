@@ -130,7 +130,8 @@ static inline mode_t ftpModeFromString(const char* const modestring)
 
 // for reference:
 // https://files.stairways.com/other/ftp-list-specs-info.txt
-qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday, const QByteArray &ftphouroryear)
+qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday, const QByteArray &ftphouroryear,
+                            const int currentyear)
 {
     const QString ftptimestring = ftpmonth + QLatin1Char(' ') + ftpday + QLatin1Char(' ') + ftphouroryear;
     QDateTime ftpdatetime;
@@ -138,8 +139,7 @@ qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday
         ftpdatetime = QDateTime::fromString(ftptimestring, "MMM d hh:mm");
         // year is the last occurance of that date, when is that?
         const QDate ftpdate = ftpdatetime.date();
-        const QDate currentdate = QDate::currentDate();
-        ftpdatetime.setDate(QDate(currentdate.year(), ftpdate.month(), ftpdate.day()));
+        ftpdatetime.setDate(QDate(currentyear, ftpdate.month(), ftpdate.day()));
     } else {
         ftpdatetime = QDateTime::fromString(ftptimestring, "MMM d yyyy");
     }
@@ -1139,6 +1139,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
     // sample line:
     // drwxr-xr-x   1 nobody   nobody          512 Mar 19 19:17 .
     static const QByteArray linkseparator = QByteArray("->");
+    const QDate currentdate = QDate::currentDate();
     foreach(const QByteArray &line, m_writedata.split('\n')) {
         if (line.isEmpty()) {
             continue;
@@ -1200,7 +1201,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
 
         KIO::UDSEntry kioudsentry;
         const mode_t stdmode = ftpModeFromString(ftpmode);
-        const qlonglong ftpmodtime = ftpTimeFromString(ftpmonth, ftpday, ftphouroryear);
+        const qlonglong ftpmodtime = ftpTimeFromString(ftpmonth, ftpday, ftphouroryear, currentdate.year());
         kioudsentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
