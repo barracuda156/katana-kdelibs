@@ -109,7 +109,7 @@ void JobTest::storedGet()
     KUrl u( filePath );
     m_result = -1;
 
-    KIO::StoredTransferJob* job = KIO::storedGet( u, KIO::NoReload, KIO::HideProgressInfo );
+    KIO::StoredTransferJob* job = KIO::storedGet( u, KIO::HideProgressInfo );
     QSignalSpy spyPercent(job, SIGNAL(percent(KJob*,ulong)));
     QVERIFY(spyPercent.isValid());
     job->setUiDelegate( 0 );
@@ -978,7 +978,7 @@ void JobTest::getInvalidUrl()
     KUrl url("http:/strange<hostname>/");
     QVERIFY(!url.isValid());
 
-    KIO::SimpleJob* job = KIO::get(url, KIO::NoReload, KIO::HideProgressInfo);
+    KIO::SimpleJob* job = KIO::get(url, KIO::HideProgressInfo);
     QVERIFY(job != 0);
     job->setUiDelegate( 0 );
 

@@ -871,12 +871,8 @@ void TransferJob::slotFinished()
             const QString redirectToGet = queryMetaData(QLatin1String("redirect-to-get"));
             if (redirectToGet == QLatin1String("true")) {
                 d->m_command = CMD_GET;
-                d->m_outgoingMetaData.remove(QLatin1String("content-type"));
             }
             d->m_incomingMetaData.clear();
-            if (queryMetaData("cache") != "reload") {
-                addMetaData("cache","refresh");
-            }
             d->m_internalSuspended = false;
             // The very tricky part is the packed arguments business
             switch(d->m_command) {
@@ -1048,15 +1044,11 @@ void TransferJob::setModificationTime(const QDateTime &mtime)
     addMetaData("modified", mtime.toString(Qt::ISODate));
 }
 
-TransferJob* KIO::get(const KUrl &url, LoadType reload, JobFlags flags)
+TransferJob* KIO::get(const KUrl &url, JobFlags flags)
 {
     // Send decoded path and encoded query
     KIO_ARGS << url;
-    TransferJob* job = TransferJobPrivate::newJob(url, CMD_GET, packedArgs, flags);
-    if (reload == Reload) {
-        job->addMetaData("cache", "reload");
-    }
-    return job;
+    return TransferJobPrivate::newJob(url, CMD_GET, packedArgs, flags);
 }
 
 class KIO::StoredTransferJobPrivate: public TransferJobPrivate
@@ -1157,15 +1149,11 @@ void StoredTransferJobPrivate::slotStoredDataReq(KIO::Job *, QByteArray &data)
     }
 }
 
-StoredTransferJob *KIO::storedGet(const KUrl &url, LoadType reload, JobFlags flags)
+StoredTransferJob *KIO::storedGet(const KUrl &url, JobFlags flags)
 {
     // Send decoded path and encoded query
     KIO_ARGS << url;
-    StoredTransferJob * job = StoredTransferJobPrivate::newJob(url, CMD_GET, packedArgs, flags);
-    if (reload == KIO::Reload) {
-        job->addMetaData("cache", "reload");
-    }
-    return job;
+    return StoredTransferJobPrivate::newJob(url, CMD_GET, packedArgs, flags);
 }
 
 StoredTransferJob *KIO::storedPut(const QByteArray &arr, const KUrl &url, int permissions,
@@ -1655,7 +1643,7 @@ void FileCopyJobPrivate::slotCanResume(KIO::Job *job, KIO::filesize_t offset)
         }
 
         if (job == m_putJob) {
-            m_getJob = KIO::get(m_src, NoReload, HideProgressInfo);
+            m_getJob = KIO::get(m_src, HideProgressInfo);
             // kDebug(7007) << "m_getJob=" << m_getJob << m_src;
             // Set size in subjob. This helps if the slave doesn't emit totalSize.
             if (m_sourceSize != (KIO::filesize_t)-1) {

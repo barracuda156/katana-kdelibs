@@ -26,8 +26,6 @@
 
 namespace KIO {
 
-    enum LoadType { Reload, NoReload };
-
     /**
      * Creates a single directory.
      *
@@ -164,11 +162,10 @@ namespace KIO {
      * The slave emits the data through the data() signal.
      *
      * @param url the URL of the file
-     * @param reload: Reload to reload the file, NoReload if it can be taken from the cache
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT TransferJob *get( const KUrl& url, LoadType reload = NoReload, JobFlags flags = DefaultFlags );
+    KIO_EXPORT TransferJob *get( const KUrl& url, JobFlags flags = DefaultFlags );
 
     /**
      * Put (a.k.a. write)
@@ -188,11 +185,10 @@ namespace KIO {
      * @see StoredTransferJob
      *
      * @param url the URL of the file
-     * @param reload: Reload to reload the file, NoReload if it can be taken from the cache
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT StoredTransferJob *storedGet( const KUrl& url, LoadType reload = NoReload, JobFlags flags = DefaultFlags );
+    KIO_EXPORT StoredTransferJob *storedGet( const KUrl& url, JobFlags flags = DefaultFlags );
 
     /**
      * Put (a.k.a. write) data from a single QByteArray.

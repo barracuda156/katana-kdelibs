@@ -1207,7 +1207,7 @@ void KRun::scanFile()
     kDebug(7010) << this << " Scanning file " << d->m_strURL.url();
 
     KIO::JobFlags flags = d->m_bProgressInfo ? KIO::DefaultFlags : KIO::HideProgressInfo;
-    KIO::TransferJob *job = KIO::get(d->m_strURL, KIO::NoReload /*reload*/, flags);
+    KIO::TransferJob *job = KIO::get(d->m_strURL, flags);
     job->ui()->setWindow(d->m_window);
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(slotScanFinished(KJob*)));

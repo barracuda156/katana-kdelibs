@@ -19,12 +19,6 @@ accept          string          List of mimetypes to accept separated by a ", ".
 
 UserAgent       string          The user agent name to send to remote host (read by http)
 
-cache           "cache"         Use entry from cache if available.
-                "cacheonly"     Do not do any remote lookups, fail if not in cache. (read by http)
-                "verify"        Use entry from cache, verify with remote server if expired
-                "refresh"       Use entry from cache after verifying with remote server
-                "reload"        Do not do any cache lookups.
-
 window-id       number          winId() of the window the request is associated with.
 
 resume          number          Try to get the file starting at the given offset (set by file_copy
@@ -63,6 +57,6 @@ redirect-to-get bool            If "true", changes a redrirection request to a G
 
 Examples:
 
-E.g. the following disables caching:
+E.g. the following turns redirect into get request:
 job = KIO::get( KUrl("http://www.kde.org") );
-job->addMetaData("cache", "reload");
+job->addMetaData("redirect-to-get", "true");
