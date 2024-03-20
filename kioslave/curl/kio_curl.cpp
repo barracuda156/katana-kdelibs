@@ -383,17 +383,15 @@ void CurlProtocol::stat(const KUrl &url)
     kDebug(7103) << "Stat URL" << url.prettyUrl();
 
     KUrl staturl(url);
-    QString statfilename = QLatin1String(".");
-    const QString staturlfilename = staturl.fileName();
+    QString staturlfilename = staturl.fileName();
     const QString staturlprotocol = staturl.protocol();
     if (staturlprotocol == QLatin1String("ftp") || staturlprotocol == QLatin1String("sftp")) {
-        if (!staturl.path().endsWith(QDir::separator())) {
-            statfilename = staturlfilename;
-            staturl.setFileName(QString());
-            staturl.adjustPath(KUrl::AddTrailingSlash);
-        }
+        staturl.adjustPath(KUrl::RemoveTrailingSlash);
+        staturlfilename = staturl.fileName();
+        staturl.setFileName(QString());
+        staturl.adjustPath(KUrl::AddTrailingSlash);
     }
-    kDebug(7103) << "Actual stat URL" << staturl << "filename" << statfilename;
+    kDebug(7103) << "Actual stat URL" << staturl << "filename" << staturlfilename;
 
     if (!setupCurl(staturl, false)) {
         return;
@@ -420,13 +418,26 @@ void CurlProtocol::stat(const KUrl &url)
 
     if (m_isftp || m_issftp) {
         foreach (const KIO::UDSEntry &kioudsentry, udsEntries()) {
-            if (kioudsentry.stringValue(KIO::UDSEntry::UDS_NAME) == statfilename) {
+            if (kioudsentry.stringValue(KIO::UDSEntry::UDS_NAME) == staturlfilename) {
                 statEntry(kioudsentry);
                 finished();
                 return;
             }
         }
-        kWarning(7103) << "Could not find entry for" << statfilename;
+        // HACK: fake the root directory for servers which do not include entries for "." and ".."
+        // when listing
+        if (staturlfilename.isEmpty() || staturlfilename == QDir::separator()) {
+            kDebug(7103) << "Faking root directory for" << url.prettyUrl();
+            KIO::UDSEntry kioudsentry;
+            kioudsentry.insert(KIO::UDSEntry::UDS_NAME, QLatin1String("."));
+            kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+            kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
+            statEntry(kioudsentry);
+            finished();
+            return;
+        }
+        kWarning(7103) << "Could not find entry for" << staturlfilename;
         error(KIO::ERR_COULD_NOT_STAT, url.prettyUrl());
         return;
     }
