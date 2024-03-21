@@ -355,22 +355,20 @@ int curlKeyCallback(CURL *curl,
         // nothing to do
         return CURLKHSTAT_FINE;
     }
+    const QString urlhost = curlprotocol->p_url.host();
+    // NOTE: the key is saved in kioslaverc
+    const QString kiodontaskagain = QLatin1String("kio_curl_") + urlhost;
     const QString kiomessage = i18n(
-        "The host %1 cannot be verified, do you want to continue?"
-        "\n\nIf you click %2 the host will be added permanently to the known hosts\n"
-        "file and you will not be asked again. If you click %3 the host will be\n"
-        "accepted for the current transfer only, %4 will cancel the transfer.",
-        curlprotocol->p_url.host(),
-        i18nc("@action:button filter-yes", "Yes"),
-        i18nc("@action:button filter-no", "No"),
-        i18nc("@action:button filter-cancel", "Cancel")
+        "The host %1 cannot be verified,\ndo you want to accept the key and continue?",
+        urlhost
     );
     const QString kiocaption = i18n("Key mismatch");
-    const int messageresult = curlprotocol->messageBox(KIO::SlaveBase::WarningYesNoCancel, kiomessage, kiocaption);
+    const int messageresult = curlprotocol->messageBox(
+        kiomessage, KIO::SlaveBase::WarningContinueCancel, kiocaption,
+        i18n("&Yes"), i18n("&No"), kiodontaskagain
+    );
     kWarning(7103) << "Key mismatch for" << curlprotocol->p_url << messageresult;
-    if (messageresult == KMessageBox::Yes) {
-        return CURLKHSTAT_FINE_ADD_TO_FILE;
-    } else if (messageresult == KMessageBox::No) {
+    if (messageresult == KMessageBox::Continue) {
         return CURLKHSTAT_FINE;
     }
     return CURLKHSTAT_REJECT;
