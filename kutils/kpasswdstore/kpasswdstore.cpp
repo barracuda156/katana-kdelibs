@@ -17,8 +17,6 @@
 */
 
 #include "kpasswdstore.h"
-#include "kconfig.h"
-#include "kconfiggroup.h"
 #include "kstandarddirs.h"
 #include "klockfile.h"
 #include "ksettings.h"
@@ -33,12 +31,11 @@
 
 static QByteArray getCookie()
 {
-    KConfig kconfig("kpasswdstorerc", KConfig::SimpleConfig);
-    KConfigGroup kconfiggroup = kconfig.group("KPasswdStore");
-    const QByteArray cookietype = kconfiggroup.readEntry("Cookie", QByteArray()).toLower();
-    if (cookietype == "pid") {
+    KSettings ksettings("kpasswdstorerc", KSettings::SimpleConfig);
+    const QString cookietype = ksettings.string("KPasswdStore/Cookie", QString()).toLower();
+    if (cookietype == QLatin1String("pid")) {
         return QByteArray::number(::getpid());
-    } else if (cookietype == "random") {
+    } else if (cookietype == QLatin1String("random")) {
         return qRandomUuid();
     }
     return QByteArray::number(::getuid());
