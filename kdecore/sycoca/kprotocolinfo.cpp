@@ -41,7 +41,6 @@ KProtocolInfo::KProtocolInfo(const QString &path)
     m_name = config.readEntry("protocol");
     m_exec = config.readPathEntry("exec", QString());
     m_isSourceProtocol = config.readEntry("source", true);
-    m_isHelperProtocol = config.readEntry("helper", false);
     m_supportsListing = config.readEntry("listing", false);
     m_supportsReading = config.readEntry("reading", false);
     m_supportsWriting = config.readEntry("writing", false);
@@ -90,25 +89,24 @@ KProtocolInfo::~KProtocolInfo()
 void KProtocolInfo::load(QDataStream &str)
 {
     Q_D(KProtocolInfo);
-    // NOTE: make sure to update the version number in ksycoca.cpp
-    qint8 i_isSourceProtocol, i_isHelperProtocol,
-          i_supportsListing, i_supportsReading,
-          i_supportsWriting, i_supportsMakeDir,
-          i_supportsDeleting, i_supportsLinking,
-          i_supportsMoving, i_determineMimetypeFromExtension,
-          i_canCopyFromFile, i_canCopyToFile, i_showPreviews,
+    // NOTE: make sure to update the version number in ksycoca_p.h
+    qint8 i_isSourceProtocol, i_supportsListing,
+          i_supportsReading, i_supportsWriting,
+          i_supportsMakeDir, i_supportsDeleting,
+          i_supportsLinking, i_supportsMoving,
+          i_determineMimetypeFromExtension, i_canCopyFromFile,
+          i_canCopyToFile, i_showPreviews,
           i_canRenameFromFile, i_canRenameToFile,
           i_canDeleteRecursive, i_fileNameUsedForCopying;
 
     str >> m_name >> m_exec >> m_defaultMimetype
         >> i_determineMimetypeFromExtension
         >> m_icon
-        >> i_isSourceProtocol >> i_isHelperProtocol
-        >> i_supportsListing >> i_supportsReading
-        >> i_supportsWriting >> i_supportsMakeDir
-        >> i_supportsDeleting >> i_supportsLinking
-        >> i_supportsMoving >> i_canCopyFromFile
-        >> i_canCopyToFile
+        >> i_isSourceProtocol >> i_supportsListing
+        >> i_supportsReading >> i_supportsWriting
+        >> i_supportsMakeDir >> i_supportsDeleting
+        >> i_supportsLinking >> i_supportsMoving
+        >> i_canCopyFromFile >> i_canCopyToFile
         >> m_config >> m_maxSlaves >> d->docPath >> d->protClass
         >> i_showPreviews
         >> d->proxyProtocol
@@ -117,7 +115,6 @@ void KProtocolInfo::load(QDataStream &str)
         >> d->maxSlavesPerHost;
 
     m_isSourceProtocol = (i_isSourceProtocol != 0);
-    m_isHelperProtocol = (i_isHelperProtocol != 0);
     m_supportsListing = (i_supportsListing != 0);
     m_supportsReading = (i_supportsReading != 0);
     m_supportsWriting = (i_supportsWriting != 0);
@@ -140,18 +137,17 @@ KProtocolInfoPrivate::save(QDataStream &str)
 {
     KSycocaEntryPrivate::save(str);
 
-    // NOTE: make sure to update the version number in ksycoca.cpp
-    qint8 i_isSourceProtocol, i_isHelperProtocol,
-          i_supportsListing, i_supportsReading,
-          i_supportsWriting, i_supportsMakeDir,
-          i_supportsDeleting, i_supportsLinking,
-          i_supportsMoving, i_determineMimetypeFromExtension,
-          i_canCopyFromFile, i_canCopyToFile, i_showPreviews,
+    // NOTE: make sure to update the version number in ksycoca_p.h
+    qint8 i_isSourceProtocol, i_supportsListing,
+          i_supportsReading, i_supportsWriting,
+          i_supportsMakeDir, i_supportsDeleting,
+          i_supportsLinking, i_supportsMoving,
+          i_determineMimetypeFromExtension, i_canCopyFromFile,
+          i_canCopyToFile, i_showPreviews,
           i_canRenameFromFile, i_canRenameToFile,
           i_canDeleteRecursive, i_fileNameUsedForCopying;
 
     i_isSourceProtocol = q->m_isSourceProtocol ? 1 : 0;
-    i_isHelperProtocol = q->m_isHelperProtocol ? 1 : 0;
     i_supportsListing = q->m_supportsListing ? 1 : 0;
     i_supportsReading = q->m_supportsReading ? 1 : 0;
     i_supportsWriting = q->m_supportsWriting ? 1 : 0;
@@ -171,12 +167,11 @@ KProtocolInfoPrivate::save(QDataStream &str)
     str << q->m_name << q->m_exec << q->m_defaultMimetype
         << i_determineMimetypeFromExtension
         << q->m_icon
-        << i_isSourceProtocol << i_isHelperProtocol
-        << i_supportsListing << i_supportsReading
-        << i_supportsWriting << i_supportsMakeDir
-        << i_supportsDeleting << i_supportsLinking
-        << i_supportsMoving << i_canCopyFromFile
-        << i_canCopyToFile
+        << i_isSourceProtocol << i_supportsListing
+        << i_supportsReading << i_supportsWriting
+        << i_supportsMakeDir << i_supportsDeleting
+        << i_supportsLinking << i_supportsMoving
+        << i_canCopyFromFile << i_canCopyToFile
         << q->m_config << q->m_maxSlaves << docPath << protClass
         << i_showPreviews
         << proxyProtocol
@@ -206,18 +201,12 @@ void KProtocolInfo::selectServiceOrHelper(const QString &protocol, KProtocolInfo
     //     to a webbrowser, but mimetype-determination-in-calling-application by default is done here
 
     const KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
-    const KService::Ptr service = KMimeTypeTrader::self()->preferredService(QString::fromLatin1("x-scheme-handler/") + protocol);
-    if (service && prot && prot->m_isHelperProtocol) {
-        // for helper protocols, the handler app has priority over the hardcoded one (see A above)
-        returnService = service;
-        return;
-    }
     if (prot) {
         returnProtocol = prot;
-    } else {
-        // no protocol file, use handler app if any
-        returnService = service;
+        return;
     }
+    // no protocol file, use handler app if any
+    returnService = KMimeTypeTrader::self()->preferredService(QString::fromLatin1("x-scheme-handler/") + protocol);
 }
 
 QString KProtocolInfo::icon(const QString &protocol)
@@ -360,11 +349,6 @@ bool KProtocolInfo::isHelperProtocol(const KUrl &url)
 
 bool KProtocolInfo::isHelperProtocol(const QString &protocol)
 {
-    // call the findProtocol directly (not via KProtocolManager) to bypass any proxy settings.
-    KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
-    if (prot) {
-        return prot->m_isHelperProtocol;
-    }
     const KService::Ptr service = KMimeTypeTrader::self()->preferredService(QString::fromLatin1("x-scheme-handler/") + protocol);
     return !service.isNull();
 }

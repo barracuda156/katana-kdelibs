@@ -110,10 +110,10 @@ KServiceTypePrivate::load( QDataStream& _str )
 void
 KServiceTypePrivate::save( QDataStream& _str )
 {
-  KSycocaEntryPrivate::save( _str );
-  // NOTE: make sure to update the version number in ksycoca.cpp
-  _str << m_strName << m_strComment << m_mapProps << m_mapPropDefs
-       << m_serviceOffersOffset;
+    KSycocaEntryPrivate::save( _str );
+    // NOTE: make sure to update the version number in ksycoca_p.h
+    _str << m_strName << m_strComment << m_mapProps << m_mapPropDefs
+         << m_serviceOffersOffset;
 }
 
 KServiceType::~KServiceType()

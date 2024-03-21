@@ -95,11 +95,8 @@ public:
      * A helper protocol invokes an external application and does not return
      * a file or stream.
      *
-     * This corresponds to the "helper=" field in the protocol description file.
-     * Valid values for this field are "true" or "false" (default).
-     *
      * @param url the url to check
-     * @return true if the protocol is a helper protocol (e.g. vnc), false
+     * @return true if the protocol is a helper protocol (e.g. mailto), false
      *              if not (e.g. http)
      */
     static bool isHelperProtocol(const KUrl &url);
@@ -243,7 +240,6 @@ protected:
     QString m_name;
     QString m_exec;
     bool m_isSourceProtocol;
-    bool m_isHelperProtocol;
     bool m_supportsListing;
     bool m_supportsReading;
     bool m_supportsWriting;

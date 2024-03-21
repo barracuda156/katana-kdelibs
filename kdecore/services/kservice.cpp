@@ -310,7 +310,7 @@ void KServicePrivate::load(QDataStream& s)
     qint8 def, term;
     qint8 initpref;
 
-    // NOTE: make sure to update the version number in ksycoca.cpp
+    // NOTE: make sure to update the version number in ksycoca_p.h
     s >> m_strType >> m_strName >> m_strExec >> m_strIcon
       >> term >> m_strTerminalOptions
       >> m_strPath >> m_strComment >> def >> m_mapProps
@@ -333,7 +333,7 @@ void KServicePrivate::save(QDataStream& s)
     qint8 def = m_bAllowAsDefault, initpref = m_initialPreference;
     qint8 term = m_bTerminal;
 
-    // NOTE: make sure to update the version number in ksycoca.cpp
+    // NOTE: make sure to update the version number in ksycoca_p.h
     s << m_strType << m_strName << m_strExec << m_strIcon
       << term << m_strTerminalOptions
       << m_strPath << m_strComment << def << m_mapProps
