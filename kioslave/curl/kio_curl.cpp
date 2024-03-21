@@ -945,6 +945,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     curl_easy_reset(m_curl);
     curl_easy_setopt(m_curl, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(m_curl, CURLOPT_FILETIME, 1L);
+    curl_easy_setopt(m_curl, CURLOPT_FAILONERROR, 1L);
     curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(m_curl, CURLOPT_MAXREDIRS, 100L); // proxies apparently cause a lot of redirects
     curl_easy_setopt(m_curl, CURLOPT_CONNECTTIMEOUT, SlaveBase::connectTimeout());
@@ -957,9 +958,8 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     curl_easy_setopt(m_curl, CURLOPT_XFERINFODATA, this);
     curl_easy_setopt(m_curl, CURLOPT_XFERINFOFUNCTION, curlXFERCallback);
     // CURLOPT_SSH_KNOWNHOSTS has to be set for the callback, it is conditionally bellow
-    curl_easy_setopt(m_curl, CURLOPT_SSH_KEYFUNCTION, curlKeyCallback);
     curl_easy_setopt(m_curl, CURLOPT_SSH_KEYDATA, this);
-    curl_easy_setopt(m_curl, CURLOPT_FAILONERROR, 1L);
+    curl_easy_setopt(m_curl, CURLOPT_SSH_KEYFUNCTION, curlKeyCallback);
     // curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); // debugging
 
     // NOTE: the URL path has to be percentage-encoded, otherwise curl will reject it if it
