@@ -1059,6 +1059,18 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
             KIO_CURL_ERROR(curlresult);
             return false;
         }
+
+        // no callback for keyboard input, disable CURLSSH_AUTH_KEYBOARD so that curl does not
+        // under any circumstances try to access stdin
+        static long curlsshauthtypes = (
+            CURLSSH_AUTH_PUBLICKEY | CURLSSH_AUTH_PASSWORD | CURLSSH_AUTH_HOST |
+            CURLSSH_AUTH_AGENT | CURLSSH_AUTH_GSSAPI
+        );
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_SSH_AUTH_TYPES, curlsshauthtypes);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return false;
+        }
     }
 
     return true;
