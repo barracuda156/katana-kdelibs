@@ -344,6 +344,9 @@ int curlKeyCallback(CURL *curl,
                     enum curl_khmatch match,
                     void *userdata)
 {
+    Q_UNUSED(curl);
+    Q_UNUSED(knownkey);
+    Q_UNUSED(foundkey);
     CurlProtocol* curlprotocol = static_cast<CurlProtocol*>(userdata);
     if (!curlprotocol) {
         return CURLKHSTAT_REJECT;
