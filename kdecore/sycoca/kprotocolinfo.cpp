@@ -349,6 +349,11 @@ bool KProtocolInfo::isHelperProtocol(const KUrl &url)
 
 bool KProtocolInfo::isHelperProtocol(const QString &protocol)
 {
+    // call the findProtocol directly (not via KProtocolManager) to bypass any proxy settings.
+    KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
+    if (prot) {
+        return false;
+    }
     const KService::Ptr service = KMimeTypeTrader::self()->preferredService(QString::fromLatin1("x-scheme-handler/") + protocol);
     return !service.isNull();
 }
