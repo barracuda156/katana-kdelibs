@@ -105,14 +105,18 @@ bool KDecompressor::process(const QByteArray &data)
         case KDecompressor::TypeDeflate:
         case KDecompressor::TypeZlib:
         case KDecompressor::TypeGZip: {
+            size_t speculativesize = (data.size() * 2);
+            if (Q_UNLIKELY(speculativesize >= INT_MAX)) {
+                d->m_errorstring = i18n("Input data size too big: %1", data.size());
+                return false;
+            }
+            d->m_result.resize(speculativesize);
+
             struct libdeflate_decompressor* decomp = libdeflate_alloc_decompressor();
             if (Q_UNLIKELY(!decomp)) {
                 d->m_errorstring = i18n("Could not allocate decompressor");
                 return false;
             }
-
-            size_t speculativesize = (data.size() * 2);
-            d->m_result.resize(speculativesize);
 
             libdeflate_result decompresult = LIBDEFLATE_INSUFFICIENT_SPACE;
             while (decompresult == LIBDEFLATE_INSUFFICIENT_SPACE) {
@@ -153,11 +157,10 @@ bool KDecompressor::process(const QByteArray &data)
 
                 if (decompresult == LIBDEFLATE_INSUFFICIENT_SPACE) {
                     speculativesize = (speculativesize + KDECOMPRESSOR_BUFFSIZE);
+                    if (speculativesize >= INT_MAX) {
+                        break;
+                    }
                     d->m_result.resize(speculativesize);
-                }
-
-                if (speculativesize >= INT_MAX) {
-                    break;
                 }
             }
             libdeflate_free_decompressor(decomp);
@@ -174,6 +177,10 @@ bool KDecompressor::process(const QByteArray &data)
 #if defined(HAVE_BZIP2)
         case KDecompressor::TypeBZip2: {
             uint speculativesize = (data.size() * 2);
+            if (Q_UNLIKELY(speculativesize >= INT_MAX)) {
+                d->m_errorstring = i18n("Input data size too big: %1", data.size());
+                return false;
+            }
             d->m_result.resize(speculativesize);
 
             int decompresult = BZ_OUTBUFF_FULL;
@@ -186,11 +193,10 @@ bool KDecompressor::process(const QByteArray &data)
 
                 if (decompresult == BZ_OUTBUFF_FULL) {
                     speculativesize = (speculativesize + KDECOMPRESSOR_BUFFSIZE);
+                    if (speculativesize >= INT_MAX) {
+                        break;
+                    }
                     d->m_result.resize(speculativesize);
-                }
-
-                if (speculativesize >= INT_MAX) {
-                    break;
                 }
             }
 
@@ -207,9 +213,12 @@ bool KDecompressor::process(const QByteArray &data)
 #if defined(HAVE_LIBLZMA)
         case KDecompressor::TypeXZ: {
             size_t speculativesize = (data.size() * 2);
+            if (Q_UNLIKELY(speculativesize >= INT_MAX)) {
+                d->m_errorstring = i18n("Input data size too big: %1", data.size());
+                return false;
+            }
             d->m_result.resize(speculativesize);
 
-        redolzmadecoding:
             lzma_stream decomp = LZMA_STREAM_INIT;
             decomp.next_in = (const uint8_t*)data.constData();
             decomp.avail_in = data.size();
@@ -230,14 +239,12 @@ bool KDecompressor::process(const QByteArray &data)
 
                 if (decompresult == LZMA_BUF_ERROR) {
                     speculativesize = (speculativesize + KDECOMPRESSOR_BUFFSIZE);
-                    d->m_result.resize(speculativesize);
-
                     if (speculativesize >= INT_MAX) {
                         break;
                     }
-
-                    lzma_end(&decomp);
-                    goto redolzmadecoding;
+                    d->m_result.resize(speculativesize);
+                    decomp.next_out = (uint8_t*)d->m_result.data();
+                    decomp.avail_out = speculativesize;
                 } else if (decompresult != LZMA_OK) {
                     break;
                 }
