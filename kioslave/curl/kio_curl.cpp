@@ -21,6 +21,8 @@
 #include "kmimetype.h"
 #include "kremoteencoding.h"
 #include "kconfiggroup.h"
+#include "kstandarddirs.h"
+#include "kmessagebox.h"
 #include "kdebug.h"
 
 #include <QApplication>
@@ -326,15 +328,49 @@ int curlXFERCallback(void *userdata, curl_off_t dltotal, curl_off_t dlnow, curl_
     if (!curlprotocol) {
         return CURLE_BAD_FUNCTION_ARGUMENT;
     }
-    if (curlprotocol->aborttransfer) {
+    if (curlprotocol->p_aborttransfer) {
         return CURLE_HTTP_RETURNED_ERROR;
     }
-    if (curlprotocol->upload) {
+    if (curlprotocol->p_upload) {
         curlprotocol->slotProgress(KIO::filesize_t(ulnow), KIO::filesize_t(ultotal));
     } else {
         curlprotocol->slotProgress(KIO::filesize_t(dlnow), KIO::filesize_t(dltotal));
     }
     return CURLE_OK;
+}
+
+int curlKeyCallback(CURL *curl,
+                    const struct curl_khkey *knownkey, const struct curl_khkey *foundkey,
+                    enum curl_khmatch match,
+                    void *userdata)
+{
+    CurlProtocol* curlprotocol = static_cast<CurlProtocol*>(userdata);
+    if (!curlprotocol) {
+        return CURLKHSTAT_REJECT;
+    }
+    if (match == CURLKHMATCH_OK) {
+        // nothing to do
+        return CURLKHSTAT_FINE;
+    }
+    const QString kiomessage = i18n(
+        "The host %1 cannot be verified, do you want to continue?"
+        "\n\nIf you click %2 the host will be added permanently to the known hosts\n"
+        "file and you will not be asked again. If you click %3 the host will be\n"
+        "accepted for the current transfer only, %4 will cancel the transfer.",
+        curlprotocol->p_url.host(),
+        i18nc("@action:button filter-yes", "Yes"),
+        i18nc("@action:button filter-no", "No"),
+        i18nc("@action:button filter-cancel", "Cancel")
+    );
+    const QString kiocaption = i18n("Key mismatch");
+    const int messageresult = curlprotocol->messageBox(KIO::SlaveBase::WarningYesNoCancel, kiomessage, kiocaption);
+    kWarning(7103) << "Key mismatch for" << curlprotocol->p_url << messageresult;
+    if (messageresult == KMessageBox::Yes) {
+        return CURLKHSTAT_FINE_ADD_TO_FILE;
+    } else if (messageresult == KMessageBox::No) {
+        return CURLKHSTAT_FINE;
+    }
+    return CURLKHSTAT_REJECT;
 }
 
 int main(int argc, char **argv)
@@ -358,7 +394,7 @@ int main(int argc, char **argv)
 
 CurlProtocol::CurlProtocol(const QByteArray &app)
     : SlaveBase("curl", app),
-    aborttransfer(false), upload(false),
+    p_aborttransfer(false), p_upload(false),
     m_emitmime(true), m_ishttp(false), m_isftp(false), m_collectdata(false),
     m_curl(nullptr), m_curlheaders(nullptr), m_curlquotes(nullptr)
 {
@@ -571,7 +607,7 @@ void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
         return;
     }
 
-    upload = true;
+    p_upload = true;
 
     CURLcode curlresult = CURLE_OK;
     if (m_ishttp) {
@@ -785,7 +821,7 @@ void CurlProtocol::del(const KUrl &url, bool isfile)
 
 void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
 {
-    if (aborttransfer) {
+    if (p_aborttransfer) {
         kDebug(7103) << "Transfer still in progress";
         return;
     }
@@ -799,7 +835,7 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
             // if it's HTTP error do not send data and MIME, abort transfer
             const long httpcode = HTTPCode(m_curl);
             if (httpcode >= 400) {
-                aborttransfer = true;
+                p_aborttransfer = true;
                 return;
             }
 
@@ -813,7 +849,7 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
             }
             mimeType(httpmimetype);
         } else {
-            KMimeType::Ptr kmimetype = KMimeType::findByNameAndContent(m_url.url(), bytedata);
+            KMimeType::Ptr kmimetype = KMimeType::findByNameAndContent(p_url.url(), bytedata);
             // default MIME type should be returned in the worst case
             Q_ASSERT(kmimetype);
             mimeType(kmimetype->name());
@@ -889,15 +925,15 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
         }
     }
 
-    aborttransfer = false;
-    upload = false;
+    p_aborttransfer = false;
+    p_upload = false;
+    p_url = url;
     m_emitmime = true;
     const QString urlprotocol = url.protocol();
     m_ishttp = (urlprotocol == QLatin1String("http") || urlprotocol == QLatin1String("https"));
     m_isftp = (urlprotocol == QLatin1String("ftp") || urlprotocol == QLatin1String("sftp"));
     m_collectdata = false;
     m_writedata.clear();
-    m_url = url;
 
     if (ftp && !m_isftp) {
         // only for FTP or SFTP
@@ -919,9 +955,10 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     curl_easy_setopt(m_curl, CURLOPT_NOPROGRESS, 0L); // otherwise the XFER info callback is not called
     curl_easy_setopt(m_curl, CURLOPT_XFERINFODATA, this);
     curl_easy_setopt(m_curl, CURLOPT_XFERINFOFUNCTION, curlXFERCallback);
+    // CURLOPT_SSH_KNOWNHOSTS has to be set for the callback, it is conditionally bellow
+    curl_easy_setopt(m_curl, CURLOPT_SSH_KEYFUNCTION, curlKeyCallback);
+    curl_easy_setopt(m_curl, CURLOPT_SSH_KEYDATA, this);
     curl_easy_setopt(m_curl, CURLOPT_FAILONERROR, 1L);
-    // TODO: option for this, warning?
-    curl_easy_setopt(m_curl, CURLOPT_USE_SSL, (long)CURLUSESSL_TRY);
     // curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); // debugging
 
     // NOTE: the URL path has to be percentage-encoded, otherwise curl will reject it if it
@@ -1067,6 +1104,13 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
             CURLSSH_AUTH_AGENT | CURLSSH_AUTH_GSSAPI
         );
         curlresult = curl_easy_setopt(m_curl, CURLOPT_SSH_AUTH_TYPES, curlsshauthtypes);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return false;
+        }
+
+        const QByteArray curlsshknownhosts = QFile::encodeName(KStandardDirs::locateLocal("data", "known_hosts"));
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_SSH_KNOWNHOSTS, curlsshknownhosts.constData());
         if (curlresult != CURLE_OK) {
             KIO_CURL_ERROR(curlresult);
             return false;

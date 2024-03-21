@@ -41,8 +41,9 @@ public:
     void slotData(const char* curldata, const size_t curldatasize);
     void slotProgress(const KIO::filesize_t progress, const KIO::filesize_t total);
 
-    bool aborttransfer;
-    bool upload;
+    bool p_aborttransfer;
+    bool p_upload;
+    KUrl p_url;
 
 private:
     CURLcode setupAuth(const QString &username, const QString &password);
@@ -55,7 +56,6 @@ private:
     bool m_isftp;
     bool m_collectdata;
     QByteArray m_writedata;
-    KUrl m_url;
     CURL* m_curl;
     struct curl_slist* m_curlheaders;
     struct curl_slist* m_curlquotes;
