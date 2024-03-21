@@ -35,9 +35,6 @@
 
 #define KDECOMPRESSOR_BUFFSIZE 1024 * 1000 // 1MB
 
-// for reference:
-// http://linux.math.tifr.res.in/manuals/html/manual_3.html
-
 class KDecompressorPrivate
 {
 public:

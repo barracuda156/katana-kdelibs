@@ -35,9 +35,6 @@
 // space for headers in the worst case scenario
 static const ushort s_headersize = 256;
 
-// for reference:
-// http://linux.math.tifr.res.in/manuals/html/manual_3.html
-
 class KCompressorPrivate
 {
 public:
