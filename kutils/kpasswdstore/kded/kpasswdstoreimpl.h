@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "kpasswdstore_export.h"
+#include "ksettings.h"
 
 #include <QString>
 #include <QMap>
@@ -55,7 +56,7 @@ private:
     qint64 m_timeout;
     bool m_cacheonly;
     QString m_storeid;
-    QString m_passwdstore;
+    KSettings m_passwdstore;
     QMap<QByteArray, QString> m_cachemap;
 
 #if defined(HAVE_OPENSSL)

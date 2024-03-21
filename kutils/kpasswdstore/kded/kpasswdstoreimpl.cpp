@@ -18,7 +18,6 @@
 
 #include "kpasswdstoreimpl.h"
 #include "kstandarddirs.h"
-#include "ksettings.h"
 #include "kpassworddialog.h"
 #include "knewpassworddialog.h"
 #include "kmessagebox.h"
@@ -59,7 +58,7 @@ KPasswdStoreImpl::KPasswdStoreImpl(const QString &id)
     m_timeout(kpasswdstore_passtimeout * 60000),
     m_cacheonly(false),
     m_storeid(id),
-    m_passwdstore(KStandardDirs::locateLocal("data", "kpasswdstore"))
+    m_passwdstore(KStandardDirs::locateLocal("data", "kpasswdstore"), KSettings::SimpleConfig)
 #if defined(HAVE_OPENSSL)
     , m_opensslkeylen(0),
     m_opensslivlen(0),
@@ -142,11 +141,10 @@ QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windo
     }
 
     bool ok = false;
-    KSettings ksettings(m_passwdstore, KSettings::SimpleConfig);
     QString storekey = m_storeid;
     storekey.append(QLatin1Char('/'));
     storekey.append(QString::fromLatin1(key.constData(), key.size()));
-    const QString passwd = ksettings.string(storekey);
+    const QString passwd = m_passwdstore.string(storekey);
     if (passwd.isEmpty()) {
         return QString();
     }
@@ -169,11 +167,10 @@ bool KPasswdStoreImpl::storePasswd(const QByteArray &key, const QString &passwd,
     }
 
     bool ok = false;
-    KSettings ksettings(m_passwdstore, KSettings::SimpleConfig);
     QString storekey = m_storeid;
     storekey.append(QLatin1Char('/'));
     storekey.append(QString::fromLatin1(key.constData(), key.size()));
-    ksettings.setString(storekey, encryptPasswd(passwd, &ok));
+    m_passwdstore.setString(storekey, encryptPasswd(passwd, &ok));
     return ok;
 }
 
@@ -192,10 +189,9 @@ bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerr
         // the only reason to encrypt and decrypt passwords is to obscure them
         // for the naked eye, if one can overwrite, delete or otherwise alter
         // the password store then there are more possibilities for havoc
-        KSettings ksettings(m_passwdstore, KSettings::SimpleConfig);
         QString storekey = QString::fromLatin1("KPasswdStore/");
         storekey.append(m_storeid);
-        const QString storepasswdhash = ksettings.string(storekey);
+        const QString storepasswdhash = m_passwdstore.string(storekey);
         if (storepasswdhash.isEmpty()) {
             KNewPasswordDialog knewpasswddialog(widgetForWindowID(windowid));
             knewpasswddialog.setPrompt(i18n("Enter a password for <b>%1</b> password storage", m_storeid));
@@ -243,7 +239,7 @@ bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerr
         }
 
         if (storepasswdhash.isEmpty()) {
-            ksettings.setString(storekey, passhash);
+            m_passwdstore.setString(storekey, passhash);
             return true;
         }
         if (passhash != storepasswdhash) {
