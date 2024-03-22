@@ -215,10 +215,14 @@ static inline KIO::Error HTTPToKIOError(const long httpcode)
         case 504: {
             return KIO::ERR_SERVER_TIMEOUT;
         }
+        case 416: {
+            return KIO::ERR_CANNOT_RESUME;
+        }
         case 500: {
             return KIO::ERR_INTERNAL_SERVER;
         }
         case 404:
+        case 501:
         case 503: {
             return KIO::ERR_SERVICE_NOT_AVAILABLE;
         }
@@ -1242,7 +1246,6 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         const QByteArray ftpmonth = lineparts.at(5);
         const QByteArray ftpday = lineparts.at(6);
         const QByteArray ftphouroryear = lineparts.at(7);
-
         lineparts = lineparts.mid(8);
 
         // and finally the filepath parts
