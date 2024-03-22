@@ -634,7 +634,7 @@ void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
         }
 
         if (!(flags & KIO::Overwrite)) {
-            kWarning(7103) << "Not overwriting not supported";
+            kWarning(7103) << "Not overwriting not implemented";
             // TODO: check if destination exists, emit ERR_DIR_ALREADY_EXIST or ERR_FILE_ALREADY_EXIST
         }
 
