@@ -27,7 +27,6 @@
 264         kdeui (KIconLoader)
 265         kdeui (KIconEffect)
 283         kdeui (K*Gesture*)
-297         kdeui (KNotificationRestrictions)
 299         kdeui (KNotification)
 300         kdeui (KConfigDialogManager)
 700         kutils (KSettings::Dialog)

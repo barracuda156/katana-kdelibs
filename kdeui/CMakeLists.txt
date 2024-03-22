@@ -152,7 +152,6 @@ set(kdeui_LIB_SRCS
     kernel/ktoolinvocation_x11.cpp
     notifications/knotification.cpp
     notifications/knotificationconfigwidget.cpp
-    notifications/knotificationrestrictions.cpp
     paged/kpagedialog.cpp
     paged/kpageview.cpp
     paged/kpageview_p.cpp
@@ -286,7 +285,6 @@ set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/kuniqueapplication.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/ktoolinvocation.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/ktoolinvocation_x11.cpp
-    ${CMAKE_SOURCE_DIR}/kdeui/notifications/knotificationrestrictions.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/util/kcrash.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/util/kcursor.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/util/kkeyserver_x11.cpp
@@ -314,10 +312,6 @@ target_link_libraries(kdeui PUBLIC
     ${QT_QTNETWORK_LIBRARY}
     kdecore
 )
-
-if(X11_XTest_FOUND)
-   target_link_libraries(kdeui PRIVATE ${X11_XTest_LIB})
-endif()
 
 if(X11_Xcursor_FOUND)
    target_link_libraries(kdeui PRIVATE ${X11_Xcursor_LIB})
@@ -444,7 +438,6 @@ install(
     kernel/ktoolinvocation.h
     notifications/knotification.h
     notifications/knotificationconfigwidget.h
-    notifications/knotificationrestrictions.h
     paged/kpagedialog.h
     paged/kpageview.h
     paged/kpagewidget.h

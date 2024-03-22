@@ -187,7 +187,6 @@ install(
     KNewFileMenu
     KNewPasswordDialog
     KNotification
-    KNotificationRestrictions
     KNotificationConfigWidget
     KNumInput
     KOpenWithDialog

@@ -156,13 +156,11 @@ if(NOT X11_XSync_FOUND AND NOT X11_Xscreensaver_FOUND)
 endif()
 
 # optional features
-kde4_bool_to_01(X11_XTest_FOUND HAVE_XTEST)
 kde4_bool_to_01(X11_Xcursor_FOUND HAVE_XCURSOR)
 kde4_bool_to_01(X11_Xfixes_FOUND HAVE_XFIXES)
 kde4_bool_to_01(X11_Xscreensaver_FOUND HAVE_XSCREENSAVER)
 kde4_bool_to_01(X11_XSync_FOUND HAVE_XSYNC)
 
-add_feature_info("X Test Extension (libXTest)" HAVE_XTEST "Support for notfication restriction")
 add_feature_info("X Cursor Extension (Xcursor)" HAVE_XCURSOR "Support for loading cursors depending on theme")
 add_feature_info("X Fixes Extension (libXfixes)" HAVE_XFIXES "Support for damage/fixes cursor and window management")
 add_feature_info("X Screensaver Extension (libXss)" HAVE_XSCREENSAVER "Support for KIdleTime (fallback mode)")

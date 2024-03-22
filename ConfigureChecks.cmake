@@ -33,7 +33,6 @@ check_include_files("sys/param.h;sys/mount.h"  HAVE_SYS_MOUNT_H)       # kio, kd
 check_include_files(paths.h       HAVE_PATHS_H)                        # kdecore
 
 # TODO: separate to config-x11.h
-kde4_bool_to_01(X11_XTest_FOUND HAVE_XTEST)                           # kdecore
 kde4_bool_to_01(X11_Xcursor_FOUND HAVE_XCURSOR)                       # kdeui
 kde4_bool_to_01(X11_Xfixes_FOUND HAVE_XFIXES)                         # kdeui
 kde4_bool_to_01(X11_Xscreensaver_FOUND HAVE_XSCREENSAVER)             # kidletime
