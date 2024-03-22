@@ -24,13 +24,6 @@
 
 #include <sys/types.h>
 
-//
-// WARNING!!
-// This code uses undocumented Qt API
-// Do not copy it to your application! Use only the functions that are here!
-// Otherwise, it could break when a new version of Qt ships.
-//
-
 class KComponentData;
 class KCharsets;
 class KConfig;
