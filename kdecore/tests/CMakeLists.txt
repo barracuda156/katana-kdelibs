@@ -86,14 +86,6 @@ set(kmimeglobsfileparsertest_SRCS kmimeglobsfileparsertest.cpp ../services/kmime
 kde4_add_test(kdecore-kmimeglobsfileparsertest ${kmimeglobsfileparsertest_SRCS})
 target_link_libraries(kdecore-kmimeglobsfileparsertest ${QT_QTTEST_LIBRARY} kdecore)
 
-########### module for klibloadertest4 ###############
-
-set(klibloadertestmodule4_PART_SRCS klibloadertest4_module.cpp)
-
-kde4_add_plugin(kdecore-klibloadertestmodule4 ${klibloadertestmodule4_PART_SRCS})
-
-target_link_libraries(kdecore-klibloadertestmodule4 ${QT_QTTEST_LIBRARY} kdecore)
-
 ########### kcompositejobtest ###############
 
 set(kcompositejobtest_SRCS kcompositejobtest.cpp)
