@@ -579,7 +579,7 @@ void SlaveInterface::messageBox(int type, const QString &text, const QString &ca
         d->connection->suspend();
     }
 
-    QHash<UserNotificationHandler::MessageBoxDataType, QVariant> data;
+    QHash<UserNotificationHandler::MessageBoxDataType, QString> data;
     data.insert(UserNotificationHandler::MSG_TEXT, text);
     data.insert(UserNotificationHandler::MSG_CAPTION, caption);
     data.insert(UserNotificationHandler::MSG_YES_BUTTON_TEXT, buttonYes);

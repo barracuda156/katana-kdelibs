@@ -50,7 +50,7 @@ UserNotificationHandler::~UserNotificationHandler()
     qDeleteAll(m_pendingRequests);
 }
 
-void UserNotificationHandler::requestMessageBox(SlaveInterface* iface, int type, const QHash<MessageBoxDataType, QVariant>& data)
+void UserNotificationHandler::requestMessageBox(SlaveInterface* iface, int type, const QHash<MessageBoxDataType, QString>& data)
 {
     Request* r = new Request;
     r->type = type;
@@ -80,13 +80,13 @@ void UserNotificationHandler::processRequest()
             JobUiDelegate ui;
             const JobUiDelegate::MessageBoxType type = static_cast<JobUiDelegate::MessageBoxType>(r->type);
             result = ui.requestMessageBox(type,
-                                          r->data.value(MSG_TEXT).toString(),
-                                          r->data.value(MSG_CAPTION).toString(),
-                                          r->data.value(MSG_YES_BUTTON_TEXT).toString(),
-                                          r->data.value(MSG_NO_BUTTON_TEXT).toString(),
-                                          r->data.value(MSG_YES_BUTTON_ICON).toString(),
-                                          r->data.value(MSG_NO_BUTTON_ICON).toString(),
-                                          r->data.value(MSG_DONT_ASK_AGAIN).toString());
+                                          r->data.value(MSG_TEXT),
+                                          r->data.value(MSG_CAPTION),
+                                          r->data.value(MSG_YES_BUTTON_TEXT),
+                                          r->data.value(MSG_NO_BUTTON_TEXT),
+                                          r->data.value(MSG_YES_BUTTON_ICON),
+                                          r->data.value(MSG_NO_BUTTON_ICON),
+                                          r->data.value(MSG_DONT_ASK_AGAIN));
             m_cachedResults.insert(key, new int(result));
         }
     } else {
