@@ -94,11 +94,11 @@ bool KDecompressor::setType(const KDecompressorType type)
 bool KDecompressor::process(const QByteArray &data)
 {
     d->m_errorstring.clear();
-    d->m_result.clear();
 
     switch (d->m_type) {
         case KDecompressor::TypeUnknown: {
             d->m_errorstring = i18n("Invalid type: %1", int(d->m_type));
+            d->m_result.clear();
             return false;
         }
         case KDecompressor::TypeDeflate:
@@ -107,6 +107,7 @@ bool KDecompressor::process(const QByteArray &data)
             size_t speculativesize = (data.size() * 2);
             if (Q_UNLIKELY(speculativesize >= KDECOMPRESSOR_BUFFMAX)) {
                 d->m_errorstring = i18n("Input data size too big: %1", data.size());
+                d->m_result.clear();
                 return false;
             }
             d->m_result.resize(speculativesize);
@@ -114,6 +115,7 @@ bool KDecompressor::process(const QByteArray &data)
             struct libdeflate_decompressor* decomp = libdeflate_alloc_decompressor();
             if (Q_UNLIKELY(!decomp)) {
                 d->m_errorstring = i18n("Could not allocate decompressor");
+                d->m_result.clear();
                 return false;
             }
 
@@ -178,6 +180,7 @@ bool KDecompressor::process(const QByteArray &data)
             uint speculativesize = (data.size() * 2);
             if (Q_UNLIKELY(speculativesize >= KDECOMPRESSOR_BUFFMAX)) {
                 d->m_errorstring = i18n("Input data size too big: %1", data.size());
+                d->m_result.clear();
                 return false;
             }
             d->m_result.resize(speculativesize);
@@ -214,6 +217,7 @@ bool KDecompressor::process(const QByteArray &data)
             size_t speculativesize = (data.size() * 2);
             if (Q_UNLIKELY(speculativesize >= KDECOMPRESSOR_BUFFMAX)) {
                 d->m_errorstring = i18n("Input data size too big: %1", data.size());
+                d->m_result.clear();
                 return false;
             }
             d->m_result.resize(speculativesize);
@@ -264,6 +268,7 @@ bool KDecompressor::process(const QByteArray &data)
 #endif // HAVE_LIBLZMA
         default: {
             d->m_errorstring = i18n("Unsupported type: %1", int(d->m_type));
+            d->m_result.clear();
             return false;
         }
     }

@@ -115,11 +115,11 @@ bool KCompressor::setLevel(const int level)
 bool KCompressor::process(const QByteArray &data)
 {
     d->m_errorstring.clear();
-    d->m_result.clear();
 
     switch (d->m_type) {
         case KCompressor::TypeUnknown: {
             d->m_errorstring = i18n("Invalid type: %1", int(d->m_type));
+            d->m_result.clear();
             return false;
         }
         case KCompressor::TypeDeflate:
@@ -128,6 +128,7 @@ bool KCompressor::process(const QByteArray &data)
             struct libdeflate_compressor* comp = libdeflate_alloc_compressor(d->m_level);
             if (Q_UNLIKELY(!comp)) {
                 d->m_errorstring = i18n("Could not allocate compressor");
+                d->m_result.clear();
                 return false;
             }
 
@@ -232,6 +233,7 @@ bool KCompressor::process(const QByteArray &data)
 #endif // HAVE_LIBLZMA
         default: {
             d->m_errorstring = i18n("Unsupported type: %1", int(d->m_type));
+            d->m_result.clear();
             return false;
         }
     }
