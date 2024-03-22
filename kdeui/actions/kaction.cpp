@@ -186,7 +186,7 @@ void KAction::setGlobalShortcut(const KShortcut &shortcut, ShortcutTypes type,
     if (!d->globalShortcutEnabled) {
         changed = true;
         if (objectName().isEmpty() || objectName().startsWith(QLatin1String("unnamed-"))) {
-            kWarning(283) << "Attempt to set global shortcut for action without objectName()."
+            kWarning(129) << "Attempt to set global shortcut for action without objectName()."
                              " Read the setGlobalShortcut() documentation.";
             return;
         }
