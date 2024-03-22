@@ -1265,8 +1265,8 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
         kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
-        kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner));
-        kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup));
+        kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner.constData(), ftpowner.size()));
+        kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup.constData(), ftpgroup.size()));
         kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, ftpmodtime);
         if (!ftplinkpath.isEmpty()) {
             // link paths to current path causes KIO to do strange things
