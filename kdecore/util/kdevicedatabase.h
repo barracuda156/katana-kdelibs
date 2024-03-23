@@ -85,7 +85,7 @@ public:
 
 private:
     Q_DISABLE_COPY(KDeviceDatabase);
-    KDeviceDatabasePrivate *d;
+    KDeviceDatabasePrivate *const d;
 };
 
 #endif // KDEVICEDATABASE_H

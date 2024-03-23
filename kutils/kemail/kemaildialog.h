@@ -79,7 +79,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(KEMailDialog);
-    KEMailDialogPrivate *d;
+    KEMailDialogPrivate *const d;
 };
 
 #endif // KEMAILDIALOG_H

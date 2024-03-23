@@ -89,7 +89,7 @@ public:
 
 private:
     Q_DISABLE_COPY(KEMail);
-    KEMailPrivate *d;
+    KEMailPrivate *const d;
 };
 
 #endif // KEMAIL_H

@@ -90,7 +90,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(KPowerManager);
-    KPowerManagerPrivate *d;
+    KPowerManagerPrivate *const d;
 };
 
 #endif // KPOWERMANAGER_H

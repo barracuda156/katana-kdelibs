@@ -144,7 +144,7 @@ private:
     void setupLayout();
 
     Q_DISABLE_COPY(KTimerDialog);
-    KTimerDialogPrivate *d;
+    KTimerDialogPrivate *const d;
 };
 
 #endif // KTIMERDIALOG_H

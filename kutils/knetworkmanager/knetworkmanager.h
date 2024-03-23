@@ -73,7 +73,7 @@ Q_SIGNALS:
 private:
     friend KNetworkManagerPrivate;
     Q_DISABLE_COPY(KNetworkManager);
-    KNetworkManagerPrivate *d;
+    KNetworkManagerPrivate *const d;
 };
 
 Q_DECLARE_METATYPE(KNetworkManager::KNetworkStatus);

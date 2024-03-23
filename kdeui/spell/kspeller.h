@@ -65,7 +65,7 @@ Q_SIGNALS:
     void done();
 
 private:
-    KSpellerPrivate *d;
+    KSpellerPrivate *const d;
     Q_DISABLE_COPY(KSpeller);
 };
 

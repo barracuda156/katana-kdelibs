@@ -69,7 +69,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(KPixmapWidget);
-    KPixmapWidgetPrivate *d;
+    KPixmapWidgetPrivate *const d;
 };
 
 #endif //  KPIXMAPWIDGET_H

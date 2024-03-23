@@ -104,7 +104,7 @@ protected:
 private:
     friend KHTTPPrivate;
     Q_DISABLE_COPY(KHTTP);
-    KHTTPPrivate *d;
+    KHTTPPrivate *const d;
 };
 
 #endif // KHTTP_H

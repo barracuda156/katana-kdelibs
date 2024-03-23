@@ -56,7 +56,7 @@ Q_SIGNALS:
 private:
     friend KTimeEditPrivate;
     Q_DISABLE_COPY(KTimeEdit);
-    KTimeEditPrivate *d;
+    KTimeEditPrivate *const d;
 
     Q_PRIVATE_SLOT(d, void slotValueChanged(int))
 };

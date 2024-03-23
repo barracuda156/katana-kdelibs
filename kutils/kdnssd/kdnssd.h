@@ -109,7 +109,7 @@ Q_SIGNALS:
 private:
     friend KDNSSDPrivate;
     Q_DISABLE_COPY(KDNSSD);
-    KDNSSDPrivate *d;
+    KDNSSDPrivate *const d;
 };
 
 #endif // KDNSSD_H

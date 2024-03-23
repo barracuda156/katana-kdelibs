@@ -81,7 +81,7 @@ public:
 
 private:
     Q_DISABLE_COPY(KExiv2);
-    KExiv2Private * const d;
+    KExiv2Private *const d;
 };
 
 #endif // KEXIV2_H

@@ -46,7 +46,7 @@ Q_SIGNALS:
     void configChanged();
 
 private:
-    KSpellConfigWidgetPrivate *d;
+    KSpellConfigWidgetPrivate *const d;
     Q_DISABLE_COPY(KSpellConfigWidget);
 };
 

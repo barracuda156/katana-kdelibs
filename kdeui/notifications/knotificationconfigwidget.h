@@ -52,7 +52,7 @@ Q_SIGNALS:
 private:
     friend KNotificationConfigWidgetPrivate;
     Q_DISABLE_COPY(KNotificationConfigWidget);
-    KNotificationConfigWidgetPrivate *d;
+    KNotificationConfigWidgetPrivate *const d;
 
     Q_PRIVATE_SLOT(d, void _k_slotItemChanged(QTreeWidgetItem *item, int column));
     Q_PRIVATE_SLOT(d, void _k_slotSoundChanged(int index));

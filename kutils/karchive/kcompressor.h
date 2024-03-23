@@ -93,7 +93,7 @@ public:
 
 private:
     Q_DISABLE_COPY(KCompressor);
-    KCompressorPrivate* d;
+    KCompressorPrivate *const d;
 };
 
 #endif // KCOMPRESSOR_H

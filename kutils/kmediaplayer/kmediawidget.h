@@ -135,7 +135,7 @@ private Q_SLOTS:
 private:
     friend KMediaWidgetPrivate;
     Q_DISABLE_COPY(KMediaWidget);
-    KMediaWidgetPrivate *d;
+    KMediaWidgetPrivate *const d;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(KMediaWidget::KMediaOptions);
 

@@ -75,7 +75,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(KSelectionOwner);
-    KSelectionOwnerPrivate * const d;
+    KSelectionOwnerPrivate *const d;
 };
 
 #endif // KSELECTIONOWNER_H

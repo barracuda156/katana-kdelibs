@@ -95,7 +95,7 @@ public Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(KPasswdRouletteDialog);
-    KPasswdRouletteDialogPrivate *d;
+    KPasswdRouletteDialogPrivate *const d;
 };
 
 #endif // KPASSWDROULETTEDIALOG_H

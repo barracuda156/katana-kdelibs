@@ -145,7 +145,7 @@ public:
 //   KSycocaEntry &operator=(const KSycocaEntry &right);
 protected:
    KSycocaEntry(KSycocaEntryPrivate &d);
-   KSycocaEntryPrivate *d_ptr;
+   KSycocaEntryPrivate *const d_ptr;
 
 private:
     Q_DISABLE_COPY(KSycocaEntry)

@@ -114,7 +114,7 @@ public:
 
 private:
     Q_DISABLE_COPY(KPasswdStore);
-    KPasswdStorePrivate *d;
+    KPasswdStorePrivate *const d;
 };
 
 #endif // KPASSWDSTORE_H

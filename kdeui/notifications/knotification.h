@@ -168,7 +168,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(KNotification);
-    KNotificationPrivate *d;
+    KNotificationPrivate *const d;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(KNotification::NotificationFlags)

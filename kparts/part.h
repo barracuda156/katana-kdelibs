@@ -81,7 +81,7 @@ protected:
 protected:
     PartBase(PartBasePrivate &dd);
 
-    PartBasePrivate *d_ptr;
+    PartBasePrivate *const d_ptr;
 
 private:
     Q_DISABLE_COPY(PartBase)

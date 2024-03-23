@@ -268,7 +268,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(KAudioPlayer);
-    KAbstractPlayerPrivate *d;
+    KAbstractPlayerPrivate *const d;
 };
 
 
@@ -333,7 +333,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(KMediaPlayer);
-    KAbstractPlayerPrivate *d;
+    KAbstractPlayerPrivate *const d;
 };
 
 #endif // KMEDIAPLAYER_H

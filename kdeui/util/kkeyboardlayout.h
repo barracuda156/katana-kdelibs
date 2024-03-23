@@ -71,7 +71,7 @@ Q_SIGNALS:
 private:
     friend KKeyboardLayoutPrivate;
     Q_DISABLE_COPY(KKeyboardLayout);
-    KKeyboardLayoutPrivate * const d;
+    KKeyboardLayoutPrivate *const d;
 
     Q_PRIVATE_SLOT(d, void _k_checkLayouts())
 };

@@ -181,7 +181,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(KArchive);
-    KArchivePrivate* const d;
+    KArchivePrivate *const d;
 };
 
 #endif // KARCHIVE_H
