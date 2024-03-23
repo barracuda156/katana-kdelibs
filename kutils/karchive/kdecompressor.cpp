@@ -70,7 +70,6 @@ KDecompressor::KDecompressorType KDecompressor::type() const
 
 bool KDecompressor::setType(const KDecompressorType type)
 {
-    d->m_errorstring.clear();
     if (type == KDecompressor::TypeUnknown) {
         d->m_errorstring = i18n("Invalid type: %1", int(type));
         return false;
@@ -87,6 +86,7 @@ bool KDecompressor::setType(const KDecompressorType type)
         return false;
     }
 #endif
+    d->m_errorstring.clear();
     d->m_type = type;
     return true;
 }
@@ -104,7 +104,7 @@ bool KDecompressor::process(const QByteArray &data)
         case KDecompressor::TypeDeflate:
         case KDecompressor::TypeZlib:
         case KDecompressor::TypeGZip: {
-            size_t speculativesize = (data.size() * 2);
+            size_t speculativesize = (data.size() * 2 + KDECOMPRESSOR_BUFFSIZE);
             if (Q_UNLIKELY(speculativesize >= KDECOMPRESSOR_BUFFMAX)) {
                 d->m_errorstring = i18n("Input data size too big: %1", data.size());
                 d->m_result.clear();
@@ -177,7 +177,7 @@ bool KDecompressor::process(const QByteArray &data)
         }
 #if defined(HAVE_BZIP2)
         case KDecompressor::TypeBZip2: {
-            uint speculativesize = (data.size() * 2);
+            uint speculativesize = (data.size() * 2 + KDECOMPRESSOR_BUFFSIZE);
             if (Q_UNLIKELY(speculativesize >= KDECOMPRESSOR_BUFFMAX)) {
                 d->m_errorstring = i18n("Input data size too big: %1", data.size());
                 d->m_result.clear();
@@ -214,7 +214,7 @@ bool KDecompressor::process(const QByteArray &data)
 #endif // HAVE_BZIP2
 #if defined(HAVE_LIBLZMA)
         case KDecompressor::TypeXZ: {
-            size_t speculativesize = (data.size() * 2);
+            size_t speculativesize = (data.size() * 2 + KDECOMPRESSOR_BUFFSIZE);
             if (Q_UNLIKELY(speculativesize >= KDECOMPRESSOR_BUFFMAX)) {
                 d->m_errorstring = i18n("Input data size too big: %1", data.size());
                 d->m_result.clear();

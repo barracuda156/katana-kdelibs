@@ -33,7 +33,7 @@
 #endif
 
 // space for headers in the worst case scenario
-static const ushort s_headersize = 256;
+#define KCOMPRESSOR_HEADERSIZE 256
 
 class KCompressorPrivate
 {
@@ -98,7 +98,6 @@ int KCompressor::level() const
 
 bool KCompressor::setLevel(const int level)
 {
-    d->m_errorstring.clear();
     if (Q_UNLIKELY(level < 0 || level > 9)) {
         d->m_errorstring = i18n("Compression level not in the 0-9 range: %1", level);
         return false;
@@ -108,6 +107,7 @@ bool KCompressor::setLevel(const int level)
         d->m_errorstring = i18n("Compression level not in the 1-9 range: %1", level);
         return false;
     }
+    d->m_errorstring.clear();
     d->m_level = level;
     return true;
 }
@@ -132,7 +132,7 @@ bool KCompressor::process(const QByteArray &data)
                 return false;
             }
 
-            d->m_result.resize(data.size() + s_headersize);
+            d->m_result.resize(data.size() + KCOMPRESSOR_HEADERSIZE);
 
             size_t compresult = 0;
             switch (d->m_type) {
@@ -179,7 +179,7 @@ bool KCompressor::process(const QByteArray &data)
         }
 #if defined(HAVE_BZIP2)
         case KCompressor::TypeBZip2: {
-            d->m_result.resize(data.size() + s_headersize);
+            d->m_result.resize(data.size() + KCOMPRESSOR_HEADERSIZE);
             uint compsize = d->m_result.size();
 
             const int compresult = BZ2_bzBuffToBuffCompress(
@@ -200,7 +200,7 @@ bool KCompressor::process(const QByteArray &data)
 #endif // HAVE_BZIP2
 #if defined(HAVE_LIBLZMA)
         case KCompressor::TypeXZ: {
-            d->m_result.resize(data.size() + s_headersize);
+            d->m_result.resize(data.size() + KCOMPRESSOR_HEADERSIZE);
             size_t compsize = d->m_result.size();
 
             lzma_stream comp = LZMA_STREAM_INIT;
