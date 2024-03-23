@@ -44,7 +44,8 @@ class KEMailSettingsPrivate;
   *
   * @author Alex Zepeda zipzippy@sonic.net
   **/
-class KEMAIL_EXPORT KEMailSettings {
+class KEMAIL_EXPORT KEMailSettings
+{
 public:
     /**
      * The list of settings that I thought of when I wrote this 
@@ -91,6 +92,7 @@ public:
     void setSetting(const KEMailSettings::Setting setting, const QString &value);
 
 private:
+    Q_DISABLE_COPY(KEMailSettings);
     KEMailSettingsPrivate* const d;
 };
 
