@@ -21,7 +21,7 @@
 #ifndef KNAMEANDURLINPUTDIALOG_H
 #define KNAMEANDURLINPUTDIALOG_H
 
-#include <kfile_export.h>
+#include <kio/kio_export.h>
 #include <kdialog.h>
 #include <kurl.h>
 
@@ -35,7 +35,7 @@ class KNameAndUrlInputDialogPrivate;
  * @since 4.5
  * @author David Faure <faure@kde.org>
  */
-class KFILE_EXPORT KNameAndUrlInputDialog : public KDialog
+class KIO_EXPORT KNameAndUrlInputDialog : public KDialog
 {
     Q_OBJECT
 public:

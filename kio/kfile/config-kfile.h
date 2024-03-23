@@ -19,8 +19,6 @@
 #ifndef CONFIG_KFILE_H
 #define CONFIG_KFILE_H
 
-const int kfile_area = 250;
-
 #define DefaultMixDirsAndFiles false
 #define DefaultShowHidden false
 #define DefaultDirsFirst true

@@ -32,16 +32,13 @@
 #include <kurl.h>
 #include <kmimetype.h>
 
-class KAbstractFileWidget;
 class KFileWidget;
-
 class KActionCollection;
 class KUrlComboBox;
 class KFileFilterCombo;
 class KPushButton;
 class KToolBar;
 class KPreviewWidgetBase;
-
 class KFileDialogPrivate;
 
 /**
@@ -618,7 +615,7 @@ public:
      * Returns the KFileWidget that implements most of this file dialog.
      * If you link to libkfile you can cast this to a KFileWidget*.
      */
-    KAbstractFileWidget* fileWidget();
+    KFileWidget* fileWidget();
 
     /**
      * Returns a pointer to the toolbar.

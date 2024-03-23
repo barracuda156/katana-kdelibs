@@ -147,11 +147,11 @@ void KFileFilterCombo::setMimeFilter( const QStringList& types,
     QString allComments, allTypes;
     for(QStringList::ConstIterator it = types.begin(); it != types.end(); ++it)
     {
-        kDebug(kfile_area) << *it;
+        kDebug() << *it;
         KMimeType::Ptr type = KMimeType::mimeType( *it );
 
         if (!type) {
-            kDebug(kfile_area) << "Could not create mimetype!\n";
+            kDebug() << "Could not create mimetype!\n";
             continue;
         }
 

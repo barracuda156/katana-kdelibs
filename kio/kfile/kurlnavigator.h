@@ -23,7 +23,7 @@
 #ifndef KURLNAVIGATOR_H
 #define KURLNAVIGATOR_H
 
-#include <kfile_export.h>
+#include <kio/kio_export.h>
 
 #include <kurl.h>
 #include <QWidget>
@@ -71,7 +71,7 @@ class KUrlComboBox;
  *   the application to restore the view state by getting the values from
  *   KUrlNavigator::locationState().
  */
-class KFILE_EXPORT KUrlNavigator : public QWidget
+class KIO_EXPORT KUrlNavigator : public QWidget
 {
     Q_OBJECT
 

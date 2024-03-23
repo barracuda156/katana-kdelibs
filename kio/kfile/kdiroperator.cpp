@@ -1046,7 +1046,7 @@ Qt::SortOrder KDirOperator::Private::sortOrder() const
 
 void KDirOperator::Private::updateSorting(QDir::SortFlags sort)
 {
-    kDebug(kfile_area) << "changing sort flags from"  << sorting << "to" << sort;
+    kDebug() << "changing sort flags from"  << sorting << "to" << sort;
     if (sort == sorting) {
         return;
     }
@@ -1556,7 +1556,7 @@ void KDirOperator::setDirLister(KDirLister *lister)
 
     QWidget* mainWidget = window();
     d->dirLister->setMainWindow(mainWidget);
-    kDebug(kfile_area) << "mainWidget=" << mainWidget;
+    kDebug() << "mainWidget=" << mainWidget;
 
     connect(d->dirLister, SIGNAL(percent(ulong)),
             SLOT(_k_slotProgress(ulong)));
@@ -1593,8 +1593,6 @@ void KDirOperator::highlightFile(const KFileItem &item)
 
 void KDirOperator::setCurrentItem(const QString& url)
 {
-    kDebug(kfile_area);
-
     KFileItem item = d->dirLister->findByUrl(url);
     if (d->shouldFetchForItems && item.isNull()) {
         d->itemsToBeSetAsCurrent << url;
@@ -1607,8 +1605,6 @@ void KDirOperator::setCurrentItem(const QString& url)
 
 void KDirOperator::setCurrentItem(const KFileItem& item)
 {
-    kDebug(kfile_area);
-
     if (!d->itemView) {
         return;
     }
@@ -1626,8 +1622,6 @@ void KDirOperator::setCurrentItem(const KFileItem& item)
 
 void KDirOperator::setCurrentItems(const QStringList& urls)
 {
-    kDebug(kfile_area);
-
     if (!d->itemView) {
         return;
     }
@@ -1648,8 +1642,6 @@ void KDirOperator::setCurrentItems(const QStringList& urls)
 
 void KDirOperator::setCurrentItems(const KFileItemList& items)
 {
-    kDebug(kfile_area);
-
     if (d->itemView == 0) {
         return;
     }

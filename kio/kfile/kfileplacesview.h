@@ -19,7 +19,7 @@
 #ifndef KFILEPLACESVIEW_H
 #define KFILEPLACESVIEW_H
 
-#include <kfile_export.h>
+#include <kio/kio_export.h>
 
 #include <QtGui/QListView>
 
@@ -31,7 +31,7 @@
 /**
  * This class allows to display a KFilePlacesModel.
  */
-class KFILE_EXPORT KFilePlacesView : public QListView
+class KIO_EXPORT KFilePlacesView : public QListView
 {
     Q_OBJECT
 public:

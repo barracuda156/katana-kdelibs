@@ -40,37 +40,9 @@
 #include <krecentdocument.h>
 #include <kdebug.h>
 #include <kwindowsystem.h>
-#include "kabstractfilewidget.h"
-#include "kabstractfilemodule.h"
 #include "krecentdirs.h"
 #include "kservice.h"
-
-static KAbstractFileModule* s_module = 0;
-static const char s_defaultFileModuleName[] = "kfilemodule";
-
-static KAbstractFileModule* loadFileModule( const QString& moduleName )
-{
-    KService::Ptr fileModuleService = KService::serviceByDesktopName(moduleName);
-    if (fileModuleService) {
-        return fileModuleService->createInstance<KAbstractFileModule>();
-    }
-    return nullptr;
-}
-
-static KAbstractFileModule* fileModule()
-{
-    if (!s_module) {
-        QString moduleName = KConfig("kdeglobals").group(ConfigGroup).readEntry("file module", s_defaultFileModuleName);
-        if (!(s_module = loadFileModule(moduleName))) {
-            kDebug() << "Failed to load configured file module" << moduleName;
-            if (moduleName != s_defaultFileModuleName) {
-                kDebug() << "Falling back to default file module.";
-                s_module = loadFileModule(s_defaultFileModuleName);
-            }
-        }
-    }
-    return s_module;
-}
+#include "kfilewidget.h"
 
 class KFileDialogPrivate
 {
@@ -81,7 +53,7 @@ public:
     {
     }
 
-    KAbstractFileWidget* w;
+    KFileWidget* w;
     KConfigGroup cfgGroup;
 };
 
@@ -91,15 +63,14 @@ KFileDialog::KFileDialog(const KUrl &startDir, const QString &filter,
     d(new KFileDialogPrivate())
 
 {
-    QWidget* fileQWidget = fileModule()->createFileWidget(startDir, this);
-    d->w = ::qobject_cast<KAbstractFileWidget *>(fileQWidget);
+    d->w = new KFileWidget(startDir, this);
 
     setButtons( KDialog::None );
-    restoreDialogSize(d->cfgGroup); // call this before the fileQWidget is set as the main widget.
+    restoreDialogSize(d->cfgGroup); // call this before the d->w is set as the main widget.
                                    // otherwise the sizes for the components are not obeyed (ereslibre)
 
     d->w->setFilter(filter);
-    setMainWidget(fileQWidget);
+    setMainWidget(d->w);
 
     d->w->okButton()->show();
     connect(d->w->okButton(), SIGNAL(clicked()), SLOT(slotOk()));
@@ -107,23 +78,21 @@ KFileDialog::KFileDialog(const KUrl &startDir, const QString &filter,
     connect(d->w->cancelButton(), SIGNAL(clicked()), SLOT(slotCancel()));
 
     // Publish signals
-    // TODO: Move the relevant signal declarations from KFileWidget to the
-    //       KAbstractFileWidget interface?
     //       Else, all of these connects (including "accepted") are not typesafe.
     // Answer: you cannot define signals in a non-qobject base class (DF).
-    //         I simply documentde them in kabstractfilewidget.h now.
-    kDebug (kfile_area) << "KFileDialog connecting signals";
-    connect(fileQWidget, SIGNAL(fileSelected(KUrl)),
+    //         I simply documentde them in kfilewidget.h now.
+    kDebug () << "KFileDialog connecting signals";
+    connect(d->w, SIGNAL(fileSelected(KUrl)),
                          SIGNAL(fileSelected(KUrl)));
-    connect(fileQWidget, SIGNAL(fileHighlighted(KUrl)),
+    connect(d->w, SIGNAL(fileHighlighted(KUrl)),
                          SIGNAL(fileHighlighted(KUrl)));
-    connect(fileQWidget, SIGNAL(selectionChanged()),
+    connect(d->w, SIGNAL(selectionChanged()),
                          SIGNAL(selectionChanged()));
-    connect(fileQWidget, SIGNAL(filterChanged(QString)),
+    connect(d->w, SIGNAL(filterChanged(QString)),
                          SIGNAL(filterChanged(QString)));
 
-    connect(fileQWidget, SIGNAL(accepted()), SLOT(accept()));
-    //connect(fileQWidget, SIGNAL(canceled()), SLOT(slotCancel()));
+    connect(d->w, SIGNAL(accepted()), SLOT(accept()));
+    //connect(d->w, SIGNAL(canceled()), SLOT(slotCancel()));
 
     if (customWidget) {
         d->w->setCustomWidget(QString(), customWidget);
@@ -493,7 +462,7 @@ bool KFileDialog::keepsLocation() const
 
 void KFileDialog::setOperationMode(OperationMode mode)
 {
-    d->w->setOperationMode(static_cast<KAbstractFileWidget::OperationMode>(mode));
+    d->w->setOperationMode(static_cast<KFileWidget::OperationMode>(mode));
 }
 
 KFileDialog::OperationMode KFileDialog::operationMode() const
@@ -521,12 +490,12 @@ void KFileDialog::hideEvent(QHideEvent* e)
 // static
 KUrl KFileDialog::getStartUrl(const KUrl &startDir, QString &recentDirClass)
 {
-    return fileModule()->getStartUrl(startDir, recentDirClass);
+    return KFileWidget::getStartUrl(startDir, recentDirClass);
 }
 
 void KFileDialog::setStartDir(const KUrl& directory)
 {
-    fileModule()->setStartDir(directory);
+    KFileWidget::setStartDir(directory);
 }
 
 KToolBar* KFileDialog::toolBar() const
@@ -534,7 +503,7 @@ KToolBar* KFileDialog::toolBar() const
     return d->w->toolBar();
 }
 
-KAbstractFileWidget* KFileDialog::fileWidget()
+KFileWidget* KFileDialog::fileWidget()
 {
     return d->w;
 }

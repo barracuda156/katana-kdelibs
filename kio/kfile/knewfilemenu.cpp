@@ -139,7 +139,6 @@ public:
 
 void KNewFileMenuSingleton::parseFiles()
 {
-    //kDebug(kfile_area);
     filesParsed = true;
     QMutableListIterator<KNewFileMenuSingleton::Entry> templIter(*templatesList);
     while (templIter.hasNext()) {
@@ -172,7 +171,7 @@ void KNewFileMenuSingleton::parseFiles()
                         {
                             // A relative path, then (that's the default in the files we ship)
                             QString linkDir = filePath.left(filePath.lastIndexOf('/') + 1 /*keep / */);
-                            //kDebug(kfile_area) << "linkDir=" << linkDir;
+                            // kDebug() << "linkDir=" << linkDir;
                             templatePath = linkDir + templatePath;
                         }
                     }
@@ -195,9 +194,9 @@ void KNewFileMenuSingleton::parseFiles()
                     text.truncate(text.length() - 8);
             }
             templ.text = text;
-            /*kDebug(kfile_area) << "Updating entry with text=" << text
-                          << "entryType=" << templ.entryType
-                          << "templatePath=" << templ.templatePath;*/
+            /* kDebug() << "Updating entry with text=" << text
+                        << "entryType=" << templ.entryType
+                        << "templatePath=" << templ.templatePath;*/
         }
         else {
             templ.entryType = KNewFileMenuSingleton::Separator;
@@ -362,7 +361,7 @@ public:
 bool KNewFileMenuPrivate::checkSourceExists(const QString& src)
 {
     if (!QFile::exists(src)) {
-        kWarning(kfile_area) << src << "doesn't exist" ;
+        kWarning() << src << "doesn't exist" ;
 
 	KDialog* dialog = new KDialog(m_parentWidget);
 	dialog->setCaption( i18n("Sorry") );
@@ -529,7 +528,7 @@ void KNewFileMenuPrivate::executeStrategy()
             if (srcFile.open(QIODevice::ReadOnly)) {
                 KMimeType::Ptr wantedMime = KMimeType::findByUrl(uSrc);
                 KMimeType::Ptr mime = KMimeType::findByNameAndContent(m_copyData.m_chosenFileName, srcFile.read(1024));
-                //kDebug() << "mime=" << mime->name() << "wantedMime=" << wantedMime->name();
+                // kDebug() << "mime=" << mime->name() << "wantedMime=" << wantedMime->name();
                 if (!mime->is(wantedMime->name()))
                     chosenFileName += wantedMime->mainExtension();
             }
@@ -553,7 +552,7 @@ void KNewFileMenuPrivate::executeStrategy()
             // which KIO::symlink obviously doesn't emit... Needs code in FileUndoManager.
             //KIO::FileUndoManager::self()->recordJob(KIO::FileUndoManager::Link, lstSrc, dest, kjob);
         } else {
-            //kDebug(kfile_area) << "KIO::copyAs(" << uSrc.url() << "," << dest.url() << ")";
+            // kDebug() << "KIO::copyAs(" << uSrc.url() << "," << dest.url() << ")";
             KIO::CopyJob * job = KIO::copyAs(uSrc, dest);
             job->setDefaultPermissions(true);
             kjob = job;
@@ -602,7 +601,7 @@ void KNewFileMenuPrivate::fillMenu()
 
             const bool bSkip = seenTexts.contains(entry.text);
             if (bSkip) {
-                kDebug(kfile_area) << "skipping" << entry.filePath;
+                kDebug() << "skipping" << entry.filePath;
             } else {
                 seenTexts.insert(entry.text);
                 //const KNewFileMenuSingleton::Entry entry = templatesList->at(i-1);
@@ -636,7 +635,7 @@ void KNewFileMenuPrivate::fillMenu()
                             if (entry.mimeType.isEmpty()) {
                                 mime = KMimeType::findByPath(entry.templatePath);
                                 if (mime) {
-                                    //kDebug() << entry.templatePath << "is" << mime->name();
+                                    // kDebug() << entry.templatePath << "is" << mime->name();
                                     entry.mimeType = mime->name();
                                 } else {
                                     entry.mimeType = KMimeType::defaultMimeType();
@@ -653,7 +652,7 @@ void KNewFileMenuPrivate::fillMenu()
                         }
 
                         if (!keep) {
-                            //kDebug() << "Not keeping" << entry.templatePath;
+                            // kDebug() << "Not keeping" << entry.templatePath;
                             continue;
                         }
                     }
@@ -664,7 +663,7 @@ void KNewFileMenuPrivate::fillMenu()
                     act->setText(i18nc("@item:inmenu Create New", "%1", entry.text));
                     act->setActionGroup(m_newMenuGroup);
 
-                    //kDebug() << templatePath << entry.filePath;
+                    // kDebug() << templatePath << entry.filePath;
 
                     if (templatePath.endsWith("/URL.desktop")) {
                         linkURL = act;
@@ -798,13 +797,12 @@ void KNewFileMenuPrivate::_k_slotCreateHiddenDirectory()
 void KNewFileMenuPrivate::_k_slotFillTemplates()
 {
     KNewFileMenuSingleton* s = kNewMenuGlobals;
-    //kDebug(kfile_area);
     // Ensure any changes in the templates dir will call this
     if (! s->dirWatch) {
         s->dirWatch = new KDirWatch;
         const QStringList dirs = m_actionCollection->componentData().dirs()->resourceDirs("templates");
         for (QStringList::const_iterator it = dirs.constBegin() ; it != dirs.constEnd() ; ++it) {
-            //kDebug(kfile_area) << "Templates resource dir:" << *it;
+            // kDebug() << "Templates resource dir:" << *it;
             s->dirWatch->addDir(*it);
         }
         QObject::connect(s->dirWatch, SIGNAL(dirty(QString)),
@@ -820,7 +818,7 @@ void KNewFileMenuPrivate::_k_slotFillTemplates()
     const QStringList files = m_actionCollection->componentData().dirs()->findAllResources("templates");
     QMap<QString, KNewFileMenuSingleton::Entry> slist; // used for sorting
     Q_FOREACH(const QString& file, files) {
-        //kDebug(kfile_area) << file;
+        // kDebug() << file;
         if (file[0] != '.') {
             KNewFileMenuSingleton::Entry e;
             e.filePath = file;
@@ -966,17 +964,17 @@ KNewFileMenu::KNewFileMenu(KActionCollection* collection, const QString& name, Q
 
 KNewFileMenu::~KNewFileMenu()
 {
-    //kDebug(kfile_area) << this;
+    // kDebug() << this;
     delete d;
 }
 
 void KNewFileMenu::checkUpToDate()
 {
     KNewFileMenuSingleton* s = kNewMenuGlobals;
-    //kDebug(kfile_area) << this << "m_menuItemsVersion=" << d->m_menuItemsVersion
-    //              << "s->templatesVersion=" << s->templatesVersion;
+    // kDebug() << this << "m_menuItemsVersion=" << d->m_menuItemsVersion
+    //          << "s->templatesVersion=" << s->templatesVersion;
     if (d->m_menuItemsVersion < s->templatesVersion || s->templatesVersion == 0) {
-        //kDebug(kfile_area) << "recreating actions";
+        // kDebug() << "recreating actions";
         // We need to clean up the action collection
         // We look for our actions using the group
         foreach (QAction* action, d->m_newMenuGroup->actions())

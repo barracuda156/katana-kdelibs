@@ -21,7 +21,7 @@
 #define KFILEPLACEEDITDIALOG_H
 
 // Not exported anymore, only used internally.
-//#include <kfile_export.h>
+//#include <kio/kio_export.h>
 
 #include <kdialog.h>
 #include <kurl.h>

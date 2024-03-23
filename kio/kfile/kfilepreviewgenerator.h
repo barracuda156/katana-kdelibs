@@ -20,7 +20,7 @@
 #ifndef KFILEPREVIEWGENERATOR_H
 #define KFILEPREVIEWGENERATOR_H
 
-#include <kfile_export.h>
+#include <kio/kio_export.h>
 
 #include <QObject>
 #include <QAbstractItemView>
@@ -47,7 +47,7 @@ class KDirModel;
  *
  * @since 4.2
  */
-class KFILE_EXPORT KFilePreviewGenerator : public QObject
+class KIO_EXPORT KFilePreviewGenerator : public QObject
 {
     Q_OBJECT
 

@@ -12,6 +12,9 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${KDE4_KDEUI_INCLUDES}
     ${KDE4_KDECORE_INCLUDES}
+    ${CMAKE_SOURCE_DIR}/solid
+    ${CMAKE_BINARY_DIR}/solid
+    ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/kutils/kpasswdstore
     ${CMAKE_BINARY_DIR}/kutils/kpasswdstore
     ${CMAKE_SOURCE_DIR}/kutils/kexiv2
@@ -93,7 +96,6 @@ set(kbookmarks_STAT_SRCS
 )
 
 set(kfile_STAT_SRCS
-    kfile/kabstractfilemodule.cpp
     kfile/kacleditwidget.cpp
     kfile/kdiskfreespaceinfo.cpp
     kfile/kencodingfiledialog.cpp
@@ -114,6 +116,29 @@ set(kfile_STAT_SRCS
     kfile/kurlrequester.cpp
     kfile/kurlrequesterdialog.cpp
     kfile/kfilemetadataprovider.cpp
+    kfile/kdiroperator.cpp
+    kfile/kdiroperatordetailview.cpp
+    # used in combination with kio/kio/kdirmodel.cpp
+    kfile/kdirsortfilterproxymodel.cpp
+    kfile/kfilebookmarkhandler.cpp
+    kfile/kfilefiltercombo.cpp
+    kfile/kfilewidget.cpp
+    kfile/kfileplacesitem.cpp
+    kfile/kfileplacesmodel.cpp
+    kfile/kfileplacesview.cpp
+    kfile/kfileplaceeditdialog.cpp
+    kfile/kfilepreviewgenerator.cpp
+    kfile/knameandurlinputdialog.cpp
+    kfile/knewfilemenu.cpp
+    kfile/kurlnavigatordropdownbutton.cpp
+    kfile/kurlnavigatorbuttonbase.cpp
+    kfile/kurlnavigatorbutton.cpp
+    kfile/kurlnavigatorplacesselector.cpp
+    kfile/kurlnavigatorprotocolcombo.cpp
+    kfile/kurlnavigatortogglebutton.cpp
+    kfile/kurlnavigator.cpp
+    kfile/kurlnavigatormenu.cpp
+    kfile/kdefaultviewadapter.cpp
 )
 
 ########### next target ###############
@@ -133,6 +158,7 @@ target_link_libraries(kio PUBLIC
     kdecore
     kdeui
     kpasswdstore
+    solid
 )
 
 if(ACL_FOUND)
@@ -222,8 +248,6 @@ install(
     kio/kurifilter.h
     kio/kurlcompletion.h
     kio/khttp.h
-    kfile/kabstractfilemodule.h
-    kfile/kabstractfilewidget.h
     kfile/kdiskfreespaceinfo.h
     kfile/kencodingfiledialog.h
     kfile/kfile.h
@@ -240,6 +264,16 @@ install(
     kfile/kurlcombobox.h
     kfile/kurlrequester.h
     kfile/kurlrequesterdialog.h
+    kfile/kdiroperator.h
+    kfile/kdirsortfilterproxymodel.h
+    kfile/kfilefiltercombo.h
+    kfile/kfileplacesmodel.h
+    kfile/kfileplacesview.h
+    kfile/kfilepreviewgenerator.h
+    kfile/kfilewidget.h
+    kfile/kurlnavigator.h
+    kfile/knewfilemenu.h
+    kfile/knameandurlinputdialog.h
     bookmarks/kbookmark.h
     bookmarks/kbookmarkmanager.h
     bookmarks/kbookmarkmenu.h

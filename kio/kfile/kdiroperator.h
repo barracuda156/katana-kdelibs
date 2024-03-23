@@ -29,7 +29,7 @@
 #include <kdirlister.h>
 #include <kfileitem.h>
 #include <kfile.h>
-#include <kfile_export.h>
+#include <kio/kio_export.h>
 
 #include <QAbstractItemView>
 #include <QModelIndex>
@@ -95,7 +95,7 @@ class DeleteJob;
  * @short A widget for displaying files and browsing directories.
  * @author Stephan Kulow <coolo@kde.org>, Carsten Pfeiffer <pfeiffer@kde.org>
  */
-class KFILE_EXPORT KDirOperator : public QWidget
+class KIO_EXPORT KDirOperator : public QWidget
 {
     Q_OBJECT
 

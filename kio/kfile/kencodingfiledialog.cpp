@@ -23,7 +23,7 @@
 
 #include <config-kfile.h>
 
-#include <kabstractfilewidget.h>
+#include <kfilewidget.h>
 #include <kcombobox.h>
 #include <kglobal.h>
 #include <klocale.h>

@@ -20,10 +20,10 @@
 #ifndef KFILEFILTERCOMBO_H
 #define KFILEFILTERCOMBO_H
 
-#include <kfile_export.h>
+#include <kio/kio_export.h>
 #include <kcombobox.h>
 
-class KFILE_EXPORT KFileFilterCombo : public KComboBox
+class KIO_EXPORT KFileFilterCombo : public KComboBox
 {
     Q_OBJECT
 
