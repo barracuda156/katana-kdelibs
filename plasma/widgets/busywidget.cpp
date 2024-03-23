@@ -55,7 +55,6 @@ public:
     }
 
     Svg *svg;
-    QString styleSheet;
     int timerId;
     QHash<int, QPixmap> frames;
     qreal rotationAngle;
