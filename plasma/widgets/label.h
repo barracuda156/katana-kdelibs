@@ -164,9 +164,6 @@ protected:
     void resizeEvent(QGraphicsSceneResizeEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget);
     void changeEvent(QEvent *event);
     bool event(QEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant & value);

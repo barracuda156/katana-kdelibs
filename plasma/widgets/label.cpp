@@ -81,7 +81,7 @@ public:
             pm = QPixmap(absImagePath);
         }
 
-        static_cast<QLabel*>(q->widget())->setPixmap(pm);
+        q->nativeWidget()->setPixmap(pm);
     }
 
     QString imagePath;
@@ -117,13 +117,13 @@ Label::~Label()
 void Label::setText(const QString &text)
 {
     d->hasLinks = text.contains("<a ", Qt::CaseInsensitive);
-    static_cast<QLabel*>(widget())->setText(text);
+    nativeWidget()->setText(text);
     updateGeometry();
 }
 
 QString Label::text() const
 {
-    return static_cast<QLabel*>(widget())->text();
+    return nativeWidget()->text();
 }
 
 void Label::setImage(const QString &path)
@@ -153,12 +153,12 @@ QString Label::image() const
 
 void Label::setScaledContents(bool scaled)
 {
-    static_cast<QLabel*>(widget())->setScaledContents(scaled);
+    nativeWidget()->setScaledContents(scaled);
 }
 
 bool Label::hasScaledContents() const
 {
-    return static_cast<QLabel*>(widget())->hasScaledContents();
+    return nativeWidget()->hasScaledContents();
 }
 
 void Label::setTextSelectable(bool enable)
@@ -257,53 +257,6 @@ void Label::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (d->textSelectable) {
         QGraphicsProxyWidget::mouseMoveEvent(event);
-    }
-}
-
-void Label::paint(QPainter *painter,
-                  const QStyleOptionGraphicsItem *option,
-                  QWidget *widget)
-{
-    QLabel *native = nativeWidget();
-    QFontMetrics fm = native->font();
-
-    //indirect painting still used for fade out
-    if (native->wordWrap() || native->text().isEmpty() || size().width() >= fm.width(native->text())) {
-        QGraphicsProxyWidget::paint(painter, option, widget);
-    } else {
-        const int gradientLength = 25;
-        QPixmap buffer(contentsRect().size().toSize());
-        buffer.fill(Qt::transparent);
-
-        QPainter buffPainter(&buffer);
-
-        QGraphicsProxyWidget::paint(&buffPainter, option, widget);
-
-        QLinearGradient gr;
-
-        buffPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-        buffPainter.setPen(Qt::NoPen);
-
-        if (option->direction == Qt::LeftToRight) {
-            gr.setStart(size().width()-gradientLength, 0);
-            gr.setFinalStop(size().width(), 0);
-            gr.setColorAt(0, Qt::black);
-            gr.setColorAt(1, Qt::transparent);
-            buffPainter.setBrush(gr);
-
-            buffPainter.drawRect(QRect(gr.start().toPoint(), QSize(gradientLength, size().height())));
-        } else {
-            gr.setStart(0, 0);
-            gr.setFinalStop(gradientLength, 0);
-            gr.setColorAt(0, Qt::transparent);
-            gr.setColorAt(1, Qt::black);
-            buffPainter.setBrush(gr);
-
-            buffPainter.drawRect(QRect(0, 0, gradientLength, size().height()));
-        }
-
-        buffPainter.end();
-        painter->drawPixmap(contentsRect(), buffer, buffer.rect());
     }
 }
 
