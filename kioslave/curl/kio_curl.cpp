@@ -406,7 +406,6 @@ CurlProtocol::CurlProtocol(const QByteArray &app)
     m_curl = curl_easy_init();
     if (!m_curl) {
         kWarning(7103) << "Could not create context";
-        return;
     }
 }
 
@@ -1145,13 +1144,15 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
                     return curlresult;
                 }
                 curlresult = curl_easy_perform(m_curl);
-                kioerror = curlToKIOError(curlresult, m_curl);
-                if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
-                    kDebug(7103) << "Going to redirect for cache authorization";
-                    KUrl newurl(url);
-                    newurl.setUserName(kioauthinfo.username);
-                    newurl.setPassword(kioauthinfo.password);
-                    *redirecturl = newurl;
+                if (curlresult != CURLE_OK) {
+                    kioerror = curlToKIOError(curlresult, m_curl);
+                    if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
+                        kDebug(7103) << "Going to redirect for cache authorization";
+                        KUrl newurl(url);
+                        newurl.setUserName(kioauthinfo.username);
+                        newurl.setPassword(kioauthinfo.password);
+                        *redirecturl = newurl;
+                    }
                 }
             }
         }
@@ -1175,13 +1176,15 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
                     cacheAuthentication(kioauthinfo);
                 }
                 curlresult = curl_easy_perform(m_curl);
-                kioerror = curlToKIOError(curlresult, m_curl);
-                if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
-                    kDebug(7103) << "Going to redirect for authorization";
-                    KUrl newurl(url);
-                    newurl.setUserName(kioauthinfo.username);
-                    newurl.setPassword(kioauthinfo.password);
-                    *redirecturl = newurl;
+                if (curlresult != CURLE_OK) {
+                    kioerror = curlToKIOError(curlresult, m_curl);
+                    if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
+                        kDebug(7103) << "Going to redirect for authorization";
+                        KUrl newurl(url);
+                        newurl.setUserName(kioauthinfo.username);
+                        newurl.setPassword(kioauthinfo.password);
+                        *redirecturl = newurl;
+                    }
                 }
             }
         }
