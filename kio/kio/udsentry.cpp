@@ -152,19 +152,19 @@ void UDSEntryPrivate::save(QDataStream &s, const UDSEntry &a)
 {
     const FieldHash &e = a.d->fields;
 
-    s << e.size();
+    s << (quint32)e.size();
     FieldHash::ConstIterator it = e.begin();
     const FieldHash::ConstIterator end = e.end();
-    for( ; it != end; ++it)
-    {
+    for( ; it != end; ++it) {
         const quint32 uds = it.key();
         s << uds;
-        if (uds & KIO::UDSEntry::UDS_STRING)
+        if (uds & KIO::UDSEntry::UDS_STRING) {
             s << it->m_str;
-        else if (uds & KIO::UDSEntry::UDS_NUMBER)
+        } else if (uds & KIO::UDSEntry::UDS_NUMBER) {
             s << it->m_long;
-        else
+        } else {
             Q_ASSERT_X(false, "KIO::UDSEntry", "Found a field with an invalid type");
+        }
      }
  }
 
@@ -173,34 +173,15 @@ void UDSEntryPrivate::load(QDataStream &s, UDSEntry &a)
     FieldHash &e = a.d->fields;
 
     e.clear();
-    quint32 size;
+    quint32 size = 0;
     s >> size;
 
-    // We cache the loaded strings. Some of them, like, e.g., the user,
-    // will often be the same for many entries in a row. Caching them
-    // permits to use implicit sharing to save memory.
-    static QVector<QString> cachedStrings;
-    if (quint32(cachedStrings.size()) < size) {
-        cachedStrings.resize(size);
-    }
-
-    for(quint32 i = 0; i < size; ++i)
-    {
-        quint32 uds;
+    for(quint32 i = 0; i < size; ++i) {
+        quint32 uds = 0;
         s >> uds;
         if (uds & KIO::UDSEntry::UDS_STRING) {
-            // If the QString is the same like the one we read for the
-            // previous UDSEntry at the i-th position, use an implicitly
-            // shared copy of the same QString to save memory.
-            QString buffer;
-            s >> buffer;
-
-            if (buffer != cachedStrings.at(i)) {
-                 cachedStrings[i] = buffer;
-            }
-
             Field f;
-            f.m_str = cachedStrings.at(i);
+            s >> f.m_str;
             e.insert(uds, f);
         } else if (uds & KIO::UDSEntry::UDS_NUMBER) {
             Field f;
