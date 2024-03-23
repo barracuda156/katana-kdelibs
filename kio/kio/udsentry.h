@@ -134,9 +134,7 @@ namespace KIO
             /// Indicates that the field is a QString
             UDS_STRING = 0x01000000,
             /// Indicates that the field is a number (long long)
-            UDS_NUMBER   = 0x02000000,
-            /// Indicates that the field represents a time, which is modelled by a long long
-            UDS_TIME   = 0x04000000 | UDS_NUMBER,
+            UDS_NUMBER = 0x02000000,
 
             // The rest isn't a bit field
 
@@ -165,11 +163,11 @@ namespace KIO
             /// Access permissions (part of the mode returned by stat)
             UDS_ACCESS = 7 | UDS_NUMBER,
             /// The last time the file was modified
-            UDS_MODIFICATION_TIME = 8 | UDS_TIME,
+            UDS_MODIFICATION_TIME = 8 | UDS_NUMBER,
             /// The last time the file was opened
-            UDS_ACCESS_TIME = 9 | UDS_TIME,
+            UDS_ACCESS_TIME = 9 | UDS_NUMBER,
             /// The time the file was created
-            UDS_CREATION_TIME = 10 | UDS_TIME,
+            UDS_CREATION_TIME = 10 | UDS_NUMBER,
             /// File type, part of the mode returned by stat
             /// (for a link, this returns the file type of the pointed item)
             /// check UDS_LINK_DEST to know if this is a link
