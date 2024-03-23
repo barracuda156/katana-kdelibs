@@ -142,7 +142,7 @@ namespace KIO {
 
         /**
          * Returns a list of all available preview plugins. The list
-         * contains the basenames of the plugins' .desktop files (no path,
+         * contains the basenames of the plugins .desktop files (no path,
          * no .desktop).
          * @return the list of plugins
          */
@@ -150,7 +150,7 @@ namespace KIO {
 
         /**
          * Returns a list of all supported MIME types. The list can
-         * contain entries like text/ * (without the space).
+         * contain entries like text/* (i.e. globs).
          * @return the list of mime types
          */
         static QStringList supportedMimeTypes();
