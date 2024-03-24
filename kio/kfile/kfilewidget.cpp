@@ -257,22 +257,22 @@ public:
     KFilePlacesModel *model;
 
     // whether or not the _user_ has checked the above box
-    bool autoSelectExtChecked : 1;
+    bool autoSelectExtChecked;
 
     // indicates if the location edit should be kept or cleared when changing
     // directories
-    bool keepLocation : 1;
+    bool keepLocation;
 
     // the KDirOperators view is set in KFileWidget::show(), so to avoid
     // setting it again and again, we have this nice little boolean :)
-    bool hasView : 1;
+    bool hasView;
 
-    bool hasDefaultFilter : 1; // necessary for the operationMode
-    bool autoDirectoryFollowing : 1;
-    bool inAccept : 1; // true between beginning and end of accept()
-    bool dummyAdded : 1; // if the dummy item has been added. This prevents the combo from having a
+    bool hasDefaultFilter; // necessary for the operationMode
+    bool autoDirectoryFollowing;
+    bool inAccept; // true between beginning and end of accept()
+    bool dummyAdded; // if the dummy item has been added. This prevents the combo from having a
                      // blank item added when loaded
-    bool confirmOverwrite : 1;
+    bool confirmOverwrite;
     bool differentHierarchyLevelItemsEntered;
 
     KFilePreviewGenerator *previewGenerator;
@@ -281,7 +281,8 @@ public:
     // The group which stores app-specific settings. These settings are recent
     // files and urls. Visual settings (view mode, sorting criteria...) are not
     // app-specific and are stored in kdeglobals
-    KConfigGroup configGroup; };
+    KConfigGroup configGroup;
+};
 
 K_GLOBAL_STATIC(KUrl, lastDirectory) // to set the start path
 
@@ -1903,7 +1904,7 @@ bool KFileWidget::keepsLocation() const
     return d->keepLocation;
 }
 
-void KFileWidget::setOperationMode( OperationMode mode )
+void KFileWidget::setOperationMode( const OperationMode mode )
 {
     d->operationMode = mode;
     d->keepLocation = (mode == Saving);

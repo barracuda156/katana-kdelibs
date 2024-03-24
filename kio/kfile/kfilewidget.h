@@ -94,38 +94,38 @@ public:
       * @param parent The parent widget of this widget
       *
       */
-    KFileWidget(const KUrl& startDir, QWidget *parent);
+    KFileWidget(const KUrl &startDir, QWidget *parent);
 
     /**
      * Destructor
      */
-    virtual ~KFileWidget();
+    ~KFileWidget();
 
     /**
      * @returns The selected fully qualified filename.
      */
-    virtual KUrl selectedUrl() const;
+    KUrl selectedUrl() const;
 
     /**
      * @returns The list of selected URLs.
      */
-    virtual KUrl::List selectedUrls() const;
+    KUrl::List selectedUrls() const;
 
     /**
      * @returns the currently shown directory.
      */
-    virtual KUrl baseUrl() const;
+    KUrl baseUrl() const;
 
     /**
      * Returns the full path of the selected file in the local filesystem.
      * (Local files only)
      */
-    virtual QString selectedFile() const;
+    QString selectedFile() const;
 
     /**
      * Returns a list of all selected local files.
      */
-    virtual QStringList selectedFiles() const;
+    QStringList selectedFiles() const;
 
     /**
      * Sets the directory to view.
@@ -134,14 +134,14 @@ public:
      * @param clearforward Indicates whether the forward queue
      * should be cleared.
      */
-    virtual void setUrl(const KUrl &url, bool clearforward = true);
+    void setUrl(const KUrl &url, bool clearforward = true);
 
     /**
      * Sets the file name to preselect to @p name
      *
      * This takes absolute URLs and relative file names.
      */
-    virtual void setSelection(const QString& name);
+    void setSelection(const QString &name);
 
     /**
      * Sets the operational mode of the filedialog to @p Saving, @p Opening
@@ -160,7 +160,7 @@ public:
      * @see operationMode
      * @see KFileWidget::OperationMode
      */
-    virtual void setOperationMode( OperationMode );
+    void setOperationMode(const OperationMode mode);
 
     /**
      * @returns the current operation mode, Opening, Saving or Other. Default
@@ -169,7 +169,7 @@ public:
      * @see operationMode
      * @see KFileWidget::OperationMode
      */
-    virtual OperationMode operationMode() const;
+    OperationMode operationMode() const;
 
     /**
      * Sets whether the filename/url should be kept when changing directories.
@@ -182,13 +182,13 @@ public:
      * you can type in the filename and change the directory without having
      * to type the name again.
      */
-    virtual void setKeepLocation( bool keep );
+    void setKeepLocation(bool keep);
 
     /**
      * @returns whether the contents of the location edit are kept when
      * changing directories.
      */
-    virtual bool keepsLocation() const;
+    bool keepsLocation() const;
 
     /**
      * Sets the filter to be used to @p filter.
@@ -224,7 +224,7 @@ public:
      * @see filterChanged
      * @see setMimeFilter
      */
-    virtual void setFilter(const QString& filter);
+    void setFilter(const QString &filter);
 
     /**
      * Returns the current filter as entered by the user or one of the
@@ -233,7 +233,7 @@ public:
      * @see setFilter()
      * @see filterChanged()
      */
-    virtual QString currentFilter() const;
+    QString currentFilter() const;
 
     /**
      * Returns the mimetype for the desired output format.
@@ -243,7 +243,7 @@ public:
      *
      * @see setFilterMimeType()
      */
-    virtual KMimeType::Ptr currentFilterMimeType();
+    KMimeType::Ptr currentFilterMimeType();
 
     /**
      * Sets the filter up to specify the output type.
@@ -256,8 +256,8 @@ public:
      *
      * Do not use in conjunction with setFilter()
      */
-    virtual void setMimeFilter( const QStringList& types,
-                        const QString& defaultType = QString() );
+    void setMimeFilter(const QStringList &types,
+                       const QString &defaultType = QString());
 
     /**
      * The mimetype for the desired output format.
@@ -267,12 +267,12 @@ public:
      *
      * @see setMimeFilter()
      */
-    virtual QString currentMimeFilter() const;
+    QString currentMimeFilter() const;
 
     /**
      *  Clears any mime- or namefilter. Does not reload the directory.
      */
-    virtual void clearFilter();
+    void clearFilter();
 
     /**
      * Adds a preview widget and enters the preview mode.
@@ -285,7 +285,7 @@ public:
      *
      * @param w The widget to be used for the preview.
      */
-    virtual void setPreviewWidget(KPreviewWidgetBase *w);
+    void setPreviewWidget(KPreviewWidgetBase *w);
 
     /**
      * Sets the mode of the dialog.
@@ -308,13 +308,13 @@ public:
      * setMode( mode );
      * \endcode
      */
-    virtual void setMode( KFile::Modes m );
+    void setMode(KFile::Modes m);
 
     /**
      * Returns the mode of the filedialog.
      * @see setMode()
      */
-    virtual KFile::Modes mode() const;
+    KFile::Modes mode() const;
 
     /**
      * Sets the text to be displayed in front of the selection.
@@ -323,7 +323,7 @@ public:
      * Most useful if you want to make clear what
      * the location is used for.
      */
-    virtual void setLocationLabel(const QString& text);
+    void setLocationLabel(const QString &text);
 
     /**
      * Returns a pointer to the toolbar.
@@ -384,7 +384,7 @@ public:
      * @return The URL that should be listed by default (e.g. by KFileDialog).
      * @see KFileWidget::KFileWidget()
      */
-    static KUrl getStartUrl( const KUrl& startDir, QString& recentDirClass );
+    static KUrl getStartUrl(const KUrl &startDir, QString &recentDirClass);
 
     /**
      * Similar to getStartUrl(const KUrl& startDir,QString& recentDirClass),
@@ -405,13 +405,13 @@ public:
      * @see KFileWidget::KFileWidget()
      * @since 4.3
      */
-    static KUrl getStartUrl( const KUrl& startDir, QString& recentDirClass, QString& fileName );
+    static KUrl getStartUrl(const KUrl &startDir, QString &recentDirClass, QString &fileName);
 
     /**
      * @internal
      * Used by KFileDialog to share the dialog's start directory.
      */
-    static void setStartDir( const KUrl& directory );
+    static void setStartDir(const KUrl &directory);
 
     /**
      * Set a custom widget that should be added to the file dialog.
@@ -421,7 +421,7 @@ public:
      *               When creating this widget, you don't need to specify a parent,
      *               since the widget's parent will be set automatically by KFileWidget.
      */
-    virtual void setCustomWidget(QWidget* widget);
+    void setCustomWidget(QWidget *widget);
 
     /**
      * Sets a custom widget that should be added below the location and the filter
@@ -433,7 +433,7 @@ public:
      *                 When creating this widget, you don't need to specify a parent,
      *                 since the widget's parent will be set automatically by KFileWidget.
      */
-    virtual void setCustomWidget(const QString& text, QWidget* widget);
+    void setCustomWidget(const QString& text, QWidget* widget);
 
     
     /**
@@ -443,7 +443,7 @@ public:
      * @param enable Set this to true to enable checking.
      * @since 4.2
      */
-    virtual void setConfirmOverwrite(bool enable) { Q_UNUSED(enable); };
+    void setConfirmOverwrite(bool enable) { Q_UNUSED(enable); };
 
     /**
      * Forces the inline previews to be shown or hidden, depending on @p show.
@@ -451,16 +451,16 @@ public:
      * @param show Whether to show inline previews or not.
      * @since 4.2
      */
-    virtual void setInlinePreviewShown(bool show) { Q_UNUSED(show); };
+    void setInlinePreviewShown(bool show) { Q_UNUSED(show); };
 
 public Q_SLOTS:
     /**
      * Called when clicking ok (when this widget is used in KFileDialog)
      * Might or might not call accept().
      */
-    virtual void slotOk();
-    virtual void accept();
-    virtual void slotCancel();
+    void slotOk();
+    void accept();
+    void slotCancel();
 
 protected:
     virtual void resizeEvent(QResizeEvent* event);
@@ -505,7 +505,7 @@ Q_SIGNALS:
      * @see setFilter()
      * @see currentFilter()
      */
-    void filterChanged( const QString& filter );
+    void filterChanged(const QString &filter);
 
     /**
      * Emitted by slotOk() (directly or asynchronously) once everything has
@@ -525,7 +525,7 @@ public:
      * @param group the KConfigGroup to read from
      * @since 4.4
      */
-    void readConfig( KConfigGroup& group );
+    void readConfig(KConfigGroup &group);
 
 private:
     friend class KFileWidgetPrivate;
