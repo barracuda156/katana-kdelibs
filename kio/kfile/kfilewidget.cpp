@@ -197,8 +197,6 @@ public:
      */
     KUrl mostLocalUrl(const KUrl &url);
 
-    void setInlinePreviewShown(bool show);
-
     KFileWidget* q;
 
     // the last selected url
@@ -2640,6 +2638,16 @@ void KFileWidget::setCustomWidget(const QString& text, QWidget* widget)
     d->lafBox->addWidget(widget, 2, 1, Qt::AlignVCenter);
 }
 
+void KFileWidget::setConfirmOverwrite(bool enable)
+{
+    d->confirmOverwrite = enable;
+}
+
+void KFileWidget::setInlinePreviewShown(bool show)
+{
+    d->ops->setInlinePreviewShown(show);
+}
+
 KDirOperator* KFileWidget::dirOperator()
 {
     return d->ops;
@@ -2679,11 +2687,5 @@ KUrl KFileWidgetPrivate::mostLocalUrl(const KUrl &url)
 
     return url;
 }
-
-void KFileWidgetPrivate::setInlinePreviewShown(bool show)
-{
-    ops->setInlinePreviewShown(show);
-}
-
 
 #include "moc_kfilewidget.cpp"

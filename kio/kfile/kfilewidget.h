@@ -433,7 +433,7 @@ public:
      *                 When creating this widget, you don't need to specify a parent,
      *                 since the widget's parent will be set automatically by KFileWidget.
      */
-    void setCustomWidget(const QString& text, QWidget* widget);
+    void setCustomWidget(const QString &text, QWidget* widget);
 
     
     /**
@@ -443,7 +443,7 @@ public:
      * @param enable Set this to true to enable checking.
      * @since 4.2
      */
-    void setConfirmOverwrite(bool enable) { Q_UNUSED(enable); };
+    void setConfirmOverwrite(bool enable);
 
     /**
      * Forces the inline previews to be shown or hidden, depending on @p show.
@@ -451,7 +451,7 @@ public:
      * @param show Whether to show inline previews or not.
      * @since 4.2
      */
-    void setInlinePreviewShown(bool show) { Q_UNUSED(show); };
+    void setInlinePreviewShown(bool show);
 
 public Q_SLOTS:
     /**
