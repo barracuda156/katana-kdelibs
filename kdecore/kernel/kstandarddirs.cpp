@@ -66,7 +66,7 @@ static QString readEnvPath(const char *env)
     const QByteArray c_path = qgetenv(env);
     if (c_path.isEmpty())
         return QString();
-    return QDir::fromNativeSeparators(QFile::decodeName(c_path));
+    return QFile::decodeName(c_path);
 }
 
 // split path using : as delimiters

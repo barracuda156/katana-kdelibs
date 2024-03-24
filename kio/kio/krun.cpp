@@ -249,13 +249,13 @@ KRunMX2::subst(int option, const KUrl &url, QStringList &ret)
     switch (option) {
     case 'u':
         ret << ((url.isLocalFile() && !url.hasFragment() && !url.hasQuery()) ?
-                QDir::toNativeSeparators(url.toLocalFile())  : url.url());
+                url.toLocalFile()  : url.url());
         break;
     case 'd':
         ret << url.directory();
         break;
     case 'f':
-        ret << QDir::toNativeSeparators(url.toLocalFile());
+        ret << url.toLocalFile();
         break;
     case 'n':
         ret << url.fileName();
