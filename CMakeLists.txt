@@ -44,7 +44,6 @@ set(KDE4_LIB_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}" CACHE PATH "KDE librarie
 set(KDE4_LIBEXEC_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBEXECDIR}/kde4" CACHE PATH "KDE libraries executables installation directory")
 set(KDE4_INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}" CACHE PATH "KDE headers installation directory")
 set(KDE4_PLUGIN_INSTALL_DIR "${KDE4_LIB_INSTALL_DIR}/kde4" CACHE PATH "KDE plugins installation directory")
-set(KDE4_IMPORTS_INSTALL_DIR "${KDE4_PLUGIN_INSTALL_DIR}/imports" CACHE PATH "KDE imports installation directory")
 set(KDE4_CONFIG_INSTALL_DIR "${KDE4_SHARE_INSTALL_PREFIX}/config" CACHE PATH "KDE config installation directory")
 set(KDE4_DATA_INSTALL_DIR "${KDE4_SHARE_INSTALL_PREFIX}" CACHE PATH "KDE data installation directory")
 set(KDE4_ICON_INSTALL_DIR "${KDE4_SHARE_INSTALL_PREFIX}/icons" CACHE PATH "KDE icon installation directory")

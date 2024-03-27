@@ -21,7 +21,6 @@
 #  KDE4_DATA_INSTALL_DIR     - the parent directory where kdelibs applications install their data
 #  KDE4_CONFIG_INSTALL_DIR   - the directory where config files from kdelibs are installed
 #  KDE4_ICON_INSTALL_DIR     - the directory where icons from kdelibs are installed
-#  KDE4_IMPORTS_INSTALL_DIR  - the directory where imports from kdelibs are installed
 #  KDE4_LOCALE_INSTALL_DIR   - the directory where translations from kdelibs are installed
 #  KDE4_SOUND_INSTALL_DIR    - the directory where sound files from kdelibs are installed
 #  KDE4_TEMPLATES_INSTALL_DIR     - the directory where templates (Create new file...) from kdelibs are installed
@@ -71,7 +70,6 @@ if(NOT KDELIBS4_FOUND)
     set(KDE4_LIBEXEC_INSTALL_DIR "@KDE4_LIBEXEC_INSTALL_DIR@")
     set(KDE4_INCLUDE_INSTALL_DIR "@KDE4_INCLUDE_INSTALL_DIR@")
     set(KDE4_PLUGIN_INSTALL_DIR "@KDE4_PLUGIN_INSTALL_DIR@")
-    set(KDE4_IMPORTS_INSTALL_DIR "@KDE4_IMPORTS_INSTALL_DIR@")
     set(KDE4_CONFIG_INSTALL_DIR "@KDE4_CONFIG_INSTALL_DIR@")
     set(KDE4_DATA_INSTALL_DIR "@KDE4_DATA_INSTALL_DIR@")
     set(KDE4_ICON_INSTALL_DIR "@KDE4_ICON_INSTALL_DIR@")
