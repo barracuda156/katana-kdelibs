@@ -130,9 +130,12 @@ void KServiceTest::testByName()
     QVERIFY( s0 );
     QCOMPARE( s0->name(), QString::fromLatin1("KParts/ReadOnlyPart") );
 
-    KService::Ptr kfilemodule = KService::serviceByDesktopPath("kfilemodule.desktop");
-    QVERIFY(kfilemodule);
-    QCOMPARE( kfilemodule->name(), QString::fromLatin1("KFileModule"));
+    KService::Ptr kfilemetadataplugin = KService::serviceByDesktopPath("kfilemetadata_epub.desktop");
+    if (kfilemetadataplugin) {
+        QCOMPARE( kfilemetadataplugin->name(), QString::fromLatin1("KFileMetaDataEPubPlugin"));
+    } else {
+        qWarning("Skipping test for kfilemetadata_epub.desktop, not found. kdelibs not installed?");
+    }
 }
 
 void KServiceTest::testProperty()

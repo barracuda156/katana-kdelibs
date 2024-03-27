@@ -106,15 +106,15 @@ void KDesktopFileTest::testActionGroup()
 
 void KDesktopFileTest::testIsAuthorizedDesktopFile()
 {
-    const QString fileName = QFile::decodeName(KDESRCDIR "../../kfile/kfilemodule.desktop");
+    const QString fileName = QFile::decodeName(KDESRCDIR "../../kio/metadata/kfilemetadata_epub.desktop");
     QVERIFY(QFile::exists(fileName));
     QVERIFY(!KDesktopFile::isAuthorizedDesktopFile(fileName));
 
-    const QString installedFile = KGlobal::dirs()->locate("services", "kfilemodule.desktop");
+    const QString installedFile = KGlobal::dirs()->locate("services", "kfilemetadata_epub.desktop");
     if (!installedFile.isEmpty()) {
         QVERIFY(KDesktopFile::isAuthorizedDesktopFile(installedFile));
     } else {
-        qWarning("Skipping test for kfilemodule.desktop, not found. kdelibs not installed?");
+        qWarning("Skipping test for kfilemetadata_epub.desktop, not found. kdelibs not installed?");
     }
 
     const QString autostartFile = KStandardDirs::locate("autostart", "plasma-desktop.desktop");
