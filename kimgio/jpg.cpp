@@ -230,7 +230,7 @@ bool JPGHandler::canRead(QIODevice *device)
     for (int i = 0; i < HeadersTblSize; i++) {
         if (data.size() >= HeadersTbl[i].headersize &&
             ::memcmp(data.constData(), HeadersTbl[i].header, HeadersTbl[i].headersize) == 0) {
-            kDebug() << "Header detected";
+            kDebug() << "JPG header detected" << i;
             return true;
         }
     }
