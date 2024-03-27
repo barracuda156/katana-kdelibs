@@ -188,7 +188,6 @@ install(
     kurifilterplugin.desktop
     kfile/kpropertiesdialogplugin.desktop
     kio/kfileitemactionplugin.desktop
-    kfile/kiofilemodule.desktop
     DESTINATION ${KDE4_SERVICETYPES_INSTALL_DIR}
 )
 
