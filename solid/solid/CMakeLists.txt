@@ -2,8 +2,6 @@ add_subdirectory(ifaces)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${QT_QTDBUS_INCLUDE_DIR}
-    ${QT_QTGUI_INCLUDE_DIR}
 )
 
 ########### next target ###############
