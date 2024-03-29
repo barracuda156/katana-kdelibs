@@ -882,7 +882,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
 
     // curl cannot verify certs if the host is address, CURLOPT_USE_SSL set to CURLUSESSL_TRY
     // does not bypass such cases so resolving it manually
-    const QHostAddress urladdress(url.host());
+    const QHostAddress urladdress(url.host().toLatin1());
     if (!urladdress.isNull()) {
         const QHostInfo urlinfo = QHostInfo::fromName(url.host());
         if (urlinfo.error() == QHostInfo::NoError) {
