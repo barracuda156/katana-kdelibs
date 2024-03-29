@@ -889,7 +889,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
             KUrl newurl(url);
             newurl.setHost(urlinfo.hostName());
             kDebug(7103) << "Rewrote" << url << "to" << newurl;
-            // NOTE: redirect to the same URL is cycril link error
+            // NOTE: redirect to the same URL is cyclic link error
             if (url != newurl) {
                 redirection(newurl);
                 finished();
