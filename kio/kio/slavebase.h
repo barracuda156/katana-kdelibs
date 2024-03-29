@@ -503,11 +503,6 @@ public:
     int connectTimeout();
 
     /**
-     * @return timeout value for connecting to proxy in secs.
-     */
-    int proxyConnectTimeout();
-
-    /**
      * @return timeout value for read from first data from
      * remote host in seconds.
      */

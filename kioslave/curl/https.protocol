@@ -9,7 +9,6 @@ writing=true
 makedir=false
 deleting=false
 moving=false
-ProxiedBy=http
 Icon=text-html
 maxInstances=20
 maxInstancesPerHost=5

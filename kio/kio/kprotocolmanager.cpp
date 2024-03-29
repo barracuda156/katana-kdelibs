@@ -20,108 +20,39 @@
 */
 
 #include "kprotocolmanager.h"
+#include "kdeversion.h"
+#include "kdebug.h"
+#include "kglobal.h"
+#include "klocale.h"
+#include "kconfiggroup.h"
+#include "ksharedconfig.h"
+#include "kurl.h"
+#include "kprotocolinfofactory.h"
+#include "kio/slaveconfig.h"
+#include "kio/ioslave_defaults.h"
+
+#include <QCoreApplication>
 
 #include <string.h>
 #include <unistd.h>
 #include <sys/utsname.h>
 
-#include <QtCore/QCoreApplication>
-#include <QtNetwork/QHostAddress>
-#include <QtNetwork/QHostInfo>
-#include <QtDBus/QtDBus>
-#include <QtCore/QCache>
-
-#include <kdeversion.h>
-#include <kdebug.h>
-#include <kglobal.h>
-#include <klocale.h>
-#include <kconfiggroup.h>
-#include <ksharedconfig.h>
-#include <kstandarddirs.h>
-#include <kurl.h>
-#include <kmimetypetrader.h>
-#include <kprotocolinfofactory.h>
-
-#include <kio/slaveconfig.h>
-#include <kio/ioslave_defaults.h>
-
 #define QL1S(x)   QLatin1String(x)
 #define QL1C(x)   QLatin1Char(x)
 
-typedef QPair<QHostAddress, int> SubnetPair;
-
-/*
-    Domain suffix match. E.g. return true if host is "cuzco.inka.de" and
-    nplist is "inka.de,hadiko.de" or if host is "localhost" and nplist is
-    "localhost".
-*/
-static bool revmatch(const char *host, const char *nplist)
+static KProtocolInfo::Ptr findProtocol(const KUrl &url)
 {
-  if (host == 0)
-    return false;
-
-  const char *hptr = host + strlen( host ) - 1;
-  const char *nptr = nplist + strlen( nplist ) - 1;
-  const char *shptr = hptr;
-
-  while ( nptr >= nplist )
-  {
-    if ( *hptr != *nptr )
-    {
-      hptr = shptr;
-
-      // Try to find another domain or host in the list
-      while(--nptr>=nplist && *nptr!=',' && *nptr!=' ') ;
-
-      // Strip out multiple spaces and commas
-      while(--nptr>=nplist && (*nptr==',' || *nptr==' ')) ;
-    }
-    else
-    {
-      if ( nptr==nplist || nptr[-1]==',' || nptr[-1]==' ')
-        return true;
-      if ( nptr[-1]=='/' && hptr == host ) // "bugs.kde.org" vs "http://bugs.kde.org", the config UI says URLs are ok
-        return true;
-      if ( hptr == host ) // e.g. revmatch("bugs.kde.org","mybugs.kde.org")
-        return false;
-
-      hptr--;
-      nptr--;
-    }
-  }
-
-  return false;
+    return KProtocolInfoFactory::self()->findProtocol(url.protocol());
 }
-
-class KProxyData : public QObject
-{
-public:
-    KProxyData(const QString& slaveProtocol, const QStringList& proxyAddresses)
-      :protocol(slaveProtocol)
-      ,proxyList(proxyAddresses) {
-    }
-
-    void removeAddress(const QString& address) {
-        proxyList.removeAll(address);
-    }
-
-    QString protocol;
-    QStringList proxyList;
-};
 
 class KProtocolManagerPrivate
 {
 public:
-   KProtocolManagerPrivate();
-   ~KProtocolManagerPrivate();
-    bool shouldIgnoreProxyFor(const KUrl& url);
+    KProtocolManagerPrivate();
+    ~KProtocolManagerPrivate();
 
-   KSharedConfig::Ptr config;
-   QString modifiers;
-   QString useragent;
-   QString noProxyFor;
-   QList<SubnetPair> noProxySubnets;
-   QCache<QString, KProxyData> cachedProxyData;
+    KSharedConfig::Ptr config;
+    QString useragent;
 };
 
 K_GLOBAL_STATIC(KProtocolManagerPrivate, kProtocolManagerPrivate)
@@ -130,89 +61,12 @@ KProtocolManagerPrivate::KProtocolManagerPrivate()
 {
     // post routine since KConfig::sync() breaks if called too late
     qAddPostRoutine(kProtocolManagerPrivate.destroy);
-    cachedProxyData.setMaxCost(200); // double the max cost.
 }
 
 KProtocolManagerPrivate::~KProtocolManagerPrivate()
 {
     qRemovePostRoutine(kProtocolManagerPrivate.destroy);
 }
-
-/*
- * Returns true if url is in the no proxy list.
- */
-bool KProtocolManagerPrivate::shouldIgnoreProxyFor(const KUrl& url)
-{
-  bool isMatch = false;
-  const KProtocolManager::ProxyType type = KProtocolManager::proxyType();
-  const bool useRevProxy = ((type == KProtocolManager::ManualProxy) && KProtocolManager::useReverseProxy());
-  const bool useNoProxyList = (type == KProtocolManager::ManualProxy || type == KProtocolManager::EnvVarProxy);
-
-  // No proxy only applies to ManualProxy and EnvVarProxy types...
-  if (useNoProxyList && noProxyFor.isEmpty()) {
-      QStringList noProxyForList (KProtocolManager::noProxyFor().split(QL1C(',')));
-      QMutableStringListIterator it (noProxyForList);
-      while (it.hasNext()) {
-          SubnetPair subnet = QHostAddress::parseSubnet(it.next());
-          if (!subnet.first.isNull()) {
-              noProxySubnets << subnet;
-              it.remove();
-          }
-      }
-      noProxyFor =  noProxyForList.join(QL1S(","));
-  }
-
-  if (!noProxyFor.isEmpty()) {
-    QString qhost = url.host().toLower();
-    QByteArray host = qhost.toLatin1();
-    const QString qno_proxy = noProxyFor.trimmed().toLower();
-    const QByteArray no_proxy = qno_proxy.toLatin1();
-    isMatch = revmatch(host, no_proxy);
-
-    // If no match is found and the request url has a port
-    // number, try the combination of "host:port". This allows
-    // users to enter host:port in the No-proxy-For list.
-    if (!isMatch && url.port() > 0) {
-      qhost += QL1C(':');
-      qhost += QString::number(url.port());
-      host = qhost.toLatin1();
-      isMatch = revmatch (host, no_proxy);
-    }
-
-    // If the hostname does not contain a dot, check if
-    // <local> is part of noProxy.
-    if (!isMatch && !host.isEmpty() && (strchr(host, '.') == NULL)) {
-      isMatch = revmatch("<local>", no_proxy);
-    }
-  }
-
-  const QString host (url.host());
-
-  if (!noProxySubnets.isEmpty() && !host.isEmpty()) {
-    QHostAddress address (host);
-    // If request url is not IP address, do a DNS lookup of the hostname.
-    // TODO: Perhaps we should make configurable ?
-    if (address.isNull()) {
-      kDebug() << "Performing DNS lookup for" << host;
-      QHostInfo info = QHostInfo::fromName(host);
-      const QList<QHostAddress> addresses = info.addresses();
-      if (!addresses.isEmpty())
-        address = addresses.first();
-    }
-
-    if (!address.isNull()) {
-      Q_FOREACH(const SubnetPair& subnet, noProxySubnets) {
-        if (address.isInSubnet(subnet)) {
-          isMatch = true;
-          break;
-        }
-      }
-    }
-  }
-
-  return (useRevProxy != isMatch);
-}
-
 
 #define PRIVATE_DATA \
 KProtocolManagerPrivate *d = kProtocolManagerPrivate
@@ -223,9 +77,6 @@ void KProtocolManager::reparseConfiguration()
     if (d->config) {
         d->config->reparseConfiguration();
     }
-    d->cachedProxyData.clear();
-    d->noProxyFor.clear();
-    d->modifiers.clear();
     d->useragent.clear();
 
     // Force the slave config to re-read its config...
@@ -234,587 +85,274 @@ void KProtocolManager::reparseConfiguration()
 
 KSharedConfig::Ptr KProtocolManager::config()
 {
-  PRIVATE_DATA;
-  if (!d->config)
-  {
-     d->config = KSharedConfig::openConfig("kioslaverc", KConfig::NoGlobals);
-  }
-  return d->config;
+    PRIVATE_DATA;
+    if (!d->config) {
+        d->config = KSharedConfig::openConfig("kioslaverc", KConfig::NoGlobals);
+    }
+    return d->config;
 }
 
 /*=============================== TIMEOUT SETTINGS ==========================*/
-
 int KProtocolManager::readTimeout()
 {
-  KConfigGroup cg( config(), QString() );
-  int val = cg.readEntry( "ReadTimeout", DEFAULT_READ_TIMEOUT );
-  return qMax(MIN_TIMEOUT_VALUE, val);
+    KConfigGroup cg(config(), QString());
+    const int value = cg.readEntry("ReadTimeout", DEFAULT_READ_TIMEOUT);
+    return qMax(MIN_TIMEOUT_VALUE, value);
 }
 
 int KProtocolManager::connectTimeout()
 {
-  KConfigGroup cg( config(), QString() );
-  int val = cg.readEntry( "ConnectTimeout", DEFAULT_CONNECT_TIMEOUT );
-  return qMax(MIN_TIMEOUT_VALUE, val);
-}
-
-int KProtocolManager::proxyConnectTimeout()
-{
-  KConfigGroup cg( config(), QString() );
-  int val = cg.readEntry( "ProxyConnectTimeout", DEFAULT_PROXY_CONNECT_TIMEOUT );
-  return qMax(MIN_TIMEOUT_VALUE, val);
+    KConfigGroup cg( config(), QString() );
+    const int value = cg.readEntry("ConnectTimeout", DEFAULT_CONNECT_TIMEOUT);
+    return qMax(MIN_TIMEOUT_VALUE, value);
 }
 
 int KProtocolManager::responseTimeout()
 {
-  KConfigGroup cg( config(), QString() );
-  int val = cg.readEntry( "ResponseTimeout", DEFAULT_RESPONSE_TIMEOUT );
-  return qMax(MIN_TIMEOUT_VALUE, val);
-}
-
-/*========================== PROXY SETTINGS =================================*/
-
-bool KProtocolManager::useProxy()
-{
-  return proxyType() != NoProxy;
-}
-
-bool KProtocolManager::useReverseProxy()
-{
-  KConfigGroup cg(config(), "Proxy Settings" );
-  return cg.readEntry("ReversedException", false);
-}
-
-KProtocolManager::ProxyType KProtocolManager::proxyType()
-{
-  KConfigGroup cg(config(), "Proxy Settings" );
-  return static_cast<ProxyType>(cg.readEntry( "ProxyType" , 0));
-}
-
-QString KProtocolManager::noProxyFor()
-{
-  QString noProxy = config()->group("Proxy Settings").readEntry( "NoProxyFor" );
-  if (proxyType() == EnvVarProxy)
-    noProxy = QString::fromLocal8Bit(qgetenv(noProxy.toLocal8Bit()));
-
-  return noProxy;
-}
-
-QString KProtocolManager::proxyFor( const QString& protocol )
-{
-  const QString key = protocol.toLower() + QL1S("Proxy");
-  QString proxyStr (config()->group("Proxy Settings").readEntry(key));
-  const int index = proxyStr.lastIndexOf(QL1C(' '));
-
-  if (index > -1)  {
-      bool ok = false;
-      const QString portStr(proxyStr.right(proxyStr.length() - index - 1));
-      portStr.toInt(&ok);
-      if (ok) {
-          proxyStr = proxyStr.left(index) + QL1C(':') + portStr;
-      } else {
-          proxyStr.clear();
-      }
-  }
-
-  return proxyStr;
-}
-
-QString KProtocolManager::proxyForUrl( const KUrl &url )
-{
-  const QStringList proxies = proxiesForUrl(url);
-
-  if (proxies.isEmpty())
-    return QString();
-
-  return proxies.first();
-}
-
-static QStringList getSystemProxyFor( const KUrl& url )
-{
-  QStringList proxies;
-
-  // On Unix/Linux use system environment variables if any are set.
-  QString proxyVar (KProtocolManager::proxyFor(url.protocol()));
-  // Check for SOCKS proxy, if not proxy is found for given url.
-  if (!proxyVar.isEmpty()) {
-    const QString proxy (QString::fromLocal8Bit(qgetenv(proxyVar.toLocal8Bit())).trimmed());
-    if (!proxy.isEmpty()) {
-      proxies << proxy;
-    }
-  }
-  // Add the socks proxy as an alternate proxy if it exists,
-  proxyVar = KProtocolManager::proxyFor(QL1S("socks"));
-  if (!proxyVar.isEmpty()) {
-    QString proxy = QString::fromLocal8Bit(qgetenv(proxyVar.toLocal8Bit())).trimmed();
-    // Make sure the scheme of SOCKS proxy is always set to "socks://".
-    const int index = proxy.indexOf(QL1S("://"));
-    proxy = QL1S("socks://") + (index == -1 ? proxy : proxy.mid(index+3));
-    if (!proxy.isEmpty()) {
-      proxies << proxy;
-    }
-  }
-  return proxies;
-}
-
-QStringList KProtocolManager::proxiesForUrl( const KUrl &url )
-{
-  QStringList proxyList;
-
-  PRIVATE_DATA;
-  if (!d->shouldIgnoreProxyFor(url)) {
-    switch (proxyType())
-    {
-      case EnvVarProxy:
-        proxyList = getSystemProxyFor( url );
-        break;
-      case ManualProxy:
-      {
-        QString proxy (proxyFor(url.protocol()));
-        if (!proxy.isEmpty())
-          proxyList << proxy;
-        // Add the socks proxy as an alternate proxy if it exists,
-        proxy = proxyFor(QL1S("socks"));
-        if (!proxy.isEmpty()) {
-          // Make sure the scheme of SOCKS proxy is always set to "socks://".
-          const int index = proxy.indexOf(QL1S("://"));
-          proxy = QL1S("socks://") + (index == -1 ? proxy : proxy.mid(index+3));
-          proxyList << proxy;
-        }
-        break;
-      }
-      case NoProxy:
-      default:
-        break;
-    }
-  }
-
-  if (proxyList.isEmpty()) {
-    proxyList << QL1S("DIRECT");
-  }
-
-  return proxyList;
-}
-
-void KProtocolManager::badProxy( const QString &proxy )
-{
-  PRIVATE_DATA;
-  const QStringList keys (d->cachedProxyData.keys());
-  Q_FOREACH(const QString& key, keys) {
-      d->cachedProxyData[key]->removeAddress(proxy);
-  }
-}
-
-QString KProtocolManager::slaveProtocol(const KUrl &url, QString &proxy)
-{
-    QStringList proxyList;
-    const QString protocol = KProtocolManager::slaveProtocol(url, proxyList);
-    if (!proxyList.isEmpty()) {
-      proxy = proxyList.first();
-    }
-    return protocol;
-}
-
-// Generates proxy cache key from request given url.
-static void extractProxyCacheKeyFromUrl(const KUrl& u, QString* key)
-{
-    if (!key)
-        return;
-
-    *key = u.protocol();
-    *key += u.host();
-
-    if (u.port() > 0)
-        *key += QString::number(u.port());
-}
-
-QString KProtocolManager::slaveProtocol(const KUrl &url, QStringList &proxyList)
-{
-  proxyList.clear();
-
-  // Do not perform a proxy lookup for any url classified as a ":local" url or
-  // one that does not have a host component or if proxy is disabled.
-  QString protocol (url.protocol());
-  if (!url.hasHost()
-      || KProtocolInfo::protocolClass(protocol) == QL1S(":local")
-      || KProtocolManager::proxyType() == KProtocolManager::NoProxy) {
-      return protocol;
-  }
-
-  QString proxyCacheKey;
-  extractProxyCacheKeyFromUrl(url, &proxyCacheKey);
-
-  PRIVATE_DATA;
-  // Look for cached proxy information to avoid more work.
-  if (d->cachedProxyData.contains(proxyCacheKey)) {
-      KProxyData* data = d->cachedProxyData.object(proxyCacheKey);
-      proxyList = data->proxyList;
-      return data->protocol;
-  }
-
-  const QStringList proxies = proxiesForUrl(url);
-  const int count = proxies.count();
-
-  if (count > 0 && !(count == 1 && proxies.first() == QL1S("DIRECT"))) {
-      Q_FOREACH(const QString& proxy, proxies) {
-          if (proxy == QL1S("DIRECT")) {
-              proxyList << proxy;
-          } else {
-              KUrl u (proxy);
-              if (!u.isEmpty() && u.isValid() && !u.protocol().isEmpty()) {
-                  proxyList << proxy;
-              }
-          }
-      }
-  }
-
-  // The idea behind slave protocols is not applicable to http
-  // protocol as well as protocols unknown to KDE.
-  if (!proxyList.isEmpty()
-      && !protocol.startsWith(QL1S("http"))
-      && KProtocolInfo::isKnownProtocol(protocol)) {
-      Q_FOREACH(const QString& proxy, proxyList) {
-          KUrl u (proxy);
-          if (u.isValid() && KProtocolInfo::isKnownProtocol(u.protocol())) {
-              protocol = u.protocol();
-              break;
-          }
-      }
-  }
-
-  // cache the proxy information...
-  d->cachedProxyData.insert(proxyCacheKey, new KProxyData(protocol, proxyList));
-  return protocol;
+    KConfigGroup cg(config(), QString());
+    const int value = cg.readEntry("ResponseTimeout", DEFAULT_RESPONSE_TIMEOUT);
+    return qMax(MIN_TIMEOUT_VALUE, value);
 }
 
 /*================================= USER-AGENT SETTINGS =====================*/
-
-QString KProtocolManager::defaultUserAgent( )
-{
-  return defaultUserAgent(DEFAULT_USER_AGENT_KEYS);
-}
-
-static QString platform()
-{
-    return QL1S("X11");
-}
-
-QString KProtocolManager::defaultUserAgent( const QString &_modifiers )
+QString KProtocolManager::defaultUserAgent()
 {
     PRIVATE_DATA;
-  QString modifiers = _modifiers.toLower();
-  if (modifiers.isEmpty())
-    modifiers = DEFAULT_USER_AGENT_KEYS;
+    if (!d->useragent.isEmpty()) {
+        return d->useragent;
+    }
 
-  if (d->modifiers == modifiers && !d->useragent.isEmpty())
+    QString tmp;
+    QString systemName, systemVersion, machine, supp;
+    bool sysInfoFound = false;
+    struct utsname unameBuf;
+    if (uname(&unameBuf) == 0) {
+        sysInfoFound = true;
+        tmp += unameBuf.sysname;
+
+        tmp += QL1C(' ');
+        tmp += unameBuf.release;
+
+        tmp += QL1C(' ');
+        tmp += unameBuf.machine;
+    }
+
+    if (sysInfoFound) {
+        tmp += QL1S("; ");
+    }
+    tmp += QL1S("Katana ");
+    tmp += KDE::versionString();
+
+    d->useragent = tmp;
+    // kDebug() << "USERAGENT STRING:" << d->useragent;
     return d->useragent;
-
-  d->modifiers = modifiers;
-
-  /*
-     The following code attempts to determine the default user agent string
-     from the 'X-KDE-UA-DEFAULT-STRING' property of the desktop file
-     for the preferred service that was configured to handle the 'text/html'
-     mime type. If the prefered service's desktop file does not specify this
-     property, the long standing default user agent string will be used.
-     The following keyword placeholders are automatically converted when the
-     user agent string is read from the property:
-
-     %SECURITY%      Expands to"N" when SSL is not supported, otherwise it is ignored.
-     %OSNAME%        Expands to operating system name, e.g. Linux.
-     %OSVERSION%     Expands to operating system version, e.g. 2.6.32
-     %SYSTYPE%       Expands to machine or system type, e.g. i386
-     %PLATFORM%      Expands to windowing system, e.g. X11 on Unix/Linux.
-     %LANGUAGE%      Expands to default language in use, e.g. en-US.
-     %APPVERSION%    Expands to QCoreApplication applicationName()/applicationVerison(),
-                     e.g. Konqueror/4.5.0. If application name and/or application version
-                     number are not set, then "KDE" and the runtime KDE version numbers
-                     are used respectively.
-
-     All of the keywords are handled case-insensitively.
-  */
-
-  QString systemName, systemVersion, machine, supp;
-  const bool sysInfoFound = getSystemNameVersionAndMachine( systemName, systemVersion, machine );
-
-  supp += platform();
-
-  if (sysInfoFound)
-  {
-    if (modifiers.contains('o'))
-    {
-      supp += QL1S("; ");
-      supp += systemName;
-      if (modifiers.contains('v'))
-      {
-        supp += QL1C(' ');
-        supp += systemVersion;
-      }
-
-      if (modifiers.contains('m'))
-      {
-        supp += QL1C(' ');
-        supp += machine;
-      }
-    }
-
-    if (modifiers.contains('l'))
-    {
-      supp += QL1S("; ");
-      supp += KGlobal::locale()->language();
-    }
-  }
-
-  // Full format: Mozilla/5.0 (Linux
-  d->useragent = QL1S("Mozilla/5.0 (");
-  d->useragent += supp;
-  d->useragent += QL1S(") KHTML/");
-  d->useragent += QString::number(KDE::versionMajor());
-  d->useragent += QL1C('.');
-  d->useragent += QString::number(KDE::versionMinor());
-  d->useragent += QL1C('.');
-  d->useragent += QString::number(KDE::versionRelease());
-  d->useragent += QL1S(" (like Gecko) Konqueror/");
-  d->useragent += QString::number(KDE::versionMajor());
-  d->useragent += QL1C('.');
-  d->useragent += QString::number(KDE::versionMinor());
-
-  //kDebug() << "USERAGENT STRING:" << d->useragent;
-  return d->useragent;
-}
-
-bool KProtocolManager::getSystemNameVersionAndMachine(
-  QString& systemName, QString& systemVersion, QString& machine )
-{
-  struct utsname unameBuf;
-  if ( 0 != uname( &unameBuf ) )
-    return false;
-  systemName = unameBuf.sysname;
-  systemVersion = unameBuf.release;
-  machine = unameBuf.machine;
-  return true;
 }
 
 QString KProtocolManager::acceptLanguagesHeader()
 {
-  static const QString english = QString::fromLatin1("en");
+    static const QString english = QString::fromLatin1("en");
 
-  // User's desktop language preference.
-  QStringList languageList = KGlobal::locale()->languageList();
+    // User's desktop language preference.
+    QStringList languageList = KGlobal::locale()->languageList();
 
-  // Replace possible "C" in the language list with "en", unless "en" is
-  // already pressent. This is to keep user's priorities in order.
-  // If afterwards "en" is still not present, append it.
-  int idx = languageList.indexOf(QString::fromLatin1("C"));
-  if (idx != -1)
-  {
-    if (languageList.contains(english))
-      languageList.removeAt(idx);
-    else
-      languageList[idx] = english;
-  }
-  if (!languageList.contains(english))
-    languageList += english;
+    // Replace possible "C" in the language list with "en", unless "en" is
+    // already pressent. This is to keep user's priorities in order.
+    // If afterwards "en" is still not present, append it.
+    int idx = languageList.indexOf(QString::fromLatin1("C"));
+    if (idx != -1) {
+        if (languageList.contains(english)) {
+            languageList.removeAt(idx);
+        } else {
+            languageList[idx] = english;
+        }
+    }
+    if (!languageList.contains(english)) {
+        languageList += english;
+    }
 
-  // The header is composed of comma separated languages, with an optional
-  // associated priority estimate (q=1..0) defaulting to 1.
-  // As our language tags are already sorted by priority, we'll just decrease
-  // the value evenly
-  int prio = 10;
-  QString header;
-  Q_FOREACH (const QString &lang,languageList) {
-      header += lang;
-      if (prio < 10) {
-          header += QL1S(";q=0.");
-          header += QString::number(prio);
-      }
-      // do not add cosmetic whitespace in here : it is less compatible (#220677)
-      header += QL1S(",");
-      if (prio > 1)
-          --prio;
-  }
-  header.chop(1);
+    // The header is composed of comma separated languages, with an optional
+    // associated priority estimate (q=1..0) defaulting to 1.
+    // As our language tags are already sorted by priority, we'll just decrease
+    // the value evenly
+    int prio = 10;
+    QString header;
+    Q_FOREACH (const QString &lang,languageList) {
+        header += lang;
+        if (prio < 10) {
+            header += QL1S(";q=0.");
+            header += QString::number(prio);
+        }
+        // do not add cosmetic whitespace in here : it is less compatible (#220677)
+        header += QL1S(",");
+        if (prio > 1) {
+            --prio;
+        }
+    }
+    header.chop(1);
 
-  // Some of the languages may have country specifier delimited by
-  // underscore, or modifier delimited by at-sign.
-  // The header should use dashes instead.
-  header.replace('_', '-');
-  header.replace('@', '-');
+    // Some of the languages may have country specifier delimited by
+    // underscore, or modifier delimited by at-sign.
+    // The header should use dashes instead.
+    header.replace('_', '-');
+    header.replace('@', '-');
 
-  return header;
+    return header;
 }
 
 /*==================================== OTHERS ===============================*/
 
 bool KProtocolManager::markPartial()
 {
-  return config()->group(QByteArray()).readEntry( "MarkPartial", true );
+    return config()->group(QByteArray()).readEntry("MarkPartial", true);
 }
 
 int KProtocolManager::minimumKeepSize()
 {
-    return config()->group(QByteArray()).readEntry( "MinimumKeepSize",
-                                                DEFAULT_MINIMUM_KEEP_SIZE ); // 5000 byte
+    return config()->group(QByteArray()).readEntry("MinimumKeepSize", DEFAULT_MINIMUM_KEEP_SIZE);
 }
 
 bool KProtocolManager::autoResume()
 {
-  return config()->group(QByteArray()).readEntry( "AutoResume", false );
+    return config()->group(QByteArray()).readEntry("AutoResume", true);
 }
 
 /* =========================== PROTOCOL CAPABILITIES ============== */
-
-static KProtocolInfo::Ptr findProtocol(const KUrl &url)
+bool KProtocolManager::isSourceProtocol(const KUrl &url)
 {
-   QString protocol = url.protocol();
-
-   if ( !KProtocolInfo::proxiedBy( protocol ).isEmpty() )
-   {
-      QString dummy;
-      protocol = KProtocolManager::slaveProtocol(url, dummy);
-   }
-
-   return KProtocolInfoFactory::self()->findProtocol(protocol);
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_isSourceProtocol;
 }
 
-bool KProtocolManager::isSourceProtocol( const KUrl &url )
+bool KProtocolManager::supportsListing(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_isSourceProtocol;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsListing;
 }
 
-bool KProtocolManager::supportsListing( const KUrl &url )
+bool KProtocolManager::supportsReading(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsListing;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsReading;
 }
 
-bool KProtocolManager::supportsReading( const KUrl &url )
+bool KProtocolManager::supportsWriting(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsReading;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsWriting;
 }
 
-bool KProtocolManager::supportsWriting( const KUrl &url )
+bool KProtocolManager::supportsMakeDir(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsWriting;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsMakeDir;
 }
 
-bool KProtocolManager::supportsMakeDir( const KUrl &url )
+bool KProtocolManager::supportsDeleting(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsMakeDir;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsDeleting;
 }
 
-bool KProtocolManager::supportsDeleting( const KUrl &url )
+bool KProtocolManager::supportsLinking(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsDeleting;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsLinking;
 }
 
-bool KProtocolManager::supportsLinking( const KUrl &url )
+bool KProtocolManager::supportsMoving(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsLinking;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_supportsMoving;
 }
 
-bool KProtocolManager::supportsMoving( const KUrl &url )
+bool KProtocolManager::canCopyFromFile(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_supportsMoving;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_canCopyFromFile;
 }
 
-bool KProtocolManager::canCopyFromFile( const KUrl &url )
+bool KProtocolManager::canCopyToFile(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_canCopyFromFile;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->m_canCopyToFile;
 }
 
-
-bool KProtocolManager::canCopyToFile( const KUrl &url )
+bool KProtocolManager::canRenameFromFile(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->m_canCopyToFile;
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->canRenameFromFile();
 }
 
-bool KProtocolManager::canRenameFromFile( const KUrl &url )
+bool KProtocolManager::canRenameToFile(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->canRenameFromFile();
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->canRenameToFile();
 }
 
-
-bool KProtocolManager::canRenameToFile( const KUrl &url )
+bool KProtocolManager::canDeleteRecursive(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->canRenameToFile();
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return false;
+    }
+    return prot->canDeleteRecursive();
 }
 
-bool KProtocolManager::canDeleteRecursive( const KUrl &url )
+KProtocolInfo::FileNameUsedForCopying KProtocolManager::fileNameUsedForCopying(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return false;
-
-  return prot->canDeleteRecursive();
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return KProtocolInfo::FromUrl;
+    }
+    return prot->fileNameUsedForCopying();
 }
 
-KProtocolInfo::FileNameUsedForCopying KProtocolManager::fileNameUsedForCopying( const KUrl &url )
+QString KProtocolManager::defaultMimetype(const KUrl &url)
 {
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return KProtocolInfo::FromUrl;
-
-  return prot->fileNameUsedForCopying();
+    KProtocolInfo::Ptr prot = findProtocol(url);
+    if (!prot) {
+        return QString();
+    }
+    return prot->m_defaultMimetype;
 }
 
-QString KProtocolManager::defaultMimetype( const KUrl &url )
-{
-  KProtocolInfo::Ptr prot = findProtocol(url);
-  if ( !prot )
-    return QString();
-
-  return prot->m_defaultMimetype;
-}
-
-QString KProtocolManager::charsetFor(const KUrl& url)
+QString KProtocolManager::charsetFor(const KUrl &url)
 {
     return KIO::SlaveConfig::self()->configData(url.scheme(), url.host(), QLatin1String("Charset"));
 }

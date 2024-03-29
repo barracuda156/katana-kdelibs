@@ -209,17 +209,6 @@ public:
      */
     static bool showFilePreview(const QString &protocol);
 
-    /**
-     * Returns the name of the protocol through which the request
-     * will be routed if proxy support is enabled.
-     *
-     * A good example of this is the ftp protocol for which proxy
-     * support is commonly handled by the http protocol.
-     *
-     * This corresponds to the "ProxiedBy=" in the protocol description file.
-     */
-    static QString proxiedBy(const QString &protocol);
-
 public:
     // Internal functions:
     /**
@@ -270,7 +259,6 @@ private:
     Q_DECLARE_PRIVATE(KProtocolInfo)
 
     void load(QDataStream &s);
-    static void selectServiceOrHelper(const QString &protocol, KProtocolInfo::Ptr &returnProtocol, KService::Ptr &returnService);
 };
 
 #endif // KPROTOCOLINFO_H

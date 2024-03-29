@@ -48,12 +48,11 @@ public:
   KProtocolInfo *q;
   QString docPath;
   QString protClass;
-  bool showPreviews : 1;
-  bool canRenameFromFile : 1;
-  bool canRenameToFile : 1;
-  bool canDeleteRecursive : 1;
+  bool showPreviews;
+  bool canRenameFromFile;
+  bool canRenameToFile;
+  bool canDeleteRecursive;
   KProtocolInfo::FileNameUsedForCopying fileNameUsedForCopying;
-  QString proxyProtocol;
   int maxSlavesPerHost;
 };
 

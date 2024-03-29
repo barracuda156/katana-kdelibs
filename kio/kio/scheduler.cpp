@@ -61,8 +61,7 @@ static inline void startJob(SimpleJob *job, SlaveInterface *slave)
 
 // here be uglies
 // forward declaration to break cross-dependency of SlaveKeeper and SchedulerPrivate
-static void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol,
-                       const QStringList &proxyList, bool newSlave);
+static void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol, bool newSlave);
 // same reason as above
 static Scheduler *scheduler();
 
@@ -511,7 +510,7 @@ void ProtoQueue::startAJob()
 
         if (slave) {
             jobPriv->m_slave = slave;
-            setupSlave(slave, jobPriv->m_url, jobPriv->m_protocol, jobPriv->m_proxyList, isNewSlave);
+            setupSlave(slave, jobPriv->m_url, jobPriv->m_protocol, isNewSlave);
             startJob(startingJob, slave);
         } else {
             // dispose of our records about the job and mark the job as unknown
@@ -569,9 +568,7 @@ public:
     void jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave);
     void registerWindow(QWidget *wid);
 
-    MetaData metaDataFor(const QString &protocol, const QStringList &proxyList, const KUrl &url);
-    void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol,
-                    const QStringList &proxyList, bool newSlave);
+    void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol, bool newSlave);
 
     void slotSlaveDied(KIO::SlaveInterface *slave);
 
@@ -722,8 +719,7 @@ void SchedulerPrivate::doJob(SimpleJob *job)
     }
 
     KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
-    jobPriv->m_proxyList.clear();
-    jobPriv->m_protocol = KProtocolManager::slaveProtocol(job->url(), jobPriv->m_proxyList);
+    jobPriv->m_protocol = job->url().protocol();
 
     ProtoQueue *proto = protoQ(jobPriv->m_protocol, job->url().host());
     proto->queueJob(job);
@@ -780,30 +776,12 @@ void SchedulerPrivate::jobFinished(SimpleJob *job, SlaveInterface *slave)
 }
 
 // static
-void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol,
-                const QStringList &proxyList , bool newSlave)
+void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol, bool newSlave)
 {
-    schedulerPrivate->setupSlave(slave, url, protocol, proxyList, newSlave);
+    schedulerPrivate->setupSlave(slave, url, protocol, newSlave);
 }
 
-MetaData SchedulerPrivate::metaDataFor(const QString &protocol, const QStringList &proxyList, const KUrl &url)
-{
-    const QString host = url.host();
-    MetaData configData = SlaveConfig::self()->configData(protocol, host);
-    sessionData.configDataFor( configData, protocol );
-    if (proxyList.isEmpty()) {
-        configData.remove(QLatin1String("UseProxy"));
-        configData.remove(QLatin1String("ProxyUrls"));
-    } else {
-        configData[QLatin1String("UseProxy")] = proxyList.first();
-        configData[QLatin1String("ProxyUrls")] = proxyList.join(QLatin1String(","));
-    }
-
-    return configData;
-}
-
-void SchedulerPrivate::setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol,
-                                  const QStringList &proxyList, bool newSlave)
+void SchedulerPrivate::setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol, bool newSlave)
 {
     int port = url.port();
     if ( port == -1 ) // no port is -1 in QUrl, but in kde3 we used 0 and the kioslaves assume that.
@@ -814,8 +792,8 @@ void SchedulerPrivate::setupSlave(KIO::SlaveInterface *slave, const KUrl &url, c
 
     if (newSlave || slave->host() != host || slave->port() != port ||
         slave->user() != user || slave->passwd() != passwd) {
-
-        MetaData configData = metaDataFor(protocol, proxyList, url);
+        MetaData configData = SlaveConfig::self()->configData(protocol, host);
+        sessionData.configDataFor( configData, protocol );
         slave->setConfig(configData);
         slave->setProtocol(url.protocol());
         slave->setHost(host, port, user, passwd);

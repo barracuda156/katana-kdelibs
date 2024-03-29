@@ -15,9 +15,9 @@ Key             Value(s)        Description
 
 modified        string          The modification date of the document (set by kio before put)
 
-accept          string          List of mimetypes to accept separated by a ", ". (read by http)
+accept          string          List of mimetypes to accept separated by a ", ". (read by curl)
 
-UserAgent       string          The user agent name to send to remote host (read by http)
+UserAgent       string          The user agent name to send to remote host (read by curl)
 
 window-id       number          winId() of the window the request is associated with.
 
@@ -38,10 +38,6 @@ no-proxy-auth   bool            Flag that indicates that no HTTP proxy authentic
                                 should be made.
 no-auth-prompt  bool            Flag that indicates that only cached authentication tokens should
                                 be used.
-
-UseProxy        string          URL representing the proxy settings (read by http)
-ProxyUrls       string          Comma separated list of proxy urls. The first url in this list
-                                matches one set in "UseProxy".
 
 recurse         bool            When true, del() will be able to delete non-empty directories.
                                 Otherwise, del() is supposed to give an error on non-empty

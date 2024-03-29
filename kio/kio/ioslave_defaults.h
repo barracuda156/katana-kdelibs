@@ -23,13 +23,9 @@
 #define DEFAULT_RESPONSE_TIMEOUT           600     // 10 min.
 #define DEFAULT_CONNECT_TIMEOUT             20     // 20 secs.
 #define DEFAULT_READ_TIMEOUT                15     // 15 secs.
-#define DEFAULT_PROXY_CONNECT_TIMEOUT       10     // 10 secs.
 #define MIN_TIMEOUT_VALUE                    2     //  2 secs.
 
 // MINMUM SIZE FOR ABORTED DOWNLOAD TO BE KEPT
 #define DEFAULT_MINIMUM_KEEP_SIZE         5120  //  5 Kbs
-
-// DEFAULT USER AGENT KEY - ENABLES OS NAME
-#define DEFAULT_USER_AGENT_KEYS         "om"            // Show OS, Machine
 
 #endif // KIO_IOSLAVE_DEFAULTS_H

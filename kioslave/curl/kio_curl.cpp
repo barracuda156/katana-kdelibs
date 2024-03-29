@@ -149,38 +149,6 @@ qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday
     return ftpdatetime.toTime_t();
 }
 
-static inline QByteArray curlProxyBytes(const QString &proxy)
-{
-    const KUrl proxyurl(proxy);
-    const QString proxyhost = proxyurl.host();
-    if (proxyurl.port() > 0) {
-        QByteArray curlproxybytes = proxyhost.toAscii();
-        curlproxybytes.append(':');
-        curlproxybytes.append(QByteArray::number(proxyurl.port()));
-        return curlproxybytes;
-    }
-    return proxyhost.toAscii();
-}
-
-static inline curl_proxytype curlProxyType(const QString &proxy)
-{
-    const QString proxyprotocol = KUrl(proxy).protocol();
-
-#if CURL_AT_LEAST_VERSION(7, 52, 0)
-    if (proxyprotocol.startsWith(QLatin1String("https"))) {
-        return CURLPROXY_HTTPS;
-    }
-#endif
-    if (proxyprotocol.startsWith(QLatin1String("socks4"))) {
-        return CURLPROXY_SOCKS4;
-    } else if (proxyprotocol.startsWith(QLatin1String("socks4a"))) {
-        return CURLPROXY_SOCKS4A;
-    } else if (proxyprotocol.startsWith(QLatin1String("socks5"))) {
-        return CURLPROXY_SOCKS5;
-    }
-    return CURLPROXY_HTTP;
-}
-
 static inline QString HTTPMIMEType(const QString &contenttype)
 {
     const QList<QString> splitcontenttype = contenttype.split(QLatin1Char(';'));
@@ -1019,29 +987,12 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     }
 
     const bool noauth = (metaData("no-auth") == QLatin1String("yes"));
-    if (hasMetaData(QLatin1String("UseProxy"))) {
-        const QString proxystring = metaData("UseProxy");
-        const QByteArray proxybytes = curlProxyBytes(proxystring);
-        const curl_proxytype curlproxytype = curlProxyType(proxystring);
-        kDebug(7103) << "Proxy" << proxybytes << curlproxytype;
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXY, proxybytes.constData());
-        if (curlresult != CURLE_OK) {
-            KIO_CURL_ERROR(curlresult);
-            return false;
-        }
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXYTYPE, curlproxytype);
-        if (curlresult != CURLE_OK) {
-            KIO_CURL_ERROR(curlresult);
-            return false;
-        }
-
-        const bool noproxyauth = (noauth || metaData("no-proxy-auth") == QLatin1String("yes"));
-        kDebug(7103) << "No proxy auth" << noproxyauth;
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXYAUTH, noproxyauth ? CURLAUTH_NONE : CURLAUTH_ANY);
-        if (curlresult != CURLE_OK) {
-            KIO_CURL_ERROR(curlresult);
-            return false;
-        }
+    const bool noproxyauth = (noauth || metaData("no-proxy-auth") == QLatin1String("yes"));
+    kDebug(7103) << "No proxy auth" << noproxyauth;
+    curlresult = curl_easy_setopt(m_curl, CURLOPT_PROXYAUTH, noproxyauth ? CURLAUTH_NONE : CURLAUTH_ANY);
+    if (curlresult != CURLE_OK) {
+        KIO_CURL_ERROR(curlresult);
+        return false;
     }
 
     const bool nowwwauth = (noauth || metaData("no-www-auth") == QLatin1String("true"));

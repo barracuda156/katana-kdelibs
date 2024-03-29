@@ -26,9 +26,27 @@
 #include <kconfig.h>
 #include <kconfiggroup.h>
 
-//
-// Internal functions:
-//
+static void selectServiceOrHelper(const QString &protocol, KProtocolInfo::Ptr &returnProtocol, KService::Ptr &returnService)
+{
+    // have up to two sources of data:
+    // 1) the exec line of the .protocol file, if there's one (could be a kioslave or a helper app)
+    // 2) the application associated with x-scheme-handler/<protocol> if there's one
+
+    // if both exist, then:
+    //  A) if the .protocol file says "launch an application", then the new-style handler-app has priority
+    //  B) but if the .protocol file is for a kioslave (e.g. kio_http) then this has priority over
+    //     firefox or chromium saying x-scheme-handler/http. Gnome people want to send all HTTP urls
+    //     to a webbrowser, but mimetype-determination-in-calling-application by default is done here
+
+    const KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
+    if (prot) {
+        returnProtocol = prot;
+        return;
+    }
+    // no protocol file, use handler app if any
+    returnService = KMimeTypeTrader::self()->preferredService(QString::fromLatin1("x-scheme-handler/") + protocol);
+}
+
 KProtocolInfo::KProtocolInfo(const QString &path)
     : KSycocaEntry(*new KProtocolInfoPrivate(path, this))
 {
@@ -73,7 +91,6 @@ KProtocolInfo::KProtocolInfo(const QString &path)
         d->protClass.prepend(QLatin1Char(':'));
     }
     d->showPreviews = config.readEntry("ShowPreviews", d->protClass == QLatin1String(":local"));
-    d->proxyProtocol = config.readEntry("ProxiedBy");
 }
 
 KProtocolInfo::KProtocolInfo(QDataStream &str, int offset)
@@ -109,7 +126,6 @@ void KProtocolInfo::load(QDataStream &str)
         >> i_canCopyFromFile >> i_canCopyToFile
         >> m_config >> m_maxSlaves >> d->docPath >> d->protClass
         >> i_showPreviews
-        >> d->proxyProtocol
         >> i_canRenameFromFile >> i_canRenameToFile
         >> i_canDeleteRecursive >> i_fileNameUsedForCopying
         >> d->maxSlavesPerHost;
@@ -132,8 +148,7 @@ void KProtocolInfo::load(QDataStream &str)
     d->showPreviews = (i_showPreviews != 0);
 }
 
-void
-KProtocolInfoPrivate::save(QDataStream &str)
+void KProtocolInfoPrivate::save(QDataStream &str)
 {
     KSycocaEntryPrivate::save(str);
 
@@ -174,7 +189,6 @@ KProtocolInfoPrivate::save(QDataStream &str)
         << i_canCopyFromFile << i_canCopyToFile
         << q->m_config << q->m_maxSlaves << docPath << protClass
         << i_showPreviews
-        << proxyProtocol
         << i_canRenameFromFile << i_canRenameToFile
         << i_canDeleteRecursive << i_fileNameUsedForCopying
         << maxSlavesPerHost;
@@ -186,27 +200,6 @@ KProtocolInfoPrivate::save(QDataStream &str)
 QStringList KProtocolInfo::protocols()
 {
     return KProtocolInfoFactory::self()->protocols();
-}
-
-void KProtocolInfo::selectServiceOrHelper(const QString &protocol, KProtocolInfo::Ptr &returnProtocol, KService::Ptr &returnService)
-{
-    // have up to two sources of data:
-    // 1) the exec line of the .protocol file, if there's one (could be a kioslave or a helper app)
-    // 2) the application associated with x-scheme-handler/<protocol> if there's one
-
-    // if both exist, then:
-    //  A) if the .protocol file says "launch an application", then the new-style handler-app has priority
-    //  B) but if the .protocol file is for a kioslave (e.g. kio_http) then this has priority over
-    //     firefox or chromium saying x-scheme-handler/http. Gnome people want to send all HTTP urls
-    //     to a webbrowser, but mimetype-determination-in-calling-application by default is done here
-
-    const KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
-    if (prot) {
-        returnProtocol = prot;
-        return;
-    }
-    // no protocol file, use handler app if any
-    returnService = KMimeTypeTrader::self()->preferredService(QString::fromLatin1("x-scheme-handler/") + protocol);
 }
 
 QString KProtocolInfo::icon(const QString &protocol)
@@ -224,7 +217,6 @@ QString KProtocolInfo::icon(const QString &protocol)
 
 QString KProtocolInfo::config(const QString &protocol)
 {
-    // call the findProtocol directly (not via KProtocolManager) to bypass any proxy settings
     KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
     if (!prot) {
         return QString();
@@ -299,15 +291,6 @@ bool KProtocolInfo::showFilePreview(const QString &protocol)
     return prot->d_func()->showPreviews;
 }
 
-QString KProtocolInfo::proxiedBy(const QString &protocol)
-{
-    KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
-    if (!prot) {
-        return QString();
-    }
-    return prot->d_func()->proxyProtocol;
-}
-
 QString KProtocolInfo::defaultMimeType() const
 {
     return m_defaultMimetype;
@@ -349,7 +332,6 @@ bool KProtocolInfo::isHelperProtocol(const KUrl &url)
 
 bool KProtocolInfo::isHelperProtocol(const QString &protocol)
 {
-    // call the findProtocol directly (not via KProtocolManager) to bypass any proxy settings.
     KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
     if (prot) {
         return false;
@@ -365,7 +347,6 @@ bool KProtocolInfo::isKnownProtocol(const KUrl &url)
 
 bool KProtocolInfo::isKnownProtocol(const QString &protocol)
 {
-    // call the findProtocol (const QString&) to bypass any proxy settings.
     KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
     return prot || isHelperProtocol(protocol);
 }

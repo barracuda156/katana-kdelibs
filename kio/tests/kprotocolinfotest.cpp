@@ -42,9 +42,5 @@ int main(int argc, char **argv) {
     assert( KProtocolInfo::showFilePreview( "http" ) == false );
     assert( KGlobalSettings::showFilePreview( KUrl( "http:/" ) ) == false );
 
-    QString proxy;
-    QString protocol = KProtocolManager::slaveProtocol( KUrl( "http://bugs.kde.org" ), proxy );
-    assert( protocol == "http" );
-
     return 0;
 }

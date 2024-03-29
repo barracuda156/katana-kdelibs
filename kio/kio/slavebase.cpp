@@ -1107,17 +1107,6 @@ int SlaveBase::connectTimeout()
     return DEFAULT_CONNECT_TIMEOUT;
 }
 
-int SlaveBase::proxyConnectTimeout()
-{
-    bool ok = false;
-    QString tmp = metaData(QLatin1String("ProxyConnectTimeout"));
-    int result = tmp.toInt(&ok);
-    if (ok) {
-        return result;
-    }
-    return DEFAULT_PROXY_CONNECT_TIMEOUT;
-}
-
 int SlaveBase::responseTimeout()
 {
     bool ok = false;
