@@ -64,11 +64,6 @@ public:
 
     /*=========================== TIMEOUT CONFIG ================================*/
     /**
-     * Returns the preferred timeout value for reading from remote connections in seconds.
-     */
-    static int readTimeout();
-
-    /**
      * Returns the preferred timeout value for remote connections in seconds.
      */
     static int connectTimeout();

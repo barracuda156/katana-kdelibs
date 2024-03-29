@@ -508,12 +508,6 @@ public:
     int responseTimeout();
 
     /**
-     * @return timeout value for read from subsequent data from
-     * remote host in secs.
-     */
-    int readTimeout();
-
-    /**
      * This function sets a timeout of @p timeout seconds and calls
      * special(data) when the timeout occurs as if it was called by the
      * application.

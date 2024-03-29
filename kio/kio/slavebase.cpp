@@ -1118,17 +1118,6 @@ int SlaveBase::responseTimeout()
     return DEFAULT_RESPONSE_TIMEOUT;
 }
 
-int SlaveBase::readTimeout()
-{
-    bool ok = false;
-    QString tmp = metaData(QLatin1String("ReadTimeout"));
-    int result = tmp.toInt(&ok);
-    if (ok) {
-        return result;
-    }
-    return DEFAULT_READ_TIMEOUT;
-}
-
 bool SlaveBase::wasKilled() const
 {
    return d->wasKilled;

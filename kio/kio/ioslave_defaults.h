@@ -22,7 +22,6 @@
 // TIMEOUT VALUES
 #define DEFAULT_RESPONSE_TIMEOUT           600     // 10 min.
 #define DEFAULT_CONNECT_TIMEOUT             20     // 20 secs.
-#define DEFAULT_READ_TIMEOUT                15     // 15 secs.
 #define MIN_TIMEOUT_VALUE                    2     //  2 secs.
 
 // MINMUM SIZE FOR ABORTED DOWNLOAD TO BE KEPT

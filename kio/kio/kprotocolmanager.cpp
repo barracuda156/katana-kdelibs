@@ -93,13 +93,6 @@ KSharedConfig::Ptr KProtocolManager::config()
 }
 
 /*=============================== TIMEOUT SETTINGS ==========================*/
-int KProtocolManager::readTimeout()
-{
-    KConfigGroup cg(config(), QString());
-    const int value = cg.readEntry("ReadTimeout", DEFAULT_READ_TIMEOUT);
-    return qMax(MIN_TIMEOUT_VALUE, value);
-}
-
 int KProtocolManager::connectTimeout()
 {
     KConfigGroup cg( config(), QString() );
