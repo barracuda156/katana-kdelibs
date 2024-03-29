@@ -921,9 +921,12 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
             KUrl newurl(url);
             newurl.setHost(urlinfo.hostName());
             kDebug(7103) << "Rewrote" << url << "to" << newurl;
-            redirection(newurl);
-            finished();
-            return false;
+            // NOTE: redirect to the same URL is cycril link error
+            if (url != newurl) {
+                redirection(newurl);
+                finished();
+                return false;
+            }
         } else {
             kWarning(7103) << "Could not resolve" << url.host();
         }
