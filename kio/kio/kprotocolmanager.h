@@ -40,12 +40,11 @@ namespace KIO
  * Provides information about I/O (Internet, etc.) settings chosen/set by the end user.
  *
  * KProtocolManager has a heap of static functions that allows only read access to KDE's IO related
- * settings. These include proxy, file transfer resumption, timeout and user-agent related
- * settings.
+ * settings. These file transfer resumption, timeout and user-agent related settings.
  *
  * The information provided by this class is generic enough to be applicable to any application
- * that makes use of KDE's IO sub-system.  Note that this mean the proxy, timeout etc. settings
- * are saved in a separate user-specific config file and not in the config file of the application.
+ * that makes use of KDE's IO sub-system.  Note that this mean the timeout etc. settings are saved
+ * in a separate user-specific config file and not in the config file of the application.
  *
  * Original author:
  * @author Torben Weis <weis@kde.org>

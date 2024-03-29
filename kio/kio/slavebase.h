@@ -483,7 +483,6 @@ public:
 
     /**
      * Used for any command that is specific to this slave (protocol)
-     * Examples are : HTTP POST, mount and unmount (kio_file)
      *
      * @param data packed data; the meaning is completely dependent on the
      *        slave, but usually starts with an int for the command number.
@@ -493,7 +492,7 @@ public:
 
     /**
      * Called by the scheduler to tell the slave that the configuration
-     * changed (i.e. proxy settings) .
+     * changed (i.e. timeout settings) .
      */
     virtual void reparseConfiguration();
 

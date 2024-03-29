@@ -127,7 +127,7 @@ namespace KIO {
         // (2) The actual protocol that the io-slave uses.
         //
         // These two often match, but not necessarily. Most notably, they don't
-        // match when doing ftp via a proxy.
+        // match when a slave is used for more than one protocol (e.g. curl).
         // In that case (1) is ftp, but (2) is http.
         //
         // JobData::protocol stores (2) while Job::url().protocol() returns (1).
