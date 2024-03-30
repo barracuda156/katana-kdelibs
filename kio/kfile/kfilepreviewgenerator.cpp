@@ -849,7 +849,7 @@ void KFilePreviewGenerator::Private::applyCutItemEffect(const KFileItemList& ite
                 QPixmap pixmap = icon.pixmap(actualSize);
 
                 const QHash<KUrl, QPixmap>::const_iterator cacheIt = m_cutItemsCache.constFind(item.url());
-                if ((cacheIt == m_cutItemsCache.constEnd()) || (cacheIt->cacheKey() != pixmap.cacheKey())) {
+                if ((cacheIt == m_cutItemsCache.constEnd()) || (cacheIt.value() != pixmap)) {
                     pixmap = iconEffect->apply(pixmap, KIconLoader::Desktop, KIconLoader::DisabledState);
                     dirModel->setData(index, QIcon(pixmap), Qt::DecorationRole);
 

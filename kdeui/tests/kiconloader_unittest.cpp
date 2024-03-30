@@ -89,7 +89,7 @@ private Q_SLOTS:
         // Verify the icon can now be found.
         QPixmap nowExistingIcon = iconLoader.loadIcon(
                 nonExistingIconName, KIconLoader::Toolbar);
-        QVERIFY(nowExistingIcon.cacheKey() != nonExistingIcon.cacheKey());
+        QVERIFY(nowExistingIcon != nonExistingIcon);
         QCOMPARE(iconLoader.iconPath(nonExistingIconName, KIconLoader::Toolbar),
                 newIconPath);
 

@@ -761,7 +761,7 @@ void KIconLoaderPrivate::insertCachedPixmapWithPath(
 
     PixmapWithPath *pixmapPath = mPixmapCache.object(key);
     if (pixmapPath
-        && pixmapPath->pixmap.cacheKey() == data.cacheKey()
+        && pixmapPath->pixmap == data
         && pixmapPath->path == path) {
         return;
     }
