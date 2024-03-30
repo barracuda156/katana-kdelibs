@@ -30,15 +30,8 @@
 #include <QSharedData>
 #include <QFile>
 
-class KConfigIniBackend: public QObject, public QSharedData
+class KConfigIniBackend: public QSharedData
 {
-    Q_OBJECT
-    Q_FLAGS(ParseOption)
-    Q_FLAGS(WriteOption)
-
-private:
-    KLockFile* m_lockfile;
-
 public:
     class BufferFragment;
 
@@ -109,6 +102,7 @@ protected:
                       bool defaultGroup, bool &firstEntry);
 
 private:
+    KLockFile* m_lockfile;
     QString m_localFileName;
 };
 

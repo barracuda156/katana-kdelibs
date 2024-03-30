@@ -326,23 +326,21 @@ void KConfig::sync()
         d->bDirty = false; // will revert to true if a config write fails
 
         if (d->wantGlobals() && writeGlobals) {
-            KConfigIniBackend *tmp = new KConfigIniBackend();
-            tmp->setFilePath(d->sGlobalFileName);
-            if (d->configState == ReadWrite && !tmp->lock()) {
+            KConfigIniBackend backend;
+            backend.setFilePath(d->sGlobalFileName);
+            if (d->configState == ReadWrite && !backend.lock()) {
                 qWarning() << "couldn't lock global file";
                 d->bDirty = true;
-                tmp->deleteLater();
                 return;
             }
-            if (!tmp->writeConfig(utf8Locale, d->entryMap, KConfigIniBackend::WriteGlobal)) {
+            if (!backend.writeConfig(utf8Locale, d->entryMap, KConfigIniBackend::WriteGlobal)) {
                 d->bDirty = true;
                 // TODO KDE5: return false? (to tell the app that writing wasn't possible, e.g.
                 // config file is immutable or disk full)
             }
-            if (tmp->isLocked()) {
-                tmp->unlock();
+            if (backend.isLocked()) {
+                backend.unlock();
             }
-            tmp->deleteLater();
         }
 
         if (writeLocals) {
@@ -485,13 +483,11 @@ void KConfigPrivate::parseGlobalFiles()
         if (file != sGlobalFileName)
             parseOpts |= KConfigIniBackend::ParseDefaults;
 
-        KConfigIniBackend *backend = new KConfigIniBackend();
-        backend->setFilePath(file);
-        if ( backend->parseConfig( utf8Locale, entryMap, parseOpts) == KConfigIniBackend::ParseImmutable) {
-            backend->deleteLater();
+        KConfigIniBackend backend;
+        backend.setFilePath(file);
+        if ( backend.parseConfig( utf8Locale, entryMap, parseOpts) == KConfigIniBackend::ParseImmutable) {
             break;
         }
-        backend->deleteLater();
     }
 }
 
@@ -533,12 +529,11 @@ void KConfigPrivate::parseConfigFiles()
                     break;
                 }
             } else {
-                KConfigIniBackend *backend = new KConfigIniBackend();
-                backend->setFilePath(file);
-                bFileImmutable = (backend->parseConfig(utf8Locale, entryMap,
+                KConfigIniBackend backend;
+                backend.setFilePath(file);
+                bFileImmutable = (backend.parseConfig(utf8Locale, entryMap,
                                         KConfigIniBackend::ParseDefaults|KConfigIniBackend::ParseExpansions)
                                   == KConfigIniBackend::ParseImmutable);
-                backend->deleteLater();
             }
 
             if (bFileImmutable)
