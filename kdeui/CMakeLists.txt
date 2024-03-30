@@ -114,7 +114,6 @@ set(kdeui_LIB_SRCS
     fonts/kfontcombobox.cpp
     fonts/kfontdialog.cpp
     fonts/kfontrequester.cpp
-    fonts/kfontutils.cpp
     icons/kiconeffect.cpp
     icons/kiconengine.cpp
     icons/kicon.cpp
@@ -404,7 +403,6 @@ install(
     fonts/kfontcombobox.h
     fonts/kfontdialog.h
     fonts/kfontrequester.h
-    fonts/kfontutils.h
     icons/kiconeffect.h
     icons/kicon.h
     icons/kiconloader.h

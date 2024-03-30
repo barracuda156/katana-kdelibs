@@ -126,7 +126,6 @@ install(
     KFontDialog
     KFontRequester
     KFontSizeAction
-    KFontUtils
     KUnitConversion
     KGlobal
     KGlobalAccel
