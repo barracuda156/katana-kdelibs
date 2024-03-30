@@ -278,7 +278,7 @@ KFontComboBox::KFontComboBox (QWidget *parent)
 : KComboBox(true, parent), d(new KFontComboBoxPrivate(this))
 {
     // Inputing arbitrary font names does not make sense.
-    setInsertPolicy(QComboBox::NoInsert);
+    setEditable(false);
 
     // Special list item painter showing font previews and its list model.
     d->delegate = new KFontFamilyDelegate(this);
