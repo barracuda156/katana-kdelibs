@@ -29,7 +29,6 @@
 #include <kconfigbase.h>
 #include <kcomponentdata.h>
 #include <QFile>
-#include <QDateTime>
 
 class KConfigIniBackend: public QObject, public QSharedData
 {
@@ -91,16 +90,8 @@ public:
 
     /** @return the absolute path to the object */
     QString filePath() const;
-    /** @return the date and time when the object was last modified */
-    QDateTime lastModified() const;
-    /** @return the size of the object */
-    qint64 size() const;
 
 protected:
-    void setLocalFilePath(const QString& file);
-    void setLastModified(const QDateTime& dt);
-    void setSize(qint64 sz);
-
     enum StringType {
         GroupString = 0,
         KeyString = 1,
@@ -118,8 +109,6 @@ protected:
                       bool defaultGroup, bool &firstEntry);
 
 private:
-    QDateTime m_lastModified;
-    qint64 m_size;
     QString m_localFileName;
 };
 

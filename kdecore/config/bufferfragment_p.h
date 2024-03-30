@@ -134,12 +134,12 @@ public:
 
     bool operator==(const QByteArray& other) const
     {
-        return (other.size() == (int)len && memcmp(d,other.constData(),len) == 0);
+        return (other.size() == (int)len && memcmp(d, other.constData(),len) == 0);
     }
 
     bool operator!=(const QByteArray& other) const 
     {
-        return (other.size() != (int)len || memcmp(d,other.constData(),len) != 0);
+        return (other.size() != (int)len || memcmp(d, other.constData(),len) != 0);
     }
 
     bool operator==(const BufferFragment& other) const
@@ -185,9 +185,7 @@ private:
 
 uint qHash(const KConfigIniBackend::BufferFragment& fragment)
 {
-    const char *p = fragment.constData();
-    const int len = fragment.length();
-    return qChecksum(p, len);
+    return qChecksum(fragment.constData(), fragment.length());
 }
 
 #endif

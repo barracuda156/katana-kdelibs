@@ -553,15 +553,9 @@ void KConfigIniBackend::setFilePath(const QString& file)
 
     const QFileInfo info(file);
     if (info.exists()) {
-        setLocalFilePath(info.canonicalFilePath());
-        setLastModified(info.lastModified());
-        setSize(info.size());
+        m_localFileName = info.canonicalFilePath();
     } else {
-        setLocalFilePath(file);
-        setSize(0);
-        QDateTime dummy;
-        dummy.setTime_t(0);
-        setLastModified(dummy);
+        m_localFileName = file;
     }
 }
 
@@ -763,29 +757,4 @@ void KConfigIniBackend::printableToString(BufferFragment* aString, const QFile& 
 QString KConfigIniBackend::filePath() const
 {
     return m_localFileName;
-}
-
-void KConfigIniBackend::setLocalFilePath(const QString& file)
-{
-    m_localFileName = file;
-}
-
-QDateTime KConfigIniBackend::lastModified() const
-{
-    return m_lastModified;
-}
-
-void KConfigIniBackend::setLastModified(const QDateTime& dt)
-{
-    m_lastModified = dt;
-}
-
-qint64 KConfigIniBackend::size() const
-{
-    return m_size;
-}
-
-void KConfigIniBackend::setSize(qint64 sz)
-{
-    m_size = sz;
 }
