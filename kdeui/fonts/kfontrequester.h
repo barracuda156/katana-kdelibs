@@ -43,14 +43,12 @@
  */
 class KDEUI_EXPORT KFontRequester : public QWidget
 {
-  Q_OBJECT
+    Q_OBJECT
+    Q_PROPERTY(QString title READ title WRITE setTitle)
+    Q_PROPERTY(QString sampleText READ sampleText WRITE setSampleText)
+    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontSelected USER true)
 
-  Q_PROPERTY( QString title READ title WRITE setTitle )
-  Q_PROPERTY( QString sampleText READ sampleText WRITE setSampleText )
-  Q_PROPERTY( QFont font READ font WRITE setFont NOTIFY fontSelected USER true)
-
-  public:
-
+public:
     /**
      * Constructs a font requester widget.
      *
@@ -58,7 +56,7 @@ class KDEUI_EXPORT KFontRequester : public QWidget
      * @param onlyFixed Only display fonts which have fixed-width character
      *        sizes.
      */
-    explicit KFontRequester( QWidget *parent=0L, bool onlyFixed=false );
+    explicit KFontRequester(QWidget *parent = 0L, bool onlyFixed = false);
 
     ~KFontRequester();
 
@@ -99,7 +97,7 @@ class KDEUI_EXPORT KFontRequester : public QWidget
      * @param onlyFixed Display only fixed-width fonts in the font dialog
      * if @p true, or vice-versa.
      */
-    virtual void setFont( const QFont &font, bool onlyFixed=false );
+    virtual void setFont(const QFont &font, bool onlyFixed = false);
 
     /**
      * Sets the sample text.
@@ -112,7 +110,7 @@ class KDEUI_EXPORT KFontRequester : public QWidget
      *
      * @param text The new sample text. The current will be removed.
      */
-    virtual void setSampleText( const QString &text );
+    virtual void setSampleText(const QString &text);
 
     /**
      * Set the title for the widget that will be used in the tooltip and
@@ -120,25 +118,22 @@ class KDEUI_EXPORT KFontRequester : public QWidget
      *
      * @param title The title to be set.
      */
-    virtual void setTitle( const QString & title );
+    virtual void setTitle(const QString &title);
 
-  Q_SIGNALS:
+Q_SIGNALS:
     /**
      * Emitted when a new @p font has been selected in the underlying dialog
      */
-    void fontSelected( const QFont &font );
+    void fontSelected(const QFont &font);
 
-  private:
+private:
     class KFontRequesterPrivate;
     friend class KFontRequesterPrivate;
     KFontRequesterPrivate *const d;
 
-    Q_PRIVATE_SLOT( d, void _k_buttonClicked() )
+    Q_PRIVATE_SLOT(d, void _k_buttonClicked())
 
     Q_DISABLE_COPY(KFontRequester)
 };
 
 #endif // KFONTREQUESTER_H
-
-/* vim: et sw=2 ts=2
-*/
