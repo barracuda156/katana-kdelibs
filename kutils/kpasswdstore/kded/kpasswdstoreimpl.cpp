@@ -171,6 +171,7 @@ bool KPasswdStoreImpl::storePasswd(const QByteArray &key, const QString &passwd,
     storekey.append(QLatin1Char('/'));
     storekey.append(QString::fromLatin1(key.constData(), key.size()));
     m_passwdstore.setString(storekey, encryptPasswd(passwd, &ok));
+    m_passwdstore.sync();
     return ok;
 }
 
@@ -240,6 +241,7 @@ bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerr
 
         if (storepasswdhash.isEmpty()) {
             m_passwdstore.setString(storekey, passhash);
+            m_passwdstore.sync();
             return true;
         }
         if (passhash != storepasswdhash) {
