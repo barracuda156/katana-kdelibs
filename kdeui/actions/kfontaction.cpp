@@ -28,14 +28,15 @@
 
 #include "kfontaction.h"
 
-#include <QtGui/QToolBar>
+#include <QToolBar>
+#include <QFontComboBox>
+#include <QStringListModel>
 
 #include <kdebug.h>
 #include <kfontdialog.h>
 #include <kicon.h>
 #include <klocale.h>
 #include <kfontchooser.h>
-#include <kfontcombobox.h>
 
 class KFontAction::KFontActionPrivate
 {
@@ -48,7 +49,7 @@ class KFontAction::KFontActionPrivate
 
         void _k_slotFontChanged(const QFont &font)
         {
-            kDebug(129) << "KFontComboBox - slotFontChanged("
+            kDebug(129) << "KFontAction - slotFontChanged("
                         << font.family() << ") settingFont=" << settingFont;
             if (settingFont)
                 return;
@@ -117,8 +118,10 @@ QWidget* KFontAction::createWidget(QWidget* parent)
     // This is the visual element on the screen.  This method overrides
     // the KSelectAction one, preventing KSelectAction from creating its
     // regular KComboBox.
-    KFontComboBox *cb = new KFontComboBox( parent );
-    cb->setFontList(items());
+    QFontComboBox *cb = new QFontComboBox( parent );
+    QStringListModel *cbmodel = qobject_cast<QStringListModel*>(cb->model());
+    Q_ASSERT(cbmodel);
+    cbmodel->setStringList(items());
 
     kDebug(129) << "\tset=" << font();
     // Do this before connecting the signal so that nothing will fire.
@@ -130,9 +133,6 @@ QWidget* KFontAction::createWidget(QWidget* parent)
     return cb;
 }
 
-/*
- * Maintenance note: Keep in sync with KFontComboBox::setCurrentFont()
- */
 void KFontAction::setFont( const QString &family )
 {
     kDebug(129) << "KFontAction::setFont(" << family << ")";
@@ -142,7 +142,7 @@ void KFontAction::setFont( const QString &family )
 
     foreach(QWidget *w, createdWidgets())
     {
-        KFontComboBox *cb = qobject_cast<KFontComboBox *>(w);
+        QFontComboBox *cb = qobject_cast<QFontComboBox *>(w);
         kDebug(129) << "\tw=" << w << "cb=" << cb;
 
         if(!cb) continue;
@@ -171,7 +171,7 @@ void KFontAction::setFont( const QString &family )
     if (setCurrentAction(lowerName, Qt::CaseInsensitive))
       return;
 
-    // TODO: Inconsistent state if KFontComboBox::setCurrentFont() succeeded
+    // TODO: Inconsistent state if QFontComboBox::setCurrentFont() succeeded
     //       but setCurrentAction() did not and vice-versa.
     kDebug(129) << "Font not found " << family.toLower();
 }

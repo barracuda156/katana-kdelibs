@@ -122,7 +122,6 @@ install(
     KFloatValidator
     KFontAction
     KFontChooser
-    KFontComboBox
     KFontDialog
     KFontRequester
     KFontSizeAction
