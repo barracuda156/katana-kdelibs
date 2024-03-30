@@ -100,7 +100,6 @@ private:
     QStringList getGlobalFiles() const;
     void parseGlobalFiles();
     void parseConfigFiles();
-    void initCustomized(KConfig*);
     bool lockLocal();
 };
 
