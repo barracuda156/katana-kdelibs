@@ -570,7 +570,7 @@ KConfigBase::AccessMode KConfigIniBackend::accessMode() const
     return KConfigBase::ReadOnly;
 }
 
-bool KConfigIniBackend::lock(const KComponentData& componentData)
+bool KConfigIniBackend::lock()
 {
     Q_ASSERT(!filePath().isEmpty());
 

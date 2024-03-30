@@ -27,7 +27,7 @@
 #include <klockfile.h>
 #include <kconfigdata.h>
 #include <kconfigbase.h>
-#include <kcomponentdata.h>
+#include <QSharedData>
 #include <QFile>
 
 class KConfigIniBackend: public QObject, public QSharedData
@@ -84,7 +84,7 @@ public:
     void createEnclosing();
     void setFilePath(const QString& path);
 
-    bool lock(const KComponentData& componentData);
+    bool lock();
     void unlock();
     bool isLocked() const;
 

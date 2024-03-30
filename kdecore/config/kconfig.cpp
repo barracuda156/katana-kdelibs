@@ -66,7 +66,7 @@ KConfigPrivate::KConfigPrivate(const KComponentData &componentData_, KConfig::Op
 bool KConfigPrivate::lockLocal()
 {
     if (mBackend) {
-        return mBackend->lock(componentData);
+        return mBackend->lock();
     }
     // anonymous object - pretend we locked it
     return true;
@@ -328,7 +328,7 @@ void KConfig::sync()
         if (d->wantGlobals() && writeGlobals) {
             KConfigIniBackend *tmp = new KConfigIniBackend();
             tmp->setFilePath(d->sGlobalFileName);
-            if (d->configState == ReadWrite && !tmp->lock(componentData())) {
+            if (d->configState == ReadWrite && !tmp->lock()) {
                 qWarning() << "couldn't lock global file";
                 d->bDirty = true;
                 tmp->deleteLater();
