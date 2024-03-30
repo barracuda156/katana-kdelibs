@@ -97,7 +97,7 @@ public:
      * @param onlyFixed Display only fixed-width fonts in the font dialog
      * if @p true, or vice-versa.
      */
-    virtual void setFont(const QFont &font, bool onlyFixed = false);
+    void setFont(const QFont &font, bool onlyFixed = false);
 
     /**
      * Sets the sample text.
@@ -110,7 +110,7 @@ public:
      *
      * @param text The new sample text. The current will be removed.
      */
-    virtual void setSampleText(const QString &text);
+    void setSampleText(const QString &text);
 
     /**
      * Set the title for the widget that will be used in the tooltip and
@@ -118,7 +118,7 @@ public:
      *
      * @param title The title to be set.
      */
-    virtual void setTitle(const QString &title);
+    void setTitle(const QString &title);
 
 Q_SIGNALS:
     /**
