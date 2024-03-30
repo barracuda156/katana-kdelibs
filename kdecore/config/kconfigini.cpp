@@ -62,6 +62,7 @@ KConfigIniBackend::KConfigIniBackend()
 
 KConfigIniBackend::~KConfigIniBackend()
 {
+    Q_ASSERT(m_lockfile == nullptr);
 }
 
 KConfigIniBackend::ParseInfo KConfigIniBackend::parseConfig(const QByteArray& currentLocale,
