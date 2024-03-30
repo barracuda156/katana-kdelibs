@@ -35,7 +35,6 @@ set(solid_LIB_SRCS
     networkinterface.cpp
     acadapter.cpp
     battery.cpp
-    button.cpp
     audiointerface.cpp
     predicate.cpp
     predicateparse.cpp
@@ -50,7 +49,6 @@ set(solid_LIB_SRCS
     ifaces/audiointerface.cpp
     ifaces/battery.cpp
     ifaces/block.cpp
-    ifaces/button.cpp
     ifaces/camera.cpp
     ifaces/opticaldrive.cpp
     ifaces/device.cpp
@@ -82,7 +80,6 @@ if(ENABLE_TESTING)
         backends/fakehw/fakeaudiointerface.cpp
         backends/fakehw/fakebattery.cpp
         backends/fakehw/fakeblock.cpp
-        backends/fakehw/fakebutton.cpp
         backends/fakehw/fakecamera.cpp
         backends/fakehw/fakecdrom.cpp
         backends/fakehw/fakedevice.cpp
@@ -117,7 +114,6 @@ if(UDEV_FOUND)
         backends/udev/udevaudiointerface_p.cpp
         backends/udev/udevportablemediaplayer.cpp
         backends/udev/udevblock.cpp
-        backends/udev/udevbutton.cpp
         backends/udev/udevstorageaccess.cpp
         backends/udev/udevstoragevolume.cpp
         backends/udev/udevstoragedrive.cpp
@@ -233,7 +229,6 @@ install(
     networkinterface.h
     acadapter.h
     battery.h
-    button.h
     audiointerface.h
     predicate.h
     powermanagement.h

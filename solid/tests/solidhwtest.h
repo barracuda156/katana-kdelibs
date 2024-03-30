@@ -40,7 +40,6 @@ private slots:
     void testAllDevices();
     void testDeviceBasicFeatures();
     void testManagerSignals();
-    void testDeviceSignals();
     void testDeviceExistence();
     void testDeviceInterfaceIntrospection_data();
     void testDeviceInterfaceIntrospection();

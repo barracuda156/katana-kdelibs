@@ -134,8 +134,8 @@ void SolidHwTest::testManagerSignals()
     // Finally we remove the device and spy the corresponding signal again
     QSignalSpy removed(Solid::DeviceNotifier::instance(), SIGNAL(deviceRemoved(QString)));
     fakeManager->unplug("/org/kde/solid/fakehw/acpi_CPU0");
-    QCOMPARE(added.count(), 1);
-    QCOMPARE(added.at(0).at(0).toString(), QString("/org/kde/solid/fakehw/acpi_CPU0"));
+    QCOMPARE(removed.count(), 1);
+    QCOMPARE(removed.at(0).at(0).toString(), QString("/org/kde/solid/fakehw/acpi_CPU0"));
 
     // The Device object should become automatically invalid
     QVERIFY(!cpu.isValid());
@@ -144,53 +144,8 @@ void SolidHwTest::testManagerSignals()
     fakeManager->plug("/org/kde/solid/fakehw/acpi_CPU0");
 }
 
-void SolidHwTest::testDeviceSignals()
-{
-    // A button is a nice device for testing state changes, isn't it?
-    Solid::Backends::Fake::FakeDevice *fake = fakeManager->findDevice("/org/kde/solid/fakehw/acpi_LID0");
-    Solid::Device device("/org/kde/solid/fakehw/acpi_LID0");
-
-    // We'll spy our button
-    connect(fake, SIGNAL(propertyChanged(QStringList)),
-            this, SLOT(slotPropertyChanged(QStringList)));
-    QSignalSpy condition_raised(fake, SIGNAL(conditionRaised(QString,QString)));
-
-    fake->setProperty("stateValue", true); // The button is now pressed (modified property)
-    fake->raiseCondition("Lid Closed", "Why not?"); // Since it's a LID we notify this change
-    fake->setProperty("hactar", 42); // We add a property
-    fake->removeProperty("hactar"); // We remove a property
-
-    // 3 property changes occurred in the device
-    QCOMPARE(m_changesList.count(), 3);
-
-    QStringList changes;
-
-    // First one is a property modification for "button.state"
-    changes = m_changesList.at(0);
-    QCOMPARE(changes.count(), 1);
-    QVERIFY(changes.contains("stateValue"));
-
-    // Second one is a property added for "hactar"
-    changes = m_changesList.at(1);
-    QCOMPARE(changes.count(), 1);
-    QVERIFY(changes.contains("hactar"));
-
-    // Third one is a property removed for "hactar"
-    changes = m_changesList.at(2);
-    QCOMPARE(changes.count(), 1);
-    QVERIFY(changes.contains("hactar"));
-
-    // Only one condition has been raised in the device
-    QCOMPARE(condition_raised.count(), 1);
-
-    // It must be identical to the condition we raised by hand
-    QCOMPARE(condition_raised.at(0).at(0).toString(), QString("Lid Closed"));
-    QCOMPARE(condition_raised.at(0).at(1).toString(), QString("Why not?"));
-}
-
 void SolidHwTest::testDeviceExistence()
 {
-    QCOMPARE(Solid::Device("/org/kde/solid/fakehw/acpi_LID0").isValid(), true);
     QCOMPARE(Solid::Device("/org/kde/solid/fakehw/volume_label_SOLIDMAN_BEGINS").isValid(), true);
 
     // Note the extra space
@@ -267,7 +222,6 @@ void SolidHwTest::testDeviceInterfaceIntrospection_data()
     QTest::newRow("DeviceInterface: NetworkInterface") << "NetworkInterface" << (int)Solid::DeviceInterface::NetworkInterface;
     QTest::newRow("DeviceInterface: AcAdapter") << "AcAdapter" << (int)Solid::DeviceInterface::AcAdapter;
     QTest::newRow("DeviceInterface: Battery") << "Battery" << (int)Solid::DeviceInterface::Battery;
-    QTest::newRow("DeviceInterface: Button") << "Button" << (int)Solid::DeviceInterface::Button;
     QTest::newRow("DeviceInterface: AudioInterface") << "AudioInterface" << (int)Solid::DeviceInterface::AudioInterface;
     QTest::newRow("DeviceInterface: Graphic") << "Graphic" << (int)Solid::DeviceInterface::Graphic;
     QTest::newRow("DeviceInterface: Input") << "Input" << (int)Solid::DeviceInterface::Input;

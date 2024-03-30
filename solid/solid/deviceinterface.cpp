@@ -89,8 +89,6 @@ QString Solid::DeviceInterface::typeDescription(Type type)
             return i18n("Ac Adapter");
         case Solid::DeviceInterface::Battery:
             return i18n("Battery");
-        case Solid::DeviceInterface::Button:
-            return i18n("Button");
         case Solid::DeviceInterface::AudioInterface:
             return i18n("Audio Interface");
         case Solid::DeviceInterface::Video:

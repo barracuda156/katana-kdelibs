@@ -52,8 +52,6 @@
 #include <solid/ifaces/acadapter.h>
 #include <solid/battery.h>
 #include <solid/ifaces/battery.h>
-#include <solid/button.h>
-#include <solid/ifaces/button.h>
 #include <solid/audiointerface.h>
 #include <solid/ifaces/audiointerface.h>
 #include <solid/video.h>
@@ -206,9 +204,6 @@ const Solid::DeviceInterface *Solid::Device::asDeviceInterface(const DeviceInter
                 break;
             case DeviceInterface::Battery:
                 iface = deviceinterface_cast(Ifaces::Battery, Battery, dev_iface);
-                break;
-            case DeviceInterface::Button:
-                iface = deviceinterface_cast(Ifaces::Button, Button, dev_iface);
                 break;
             case DeviceInterface::AudioInterface:
                 iface = deviceinterface_cast(Ifaces::AudioInterface, AudioInterface, dev_iface);

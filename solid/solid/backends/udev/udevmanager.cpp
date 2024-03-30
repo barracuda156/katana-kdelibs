@@ -123,11 +123,6 @@ bool UDevManager::Private::checkOfInterest(const UdevQt::Device &device)
 
     if (device.subsystem() == "input") {
         const QStringList deviceProperties = device.deviceProperties();
-        // key
-        if (device.deviceProperty("ID_INPUT_KEY").toInt() == 1
-            && (deviceProperties.contains("KEY") || deviceProperties.contains("SW"))) {
-            return true;
-        }
         // mouse, keyboard or joystick
         if (device.deviceProperty("ID_INPUT_MOUSE").toInt() == 1
             || device.deviceProperty("ID_INPUT_KEYBOARD").toInt() == 1
@@ -167,7 +162,6 @@ UDevManager::UDevManager(QObject *parent)
                              << Solid::DeviceInterface::PortableMediaPlayer
                              << Solid::DeviceInterface::Block
                              << Solid::DeviceInterface::Video
-                             << Solid::DeviceInterface::Button
                              << Solid::DeviceInterface::Graphic
                              << Solid::DeviceInterface::Input;
 }

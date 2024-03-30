@@ -443,7 +443,6 @@ install(
     Solid/AudioInterface
     Solid/Battery
     Solid/Block
-    Solid/Button
     Solid/Camera
     Solid/Device
     Solid/DeviceInterface

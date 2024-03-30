@@ -76,11 +76,10 @@ namespace Solid
             NetworkInterface = 10,
             AcAdapter = 11,
             Battery = 12,
-            Button = 13,
-            AudioInterface = 14,
-            Video = 15,
-            Graphic = 16,
-            Input = 17,
+            AudioInterface = 13,
+            Video = 14,
+            Graphic = 15,
+            Input = 16,
             Last = 0xffff
         };
 

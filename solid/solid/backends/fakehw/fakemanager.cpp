@@ -21,9 +21,6 @@
 
 #include "fakedevice.h"
 
-// Qt includes
-#include <QtXml/qdom.h>
-#include <QtXml/qdom.h>
 #include <QtXml/qdom.h>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -65,7 +62,6 @@ FakeManager::FakeManager(QObject *parent, const QString &xmlFile)
                            << Solid::DeviceInterface::NetworkInterface
                            << Solid::DeviceInterface::AcAdapter
                            << Solid::DeviceInterface::Battery
-                           << Solid::DeviceInterface::Button
                            << Solid::DeviceInterface::AudioInterface
                            << Solid::DeviceInterface::Video
                            << Solid::DeviceInterface::Graphic
