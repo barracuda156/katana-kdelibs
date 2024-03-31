@@ -450,7 +450,7 @@ void KIconLoaderPrivate::init( const QString &_appname, KStandardDirs *_dirs)
     mPixmapCache.setMaxCost(10240);
     mPixmapCache.clear();
 
-    // These have to match the order in kicontheme.h
+    // These have to match the order in kiconloader.h
     static const char * const groups[] = { "Desktop", "Toolbar", "MainToolbar", "Small", "Panel", "Dialog", 0L };
     KSharedConfig::Ptr config = KGlobal::config();
 

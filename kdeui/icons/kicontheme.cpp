@@ -49,25 +49,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-class KIconTheme::KIconThemePrivate
-{
-public:
-    QString example, screenshot;
-    QString linkOverlay, lockOverlay, zipOverlay, shareOverlay;
-    bool hidden;
-    KSharedConfig::Ptr sharedConfig;
-
-    int mDefSize[6];
-    QList<int> mSizes[6];
-
-    int mDepth;
-    QString mDir, mName, mInternalName, mDesc;
-    QStringList mInherits;
-    QList<KIconThemeDir *> mDirs;
-};
-K_GLOBAL_STATIC(QString, _theme)
-K_GLOBAL_STATIC(QStringList, _theme_list)
-
 /**
  * A subdirectory in an icon theme.
  */
@@ -106,8 +87,24 @@ private:
 };
 
 /*** KIconTheme ***/
+class KIconTheme::KIconThemePrivate
+{
+public:
+    QString example;
+    QString linkOverlay, lockOverlay, zipOverlay, shareOverlay;
+    bool hidden;
 
-KIconTheme::KIconTheme(const QString& name, const QString& appName)
+    int mDefSize[6];
+    QList<int> mSizes[6];
+
+    QString mDir, mName, mInternalName, mDesc;
+    QStringList mInherits;
+    QList<KIconThemeDir *> mDirs;
+};
+K_GLOBAL_STATIC(QString, _theme)
+K_GLOBAL_STATIC(QStringList, _theme_list)
+
+KIconTheme::KIconTheme(const QString &name, const QString &appName)
     :d(new KIconThemePrivate)
 {
 
@@ -120,7 +117,6 @@ KIconTheme::KIconTheme(const QString& name, const QString& appName)
 
     // Applications can have local additions to the global "hicolor" icon
     // themes. For these, the _global_ theme description files are used..
-
     if (!appName.isEmpty() &&
        ( name == defaultThemeName() || name== "hicolor" ) ) {
         icnlibs = KGlobal::dirs()->resourceDirs("data");
@@ -131,8 +127,8 @@ KIconTheme::KIconTheme(const QString& name, const QString& appName)
             }
         }
     }
-    // Find the theme description file. These are always global.
 
+    // Find the theme description file. These are always global.
     icnlibs = KGlobal::dirs()->resourceDirs("icon")
         << KGlobal::dirs()->resourceDirs("xdgdata-icon")
         // These are not in the icon spec, but e.g. GNOME puts some icons there anyway.
@@ -158,12 +154,11 @@ KIconTheme::KIconTheme(const QString& name, const QString& appName)
 
     // Use KSharedConfig to avoid parsing the file many times, from each kinstance.
     // Need to keep a ref to it to make this useful
-    d->sharedConfig = KSharedConfig::openConfig(d->mDir + "index.theme", KConfig::NoGlobals);
+    KSharedConfig::Ptr sharedConfig = KSharedConfig::openConfig(d->mDir + "index.theme", KConfig::NoGlobals);
 
-    KConfigGroup cfg(d->sharedConfig, "Icon Theme");
+    KConfigGroup cfg(sharedConfig, "Icon Theme");
     d->mName = cfg.readEntry("Name");
     d->mDesc = cfg.readEntry("Comment");
-    d->mDepth = cfg.readEntry("DisplayDepth", 32);
     d->mInherits = cfg.readEntry("Inherits", QStringList());
     if (name != defaultThemeName()) {
         for (QStringList::Iterator it = d->mInherits.begin(); it != d->mInherits.end(); ++it) {
@@ -175,11 +170,10 @@ KIconTheme::KIconTheme(const QString& name, const QString& appName)
 
     d->hidden = cfg.readEntry("Hidden", false);
     d->example = cfg.readPathEntry("Example", QString());
-    d->screenshot = cfg.readPathEntry("ScreenShot", QString());
 
     const QStringList dirs = cfg.readPathEntry("Directories", QStringList());
     for (it=dirs.begin(); it!=dirs.end(); ++it) {
-        KConfigGroup cg(d->sharedConfig, *it);
+        KConfigGroup cg(sharedConfig, *it);
         for (itDir=themeDirs.constBegin(); itDir!=themeDirs.constEnd(); ++itDir) {
             const QString currentDir(*itDir + *it + '/');
             if (!addedDirs.contains(currentDir) && KGlobal::dirs()->exists(currentDir)) {
@@ -198,7 +192,7 @@ KIconTheme::KIconTheme(const QString& name, const QString& appName)
     // Expand available sizes for scalable icons to their full range
     int i;
     QMap<int,QList<int> > scIcons;
-    foreach(KIconThemeDir *dir, d->mDirs) {
+    foreach(const KIconThemeDir *dir, d->mDirs) {
         if (!dir) {
             break;
         }
@@ -261,11 +255,6 @@ QString KIconTheme::example() const
     return d->example;
 }
 
-QString KIconTheme::screenshot() const
-{
-    return d->screenshot;
-}
-
 QString KIconTheme::dir() const
 {
     return d->mDir;
@@ -284,11 +273,6 @@ bool KIconTheme::isValid() const
 bool KIconTheme::isHidden() const
 {
     return d->hidden;
-}
-
-int KIconTheme::depth() const
-{
-    return d->mDepth;
 }
 
 int KIconTheme::defaultSize(KIconLoader::Group group) const
@@ -336,29 +320,6 @@ QStringList KIconTheme::queryIcons(int size, KIconLoader::Context context) const
     }
 
     return result;
-
-/*
-    int delta = 1000, dw;
-
-    // Find close match
-    KIconThemeDir *best = 0L;
-    for(int i=0; i<d->mDirs.size(); ++i) {
-        dir = d->mDirs.at(i);
-        if ((context != KIconLoader::Any) && (context != dir->context())) {
-            continue;
-        }
-        dw = dir->size() - size;
-        if ((dw > 6) || (abs(dw) >= abs(delta)))
-            continue;
-        delta = dw;
-        best = dir;
-    }
-    if (best == 0L) {
-        return QStringList();
-    }
-
-    return best->iconList();
-    */
 }
 
 QStringList KIconTheme::queryIconsByContext(int size, KIconLoader::Context context) const
@@ -390,7 +351,7 @@ QStringList KIconTheme::queryIconsByContext(int size, KIconLoader::Context conte
 
 bool KIconTheme::hasContext(KIconLoader::Context context) const
 {
-    foreach(KIconThemeDir *dir, d->mDirs) {
+    foreach(const KIconThemeDir *dir, d->mDirs) {
         if ((context == KIconLoader::Any) || (context == dir->context())) {
             return true;
         }

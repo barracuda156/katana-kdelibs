@@ -24,11 +24,9 @@
 #define KICONTHEME_H
 
 #include <kdeui_export.h>
-
 #include "kiconloader.h"
 
-#include <QAction>
-class KIconThemeDir;
+#include <QStringList>
 
 /**
  * @internal
@@ -47,7 +45,7 @@ public:
      * @param appName the name of the application. Can be null. This argument
      *        allows applications to have themed application icons.
      */
-    explicit KIconTheme(const QString& name, const QString& appName=QString());
+    explicit KIconTheme(const QString &name, const QString &appName = QString());
     ~KIconTheme();
 
     /**
@@ -78,12 +76,6 @@ public:
     QString example() const;
 
     /**
-     * Return the name of the screenshot.
-     * @return the name of the screenshot, QString() if there is none
-     */
-    QString screenshot() const;
-
-    /**
      * Returns the toplevel theme directory.
      * @return the directory of the theme
      */
@@ -106,13 +98,6 @@ public:
      * @return true if the icon theme is hidden
      */
     bool isHidden() const;
-
-    /**
-     * The minimum display depth required for this theme. This can either
-     * be 8 or 32.
-     * @return the minimum bpp (8 or 32)
-     */
-    int depth() const;
 
     /**
      * The default size of this theme for a certain icon group.
@@ -154,12 +139,12 @@ public:
      * @return A filepath to the icon. If an icon is not found the QString object
      *         is empty.
      */
-    QString iconPath(const QString& name, int size, KIconLoader::MatchType match) const;
+    QString iconPath(const QString &name, int size, KIconLoader::MatchType match) const;
 
     /**
      * Returns true if the theme has any icons for the given context.
      */
-    bool hasContext( KIconLoader::Context context ) const;
+    bool hasContext(KIconLoader::Context context) const;
 
     /**
      * List all icon themes installed on the system, global and local.
