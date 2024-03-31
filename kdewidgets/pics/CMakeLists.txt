@@ -25,7 +25,6 @@ install(
     kcalendarwidget.png
     kdialog.png
     keditlistbox.png
-    kfontcombo.png
     khistorycombo.png
     kintnuminput.png
     krestrictedline.png

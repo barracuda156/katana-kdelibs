@@ -454,12 +454,6 @@ QString KIconTheme::current()
     if ( *_theme == QLatin1String("hicolor") ) {
         *_theme = defaultThemeName();
     }
-/*
-    if (_theme->isEmpty())
-    {
-        *_theme = defaultThemeName();
-    }
-*/
     return *_theme;
 }
 
@@ -483,10 +477,10 @@ QStringList KIconTheme::list()
         if (!dir.exists()) {
             continue;
         }
-        const QStringList lst = dir.entryList(QDir::Dirs);
+        const QStringList lst = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
         QStringList::ConstIterator it2;
         for (it2=lst.begin(); it2!=lst.end(); ++it2) {
-            if ((*it2 == ".") || (*it2 == "..") || (*it2).startsWith(QLatin1String("default.")) ) {
+            if ((*it2).startsWith(QLatin1String("default.")) ) {
                 continue;
             }
             if (!KGlobal::dirs()->exists(*it + *it2 + "/index.theme")) {

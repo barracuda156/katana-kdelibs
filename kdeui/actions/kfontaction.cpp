@@ -29,14 +29,13 @@
 #include "kfontaction.h"
 
 #include <QToolBar>
+#include <QFontDatabase>
 #include <QFontComboBox>
 #include <QStringListModel>
 
 #include <kdebug.h>
-#include <kfontdialog.h>
 #include <kicon.h>
 #include <klocale.h>
-#include <kfontchooser.h>
 
 class KFontAction::KFontActionPrivate
 {
@@ -65,39 +64,24 @@ class KFontAction::KFontActionPrivate
         int settingFont;
 };
 
-KFontAction::KFontAction(uint fontListCriteria, QObject *parent)
-  : KSelectAction(parent), d(new KFontActionPrivate(this))
-{
-    QStringList list;
-    KFontChooser::getFontList( list, fontListCriteria );
-    KSelectAction::setItems( list );
-    setEditable( true );
-}
-
 KFontAction::KFontAction(QObject *parent)
   : KSelectAction(parent), d(new KFontActionPrivate(this))
 {
-    QStringList list;
-    KFontChooser::getFontList( list, 0 );
-    KSelectAction::setItems( list );
+    KSelectAction::setItems( QFontDatabase().families() );
     setEditable( true );
 }
 
 KFontAction::KFontAction(const QString & text, QObject *parent)
   : KSelectAction(text, parent), d(new KFontActionPrivate(this))
 {
-    QStringList list;
-    KFontChooser::getFontList( list, 0 );
-    KSelectAction::setItems( list );
+    KSelectAction::setItems( QFontDatabase().families() );
     setEditable( true );
 }
 
 KFontAction::KFontAction(const KIcon &icon, const QString &text, QObject *parent)
   : KSelectAction(icon, text, parent), d(new KFontActionPrivate(this))
 {
-    QStringList list;
-    KFontChooser::getFontList( list, 0 );
-    KSelectAction::setItems( list );
+    KSelectAction::setItems( QFontDatabase().families() );
     setEditable( true );
 }
 

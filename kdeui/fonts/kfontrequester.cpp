@@ -19,14 +19,15 @@
 
 #include "kfontrequester.h"
 #include "fonthelpers_p.h"
+#include "kglobal.h"
+#include "klocale.h"
+#include "kdialog.h"
 
 #include <QtGui/QLabel>
 #include <QtGui/QPushButton>
 #include <QtGui/QLayout>
 #include <QtGui/QFontDatabase>
-
-#include <kfontdialog.h>
-#include <klocale.h>
+#include <QtGui/QFontDialog>
 
 #include <cmath>
 
@@ -182,14 +183,16 @@ void KFontRequester::setTitle(const QString &title)
 
 void KFontRequester::KFontRequesterPrivate::_k_buttonClicked()
 {
-    KFontChooser::DisplayFlags flags = KFontChooser::NoDisplayFlags;
+    QFontDialog::FontDialogOptions options = QFontDialog::AllFonts;
     if (m_onlyFixed) {
-        flags |= KFontChooser::FixedFontsOnly;
+        options = QFontDialog::MonospacedFonts;
     }
 
-    int result = KFontDialog::getFont(m_selFont, flags, q->parentWidget());
-
-    if (result == KDialog::Accepted) {
+    bool ok = false;
+    const QString title = KDialog::makeStandardCaption(i18n("Select Font"), q);
+    QFont result = QFontDialog::getFont(&ok, m_selFont, q->parentWidget(), title, options);
+    if (ok) {
+        m_selFont = result;
         displaySampleText();
         emit q->fontSelected(m_selFont);
     }

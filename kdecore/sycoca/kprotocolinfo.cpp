@@ -52,8 +52,7 @@ KProtocolInfo::KProtocolInfo(const QString &path)
 {
     Q_D(KProtocolInfo);
 
-    const QString fullPath = KStandardDirs::locate("services", path);
-    KConfig sconfig(fullPath);
+    KConfig sconfig(KStandardDirs::locate("services", path));
     KConfigGroup config(&sconfig, "Protocol");
 
     m_name = config.readEntry("protocol");

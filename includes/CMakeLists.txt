@@ -121,8 +121,6 @@ install(
     KFindDialog
     KFloatValidator
     KFontAction
-    KFontChooser
-    KFontDialog
     KFontRequester
     KFontSizeAction
     KUnitConversion

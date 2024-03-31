@@ -39,8 +39,7 @@ class KDEUI_EXPORT KFontAction : public KSelectAction
     Q_PROPERTY( QString font READ font WRITE setFont )
 
 public:
-    KFontAction(uint fontListCriteria, QObject *parent);
-    explicit KFontAction(QObject *parent);
+    KFontAction(QObject *parent);
     KFontAction(const QString& text, QObject *parent);
     KFontAction(const KIcon &icon, const QString &text, QObject *parent);
     virtual ~KFontAction();

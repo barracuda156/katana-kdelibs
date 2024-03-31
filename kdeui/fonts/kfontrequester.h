@@ -31,7 +31,7 @@
 
 /**
  * This class provides a widget with a lineedit and a button, which invokes
- * a font dialog (KFontDialog).
+ * a font dialog (QFontDialog).
  *
  * The lineedit provides a preview of the selected font. The preview text can
  * be customized. You can also have the font dialog show only the fixed fonts.

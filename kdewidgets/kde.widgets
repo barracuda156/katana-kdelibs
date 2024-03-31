@@ -98,15 +98,9 @@ ToolTip=Filter proxy search line
 WhatsThis=A search line widget which works on a QSortFilterProxyModel
 Group=Input (KDE)
 
-[KFontChooser]
-IncludeFile=kfontdialog.h
-IconSet=kfontcombo.png
-ToolTip=Font Chooser (KDE)
-WhatsThis=A font type, size and style selection widget complete with preview
-Group=Input (KDE)
-
 [KFontRequester]
 IncludeFile=kfontrequester.h
+IconSet=kfontrequester.png
 ToolTip=Font Requester (KDE)
 WhatsThis=A compact font selection and preview widget
 Group=Input (KDE)
