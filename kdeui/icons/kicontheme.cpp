@@ -557,39 +557,6 @@ QString KIconTheme::defaultThemeName()
     return QLatin1String("ariya");
 }
 
-void KIconTheme::assignIconsToContextMenu( ContextMenus type,
-                                           QList<QAction*> actions )
-{
-    switch (type) {
-        // FIXME: This code depends on Qt's action ordering.
-        case TextEditor:
-            enum { UndoAct, RedoAct, Separator1, CutAct, CopyAct, PasteAct, DeleteAct, ClearAct,
-                   Separator2, SelectAllAct, NCountActs };
-
-            if ( actions.count() < NCountActs ) {
-                return;
-            }
-
-            actions[UndoAct]->setIcon( KIcon("edit-undo") );
-            actions[RedoAct]->setIcon( KIcon("edit-redo") );
-            actions[CutAct]->setIcon( KIcon("edit-cut") );
-            actions[CopyAct]->setIcon( KIcon("edit-copy") );
-            actions[PasteAct]->setIcon( KIcon("edit-paste") );
-            actions[ClearAct]->setIcon( KIcon("edit-clear") );
-            actions[DeleteAct]->setIcon( KIcon("edit-delete") );
-            actions[SelectAllAct]->setIcon( KIcon("edit-select-all") );
-            break;
-
-        case ReadOnlyText:
-            if ( actions.count() < 1 ) {
-                return;
-            }
-
-            actions[0]->setIcon( KIcon("edit-copy") );
-            break;
-    }
-}
-
 /*** KIconThemeDir ***/
 
 KIconThemeDir::KIconThemeDir(const QString& basedir, const QString &themedir, const KConfigGroup &config)

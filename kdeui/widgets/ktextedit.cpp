@@ -389,25 +389,6 @@ QMenu *KTextEdit::mousePopupMenu()
              this, SLOT(menuActivated(QAction*)) );
 
   const bool emptyDocument = document()->isEmpty();
-  if( !isReadOnly() )
-  {
-      QList<QAction *> actionList = popup->actions();
-      enum { UndoAct, RedoAct, CutAct, CopyAct, PasteAct, ClearAct, SelectAllAct, NCountActs };
-      QAction *separatorAction = 0L;
-      int idx = actionList.indexOf( actionList[SelectAllAct] ) + 1;
-      if ( idx < actionList.count() )
-          separatorAction = actionList.at( idx );
-      if ( separatorAction )
-      {
-          KAction *clearAllAction = KStandardAction::clear(this, SLOT(undoableClear()), popup);
-          if ( emptyDocument )
-              clearAllAction->setEnabled( false );
-          popup->insertAction( separatorAction, clearAllAction );
-      }
-  }
-  KIconTheme::assignIconsToContextMenu( isReadOnly() ? KIconTheme::ReadOnlyText
-                                          : KIconTheme::TextEditor,
-                                          popup->actions() );
 
   if( !isReadOnly() )
   {

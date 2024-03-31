@@ -1169,28 +1169,6 @@ QMenu* KLineEdit::createStandardContextMenu()
 {
     QMenu *popup = QLineEdit::createStandardContextMenu();
 
-    if( !isReadOnly() )
-    {
-        // FIXME: This code depends on Qt's action ordering.
-        const QList<QAction *> actionList = popup->actions();
-        enum { UndoAct, RedoAct, Separator1, CutAct, CopyAct, PasteAct, DeleteAct, ClearAct,
-               Separator2, SelectAllAct, NCountActs };
-        QAction *separatorAction = 0L;
-        // separator we want is right after Delete right now.
-        const int idx = actionList.indexOf( actionList[DeleteAct] ) + 1;
-        if ( idx < actionList.count() )
-            separatorAction = actionList.at( idx );
-        if ( separatorAction )
-        {
-            KAction *clearAllAction = KStandardAction::clear( this, SLOT(clear()), popup) ;
-            if ( text().isEmpty() )
-                clearAllAction->setEnabled( false );
-            popup->insertAction( separatorAction, clearAllAction );
-        }
-    }
-
-    KIconTheme::assignIconsToContextMenu( KIconTheme::TextEditor, popup->actions () );
-
     // If a completion object is present and the input
     // widget is not read-only, show the Text Completion
     // menu item.

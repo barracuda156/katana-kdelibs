@@ -184,23 +184,6 @@ public:
      */
     static QString defaultThemeName();
 
-    /**
-     * Defines the context menus that assignIconsToContextMenus is
-     * aware of.
-     *
-     * For ReadOnlyText the menu is expected to have one entry.
-     *
-     * TextEditor is expected to have the full complement of
-     * undo, redo, cut, copy, paste and clear.
-     */
-    enum ContextMenus { TextEditor,
-                        ReadOnlyText };
-
-    /**
-     * Assigns standard icons to the various standard text edit context menus.
-     */
-    static void assignIconsToContextMenu(ContextMenus type, QList<QAction*> actions);
-
 private:
     class KIconThemePrivate;
     KIconThemePrivate * const d;
