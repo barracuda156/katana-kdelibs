@@ -27,17 +27,15 @@
 
 #ifdef NEVERDEFINE // never true
 // Font names up for translation, listed for extraction.
-
 // i18n: Generic non-fixed font presented in font choosers. When selected,
 // the system will choose a real font, mandated by distro settings.
 I18N_NOOP2("@item Font name", "DejaVu Sans")
 // i18n: Generic fixed font presented in font choosers. When selected,
 // the system will choose a real font, mandated by distro settings.
 I18N_NOOP2("@item Font name", "DejaVu Sans Mono")
-
 #endif
 
-void splitFontString (const QString &name, QString *family, QString *foundry)
+void splitFontString(const QString &name, QString *family, QString *foundry)
 {
     int p1 = name.indexOf('[');
     if (p1 < 0) {
@@ -59,7 +57,7 @@ void splitFontString (const QString &name, QString *family, QString *foundry)
     }
 }
 
-QString translateFontName (const QString &name)
+QString translateFontName(const QString &name)
 {
     QString family, foundry;
     splitFontString(name, &family, &foundry);
@@ -80,8 +78,7 @@ QString translateFontName (const QString &name)
     } else {
         // i18n: Filter by which the translators can translate, or otherwise
         // operate on the font names not put up for regular translation.
-        trfont = i18nc("@item Font name [foundry]", "%1 [%2]",
-                       trFamily, trFoundry);
+        trfont = i18nc("@item Font name [foundry]", "%1 [%2]", trFamily, trFoundry);
     }
     return trfont;
 }
@@ -92,8 +89,8 @@ static bool fontLocaleLessThan (const QString &a, const QString &b)
     return QString::localeAwareCompare(a, b) < 0;
 }
 
-QStringList translateFontNameList (const QStringList &names,
-                                   QHash<QString, QString> *trToRawNames)
+QStringList translateFontNameList(const QStringList &names,
+                                  QHash<QString, QString> *trToRawNames)
 {
     // Generic fonts, in the inverse of desired order.
     QStringList genericNames;

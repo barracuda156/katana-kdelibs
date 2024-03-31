@@ -57,30 +57,29 @@ class KFontDialog::Private
 {
 public:
     Private()
-        : chooser( 0 )
+        : chooser(nullptr)
     {
     }
 
     KFontChooser *chooser;
 };
 
-KFontDialog::KFontDialog( QWidget *parent,
-                          const KFontChooser::DisplayFlags& flags,
-                          const QStringList &fontList,
-                          Qt::CheckState *sizeIsRelativeState )
-    : KDialog( parent ),
-      d( new Private )
+KFontDialog::KFontDialog(QWidget *parent,
+                         const KFontChooser::DisplayFlags flags,
+                         const QStringList &fontList,
+                         Qt::CheckState *sizeIsRelativeState)
+    : KDialog(parent),
+    d(new Private())
 {
-    setCaption( i18n("Select Font") );
-    setButtons( Ok | Cancel );
-    setDefaultButton(Ok);
-    d->chooser = new KFontChooser( this, flags, fontList, 8,
-                                   sizeIsRelativeState );
-    d->chooser->setObjectName( "fontChooser" );
+    setCaption(i18n("Select Font"));
+    setButtons(KDialog::Ok | KDialog::Cancel);
+    setDefaultButton(KDialog::Ok);
+    d->chooser = new KFontChooser(this, flags, fontList, 8, sizeIsRelativeState);
+    d->chooser->setObjectName("fontChooser");
 
-    connect( d->chooser , SIGNAL(fontSelected(QFont)) , this , SIGNAL(fontSelected(QFont)) );
+    connect(d->chooser , SIGNAL(fontSelected(QFont)), this , SIGNAL(fontSelected(QFont)));
 
-    setMainWidget( d->chooser );
+    setMainWidget(d->chooser);
 }
 
 KFontDialog::~KFontDialog()
@@ -88,7 +87,7 @@ KFontDialog::~KFontDialog()
    delete d;
 }
 
-void KFontDialog::setFont( const QFont &font, bool onlyFixed)
+void KFontDialog::setFont(const QFont &font, bool onlyFixed)
 {
     d->chooser->setFont(font, onlyFixed);
 }
@@ -98,9 +97,9 @@ QFont KFontDialog::font() const
      return d->chooser->font();
 }
 
-void KFontDialog::setSizeIsRelative( Qt::CheckState relative )
+void KFontDialog::setSizeIsRelative(const Qt::CheckState relative)
 {
-    d->chooser->setSizeIsRelative( relative );
+    d->chooser->setSizeIsRelative(relative);
 }
 
 Qt::CheckState KFontDialog::sizeIsRelative() const
@@ -108,69 +107,65 @@ Qt::CheckState KFontDialog::sizeIsRelative() const
     return d->chooser->sizeIsRelative();
 }
 
-
-int KFontDialog::getFontDiff( QFont &theFont,
-                              KFontChooser::FontDiffFlags& diffFlags,
-                              const KFontChooser::DisplayFlags& flags,
-                              QWidget *parent,
-                              Qt::CheckState *sizeIsRelativeState )
+int KFontDialog::getFontDiff(QFont &theFont,
+                             KFontChooser::FontDiffFlags& diffFlags,
+                             const KFontChooser::DisplayFlags flags,
+                             QWidget *parent,
+                             Qt::CheckState *sizeIsRelativeState )
 {
-    KFontDialog dlg( parent, flags | KFontChooser::ShowDifferences,
-                     QStringList(), sizeIsRelativeState );
-    dlg.setModal( true );
-    dlg.setObjectName( "Font Selector" );
-    dlg.setFont( theFont, flags & KFontChooser::FixedFontsOnly );
+    KFontDialog dlg(parent, flags | KFontChooser::ShowDifferences, QStringList(), sizeIsRelativeState);
+    dlg.setModal(true);
+    dlg.setObjectName("Font Selector");
+    dlg.setFont(theFont, flags & KFontChooser::FixedFontsOnly);
 
-    int result = dlg.exec();
-    if( result == Accepted )
-    {
+    const int result = dlg.exec();
+    if (result == KDialog::Accepted) {
         theFont = dlg.d->chooser->font();
         diffFlags = dlg.d->chooser->fontDiffFlags();
-        if( sizeIsRelativeState )
+        if (sizeIsRelativeState) {
             *sizeIsRelativeState = dlg.d->chooser->sizeIsRelative();
+        }
     }
     return result;
 }
 
-int KFontDialog::getFont( QFont &theFont,
-                          const KFontChooser::DisplayFlags& flags,
-                          QWidget *parent,
-                          Qt::CheckState *sizeIsRelativeState )
+int KFontDialog::getFont(QFont &theFont,
+                         const KFontChooser::DisplayFlags flags,
+                         QWidget *parent,
+                         Qt::CheckState *sizeIsRelativeState)
 {
-    KFontDialog dlg( parent, flags, QStringList(), sizeIsRelativeState );
-    dlg.setModal( true );
-    dlg.setObjectName( "Font Selector" );
-    dlg.setFont( theFont, flags & KFontChooser::FixedFontsOnly );
+    KFontDialog dlg(parent, flags, QStringList(), sizeIsRelativeState);
+    dlg.setModal(true);
+    dlg.setObjectName("Font Selector");
+    dlg.setFont(theFont, flags & KFontChooser::FixedFontsOnly);
 
-    int result = dlg.exec();
-    if( result == Accepted )
-    {
+    const int result = dlg.exec();
+    if (result == KDialog::Accepted) {
         theFont = dlg.d->chooser->font();
-        if( sizeIsRelativeState )
+        if (sizeIsRelativeState) {
             *sizeIsRelativeState = dlg.d->chooser->sizeIsRelative();
+        }
     }
     return result;
 }
 
-
-int KFontDialog::getFontAndText( QFont &theFont, QString &theString,
-                                 const KFontChooser::DisplayFlags& flags,
-                                 QWidget *parent,
-                                 Qt::CheckState *sizeIsRelativeState )
+int KFontDialog::getFontAndText(QFont &theFont, QString &theString,
+                                const KFontChooser::DisplayFlags flags,
+                                QWidget *parent,
+                                Qt::CheckState *sizeIsRelativeState)
 {
-    KFontDialog dlg( parent, flags,
-                     QStringList(), sizeIsRelativeState );
-    dlg.setModal( true );
-    dlg.setObjectName( "Font and Text Selector" );
-    dlg.setFont( theFont, flags & KFontChooser::FixedFontsOnly );
+    KFontDialog dlg(parent, flags, QStringList(), sizeIsRelativeState );
+    dlg.setModal(true);
+    dlg.setObjectName("Font and Text Selector");
+    dlg.setFont(theFont, flags & KFontChooser::FixedFontsOnly);
 
-    int result = dlg.exec();
-    if( result == Accepted )
-    {
-        theFont   = dlg.d->chooser->font();
+    const int result = dlg.exec();
+    if( result == KDialog::Accepted) {
+        theFont = dlg.d->chooser->font();
         theString = dlg.d->chooser->sampleText();
-        if( sizeIsRelativeState )
+        if (sizeIsRelativeState) {
             *sizeIsRelativeState = dlg.d->chooser->sizeIsRelative();
+        }
     }
     return result;
 }
