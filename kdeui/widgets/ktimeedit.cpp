@@ -190,6 +190,10 @@ QTime KTimeEdit::minimumTime() const
 
 void KTimeEdit::setMinimumTime(const QTime &time)
 {
+    if (Q_UNLIKELY(!time.isValid())) {
+        kWarning() << "invalid minimum KTimeEdit time";
+        return;
+    }
     d->mintime = time;
     d->updateWidgets();
 }
@@ -201,6 +205,10 @@ QTime KTimeEdit::maximumTime() const
 
 void KTimeEdit::setMaximumTime(const QTime &time)
 {
+    if (Q_UNLIKELY(!time.isValid())) {
+        kWarning() << "invalid maximum KTimeEdit time";
+        return;
+    }
     d->maxtime = time;
     d->updateWidgets();
 }
