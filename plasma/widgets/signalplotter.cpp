@@ -65,7 +65,6 @@ public:
         horizontalLinesColor = verticalLinesColor;
     }
 
-    int precision;
     uint samples;
     uint bezierCurveOffset;
 
@@ -115,7 +114,6 @@ SignalPlotter::SignalPlotter(QGraphicsItem *parent)
     : QGraphicsWidget(parent),
       d(new SignalPlotterPrivate)
 {
-    d->precision = 0;
     d->bezierCurveOffset = 0;
     d->samples = 0;
     d->verticalMin = d->verticalMax = 0.0;
@@ -740,13 +738,6 @@ void SignalPlotter::calculateNiceRange()
     int logdim = (int)floor(log10(step));
     double dim = pow((double)10.0, logdim) / 2;
     int a = (int)ceil(step / dim);
-    if (logdim >= 0) {
-        d->precision = 0;
-    } else if (a % 2 == 0) {
-        d->precision = -logdim;
-    } else {
-        d->precision = 1 - logdim;
-    }
     d->niceVertRange = d->scaledBy * dim * a * (d->horizontalLinesCount + 1);
     d->niceVertMax = d->niceVertMin + d->niceVertRange;
 }
@@ -1066,7 +1057,7 @@ void SignalPlotter::drawAxisText(QPainter *p, int top, int h)
             value = d->niceVertMax / d->scaledBy - y * stepsize;
         }
 
-        QString number = KGlobal::locale()->formatNumber(value, d->precision);
+        QString number = KGlobal::locale()->formatNumber(value);
         val = QString("%1 %2").arg(number, d->unit);
         p->drawText(6, y_coord - 3, val);
     }
