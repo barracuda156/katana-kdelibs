@@ -33,8 +33,11 @@ public:
 
 protected:
     QValidator::State validate(QString &input, int &pos) const final;
+    QAbstractSpinBox::StepEnabled stepEnabled() const final;
 
 private:
+    QTime getTime() const;
+
     KTimeEditPrivate* ktimeeditprivate;
 };
 
@@ -64,10 +67,7 @@ public:
 
 QValidator::State KTimeBox::validate(QString &input, int &pos) const
 {
-    const int hour = ktimeeditprivate->hourbox->value();
-    const int minute = ktimeeditprivate->minutebox->value();
-    const int second = ktimeeditprivate->secondbox->value();
-    const QTime currenttime = QTime(hour, minute, second);
+    const QTime currenttime = getTime();
     if (!currenttime.isValid()) {
         return QValidator::Invalid;
     }
@@ -75,6 +75,30 @@ QValidator::State KTimeBox::validate(QString &input, int &pos) const
         return QValidator::Invalid;
     }
     return QValidator::Acceptable;
+}
+
+QAbstractSpinBox::StepEnabled KTimeBox::stepEnabled() const
+{
+    QAbstractSpinBox::StepEnabled result = QAbstractSpinBox::StepNone;
+    const QTime currenttime = getTime();
+    if (!currenttime.isValid()) {
+        return result;
+    }
+    if (currenttime < ktimeeditprivate->maxtime && value() < maximum()) {
+        result |= QAbstractSpinBox::StepUpEnabled;
+    }
+    if (currenttime > ktimeeditprivate->mintime && value() > minimum()) {
+        result |= QAbstractSpinBox::StepDownEnabled;
+    }
+    return result;
+}
+
+QTime KTimeBox::getTime() const
+{
+    const int hour = ktimeeditprivate->hourbox->value();
+    const int minute = ktimeeditprivate->minutebox->value();
+    const int second = ktimeeditprivate->secondbox->value();
+    return QTime(hour, minute, second);
 }
 
 
@@ -134,12 +158,15 @@ KTimeEdit::KTimeEdit(QWidget *parent)
     QHBoxLayout* timelayout = new QHBoxLayout(this);
     d->hourbox = new KTimeBox(d, this);
     d->hourbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    d->hourbox->setRange(0, 23);
     timelayout->addWidget(d->hourbox);
     d->minutebox = new KTimeBox(d, this);
     d->minutebox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    d->minutebox->setRange(0, 59);
     timelayout->addWidget(d->minutebox);
     d->secondbox = new KTimeBox(d, this);
     d->secondbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    d->secondbox->setRange(0, 59);
     timelayout->addWidget(d->secondbox);
     setLayout(timelayout);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
