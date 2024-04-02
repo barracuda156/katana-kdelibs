@@ -252,7 +252,7 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
 
         /**
          * Returns a list of all known applets.
-         * This may skip applets based on security settings and ExcludeCategories in the application's config.
+         * This may skip applets based on ExcludeCategories in the application's config.
          *
          * @param category Only applets matchin this category will be returned.
          *                 Useful in conjunction with knownCategories.
@@ -595,13 +595,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          *               widgets
          */
         virtual void createConfigurationInterface(KConfigDialog *parent);
-
-        /**
-         * Returns true if the applet is allowed to perform functions covered by the given constraint
-         * eg. hasAuthorization("FileDialog") returns true if applets are allowed to show filedialogs.
-         * @since 4.3
-         */
-        bool hasAuthorization(const QString &constraint) const;
 
         /**
          * Sets an application associated to this applet, that will be
