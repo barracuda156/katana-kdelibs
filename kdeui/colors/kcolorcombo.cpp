@@ -24,10 +24,10 @@
 #include <QtGui/QAbstractItemDelegate>
 #include <QtGui/QApplication>
 #include <QtGui/QStylePainter>
+#include <QtGui/QColorDialog>
 
-#include <klocale.h>
-
-#include "kcolordialog.h"
+#include "klocale.h"
+#include "kdialog.h"
 
 class KColorComboDelegate : public QAbstractItemDelegate
 {
@@ -324,7 +324,9 @@ void KColorCombo::showEmptyList()
 void KColorComboPrivate::_k_slotActivated(int index)
 {
     if (index == 0) {
-        if (KColorDialog::getColor(customColor, q) == QDialog::Accepted) {
+        const QColor c = QColorDialog::getColor(customColor, q, KDialog::makeStandardCaption(i18n("Select Color"), q));
+        if (c.isValid()) {
+            customColor = c;
             setCustomColor(customColor, false);
         }
     } else if (colorList.isEmpty()) {

@@ -56,7 +56,6 @@ KDEUI_UNIT_TESTS(
     kselectaction_unittest
     klistwidgetsearchlinetest
     kconfigdialog_unittest
-    kcolorbuttontest
     kglobalshortcuttest
     klinkitemselectionmodeltest
     kstandardactiontest

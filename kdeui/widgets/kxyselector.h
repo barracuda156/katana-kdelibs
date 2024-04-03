@@ -29,9 +29,7 @@
  * KXYSelector is the base class for other widgets which
  * provides the ability to choose from a two-dimensional
  * range of values. The currently chosen value is indicated
- * by a cross. An example is the KHSSelector which
- * allows to choose from a range of colors, and which is
- * used in KColorDialog.
+ * by a cross.
  *
  * A custom drawing routine for the widget surface has
  * to be provided by the subclass.

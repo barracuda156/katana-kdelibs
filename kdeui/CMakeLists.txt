@@ -67,12 +67,10 @@ set(kdeui_LIB_SRCS
     colors/kcolorspaces.cpp
     colors/kcolorutils.cpp
     colors/kcolorscheme.cpp
-    colors/kcolorcollection.cpp
     colors/kcolorhelpers.cpp
     colors/kcolorbutton.cpp
     colors/kcolorcombo.cpp
     colors/kcolorchoosermode.cpp
-    colors/kcolordialog.cpp
     colors/kcolormimedata.cpp
     colors/kcolorvalueselector.cpp
     colors/khuesaturationselect.cpp
@@ -275,7 +273,6 @@ qt4_add_dbus_interface(kdeui_LIB_SRCS ${kglobalaccel_component_xml} kglobalaccel
 install(FILES ${kglobalaccel_component_xml} DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR})
 
 set_source_files_properties(
-    ${CMAKE_SOURCE_DIR}/kdeui/colors/kcolordialog.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/kapplication.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/kglobalsettings.cpp
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/kuniqueapplication.cpp
@@ -366,11 +363,9 @@ install(
     actions/ktoolbarspaceraction.h
     colors/kcolorutils.h
     colors/kcolorscheme.h
-    colors/kcolorcollection.h
     colors/kcolorbutton.h
     colors/kcolorchoosermode.h
     colors/kcolorcombo.h
-    colors/kcolordialog.h
     colors/kcolormimedata.h
     colors/kcolorvalueselector.h
     colors/khuesaturationselect.h
@@ -531,16 +526,6 @@ install(
 install(
     PROGRAMS preparetips
     DESTINATION ${KDE4_BIN_INSTALL_DIR}
-)
-
-install(
-    FILES
-    colors/40.colors
-    colors/Oxygen.colors
-    colors/Web.colors
-    colors/Royal.colors
-    colors/Rainbow.colors
-    DESTINATION ${KDE4_CONFIG_INSTALL_DIR}/colors
 )
 
 install(

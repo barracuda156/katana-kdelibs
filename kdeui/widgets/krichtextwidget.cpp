@@ -22,7 +22,6 @@
 
 // KDE includes
 #include <kactioncollection.h>
-#include <kcolordialog.h>
 #include <kcolorscheme.h>
 #include <kfontaction.h>
 #include <kfontsizeaction.h>
@@ -30,8 +29,9 @@
 #include <ktoggleaction.h>
 #include <kdebug.h>
 
-// Qt includes
+// Katie includes
 #include <QtGui/QTextList>
+#include <QtGui/QColorDialog>
 
 #include "klinkdialog.h"
 
@@ -637,13 +637,14 @@ void KRichTextWidget::Private::_k_updateMiscActions()
 void KRichTextWidget::Private::_k_setTextForegroundColor()
 {
     QColor currentTextForegroundColor = q->textColor();
-
-    const int result = KColorDialog::getColor(currentTextForegroundColor, KColorScheme(QPalette::Active, KColorScheme::View).foreground().color() , q);
-    if (result != QDialog::Accepted)
-        return;
-    if (!currentTextForegroundColor.isValid())
-        currentTextForegroundColor = KColorScheme(QPalette::Active, KColorScheme::View).foreground().color() ;
-
+    const QColor colorSchemeColor = KColorScheme(QPalette::Active, KColorScheme::View).foreground().color();
+    if (!currentTextForegroundColor.isValid()) {
+        currentTextForegroundColor = colorSchemeColor;
+    }
+    currentTextForegroundColor = QColorDialog::getColor(currentTextForegroundColor, q, KDialog::makeStandardCaption(i18n("Select Color"), q));
+    if (!currentTextForegroundColor.isValid()) {
+        currentTextForegroundColor = colorSchemeColor;
+    }
     q->setTextForegroundColor(currentTextForegroundColor);
 
 }
@@ -652,13 +653,14 @@ void KRichTextWidget::Private::_k_setTextBackgroundColor()
 {
     QTextCharFormat fmt = q->textCursor().charFormat();
     QColor currentTextBackgroundColor = fmt.background().color();
-
-    const int result = KColorDialog::getColor(currentTextBackgroundColor, KColorScheme(QPalette::Active, KColorScheme::View).foreground().color() , q);
-    if (result != QDialog::Accepted)
-        return;
-    if (!currentTextBackgroundColor.isValid())
-        currentTextBackgroundColor = KColorScheme(QPalette::Active, KColorScheme::View).foreground().color() ;
-
+    const QColor colorSchemeColor = KColorScheme(QPalette::Active, KColorScheme::View).foreground().color();
+    if (!currentTextBackgroundColor.isValid()) {
+        currentTextBackgroundColor = colorSchemeColor;
+    }
+    currentTextBackgroundColor = QColorDialog::getColor(currentTextBackgroundColor, q, KDialog::makeStandardCaption(i18n("Select Color"), q));
+    if (!currentTextBackgroundColor.isValid()) {
+        currentTextBackgroundColor = colorSchemeColor;
+    }
     q->setTextBackgroundColor(currentTextBackgroundColor);
 
 }

@@ -34,7 +34,6 @@ using KDEPrivate::fillOpaqueRect;
 //-----------------------------------------------------------------------------
 /*
  * 1D value selector with contents drawn by derived class.
- * See KColorDialog for example.
  */
 
 #define ARROWSIZE 5

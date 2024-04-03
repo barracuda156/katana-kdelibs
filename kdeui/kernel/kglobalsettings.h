@@ -78,12 +78,12 @@ public:
      *
      * Example code:
      * \code
-     * void KColorCells::mousePressEvent( QMouseEvent *e )
+     * void KColorButton::mousePressEvent( QMouseEvent *e )
      * {
      *    mOldPos = e->pos();
      * }
      *
-     * void KColorCells::mouseMoveEvent( QMouseEvent *e )
+     * void KColorButton::mouseMoveEvent( QMouseEvent *e )
      * {
      *    if( !(e->state() && LeftButton)) return;
      *

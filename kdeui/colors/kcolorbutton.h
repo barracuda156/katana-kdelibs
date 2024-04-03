@@ -30,8 +30,6 @@ class KColorButtonPrivate;
 *
 * This widget can be used to display or allow user selection of a color.
 *
-* @see KColorDialog
-*
 * \image html kcolorbutton.png "KDE Color Button"
 */
 class KDEUI_EXPORT KColorButton : public QPushButton

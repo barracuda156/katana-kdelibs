@@ -46,16 +46,10 @@ install(
     KCmdLineArgs
     KCmdLineOptions
     KCodecAction
-    KColor
     KColorButton
-    KColorCells
-    KColorCollection
     KColorCombo
-    KColorDialog
     KColorMimeData
-    KColorPatch
     KColorScheme
-    KColorTable
     KColorUtils
     KColorValueSelector
     KComboBox

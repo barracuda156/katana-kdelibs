@@ -32,9 +32,11 @@
 #include <kstandardshortcut.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qstyleoption.h>
-#include "kcolordialog.h"
+#include <QtGui/qcolordialog.h>
 #include "kcolorhelpers_p.h"
 #include "kcolormimedata.h"
+#include "kdialog.h"
+#include "klocale.h"
 #include "kdebug.h"
 #include "kwindowsystem.h"
 
@@ -56,7 +58,7 @@ public:
     QColor col;
     QPoint mPos;
 
-    QWeakPointer<KColorDialog> dialogPtr;
+    QWeakPointer<QColorDialog> dialogPtr;
 
     void initStyleOption(QStyleOptionButton* opt) const;    
 };
@@ -247,22 +249,24 @@ void KColorButton::mouseMoveEvent( QMouseEvent *e)
 
 void KColorButton::KColorButtonPrivate::_k_chooseColor()
 {
-    KColorDialog *dialog = dialogPtr.data();
+    QColorDialog *dialog = dialogPtr.data();
     if (dialog) {
         dialog->show();
         KWindowSystem::forceActiveWindow(dialog->winId());
         return;
     }
 
-    dialog = new KColorDialog(q);
-    dialog->setColor(q->color());
-    if (m_bdefaultColor) {
-        dialog->setDefaultColor(m_defaultColor);
+    QColor qc = q->color();
+    if (!qc.isValid()) {
+        qc = m_defaultColor;
     }
-    dialog->setAlphaChannelEnabled(m_alphaChannel);
+    dialog = new QColorDialog(q);
+    dialog->setWindowTitle(KDialog::makeStandardCaption(i18n("Select Color"), q));
+    dialog->setCurrentColor(qc);
+    if (m_alphaChannel) {
+        dialog->setOptions(QColorDialog::ShowAlphaChannel);
+    }
     dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->setButtons(KDialog::Ok | KDialog::Cancel);
-    connect(dialog, SIGNAL(applyClicked()), q, SLOT(_k_colorChosen()));
     connect(dialog, SIGNAL(accepted()), q, SLOT(_k_colorChosen()));
     dialogPtr = dialog;
     dialog->show();
@@ -270,13 +274,13 @@ void KColorButton::KColorButtonPrivate::_k_chooseColor()
 
 void KColorButton::KColorButtonPrivate::_k_colorChosen()
 {
-    KColorDialog *dialog = dialogPtr.data();
+    QColorDialog *dialog = dialogPtr.data();
     if (!dialog) {
         return;
     }
 
-    if (dialog->color().isValid()) {
-        q->setColor(dialog->color());
+    if (dialog->currentColor().isValid()) {
+        q->setColor(dialog->currentColor());
     } else if (m_bdefaultColor) {
         q->setColor(m_defaultColor);
     }
