@@ -404,14 +404,6 @@ class PLASMA_EXPORT Wallpaper : public QObject
         void renderCompleted(const QImage &image);
 
         /**
-         * Emitted when a URL matching X-Plasma-DropMimeTypes is dropped on the wallpaper
-         *
-         * @param url the URL of the dropped file
-         * @since 4.4
-         */
-        PLASMA_DEPRECATED void urlDropped(const KUrl &url);
-
-        /**
          * @internal
          */
         void renderHintsChanged();
@@ -420,10 +412,9 @@ class PLASMA_EXPORT Wallpaper : public QObject
         /**
          * This method is invoked by setUrls(KUrl::List)
          * Can be Overriden by Plugins which want to support setting Image URLs
-         * Will be changed to virtual method in libplasma2/KDE5 
          * @since 4.7
          */
-        void addUrls(const KUrl::List &urls);
+        virtual void addUrls(const KUrl::List &urls);
 
     protected:
         /**
