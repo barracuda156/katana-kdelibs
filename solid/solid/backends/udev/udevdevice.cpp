@@ -306,6 +306,12 @@ QString UDevDevice::icon() const
         case Solid::AudioInterface::Modem:
             return QLatin1String("modem");
         }
+    } else if (queryDeviceInterface(Solid::DeviceInterface::NetworkInterface)) {
+        const NetworkInterface networkIface(const_cast<UDevDevice *>(this));
+        if (networkIface.isWireless()) {
+            return QLatin1String("network-wireless");
+        }
+        return QLatin1String("network-wired");
     } else if (queryDeviceInterface(Solid::DeviceInterface::Graphic)) {
         return QLatin1String("video-display");
     } else if (queryDeviceInterface(Solid::DeviceInterface::Input)) {
