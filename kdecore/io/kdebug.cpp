@@ -88,7 +88,7 @@ static QByteArray kDebugHeader(const QByteArray &areaname, const char* const fun
 
     if (addtimestamp) {
         static const QString timestamp_format = QString::fromLatin1("hh:mm:ss.zzz");
-        const QByteArray timestamp = QDateTime::currentDateTime().time().toString(timestamp_format).toLocal8Bit();
+        const QByteArray timestamp = QTime::currentTime().toString(timestamp_format).toLocal8Bit();
         result.append(" at ");
         result.append(timestamp.constData(), timestamp.size());
     }
