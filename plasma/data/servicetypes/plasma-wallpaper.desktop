@@ -81,7 +81,3 @@ Comment[wa]=Tapisreye di Plasma
 Comment[x-test]=xxPlasma wallpaperxx
 Comment[zh_CN]=Plasma 壁纸
 Comment[zh_TW]=Plasma 桌布
-
-[PropertyDef::X-Plasma-FormFactors]
-Type=QStringList
-

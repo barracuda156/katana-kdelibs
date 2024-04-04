@@ -92,24 +92,15 @@ void Wallpaper::setUrls(const KUrl::List &urls)
     }
 }
 
-KPluginInfo::List Wallpaper::listWallpaperInfo(const QString &formFactor)
+KPluginInfo::List Wallpaper::listWallpaperInfo()
 {
-    QString constraint;
-    if (!formFactor.isEmpty()) {
-        constraint.append("[X-Plasma-FormFactors] ~~ '").append(formFactor).append("'");
-    }
-
-    KService::List offers = KServiceTypeTrader::self()->query("Plasma/Wallpaper", constraint);
+    KService::List offers = KServiceTypeTrader::self()->query("Plasma/Wallpaper");
     return KPluginInfo::fromServices(offers);
 }
 
-KPluginInfo::List Wallpaper::listWallpaperInfoForMimetype(const QString &mimetype, const QString &formFactor)
+KPluginInfo::List Wallpaper::listWallpaperInfoForMimetype(const QString &mimetype)
 {
-    QString constraint = QString("'%1' in [X-Plasma-DropMimeTypes]").arg(mimetype);
-    if (!formFactor.isEmpty()) {
-        constraint.append("[X-Plasma-FormFactors] ~~ '").append(formFactor).append("'");
-    }
-
+    QString constraint = QString::fromLatin1("'%1' in [X-Plasma-DropMimeTypes]").arg(mimetype);
     KService::List offers = KServiceTypeTrader::self()->query("Plasma/Wallpaper", constraint);
     kDebug() << offers.count() << constraint;
     return KPluginInfo::fromServices(offers);
@@ -117,8 +108,10 @@ KPluginInfo::List Wallpaper::listWallpaperInfoForMimetype(const QString &mimetyp
 
 bool Wallpaper::supportsMimetype(const QString &mimetype) const
 {
-    return d->wallpaperDescription.isValid() &&
-           d->wallpaperDescription.service()->hasMimeType(mimetype);
+    if (!d->wallpaperDescription.isValid()) {
+        return false;
+    }
+    return d->wallpaperDescription.service()->hasMimeType(mimetype);
 }
 
 Wallpaper *Wallpaper::load(const QString &wallpaperName, const QVariantList &args)

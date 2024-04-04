@@ -100,19 +100,16 @@ class PLASMA_EXPORT Wallpaper : public QObject
         /**
          * Returns a list of all known wallpapers.
          *
-         * @param formFactor the format of the wallpaper being search for (e.g. desktop)
          * @return list of wallpapers
          **/
-        static KPluginInfo::List listWallpaperInfo(const QString &formFactor = QString());
+        static KPluginInfo::List listWallpaperInfo();
 
         /**
          * Returns a list of all known wallpapers that can accept the given mimetype
          * @param mimetype the mimetype to search for
-         * @param formFactor the format of the wallpaper being search for (e.g. desktop)
          * @return list of wallpapers
          */
-        static KPluginInfo::List listWallpaperInfoForMimetype(const QString &mimetype,
-                                                              const QString &formFactor = QString());
+        static KPluginInfo::List listWallpaperInfoForMimetype(const QString &mimetype);
 
         /**
          * Attempts to load a wallpaper
