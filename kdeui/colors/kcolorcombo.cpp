@@ -21,150 +21,695 @@
 
 #include "kcolorcombo.h"
 
-#include <QtGui/QAbstractItemDelegate>
-#include <QtGui/QApplication>
-#include <QtGui/QStylePainter>
+#include <QtGui/QPen>
+#include <QtGui/QPainter>
 #include <QtGui/QColorDialog>
 
 #include "klocale.h"
 #include "kdialog.h"
 
-class KColorComboDelegate : public QAbstractItemDelegate
+#ifdef NEVERDEFINE
+// the color names are extracted from the following file in the Katie source:
+// katie/src/gui/painting/qcolor_p.h
+I18N_NOOP2("color", "aliceblue")
+I18N_NOOP2("color", "antiquewhite")
+I18N_NOOP2("color", "antiquewhite1")
+I18N_NOOP2("color", "antiquewhite2")
+I18N_NOOP2("color", "antiquewhite3")
+I18N_NOOP2("color", "antiquewhite4")
+I18N_NOOP2("color", "aqua")
+I18N_NOOP2("color", "aquamarine")
+I18N_NOOP2("color", "aquamarine1")
+I18N_NOOP2("color", "aquamarine2")
+I18N_NOOP2("color", "aquamarine3")
+I18N_NOOP2("color", "aquamarine4")
+I18N_NOOP2("color", "azure")
+I18N_NOOP2("color", "azure1")
+I18N_NOOP2("color", "azure2")
+I18N_NOOP2("color", "azure3")
+I18N_NOOP2("color", "azure4")
+I18N_NOOP2("color", "beige")
+I18N_NOOP2("color", "bisque")
+I18N_NOOP2("color", "bisque1")
+I18N_NOOP2("color", "bisque2")
+I18N_NOOP2("color", "bisque3")
+I18N_NOOP2("color", "bisque4")
+I18N_NOOP2("color", "black")
+I18N_NOOP2("color", "blanchedalmond")
+I18N_NOOP2("color", "blue")
+I18N_NOOP2("color", "blue1")
+I18N_NOOP2("color", "blue2")
+I18N_NOOP2("color", "blue3")
+I18N_NOOP2("color", "blue4")
+I18N_NOOP2("color", "blueviolet")
+I18N_NOOP2("color", "brown")
+I18N_NOOP2("color", "brown1")
+I18N_NOOP2("color", "brown2")
+I18N_NOOP2("color", "brown3")
+I18N_NOOP2("color", "brown4")
+I18N_NOOP2("color", "burlywood")
+I18N_NOOP2("color", "burlywood1")
+I18N_NOOP2("color", "burlywood2")
+I18N_NOOP2("color", "burlywood3")
+I18N_NOOP2("color", "burlywood4")
+I18N_NOOP2("color", "cadetblue")
+I18N_NOOP2("color", "cadetblue1")
+I18N_NOOP2("color", "cadetblue2")
+I18N_NOOP2("color", "cadetblue3")
+I18N_NOOP2("color", "cadetblue4")
+I18N_NOOP2("color", "chartreuse")
+I18N_NOOP2("color", "chartreuse1")
+I18N_NOOP2("color", "chartreuse2")
+I18N_NOOP2("color", "chartreuse3")
+I18N_NOOP2("color", "chartreuse4")
+I18N_NOOP2("color", "chocolate")
+I18N_NOOP2("color", "chocolate1")
+I18N_NOOP2("color", "chocolate2")
+I18N_NOOP2("color", "chocolate3")
+I18N_NOOP2("color", "chocolate4")
+I18N_NOOP2("color", "coral")
+I18N_NOOP2("color", "coral1")
+I18N_NOOP2("color", "coral2")
+I18N_NOOP2("color", "coral3")
+I18N_NOOP2("color", "coral4")
+I18N_NOOP2("color", "cornflowerblue")
+I18N_NOOP2("color", "cornsilk")
+I18N_NOOP2("color", "cornsilk1")
+I18N_NOOP2("color", "cornsilk2")
+I18N_NOOP2("color", "cornsilk3")
+I18N_NOOP2("color", "cornsilk4")
+I18N_NOOP2("color", "crimson")
+I18N_NOOP2("color", "cyan")
+I18N_NOOP2("color", "cyan1")
+I18N_NOOP2("color", "cyan2")
+I18N_NOOP2("color", "cyan3")
+I18N_NOOP2("color", "cyan4")
+I18N_NOOP2("color", "darkblue")
+I18N_NOOP2("color", "darkcyan")
+I18N_NOOP2("color", "darkgoldenrod")
+I18N_NOOP2("color", "darkgoldenrod1")
+I18N_NOOP2("color", "darkgoldenrod2")
+I18N_NOOP2("color", "darkgoldenrod3")
+I18N_NOOP2("color", "darkgoldenrod4")
+I18N_NOOP2("color", "darkgray")
+I18N_NOOP2("color", "darkgreen")
+I18N_NOOP2("color", "darkgrey")
+I18N_NOOP2("color", "darkkhaki")
+I18N_NOOP2("color", "darkmagenta")
+I18N_NOOP2("color", "darkolivegreen")
+I18N_NOOP2("color", "darkolivegreen1")
+I18N_NOOP2("color", "darkolivegreen2")
+I18N_NOOP2("color", "darkolivegreen3")
+I18N_NOOP2("color", "darkolivegreen4")
+I18N_NOOP2("color", "darkorange")
+I18N_NOOP2("color", "darkorange1")
+I18N_NOOP2("color", "darkorange2")
+I18N_NOOP2("color", "darkorange3")
+I18N_NOOP2("color", "darkorange4")
+I18N_NOOP2("color", "darkorchid")
+I18N_NOOP2("color", "darkorchid1")
+I18N_NOOP2("color", "darkorchid2")
+I18N_NOOP2("color", "darkorchid3")
+I18N_NOOP2("color", "darkorchid4")
+I18N_NOOP2("color", "darkred")
+I18N_NOOP2("color", "darksalmon")
+I18N_NOOP2("color", "darkseagreen")
+I18N_NOOP2("color", "darkseagreen1")
+I18N_NOOP2("color", "darkseagreen2")
+I18N_NOOP2("color", "darkseagreen3")
+I18N_NOOP2("color", "darkseagreen4")
+I18N_NOOP2("color", "darkslateblue")
+I18N_NOOP2("color", "darkslategray")
+I18N_NOOP2("color", "darkslategray1")
+I18N_NOOP2("color", "darkslategray2")
+I18N_NOOP2("color", "darkslategray3")
+I18N_NOOP2("color", "darkslategray4")
+I18N_NOOP2("color", "darkslategrey")
+I18N_NOOP2("color", "darkturquoise")
+I18N_NOOP2("color", "darkviolet")
+I18N_NOOP2("color", "debianred")
+I18N_NOOP2("color", "deeppink")
+I18N_NOOP2("color", "deeppink1")
+I18N_NOOP2("color", "deeppink2")
+I18N_NOOP2("color", "deeppink3")
+I18N_NOOP2("color", "deeppink4")
+I18N_NOOP2("color", "deepskyblue")
+I18N_NOOP2("color", "deepskyblue1")
+I18N_NOOP2("color", "deepskyblue2")
+I18N_NOOP2("color", "deepskyblue3")
+I18N_NOOP2("color", "deepskyblue4")
+I18N_NOOP2("color", "dimgray")
+I18N_NOOP2("color", "dimgrey")
+I18N_NOOP2("color", "dodgerblue")
+I18N_NOOP2("color", "dodgerblue1")
+I18N_NOOP2("color", "dodgerblue2")
+I18N_NOOP2("color", "dodgerblue3")
+I18N_NOOP2("color", "dodgerblue4")
+I18N_NOOP2("color", "firebrick")
+I18N_NOOP2("color", "firebrick1")
+I18N_NOOP2("color", "firebrick2")
+I18N_NOOP2("color", "firebrick3")
+I18N_NOOP2("color", "firebrick4")
+I18N_NOOP2("color", "floralwhite")
+I18N_NOOP2("color", "forestgreen")
+I18N_NOOP2("color", "fuchsia")
+I18N_NOOP2("color", "gainsboro")
+I18N_NOOP2("color", "ghostwhite")
+I18N_NOOP2("color", "gold")
+I18N_NOOP2("color", "gold1")
+I18N_NOOP2("color", "gold2")
+I18N_NOOP2("color", "gold3")
+I18N_NOOP2("color", "gold4")
+I18N_NOOP2("color", "goldenrod")
+I18N_NOOP2("color", "goldenrod1")
+I18N_NOOP2("color", "goldenrod2")
+I18N_NOOP2("color", "goldenrod3")
+I18N_NOOP2("color", "goldenrod4")
+I18N_NOOP2("color", "gray")
+I18N_NOOP2("color", "gray0")
+I18N_NOOP2("color", "gray1")
+I18N_NOOP2("color", "gray10")
+I18N_NOOP2("color", "gray100")
+I18N_NOOP2("color", "gray11")
+I18N_NOOP2("color", "gray12")
+I18N_NOOP2("color", "gray13")
+I18N_NOOP2("color", "gray14")
+I18N_NOOP2("color", "gray15")
+I18N_NOOP2("color", "gray16")
+I18N_NOOP2("color", "gray17")
+I18N_NOOP2("color", "gray18")
+I18N_NOOP2("color", "gray19")
+I18N_NOOP2("color", "gray2")
+I18N_NOOP2("color", "gray20")
+I18N_NOOP2("color", "gray21")
+I18N_NOOP2("color", "gray22")
+I18N_NOOP2("color", "gray23")
+I18N_NOOP2("color", "gray24")
+I18N_NOOP2("color", "gray25")
+I18N_NOOP2("color", "gray26")
+I18N_NOOP2("color", "gray27")
+I18N_NOOP2("color", "gray28")
+I18N_NOOP2("color", "gray29")
+I18N_NOOP2("color", "gray3")
+I18N_NOOP2("color", "gray30")
+I18N_NOOP2("color", "gray31")
+I18N_NOOP2("color", "gray32")
+I18N_NOOP2("color", "gray33")
+I18N_NOOP2("color", "gray34")
+I18N_NOOP2("color", "gray35")
+I18N_NOOP2("color", "gray36")
+I18N_NOOP2("color", "gray37")
+I18N_NOOP2("color", "gray38")
+I18N_NOOP2("color", "gray39")
+I18N_NOOP2("color", "gray4")
+I18N_NOOP2("color", "gray40")
+I18N_NOOP2("color", "gray41")
+I18N_NOOP2("color", "gray42")
+I18N_NOOP2("color", "gray43")
+I18N_NOOP2("color", "gray44")
+I18N_NOOP2("color", "gray45")
+I18N_NOOP2("color", "gray46")
+I18N_NOOP2("color", "gray47")
+I18N_NOOP2("color", "gray48")
+I18N_NOOP2("color", "gray49")
+I18N_NOOP2("color", "gray5")
+I18N_NOOP2("color", "gray50")
+I18N_NOOP2("color", "gray51")
+I18N_NOOP2("color", "gray52")
+I18N_NOOP2("color", "gray53")
+I18N_NOOP2("color", "gray54")
+I18N_NOOP2("color", "gray55")
+I18N_NOOP2("color", "gray56")
+I18N_NOOP2("color", "gray57")
+I18N_NOOP2("color", "gray58")
+I18N_NOOP2("color", "gray59")
+I18N_NOOP2("color", "gray6")
+I18N_NOOP2("color", "gray60")
+I18N_NOOP2("color", "gray61")
+I18N_NOOP2("color", "gray62")
+I18N_NOOP2("color", "gray63")
+I18N_NOOP2("color", "gray64")
+I18N_NOOP2("color", "gray65")
+I18N_NOOP2("color", "gray66")
+I18N_NOOP2("color", "gray67")
+I18N_NOOP2("color", "gray68")
+I18N_NOOP2("color", "gray69")
+I18N_NOOP2("color", "gray7")
+I18N_NOOP2("color", "gray70")
+I18N_NOOP2("color", "gray71")
+I18N_NOOP2("color", "gray72")
+I18N_NOOP2("color", "gray73")
+I18N_NOOP2("color", "gray74")
+I18N_NOOP2("color", "gray75")
+I18N_NOOP2("color", "gray76")
+I18N_NOOP2("color", "gray77")
+I18N_NOOP2("color", "gray78")
+I18N_NOOP2("color", "gray79")
+I18N_NOOP2("color", "gray8")
+I18N_NOOP2("color", "gray80")
+I18N_NOOP2("color", "gray81")
+I18N_NOOP2("color", "gray82")
+I18N_NOOP2("color", "gray83")
+I18N_NOOP2("color", "gray84")
+I18N_NOOP2("color", "gray85")
+I18N_NOOP2("color", "gray86")
+I18N_NOOP2("color", "gray87")
+I18N_NOOP2("color", "gray88")
+I18N_NOOP2("color", "gray89")
+I18N_NOOP2("color", "gray9")
+I18N_NOOP2("color", "gray90")
+I18N_NOOP2("color", "gray91")
+I18N_NOOP2("color", "gray92")
+I18N_NOOP2("color", "gray93")
+I18N_NOOP2("color", "gray94")
+I18N_NOOP2("color", "gray95")
+I18N_NOOP2("color", "gray96")
+I18N_NOOP2("color", "gray97")
+I18N_NOOP2("color", "gray98")
+I18N_NOOP2("color", "gray99")
+I18N_NOOP2("color", "green")
+I18N_NOOP2("color", "green1")
+I18N_NOOP2("color", "green2")
+I18N_NOOP2("color", "green3")
+I18N_NOOP2("color", "green4")
+I18N_NOOP2("color", "greenyellow")
+I18N_NOOP2("color", "grey")
+I18N_NOOP2("color", "grey0")
+I18N_NOOP2("color", "grey1")
+I18N_NOOP2("color", "grey10")
+I18N_NOOP2("color", "grey100")
+I18N_NOOP2("color", "grey11")
+I18N_NOOP2("color", "grey12")
+I18N_NOOP2("color", "grey13")
+I18N_NOOP2("color", "grey14")
+I18N_NOOP2("color", "grey15")
+I18N_NOOP2("color", "grey16")
+I18N_NOOP2("color", "grey17")
+I18N_NOOP2("color", "grey18")
+I18N_NOOP2("color", "grey19")
+I18N_NOOP2("color", "grey2")
+I18N_NOOP2("color", "grey20")
+I18N_NOOP2("color", "grey21")
+I18N_NOOP2("color", "grey22")
+I18N_NOOP2("color", "grey23")
+I18N_NOOP2("color", "grey24")
+I18N_NOOP2("color", "grey25")
+I18N_NOOP2("color", "grey26")
+I18N_NOOP2("color", "grey27")
+I18N_NOOP2("color", "grey28")
+I18N_NOOP2("color", "grey29")
+I18N_NOOP2("color", "grey3")
+I18N_NOOP2("color", "grey30")
+I18N_NOOP2("color", "grey31")
+I18N_NOOP2("color", "grey32")
+I18N_NOOP2("color", "grey33")
+I18N_NOOP2("color", "grey34")
+I18N_NOOP2("color", "grey35")
+I18N_NOOP2("color", "grey36")
+I18N_NOOP2("color", "grey37")
+I18N_NOOP2("color", "grey38")
+I18N_NOOP2("color", "grey39")
+I18N_NOOP2("color", "grey4")
+I18N_NOOP2("color", "grey40")
+I18N_NOOP2("color", "grey41")
+I18N_NOOP2("color", "grey42")
+I18N_NOOP2("color", "grey43")
+I18N_NOOP2("color", "grey44")
+I18N_NOOP2("color", "grey45")
+I18N_NOOP2("color", "grey46")
+I18N_NOOP2("color", "grey47")
+I18N_NOOP2("color", "grey48")
+I18N_NOOP2("color", "grey49")
+I18N_NOOP2("color", "grey5")
+I18N_NOOP2("color", "grey50")
+I18N_NOOP2("color", "grey51")
+I18N_NOOP2("color", "grey52")
+I18N_NOOP2("color", "grey53")
+I18N_NOOP2("color", "grey54")
+I18N_NOOP2("color", "grey55")
+I18N_NOOP2("color", "grey56")
+I18N_NOOP2("color", "grey57")
+I18N_NOOP2("color", "grey58")
+I18N_NOOP2("color", "grey59")
+I18N_NOOP2("color", "grey6")
+I18N_NOOP2("color", "grey60")
+I18N_NOOP2("color", "grey61")
+I18N_NOOP2("color", "grey62")
+I18N_NOOP2("color", "grey63")
+I18N_NOOP2("color", "grey64")
+I18N_NOOP2("color", "grey65")
+I18N_NOOP2("color", "grey66")
+I18N_NOOP2("color", "grey67")
+I18N_NOOP2("color", "grey68")
+I18N_NOOP2("color", "grey69")
+I18N_NOOP2("color", "grey7")
+I18N_NOOP2("color", "grey70")
+I18N_NOOP2("color", "grey71")
+I18N_NOOP2("color", "grey72")
+I18N_NOOP2("color", "grey73")
+I18N_NOOP2("color", "grey74")
+I18N_NOOP2("color", "grey75")
+I18N_NOOP2("color", "grey76")
+I18N_NOOP2("color", "grey77")
+I18N_NOOP2("color", "grey78")
+I18N_NOOP2("color", "grey79")
+I18N_NOOP2("color", "grey8")
+I18N_NOOP2("color", "grey80")
+I18N_NOOP2("color", "grey81")
+I18N_NOOP2("color", "grey82")
+I18N_NOOP2("color", "grey83")
+I18N_NOOP2("color", "grey84")
+I18N_NOOP2("color", "grey85")
+I18N_NOOP2("color", "grey86")
+I18N_NOOP2("color", "grey87")
+I18N_NOOP2("color", "grey88")
+I18N_NOOP2("color", "grey89")
+I18N_NOOP2("color", "grey9")
+I18N_NOOP2("color", "grey90")
+I18N_NOOP2("color", "grey91")
+I18N_NOOP2("color", "grey92")
+I18N_NOOP2("color", "grey93")
+I18N_NOOP2("color", "grey94")
+I18N_NOOP2("color", "grey95")
+I18N_NOOP2("color", "grey96")
+I18N_NOOP2("color", "grey97")
+I18N_NOOP2("color", "grey98")
+I18N_NOOP2("color", "grey99")
+I18N_NOOP2("color", "honeydew")
+I18N_NOOP2("color", "honeydew1")
+I18N_NOOP2("color", "honeydew2")
+I18N_NOOP2("color", "honeydew3")
+I18N_NOOP2("color", "honeydew4")
+I18N_NOOP2("color", "hotpink")
+I18N_NOOP2("color", "hotpink1")
+I18N_NOOP2("color", "hotpink2")
+I18N_NOOP2("color", "hotpink3")
+I18N_NOOP2("color", "hotpink4")
+I18N_NOOP2("color", "indianred")
+I18N_NOOP2("color", "indianred1")
+I18N_NOOP2("color", "indianred2")
+I18N_NOOP2("color", "indianred3")
+I18N_NOOP2("color", "indianred4")
+I18N_NOOP2("color", "indigo")
+I18N_NOOP2("color", "ivory")
+I18N_NOOP2("color", "ivory1")
+I18N_NOOP2("color", "ivory2")
+I18N_NOOP2("color", "ivory3")
+I18N_NOOP2("color", "ivory4")
+I18N_NOOP2("color", "khaki")
+I18N_NOOP2("color", "khaki1")
+I18N_NOOP2("color", "khaki2")
+I18N_NOOP2("color", "khaki3")
+I18N_NOOP2("color", "khaki4")
+I18N_NOOP2("color", "lavender")
+I18N_NOOP2("color", "lavenderblush")
+I18N_NOOP2("color", "lavenderblush1")
+I18N_NOOP2("color", "lavenderblush2")
+I18N_NOOP2("color", "lavenderblush3")
+I18N_NOOP2("color", "lavenderblush4")
+I18N_NOOP2("color", "lawngreen")
+I18N_NOOP2("color", "lemonchiffon")
+I18N_NOOP2("color", "lemonchiffon1")
+I18N_NOOP2("color", "lemonchiffon2")
+I18N_NOOP2("color", "lemonchiffon3")
+I18N_NOOP2("color", "lemonchiffon4")
+I18N_NOOP2("color", "lightblue")
+I18N_NOOP2("color", "lightblue1")
+I18N_NOOP2("color", "lightblue2")
+I18N_NOOP2("color", "lightblue3")
+I18N_NOOP2("color", "lightblue4")
+I18N_NOOP2("color", "lightcoral")
+I18N_NOOP2("color", "lightcyan")
+I18N_NOOP2("color", "lightcyan1")
+I18N_NOOP2("color", "lightcyan2")
+I18N_NOOP2("color", "lightcyan3")
+I18N_NOOP2("color", "lightcyan4")
+I18N_NOOP2("color", "lightgoldenrod")
+I18N_NOOP2("color", "lightgoldenrod1")
+I18N_NOOP2("color", "lightgoldenrod2")
+I18N_NOOP2("color", "lightgoldenrod3")
+I18N_NOOP2("color", "lightgoldenrod4")
+I18N_NOOP2("color", "lightgoldenrodyellow")
+I18N_NOOP2("color", "lightgray")
+I18N_NOOP2("color", "lightgreen")
+I18N_NOOP2("color", "lightgrey")
+I18N_NOOP2("color", "lightpink")
+I18N_NOOP2("color", "lightpink1")
+I18N_NOOP2("color", "lightpink2")
+I18N_NOOP2("color", "lightpink3")
+I18N_NOOP2("color", "lightpink4")
+I18N_NOOP2("color", "lightsalmon")
+I18N_NOOP2("color", "lightsalmon1")
+I18N_NOOP2("color", "lightsalmon2")
+I18N_NOOP2("color", "lightsalmon3")
+I18N_NOOP2("color", "lightsalmon4")
+I18N_NOOP2("color", "lightseagreen")
+I18N_NOOP2("color", "lightskyblue")
+I18N_NOOP2("color", "lightskyblue1")
+I18N_NOOP2("color", "lightskyblue2")
+I18N_NOOP2("color", "lightskyblue3")
+I18N_NOOP2("color", "lightskyblue4")
+I18N_NOOP2("color", "lightslateblue")
+I18N_NOOP2("color", "lightslategray")
+I18N_NOOP2("color", "lightslategrey")
+I18N_NOOP2("color", "lightsteelblue")
+I18N_NOOP2("color", "lightsteelblue1")
+I18N_NOOP2("color", "lightsteelblue2")
+I18N_NOOP2("color", "lightsteelblue3")
+I18N_NOOP2("color", "lightsteelblue4")
+I18N_NOOP2("color", "lightyellow")
+I18N_NOOP2("color", "lightyellow1")
+I18N_NOOP2("color", "lightyellow2")
+I18N_NOOP2("color", "lightyellow3")
+I18N_NOOP2("color", "lightyellow4")
+I18N_NOOP2("color", "lime")
+I18N_NOOP2("color", "limegreen")
+I18N_NOOP2("color", "linen")
+I18N_NOOP2("color", "magenta")
+I18N_NOOP2("color", "magenta1")
+I18N_NOOP2("color", "magenta2")
+I18N_NOOP2("color", "magenta3")
+I18N_NOOP2("color", "magenta4")
+I18N_NOOP2("color", "maroon")
+I18N_NOOP2("color", "maroon1")
+I18N_NOOP2("color", "maroon2")
+I18N_NOOP2("color", "maroon3")
+I18N_NOOP2("color", "maroon4")
+I18N_NOOP2("color", "mediumaquamarine")
+I18N_NOOP2("color", "mediumblue")
+I18N_NOOP2("color", "mediumorchid")
+I18N_NOOP2("color", "mediumorchid1")
+I18N_NOOP2("color", "mediumorchid2")
+I18N_NOOP2("color", "mediumorchid3")
+I18N_NOOP2("color", "mediumorchid4")
+I18N_NOOP2("color", "mediumpurple")
+I18N_NOOP2("color", "mediumpurple1")
+I18N_NOOP2("color", "mediumpurple2")
+I18N_NOOP2("color", "mediumpurple3")
+I18N_NOOP2("color", "mediumpurple4")
+I18N_NOOP2("color", "mediumseagreen")
+I18N_NOOP2("color", "mediumslateblue")
+I18N_NOOP2("color", "mediumspringgreen")
+I18N_NOOP2("color", "mediumturquoise")
+I18N_NOOP2("color", "mediumvioletred")
+I18N_NOOP2("color", "midnightblue")
+I18N_NOOP2("color", "mintcream")
+I18N_NOOP2("color", "mistyrose")
+I18N_NOOP2("color", "mistyrose1")
+I18N_NOOP2("color", "mistyrose2")
+I18N_NOOP2("color", "mistyrose3")
+I18N_NOOP2("color", "mistyrose4")
+I18N_NOOP2("color", "moccasin")
+I18N_NOOP2("color", "navajowhite")
+I18N_NOOP2("color", "navajowhite1")
+I18N_NOOP2("color", "navajowhite2")
+I18N_NOOP2("color", "navajowhite3")
+I18N_NOOP2("color", "navajowhite4")
+I18N_NOOP2("color", "navy")
+I18N_NOOP2("color", "navyblue")
+I18N_NOOP2("color", "oldlace")
+I18N_NOOP2("color", "olive")
+I18N_NOOP2("color", "olivedrab")
+I18N_NOOP2("color", "olivedrab1")
+I18N_NOOP2("color", "olivedrab2")
+I18N_NOOP2("color", "olivedrab3")
+I18N_NOOP2("color", "olivedrab4")
+I18N_NOOP2("color", "orange")
+I18N_NOOP2("color", "orange1")
+I18N_NOOP2("color", "orange2")
+I18N_NOOP2("color", "orange3")
+I18N_NOOP2("color", "orange4")
+I18N_NOOP2("color", "orangered")
+I18N_NOOP2("color", "orangered1")
+I18N_NOOP2("color", "orangered2")
+I18N_NOOP2("color", "orangered3")
+I18N_NOOP2("color", "orangered4")
+I18N_NOOP2("color", "orchid")
+I18N_NOOP2("color", "orchid1")
+I18N_NOOP2("color", "orchid2")
+I18N_NOOP2("color", "orchid3")
+I18N_NOOP2("color", "orchid4")
+I18N_NOOP2("color", "palegoldenrod")
+I18N_NOOP2("color", "palegreen")
+I18N_NOOP2("color", "palegreen1")
+I18N_NOOP2("color", "palegreen2")
+I18N_NOOP2("color", "palegreen3")
+I18N_NOOP2("color", "palegreen4")
+I18N_NOOP2("color", "paleturquoise")
+I18N_NOOP2("color", "paleturquoise1")
+I18N_NOOP2("color", "paleturquoise2")
+I18N_NOOP2("color", "paleturquoise3")
+I18N_NOOP2("color", "paleturquoise4")
+I18N_NOOP2("color", "palevioletred")
+I18N_NOOP2("color", "palevioletred1")
+I18N_NOOP2("color", "palevioletred2")
+I18N_NOOP2("color", "palevioletred3")
+I18N_NOOP2("color", "palevioletred4")
+I18N_NOOP2("color", "papayawhip")
+I18N_NOOP2("color", "peachpuff")
+I18N_NOOP2("color", "peachpuff1")
+I18N_NOOP2("color", "peachpuff2")
+I18N_NOOP2("color", "peachpuff3")
+I18N_NOOP2("color", "peachpuff4")
+I18N_NOOP2("color", "peru")
+I18N_NOOP2("color", "pink")
+I18N_NOOP2("color", "pink1")
+I18N_NOOP2("color", "pink2")
+I18N_NOOP2("color", "pink3")
+I18N_NOOP2("color", "pink4")
+I18N_NOOP2("color", "plum")
+I18N_NOOP2("color", "plum1")
+I18N_NOOP2("color", "plum2")
+I18N_NOOP2("color", "plum3")
+I18N_NOOP2("color", "plum4")
+I18N_NOOP2("color", "powderblue")
+I18N_NOOP2("color", "purple")
+I18N_NOOP2("color", "purple1")
+I18N_NOOP2("color", "purple2")
+I18N_NOOP2("color", "purple3")
+I18N_NOOP2("color", "purple4")
+I18N_NOOP2("color", "red")
+I18N_NOOP2("color", "red1")
+I18N_NOOP2("color", "red2")
+I18N_NOOP2("color", "red3")
+I18N_NOOP2("color", "red4")
+I18N_NOOP2("color", "rosybrown")
+I18N_NOOP2("color", "rosybrown1")
+I18N_NOOP2("color", "rosybrown2")
+I18N_NOOP2("color", "rosybrown3")
+I18N_NOOP2("color", "rosybrown4")
+I18N_NOOP2("color", "royalblue")
+I18N_NOOP2("color", "royalblue1")
+I18N_NOOP2("color", "royalblue2")
+I18N_NOOP2("color", "royalblue3")
+I18N_NOOP2("color", "royalblue4")
+I18N_NOOP2("color", "saddlebrown")
+I18N_NOOP2("color", "salmon")
+I18N_NOOP2("color", "salmon1")
+I18N_NOOP2("color", "salmon2")
+I18N_NOOP2("color", "salmon3")
+I18N_NOOP2("color", "salmon4")
+I18N_NOOP2("color", "sandybrown")
+I18N_NOOP2("color", "seagreen")
+I18N_NOOP2("color", "seagreen1")
+I18N_NOOP2("color", "seagreen2")
+I18N_NOOP2("color", "seagreen3")
+I18N_NOOP2("color", "seagreen4")
+I18N_NOOP2("color", "seashell")
+I18N_NOOP2("color", "seashell1")
+I18N_NOOP2("color", "seashell2")
+I18N_NOOP2("color", "seashell3")
+I18N_NOOP2("color", "seashell4")
+I18N_NOOP2("color", "sienna")
+I18N_NOOP2("color", "sienna1")
+I18N_NOOP2("color", "sienna2")
+I18N_NOOP2("color", "sienna3")
+I18N_NOOP2("color", "sienna4")
+I18N_NOOP2("color", "silver")
+I18N_NOOP2("color", "skyblue")
+I18N_NOOP2("color", "skyblue1")
+I18N_NOOP2("color", "skyblue2")
+I18N_NOOP2("color", "skyblue3")
+I18N_NOOP2("color", "skyblue4")
+I18N_NOOP2("color", "slateblue")
+I18N_NOOP2("color", "slateblue1")
+I18N_NOOP2("color", "slateblue2")
+I18N_NOOP2("color", "slateblue3")
+I18N_NOOP2("color", "slateblue4")
+I18N_NOOP2("color", "slategray")
+I18N_NOOP2("color", "slategray1")
+I18N_NOOP2("color", "slategray2")
+I18N_NOOP2("color", "slategray3")
+I18N_NOOP2("color", "slategray4")
+I18N_NOOP2("color", "slategrey")
+I18N_NOOP2("color", "snow")
+I18N_NOOP2("color", "snow1")
+I18N_NOOP2("color", "snow2")
+I18N_NOOP2("color", "snow3")
+I18N_NOOP2("color", "snow4")
+I18N_NOOP2("color", "springgreen")
+I18N_NOOP2("color", "springgreen1")
+I18N_NOOP2("color", "springgreen2")
+I18N_NOOP2("color", "springgreen3")
+I18N_NOOP2("color", "springgreen4")
+I18N_NOOP2("color", "steelblue")
+I18N_NOOP2("color", "steelblue1")
+I18N_NOOP2("color", "steelblue2")
+I18N_NOOP2("color", "steelblue3")
+I18N_NOOP2("color", "steelblue4")
+I18N_NOOP2("color", "tan")
+I18N_NOOP2("color", "tan1")
+I18N_NOOP2("color", "tan2")
+I18N_NOOP2("color", "tan3")
+I18N_NOOP2("color", "tan4")
+I18N_NOOP2("color", "teal")
+I18N_NOOP2("color", "thistle")
+I18N_NOOP2("color", "thistle1")
+I18N_NOOP2("color", "thistle2")
+I18N_NOOP2("color", "thistle3")
+I18N_NOOP2("color", "thistle4")
+I18N_NOOP2("color", "tomato")
+I18N_NOOP2("color", "tomato1")
+I18N_NOOP2("color", "tomato2")
+I18N_NOOP2("color", "tomato3")
+I18N_NOOP2("color", "tomato4")
+I18N_NOOP2("color", "transparent")
+I18N_NOOP2("color", "turquoise")
+I18N_NOOP2("color", "turquoise1")
+I18N_NOOP2("color", "turquoise2")
+I18N_NOOP2("color", "turquoise3")
+I18N_NOOP2("color", "turquoise4")
+I18N_NOOP2("color", "violet")
+I18N_NOOP2("color", "violetred")
+I18N_NOOP2("color", "violetred1")
+I18N_NOOP2("color", "violetred2")
+I18N_NOOP2("color", "violetred3")
+I18N_NOOP2("color", "violetred4")
+I18N_NOOP2("color", "wheat")
+I18N_NOOP2("color", "wheat1")
+I18N_NOOP2("color", "wheat2")
+I18N_NOOP2("color", "wheat3")
+I18N_NOOP2("color", "wheat4")
+I18N_NOOP2("color", "white")
+I18N_NOOP2("color", "whitesmoke")
+I18N_NOOP2("color", "yellow")
+I18N_NOOP2("color", "yellow1")
+I18N_NOOP2("color", "yellow2")
+I18N_NOOP2("color", "yellow3")
+I18N_NOOP2("color", "yellow4")
+I18N_NOOP2("color", "yellowgreen")
+#endif
+
+static QIcon kColorIcon(const QColor &color)
 {
-public:
-    enum ItemRoles {
-        ColorRole = Qt::UserRole + 1
-    };
-
-    enum LayoutMetrics {
-        FrameMargin = 3
-    };
-
-    KColorComboDelegate(QObject *parent = 0);
-
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const final;
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const final;
-};
-
-static QBrush k_colorcombodelegate_brush(const QModelIndex &index, int role)
-{
-    QBrush brush;
-    QVariant v = index.data(role);
-    if (v.type() == QVariant::Brush) {
-        brush = v.value<QBrush>();
-    } else if (v.type() == QVariant::Color) {
-        brush = QBrush(v.value<QColor>());
-    }
-    return brush;
-}
-
-KColorComboDelegate::KColorComboDelegate(QObject *parent)
-    : QAbstractItemDelegate(parent)
-{
-}
-
-void KColorComboDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    // background
-    QColor innercolor(Qt::white);
-    bool isSelected = (option.state & QStyle::State_Selected);
-    bool paletteBrush = (k_colorcombodelegate_brush(index, Qt::BackgroundRole).style() == Qt::NoBrush);
-    if (isSelected) {
-        innercolor = option.palette.color(QPalette::Highlight);
-    } else {
-        innercolor = option.palette.color(QPalette::Base);
-    }
-    // highlight selected item
-    QStyleOptionViewItem opt(option);
-    opt.showDecorationSelected = true;
-    QStyle *style = opt.widget ? opt.widget->style() : QApplication::style();
-    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);
-    QRect innerrect = option.rect.adjusted(FrameMargin, FrameMargin, -FrameMargin, -FrameMargin);
-    // inner color
-    QVariant cv = index.data(ColorRole);
-    if (cv.type() == QVariant::Color) {
-        QColor tmpcolor = cv.value<QColor>();
-        if (tmpcolor.isValid()) {
-            innercolor = tmpcolor;
-            paletteBrush = false;
-            painter->setPen(Qt::transparent);
-            painter->setBrush(innercolor);
-            QPainter::RenderHints tmpHint = painter->renderHints();
-            painter->setRenderHint(QPainter::Antialiasing);
-            painter->drawRoundedRect(innerrect, 2, 2);
-            painter->setRenderHints(tmpHint);
-            painter->setBrush(Qt::NoBrush);
-        }
-    }
-    // text
-    QVariant tv = index.data(Qt::DisplayRole);
-    if (tv.type() == QVariant::String) {
-        QString text = tv.toString();
-        QColor textColor;
-        if (paletteBrush) {
-            if (isSelected) {
-                textColor = option.palette.color(QPalette::HighlightedText);
-            } else {
-                textColor = option.palette.color(QPalette::Text);
-            }
-        } else {
-            int unused, v;
-            innercolor.getHsv(&unused, &unused, &v);
-            if (v > 128) {
-                textColor = Qt::black;
-            } else {
-                textColor = Qt::white;
-            }
-        }
-        painter->setPen(textColor);
-        painter->drawText(innerrect.adjusted(1, 1, -1, -1), text);
-    }
-}
-
-QSize KColorComboDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    Q_UNUSED(index)
-    // the width does not matter, as the view will always use the maximum width available
-    return QSize(100, option.fontMetrics.height() + 2 * FrameMargin);
-}
-
-
-static const uchar standardPalette[][4] = {
-    { 255, 255, 255 }, // white
-    { 192, 192, 192 }, // light gray
-    { 160, 160, 160 }, // gray
-    { 128, 128, 128 }, // dark gray
-    { 0, 0, 0 }, // black
-
-    { 255, 128, 128 }, //light red
-    { 255, 192, 128 }, //light orange
-    { 255, 255, 128 }, //light yellow
-    { 128, 255, 128 }, //light green
-    { 128, 255, 255 }, //cyan blue
-    { 128, 128, 255 }, //light blue
-    { 255, 128, 255 }, //light violet
-    { 255, 0, 0 }, //red
-    { 255, 128, 0 }, //orange
-    { 255, 255, 0 }, //yellow
-    { 0, 255, 0 }, //green
-    { 0, 255, 255 }, //light blue
-    { 0, 0, 255 }, //blue
-    { 255, 0, 255 }, //violet
-    { 128, 0, 0 }, //dark red
-    { 128, 64, 0 }, //dark orange
-    { 128, 128, 0 }, //dark yellow
-    { 0, 128, 0 }, //dark green
-    { 0, 128, 128 }, //dark light blue
-    { 0, 0, 128 }, //dark blue
-    { 128, 0, 128 } //dark violet
-};
-
-#define STANDARD_PALETTE_SIZE (int(sizeof(standardPalette) / sizeof(*standardPalette)))
-
-static inline QColor standardColor(int i)
-{
-    const uchar *entry = standardPalette[i];
-    return QColor(entry[0], entry[1], entry[2]);
+    QPixmap colorpixmap(68, 68);
+    colorpixmap.fill(Qt::transparent);
+    QPainter colorpainter(&colorpixmap);
+    colorpainter.setPen(QPen(color));
+    colorpainter.setBrush(QBrush(color));
+    colorpainter.drawRoundedRect(4, 4, 60, 60, 4, 4);
+    colorpainter.end();
+    return QIcon(colorpixmap);
 }
 
 class KColorComboPrivate
@@ -172,58 +717,29 @@ class KColorComboPrivate
 public:
     KColorComboPrivate(KColorCombo *qq);
 
-    void addColors();
-    void setCustomColor(const QColor &color, bool lookupInPresets = true);
-
     // slots
     void _k_slotActivated(int index);
     void _k_slotHighlighted(int index);
 
     KColorCombo *q;
-    QList<QColor> colorList;
-    QColor customColor;
-    QColor internalcolor;
 };
 
 KColorComboPrivate::KColorComboPrivate(KColorCombo *qq)
-    : q(qq), customColor(Qt::white)
+    : q(qq)
 {
 }
 
-void KColorComboPrivate::setCustomColor(const QColor &color, bool lookupInPresets)
+KColorCombo::KColorCombo(QWidget *parent)
+    : QComboBox(parent),
+    d(new KColorComboPrivate(this))
 {
-    if (lookupInPresets) {
-        if (colorList.isEmpty()) {
-            for (int i = 0; i < STANDARD_PALETTE_SIZE; ++i) {
-                if (standardColor(i) == color) {
-                    q->setCurrentIndex(i + 1);
-                    internalcolor = color;
-                    return;
-                }
-            }
-        } else {
-            int i = colorList.indexOf(color);
-            if (i >= 0) {
-                q->setCurrentIndex(i + 1);
-                internalcolor = color;
-                return;
-            }
-        }
+    const QColor customColor = QColor(Qt::white);
+    addItem(kColorIcon(customColor), i18nc("Custom color", "Custom..."), customColor);
+    foreach (const QString &name, QColor::colorNames()) {
+        const QColor color = QColor(name);
+        const QByteArray namebytes = name.toLatin1();
+        addItem(kColorIcon(color), i18nc("color", namebytes), color);
     }
-
-    internalcolor = color;
-    customColor = color;
-    q->setItemData(0, customColor, KColorComboDelegate::ColorRole);
-}
-
-
-KColorCombo::KColorCombo( QWidget *parent )
-    : QComboBox(parent), d(new KColorComboPrivate(this))
-{
-    qRegisterMetaType<QList<QColor> >();
-
-    setItemDelegate(new KColorComboDelegate(this));
-    d->addColors();
 
     connect(this, SIGNAL(activated(int)), SLOT(_k_slotActivated(int)));
     connect(this, SIGNAL(highlighted(int)), SLOT(_k_slotHighlighted(int)));
@@ -231,133 +747,59 @@ KColorCombo::KColorCombo( QWidget *parent )
     // select the white color
     setCurrentIndex(1);
     d->_k_slotActivated(1);
-    
-    setMaxVisibleItems(13);
 }
-
 
 KColorCombo::~KColorCombo()
 {
     delete d;
 }
 
-void KColorCombo::setColors( const QList<QColor> &colors )
-{
-    clear();
-    d->colorList = colors;
-    d->addColors();
-}
-
-QList<QColor> KColorCombo::colors() const
-{
-    if (d->colorList.isEmpty()) {
-        QList<QColor> list;
-        for (int i = 0; i < STANDARD_PALETTE_SIZE; ++i) {
-            list += standardColor(i);
-        }
-        return list;
-    }
-    return d->colorList;
-}
-
-/**
-   Sets the current color
- */
-void KColorCombo::setColor( const QColor &col )
+void KColorCombo::setColor(const QColor &col)
 {
     if (!col.isValid()) {
         return;
     }
-    if (count() == 0) {
-        d->addColors();
+    for (int i = 1; i < count(); i++) {
+        const QColor c = qvariant_cast<QColor>(itemData(i));
+        if (c == col) {
+            setCurrentIndex(i);
+            return;
+        }
     }
-    d->setCustomColor(col, true);
+    setItemData(0, col);
+    setItemIcon(0, kColorIcon(col));
+    setCurrentIndex(0);
 }
 
-
-/**
-   Returns the currently selected color
- */
 QColor KColorCombo::color() const
 {
-    return d->internalcolor;
+    return qvariant_cast<QColor>(itemData(currentIndex()));
 }
 
 bool KColorCombo::isCustomColor() const
 {
-    return d->internalcolor == d->customColor;
-}
-
-void KColorCombo::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event)
-    QStylePainter painter(this);
-    painter.setPen(palette().color(QPalette::Text));
-
-    QStyleOptionComboBox opt;
-    initStyleOption(&opt);
-    painter.drawComplexControl(QStyle::CC_ComboBox, opt);
-
-    QRect frame = style()->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxEditField, this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(Qt::transparent);
-    painter.setBrush(QBrush(d->internalcolor));
-    painter.drawRoundedRect(frame.adjusted(1, 1, -1, -1), 2, 2);
-}
-
-/**
-   Show an empty list, till the next color is set with setColor
- */
-void KColorCombo::showEmptyList()
-{
-    clear();
+    return (currentIndex() == 0);
 }
 
 void KColorComboPrivate::_k_slotActivated(int index)
 {
     if (index == 0) {
+        const QColor customColor = qvariant_cast<QColor>(q->itemData(index));
         const QColor c = QColorDialog::getColor(customColor, q, KDialog::makeStandardCaption(i18n("Select Color"), q));
         if (c.isValid()) {
-            customColor = c;
-            setCustomColor(customColor, false);
+            q->setItemData(0, c);
+            q->setItemIcon(0, kColorIcon(c));
+            q->setCurrentIndex(0);
+            emit q->activated(c);
         }
-    } else if (colorList.isEmpty()) {
-        internalcolor = standardColor(index - 1);
-    } else {
-        internalcolor = colorList[index - 1];
+        return;
     }
-
-    emit q->activated(internalcolor);
+    emit q->activated(qvariant_cast<QColor>(q->itemData(index)));
 }
 
 void KColorComboPrivate::_k_slotHighlighted(int index)
 {
-    if (index == 0) {
-        internalcolor = customColor;
-    } else if (colorList.isEmpty()) {
-        internalcolor = standardColor(index - 1);
-    } else {
-        internalcolor = colorList[index - 1];
-    }
-
-    emit q->highlighted(internalcolor);
-}
-
-void KColorComboPrivate::addColors()
-{
-    q->addItem(i18nc("Custom color", "Custom..."));
-
-    if (colorList.isEmpty()) {
-        for (int i = 0; i < STANDARD_PALETTE_SIZE; ++i) {
-            q->addItem(QString());
-            q->setItemData(i + 1, standardColor(i), KColorComboDelegate::ColorRole);
-        }
-    } else {
-        for (int i = 0, count = colorList.count(); i < count; ++i) {
-            q->addItem(QString());
-            q->setItemData(i + 1, colorList[i], KColorComboDelegate::ColorRole);
-        }
-    }
+    emit q->highlighted(qvariant_cast<QColor>(q->itemData(index)));
 }
 
 #include "moc_kcolorcombo.cpp"

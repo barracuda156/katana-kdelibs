@@ -45,7 +45,6 @@ class KDEUI_EXPORT KColorCombo : public QComboBox
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY activated USER true)
-    Q_PROPERTY(QList<QColor> colors READ colors WRITE setColors)
 
 public:
     /**
@@ -69,25 +68,6 @@ public:
      **/
     bool isCustomColor() const;
 
-    /**
-     * Set a custom list of colors to choose from, in place of the standard
-     * list.
-     * @param cols list of colors. If empty, the selection list reverts to
-     *             the standard list.
-     **/
-    void setColors(const QList<QColor> &colors);
-
-    /**
-     * Return the list of colors available for selection.
-     * @return list of colors
-     **/
-    QList<QColor> colors() const;
-
-    /**
-     * Clear the color list and don't show it, till the next setColor() call
-     **/
-     void showEmptyList();
-
 Q_SIGNALS:
     /**
      * Emitted when a new color box has been selected.
@@ -97,9 +77,6 @@ Q_SIGNALS:
      * Emitted when a new item has been highlighted.
      */
     void highlighted(const QColor &col);
-
-protected:
-    virtual void paintEvent(QPaintEvent *event);
 
 private:
     friend class KColorComboPrivate;
