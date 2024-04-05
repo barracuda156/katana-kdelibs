@@ -43,7 +43,7 @@ MeterPrivate::MeterPrivate(Meter *m)
     value(0),
     targetValue(0),
     meterType(Meter::AnalogMeter),
-    image(0),
+    image(nullptr),
     minrotate(0),
     maxrotate(360),
     meter(m)

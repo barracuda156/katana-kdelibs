@@ -64,7 +64,6 @@ public:
     int minrotate;
     int maxrotate;
     Meter *meter;
-    int movementId;
     QPropertyAnimation *animation;
 };
 
