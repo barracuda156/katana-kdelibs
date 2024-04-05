@@ -50,12 +50,6 @@ MeterPrivate::MeterPrivate(Meter *m)
 {
 }
 
-void MeterPrivate::progressChanged(int progress)
-{
-    value = progress;
-    meter->update();
-}
-
 void MeterPrivate::paint(QPainter *p, const QString &elementID)
 {
     if (image->hasElement(elementID)) {
@@ -341,9 +335,10 @@ int MeterPrivate::meterValue() const
     return value;
 }
 
-void MeterPrivate::setMeterValue(int value)
+void MeterPrivate::setMeterValue(int v)
 {
-    progressChanged(value);
+    value = v;
+    meter->update();
 }
 
 void Meter::setLabel(int index, const QString &text)
@@ -448,11 +443,11 @@ void Meter::setMeterType(MeterType meterType)
 {
     d->meterType = meterType;
     if (d->svg.isEmpty()) {
-        if (meterType == BarMeterHorizontal) {
+        if (meterType == Meter::BarMeterHorizontal) {
             setSvg("widgets/bar_meter_horizontal");
-        } else if (meterType == BarMeterVertical) {
+        } else if (meterType == Meter::BarMeterVertical) {
             setSvg("widgets/bar_meter_vertical");
-        } else if (meterType == AnalogMeter) {
+        } else if (meterType == Meter::AnalogMeter) {
             setSvg("widgets/analog_meter");
         }
     }
@@ -493,8 +488,8 @@ void Meter::paint(QPainter *p,
 
     p->setRenderHint(QPainter::SmoothPixmapTransform);
     switch (d->meterType) {
-        case BarMeterHorizontal:
-        case BarMeterVertical: {
+        case Meter::BarMeterHorizontal:
+        case Meter::BarMeterVertical: {
             d->paintBackground(p);
 
             p->save();
@@ -519,7 +514,7 @@ void Meter::paint(QPainter *p,
             d->paintForeground(p);
             break;
         }
-        case AnalogMeter: {
+        case Meter::AnalogMeter: {
             d->paintBackground(p);
 
             p->save();

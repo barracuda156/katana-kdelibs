@@ -39,7 +39,6 @@ class MeterPrivate : public QObject
 
 public:
     MeterPrivate(Meter *m);
-    void progressChanged(int progress);
     void paint(QPainter *p, const QString &elementID);
     void text(QPainter *p, int index);
     QRectF barRect();
