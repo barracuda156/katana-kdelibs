@@ -183,6 +183,12 @@ QString DevinfoDevice::icon() const
         return QString("computer");
     } else if (queryDeviceInterface(Solid::DeviceInterface::Processor)) {
         return QLatin1String("cpu");
+    } else if (queryDeviceInterface(Solid::DeviceInterface::NetworkInterface)) {
+        const NetworkInterface networkIface(const_cast<DevinfoDevice *>(this));
+        if (networkIface.isWireless()) {
+            return QLatin1String("network-wireless");
+        }
+        return QLatin1String("network-wired");
     } else if (queryDeviceInterface(Solid::DeviceInterface::Graphic)) {
         return QLatin1String("video-display");
     }
