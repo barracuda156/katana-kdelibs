@@ -60,7 +60,6 @@ class PLASMA_EXPORT SignalPlotter : public QGraphicsWidget
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(uint horizontalLinesCount READ horizontalLinesCount WRITE setHorizontalLinesCount)
     Q_PROPERTY(bool showLabels READ showLabels WRITE setShowLabels)
-    Q_PROPERTY(bool showTopBar READ showTopBar WRITE setShowTopBar)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
     Q_PROPERTY(QString svgBackground READ svgBackground WRITE setSvgBackground)
     Q_PROPERTY(bool thinFrame READ thinFrame WRITE setThinFrame)
@@ -330,20 +329,6 @@ public:
     bool showLabels() const;
 
     /**
-     * Whether to show the title etc at the top.  Even if set, it
-     * won't be shown if there isn't room
-     * @param value true if the topbar should be shown
-     */
-    void setShowTopBar(bool value);
-
-    /**
-     * Whether to show the title etc at the top.  Even if set, it
-     * won't be shown if there isn't room
-     * @return true if the topbar will be shown
-     */
-    bool showTopBar() const;
-
-    /**
      * The color to set the background.  This might not be seen
      * if an svg is also set.
      * @param color the color to use for the plotter background
@@ -438,8 +423,7 @@ protected:
     void drawWidget(QPainter *p, uint w, uint height, int horizontalScale);
     void drawBackground(QPainter *p, int w, int h);
     void drawThinFrame(QPainter *p, int w, int h);
-    void drawTopBarFrame(QPainter *p, int separatorX, int height);
-    void drawTopBarContents(QPainter *p, int x, int width, int height);
+    void drawTop(QPainter *p, int separatorX, int height);
     void drawVerticalLines(QPainter *p, int top, int w, int h);
     void drawPlots(QPainter *p, int top, int w, int h, int horizontalScale);
     void drawAxisText(QPainter *p, int top, int h);

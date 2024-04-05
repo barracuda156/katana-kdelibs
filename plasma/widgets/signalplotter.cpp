@@ -101,7 +101,6 @@ public:
 
     bool fillPlots;
     bool showLabels;
-    bool showTopBar;
     bool stackPlots;
     bool useAutoRange;
     bool showThinFrame;
@@ -133,7 +132,6 @@ SignalPlotter::SignalPlotter(QGraphicsItem *parent)
     d->horizontalLinesCount = 5;
 
     d->showLabels = true;
-    d->showTopBar = true;
     d->stackPlots = true;
     d->fillPlots = true;
 
@@ -460,20 +458,6 @@ bool SignalPlotter::showLabels() const
     return d->showLabels;
 }
 
-void SignalPlotter::setShowTopBar(bool value)
-{
-    if (d->showTopBar == value) {
-        return;
-    }
-    d->showTopBar = value;
-    d->backgroundPixmap = QPixmap(); // we changed a paint setting, so reset the cache
-}
-
-bool SignalPlotter::showTopBar() const
-{
-    return d->showTopBar;
-}
-
 void SignalPlotter::setFont(const QFont &font)
 {
     d->font = font;
@@ -617,13 +601,13 @@ void SignalPlotter::drawWidget(QPainter *p, uint w, uint height, int horizontalS
     p->setPen(pen);
 
     uint top = p->pen().width() / 2; // The y position of the top of the graph.  Basically this is one more than the height of the top bar
-    h-= top;
+    h -= top;
 
     // Check if there's enough room to actually show a top bar.
     // Must be enough room for a bar at the top, plus horizontal
     // lines each of a size with room for a scale.
-    bool showTopBar = d->showTopBar &&  h > (fontheight/*top bar size*/ +5/*smallest reasonable size for a graph*/);
-    if (showTopBar) {
+    bool showTop = !d->title.isEmpty() && h > (fontheight/*top bar size*/ +5/*smallest reasonable size for a graph*/);
+    if (showTop) {
         top += fontheight; // The top bar has the same height as fontheight. Thus the top of the graph is at fontheight
         h -= fontheight;
     }
@@ -647,9 +631,8 @@ void SignalPlotter::drawWidget(QPainter *p, uint w, uint height, int horizontalS
             pCache.setClipRect(0, 0, w, height-1);
         }
 
-        if (showTopBar) {
-            int separatorX = w / 2;
-            drawTopBarFrame(&pCache, separatorX, top);
+        if (showTop) {
+            drawTop(&pCache, w, top);
         }
 
         // Draw scope-like grid vertical lines if it doesn't move.
@@ -671,12 +654,6 @@ void SignalPlotter::drawWidget(QPainter *p, uint w, uint height, int horizontalS
     }
     p->drawPixmap(0, 0, d->backgroundPixmap);
     p->setRenderHint(QPainter::Antialiasing, true);
-
-    if (showTopBar) {
-        int separatorX = w / 2;
-        int topBarWidth = w - separatorX -2;
-        drawTopBarContents(p, separatorX, topBarWidth, top -1);
-    }
 
     p->setClipRect(0, top, w, h, Qt::IntersectClip);
     // Draw scope-like grid vertical lines
@@ -742,47 +719,14 @@ void SignalPlotter::calculateNiceRange()
     d->niceVertMax = d->niceVertMin + d->niceVertRange;
 }
 
-void SignalPlotter::drawTopBarFrame(QPainter *p, int separatorX, int height)
+void SignalPlotter::drawTop(QPainter *p, int width, int height)
 {
-    // Draw horizontal bar with current sensor values at top of display.
+    // Draw title at top of display.
     // Remember that it has a height of 'height'. Thus the lowest pixel
     // it can draw on is height-1 since we count from 0.
     p->setPen(Qt::NoPen);
     p->setPen(d->fontColor);
-    p->drawText(0, 1, separatorX, height, Qt::AlignCenter, d->title);
-    p->setPen(d->horizontalLinesColor);
-    p->drawLine(separatorX - 1, 1, separatorX - 1, height - 1);
-}
-
-void SignalPlotter::drawTopBarContents(QPainter *p, int x, int width, int height)
-{
-    // The height is the height of the contents, so this will be
-    // one pixel less than the height of the topbar
-    double bias = -d->niceVertMin;
-    double scaleFac = width / d->niceVertRange;
-    // The top bar shows the current values of all the plot data.
-    // This iterates through each different plot and plots the newest data for each.
-    if (!d->plotData.isEmpty()) {
-        QList<double> newestData = d->plotData.first();
-        for (int i = newestData.count()-1; i >= 0; --i) {
-            double newest_datapoint = newestData.at(i);
-            int start = x + (int)(bias * scaleFac);
-            int end = x + (int)((bias += newest_datapoint) * scaleFac);
-            int start2 = qMin(start, end);
-            end = qMax(start, end);
-            start = start2;
-
-            // If the rect is wider than 2 pixels we draw only the last
-            // pixels with the bright color. The rest is painted with
-            // a 50% darker color.
-
-            p->setPen(Qt::NoPen);
-            QLinearGradient  linearGrad(QPointF(start, 1), QPointF(end, 1));
-            linearGrad.setColorAt(0, d->plotColors[i].darkColor);
-            linearGrad.setColorAt(1, d->plotColors[i].color);
-            p->fillRect(start, 1, end - start, height-1, QBrush(linearGrad));
-        }
-    }
+    p->drawText(0, 1, width, height, Qt::AlignCenter, p->fontMetrics().elidedText(d->title, Qt::ElideRight, width));
 }
 
 void SignalPlotter::drawVerticalLines(QPainter *p, int top, int w, int h)
