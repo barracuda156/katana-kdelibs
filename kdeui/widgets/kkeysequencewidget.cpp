@@ -662,16 +662,6 @@ void KKeySequenceWidget::applyStealShortcut()
     d->stealActions.clear();
 }
 
-void KKeySequenceButton::setText(const QString &text)
-{
-    QPushButton::setText(text);
-    // setFixedSize(sizeHint().width() + 12, sizeHint().height() + 8);
-}
-
-KKeySequenceButton::~KKeySequenceButton()
-{
-}
-
 // prevent Katie from special casing Tab and Backtab
 bool KKeySequenceButton::event(QEvent* e)
 {

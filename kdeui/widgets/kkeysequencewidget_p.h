@@ -32,11 +32,6 @@ public:
     {
     }
 
-    virtual ~KKeySequenceButton();
-
-    // Reimplemented
-    void setText(const QString &text);
-
 protected:
     /**
     * Reimplemented for internal reasons.
