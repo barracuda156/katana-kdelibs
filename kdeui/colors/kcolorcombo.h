@@ -44,20 +44,20 @@ class KColorComboPrivate;
 class KDEUI_EXPORT KColorCombo : public QComboBox
 {
     Q_OBJECT
-    Q_PROPERTY( QColor color READ color WRITE setColor NOTIFY activated USER true )
-    Q_PROPERTY( QList<QColor> colors READ colors WRITE setColors )
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY activated USER true)
+    Q_PROPERTY(QList<QColor> colors READ colors WRITE setColors)
 
 public:
     /**
      * Constructs a color combo box.
      */
-    explicit KColorCombo(QWidget *parent = 0);
+    explicit KColorCombo(QWidget *parent = nullptr);
     ~KColorCombo();
 
     /**
      * Selects the color @p col.
      */
-    void setColor( const QColor &col );
+    void setColor(const QColor &col);
     /**
      * Returns the currently selected color.
      **/
@@ -75,7 +75,7 @@ public:
      * @param cols list of colors. If empty, the selection list reverts to
      *             the standard list.
      **/
-    void setColors(const QList<QColor> &colors );
+    void setColors(const QList<QColor> &colors);
 
     /**
      * Return the list of colors available for selection.
@@ -92,11 +92,11 @@ Q_SIGNALS:
     /**
      * Emitted when a new color box has been selected.
      */
-    void activated( const QColor &col );
+    void activated(const QColor &col);
     /**
      * Emitted when a new item has been highlighted.
      */
-    void highlighted( const QColor &col );
+    void highlighted(const QColor &col);
 
 protected:
     virtual void paintEvent(QPaintEvent *event);

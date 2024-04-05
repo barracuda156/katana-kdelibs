@@ -31,20 +31,19 @@
 
 class KColorComboDelegate : public QAbstractItemDelegate
 {
-    public:
-        enum ItemRoles {
-            ColorRole = Qt::UserRole + 1
-        };
+public:
+    enum ItemRoles {
+        ColorRole = Qt::UserRole + 1
+    };
 
-        enum LayoutMetrics {
-            FrameMargin = 3
-        };
+    enum LayoutMetrics {
+        FrameMargin = 3
+    };
 
-        KColorComboDelegate(QObject *parent = 0);
-        virtual ~KColorComboDelegate();
+    KColorComboDelegate(QObject *parent = 0);
 
-        virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-        virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const final;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const final;
 };
 
 static QBrush k_colorcombodelegate_brush(const QModelIndex &index, int role)
@@ -61,10 +60,6 @@ static QBrush k_colorcombodelegate_brush(const QModelIndex &index, int role)
 
 KColorComboDelegate::KColorComboDelegate(QObject *parent)
     : QAbstractItemDelegate(parent)
-{
-}
-
-KColorComboDelegate::~KColorComboDelegate()
 {
 }
 
@@ -129,7 +124,6 @@ void KColorComboDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 QSize KColorComboDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(index)
-
     // the width does not matter, as the view will always use the maximum width available
     return QSize(100, option.fontMetrics.height() + 2 * FrameMargin);
 }
@@ -175,20 +169,20 @@ static inline QColor standardColor(int i)
 
 class KColorComboPrivate
 {
-    public:
-        KColorComboPrivate(KColorCombo *qq);
+public:
+    KColorComboPrivate(KColorCombo *qq);
 
-        void addColors();
-        void setCustomColor(const QColor &color, bool lookupInPresets = true);
+    void addColors();
+    void setCustomColor(const QColor &color, bool lookupInPresets = true);
 
-        // slots
-        void _k_slotActivated(int index);
-        void _k_slotHighlighted(int index);
+    // slots
+    void _k_slotActivated(int index);
+    void _k_slotHighlighted(int index);
 
-        KColorCombo *q;
-	QList<QColor> colorList;
-	QColor customColor;
-	QColor internalcolor;
+    KColorCombo *q;
+    QList<QColor> colorList;
+    QColor customColor;
+    QColor internalcolor;
 };
 
 KColorComboPrivate::KColorComboPrivate(KColorCombo *qq)
@@ -244,7 +238,7 @@ KColorCombo::KColorCombo( QWidget *parent )
 
 KColorCombo::~KColorCombo()
 {
-	delete d;
+    delete d;
 }
 
 void KColorCombo::setColors( const QList<QColor> &colors )
@@ -260,11 +254,10 @@ QList<QColor> KColorCombo::colors() const
         QList<QColor> list;
         for (int i = 0; i < STANDARD_PALETTE_SIZE; ++i) {
             list += standardColor(i);
-	}
+        }
         return list;
-    } else {
-        return d->colorList;
     }
+    return d->colorList;
 }
 
 /**
@@ -275,11 +268,9 @@ void KColorCombo::setColor( const QColor &col )
     if (!col.isValid()) {
         return;
     }
-
     if (count() == 0) {
         d->addColors();
     }
-
     d->setCustomColor(col, true);
 }
 
@@ -287,8 +278,9 @@ void KColorCombo::setColor( const QColor &col )
 /**
    Returns the currently selected color
  */
-QColor KColorCombo::color() const {
-  return d->internalcolor;
+QColor KColorCombo::color() const
+{
+    return d->internalcolor;
 }
 
 bool KColorCombo::isCustomColor() const
