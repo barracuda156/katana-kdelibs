@@ -37,246 +37,245 @@
 namespace Plasma {
 
 MeterPrivate::MeterPrivate(Meter *m)
-        : QObject(m),
-          minimum(0),
-          maximum(100),
-          value(0),
-          targetValue(0),
-          meterType(Meter::AnalogMeter),
-          image(0),
-          minrotate(0),
-          maxrotate(360),
-          meter(m)
+    : QObject(m),
+    minimum(0),
+    maximum(100),
+    value(0),
+    targetValue(0),
+    meterType(Meter::AnalogMeter),
+    image(0),
+    minrotate(0),
+    maxrotate(360),
+    meter(m)
 {
 }
 
 void MeterPrivate::progressChanged(int progress)
-    {
-        value = progress;
-        meter->update();
-    }
+{
+    value = progress;
+    meter->update();
+}
 
 void MeterPrivate::paint(QPainter *p, const QString &elementID)
-    {
-        if (image->hasElement(elementID)) {
-            QRectF elementRect = image->elementRect(elementID);
-            image->paint(p, elementRect, elementID);
-        }
+{
+    if (image->hasElement(elementID)) {
+        QRectF elementRect = image->elementRect(elementID);
+        image->paint(p, elementRect, elementID);
     }
+}
 
 void MeterPrivate::text(QPainter *p, int index)
-    {
-        QString elementID = QString("label%1").arg(index);
-        QString text = labels[index];
+{
+    QString elementID = QString("label%1").arg(index);
+    QString text = labels[index];
 
-        if (image->hasElement(elementID)) {
-            QRectF elementRect = image->elementRect(elementID);
-            Qt::Alignment align = Qt::AlignCenter;
+    if (image->hasElement(elementID)) {
+        QRectF elementRect = image->elementRect(elementID);
+        Qt::Alignment align = Qt::AlignCenter;
 
 
-            if (colors.count() > index) {
-                p->setPen(QPen(colors[index]));
+        if (colors.count() > index) {
+            p->setPen(QPen(colors[index]));
+        } else {
+            p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+        }
+        if (fonts.count() > index) {
+            p->setFont(fonts[index]);
+        }
+
+        QFontMetricsF fm(p->font());
+        // If the height is too small increase the Height of the button to shall the whole text #192988
+        if (elementRect.height() < fm.height()) {
+            QPointF oldCenter = elementRect.center();
+            elementRect.setHeight(fm.height());
+            elementRect.moveCenter(oldCenter);
+        }
+
+        if (alignments.count() > index) {
+            align = alignments[index];
+        }
+        const QString elided = fm.elidedText(text, Qt::ElideRight, elementRect.width());
+        if (elementRect.width() > elementRect.height()) {
+            if (align & Qt::AlignLeft) {
+                p->drawText(elementRect.bottomLeft(), elided);
             } else {
-                p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+                p->drawText(elementRect, align, elided);
             }
-            if (fonts.count() > index) {
-                p->setFont(fonts[index]);
-            }
-
-            QFontMetricsF fm(p->font());
-            // If the height is too small increase the Height of the button to shall the whole text #192988
-            if (elementRect.height() < fm.height()) {
-                QPointF oldCenter = elementRect.center();
-                elementRect.setHeight(fm.height());
-                elementRect.moveCenter(oldCenter);
-            }
-
-            if (alignments.count() > index) {
-                align = alignments[index];
-            }
-            const QString elided = fm.elidedText(text, Qt::ElideRight, elementRect.width());
-            if (elementRect.width() > elementRect.height()) {
-                if (align & Qt::AlignLeft) {
-                    p->drawText(elementRect.bottomLeft(), elided);
-                } else {
-                    p->drawText(elementRect, align, elided);
-                }
-            } else {
-                p->save();
-                QPointF rotateCenter(
-                        elementRect.left() + elementRect.width() / 2,
-                        elementRect.top() + elementRect.height() / 2);
-                p->translate(rotateCenter);
-                p->rotate(-90);
-                p->translate(elementRect.height() / -2,
-                             elementRect.width() / -2);
-                QRectF r(0, 0, elementRect.height(), elementRect.width());
-                p->drawText(r, align, elided);
-                p->restore();
-            }
+        } else {
+            p->save();
+            QPointF rotateCenter(
+                elementRect.left() + elementRect.width() / 2,
+                elementRect.top() + elementRect.height() / 2
+            );
+            p->translate(rotateCenter);
+            p->rotate(-90);
+            p->translate(elementRect.height() / -2, elementRect.width() / -2);
+            QRectF r(0, 0, elementRect.height(), elementRect.width());
+            p->drawText(r, align, elided);
+            p->restore();
         }
     }
+}
 
 QRectF MeterPrivate::barRect()
-    {
-        QRectF elementRect;
+{
+    QRectF elementRect;
 
-        if (labels.count() > 0) {
-            elementRect = image->elementRect("background");
-        } else {
-            elementRect = QRectF(QPoint(0,0), meter->size());
-        }
+    if (labels.count() > 0) {
+        elementRect = image->elementRect("background");
+    } else {
+        elementRect = QRectF(QPoint(0,0), meter->size());
+    }
 
-        if (image->hasElement("hint-bar-stretch") || !image->hasElement("bar-active-center")) {
-            return elementRect;
+    if (image->hasElement("hint-bar-stretch") || !image->hasElement("bar-active-center")) {
+        return elementRect;
+    }
+
+    QSize imageSize = image->size();
+    image->resize();
+    QSize tileSize = image->elementSize("bar-active-center");
+    image->resize(imageSize);
+
+    if (elementRect.width() > elementRect.height()) {
+        qreal ratio = qMax(1, tileSize.height() / tileSize.width());
+        int numTiles = qMax(qreal(1.0), qreal(elementRect.width())/(qreal(elementRect.height())/ratio));
+        tileSize = QSize(elementRect.width()/numTiles, elementRect.height());
+
+        QPoint center = elementRect.center().toPoint();
+        elementRect.setWidth(tileSize.width()*numTiles);
+        elementRect.moveCenter(center);
+    } else {
+        qreal ratio = qMax(1, tileSize.width() / tileSize.height());
+        int numTiles = qMax(qreal(1.0), qreal(elementRect.height())/(qreal(elementRect.width())/ratio));
+        tileSize = QSize(elementRect.width(), elementRect.height()/numTiles);
+
+        QPoint center = elementRect.center().toPoint();
+        elementRect.setHeight(tileSize.height()*numTiles);
+        elementRect.moveCenter(center);
+    }
+
+    return elementRect;
+}
+
+void MeterPrivate::paintBackground(QPainter *p)
+{
+    //be retrocompatible with themes for kde <= 4.1
+    if (image->hasElement("background-center")) {
+        QRectF elementRect = barRect();
+        if (elementRect.isEmpty()) {
+             // nothing to be done
+            return;
         }
 
         QSize imageSize = image->size();
         image->resize();
-        QSize tileSize = image->elementSize("bar-active-center");
+
+        image->setElementPrefix("background");
+        image->resizeFrame(elementRect.size());
+        image->paintFrame(p, elementRect.topLeft());
         image->resize(imageSize);
 
-        if (elementRect.width() > elementRect.height()) {
-            qreal ratio = qMax(1, tileSize.height() / tileSize.width());
-            int numTiles = qMax(qreal(1.0), qreal(elementRect.width())/(qreal(elementRect.height())/ratio));
-            tileSize = QSize(elementRect.width()/numTiles, elementRect.height());
-
-            QPoint center = elementRect.center().toPoint();
-            elementRect.setWidth(tileSize.width()*numTiles);
-            elementRect.moveCenter(center);
-        } else {
-            qreal ratio = qMax(1, tileSize.width() / tileSize.height());
-            int numTiles = qMax(qreal(1.0), qreal(elementRect.height())/(qreal(elementRect.width())/ratio));
-            tileSize = QSize(elementRect.width(), elementRect.height()/numTiles);
-
-            QPoint center = elementRect.center().toPoint();
-            elementRect.setHeight(tileSize.height()*numTiles);
-            elementRect.moveCenter(center);
-        }
-
-        return elementRect;
+        paintBar(p, "bar-inactive");
+    } else {
+        paint(p, "background");
     }
-
-void MeterPrivate::paintBackground(QPainter *p)
-    {
-        //be retrocompatible with themes for kde <= 4.1
-        if (image->hasElement("background-center")) {
-            QRectF elementRect = barRect();
-            if (elementRect.isEmpty()) {
-                return; // nothing to be done
-            }
-
-            QSize imageSize = image->size();
-            image->resize();
-
-            image->setElementPrefix("background");
-            image->resizeFrame(elementRect.size());
-            image->paintFrame(p, elementRect.topLeft());
-            image->resize(imageSize);
-
-            paintBar(p, "bar-inactive");
-        } else {
-            paint(p, "background");
-        }
-    }
+}
 
 void MeterPrivate::paintBar(QPainter *p, const QString &prefix)
-    {
-        QRectF elementRect = barRect();
+{
+    QRectF elementRect = barRect();
 
-        image->setUsingRenderingCache(false);
-        if (image->hasElement("hint-bar-stretch")) {
-            const QSize imageSize = image->size();
-            image->resize();
-            image->setElementPrefix(prefix);
-            image->resizeFrame(elementRect.size());
-            image->paintFrame(p, elementRect.topLeft());
-            image->resize(imageSize);
+    image->setUsingRenderingCache(false);
+    if (image->hasElement("hint-bar-stretch")) {
+        const QSize imageSize = image->size();
+        image->resize();
+        image->setElementPrefix(prefix);
+        image->resizeFrame(elementRect.size());
+        image->paintFrame(p, elementRect.topLeft());
+        image->resize(imageSize);
+    } else {
+        const QSize imageSize = image->size();
+        image->resize();
+        QSize tileSize = image->elementSize("bar-active-center");
+
+        if (elementRect.width() > elementRect.height()) {
+            qreal ratio = tileSize.height() / tileSize.width();
+            int numTiles = elementRect.width()/(elementRect.height()/ratio);
+            tileSize = QSize(elementRect.width()/numTiles, elementRect.height());
         } else {
-            const QSize imageSize = image->size();
-            image->resize();
-            QSize tileSize = image->elementSize("bar-active-center");
-
-            if (elementRect.width() > elementRect.height()) {
-                qreal ratio = tileSize.height() / tileSize.width();
-                int numTiles = elementRect.width()/(elementRect.height()/ratio);
-                tileSize = QSize(elementRect.width()/numTiles, elementRect.height());
-            } else {
-                qreal ratio = tileSize.width() / tileSize.height();
-                int numTiles = elementRect.height()/(elementRect.width()/ratio);
-                tileSize = QSize(elementRect.width(), elementRect.height()/numTiles);
-            }
-
-            image->setElementPrefix(prefix);
-            image->resizeFrame(tileSize);
-            p->drawTiledPixmap(elementRect, image->framePixmap());
-            image->resize(imageSize);
+            qreal ratio = tileSize.width() / tileSize.height();
+            int numTiles = elementRect.height()/(elementRect.width()/ratio);
+            tileSize = QSize(elementRect.width(), elementRect.height()/numTiles);
         }
-        image->setUsingRenderingCache(true);
+
+        image->setElementPrefix(prefix);
+        image->resizeFrame(tileSize);
+        p->drawTiledPixmap(elementRect, image->framePixmap());
+        image->resize(imageSize);
     }
+    image->setUsingRenderingCache(true);
+}
 
 void MeterPrivate::paintForeground(QPainter *p)
-    {
-        for (int i = 0; i < labels.count(); ++i) {
-            text(p, i);
-        }
-
-        paint(p, "foreground");
+{
+    for (int i = 0; i < labels.count(); ++i) {
+        text(p, i);
     }
+    paint(p, "foreground");
+}
 
 void MeterPrivate::setSizePolicyAndPreferredSize()
-    {
-        switch (meterType) {
-            case Meter::BarMeterHorizontal: {
-                meter->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
-                break;
-            }
-            case Meter::BarMeterVertical: {
-                meter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
-                break;
-            }
-            case Meter::AnalogMeter:
-            default: {
-                meter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-                break;
-            }
+{
+    switch (meterType) {
+        case Meter::BarMeterHorizontal: {
+            meter->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+            break;
         }
-
-        if (image) {
-            //set a sane preferredSize. We can't just use the svg's native size, since that way
-            //letters get cut off if the user uses a font larger then usual. Check how many rows of
-            //labels we have, add 1 (the progress bar), and multiply by the font height to get a
-            //somewhat sane size height. This is not perfect but work well enough for 4.2. I suggest
-            //we look into alternatives for 4.3.
-            uint i = 0;
-            uint rows = 0;
-            qreal prevY = -1;
-            QString labelName = "label0";
-            while (image->hasElement(labelName)) {
-                if (image->elementRect(labelName).y() > prevY) {
-                    prevY = image->elementRect(labelName).y();
-                    rows++;
-                }
-                i++;
-                labelName = QString("label%0").arg(i);
-            }
-
-            Plasma::Theme *theme = Plasma::Theme::defaultTheme();
-            QFont font = theme->font(Plasma::Theme::DefaultFont);
-            QFontMetrics fm(font);
-
-            meter->setPreferredHeight((rows + 1) * fm.height());
-        } else {
-            meter->setPreferredSize(QSizeF(30, 30));
+        case Meter::BarMeterVertical: {
+            meter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+            break;
+        }
+        case Meter::AnalogMeter:
+        default: {
+            meter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+            break;
         }
     }
 
-Meter::Meter(QGraphicsItem *parent) :
-        QGraphicsWidget(parent),
-        d(new MeterPrivate(this))
+    if (image) {
+        //set a sane preferredSize. We can't just use the svg's native size, since that way
+        //letters get cut off if the user uses a font larger then usual. Check how many rows of
+        //labels we have, add 1 (the progress bar), and multiply by the font height to get a
+        //somewhat sane size height. This is not perfect but work well enough for 4.2. I suggest
+        //we look into alternatives for 4.3.
+        uint i = 0;
+        uint rows = 0;
+        qreal prevY = -1;
+        QString labelName = "label0";
+        while (image->hasElement(labelName)) {
+            if (image->elementRect(labelName).y() > prevY) {
+                prevY = image->elementRect(labelName).y();
+                rows++;
+            }
+            i++;
+            labelName = QString("label%0").arg(i);
+        }
+
+        Plasma::Theme *theme = Plasma::Theme::defaultTheme();
+        QFont font = theme->font(Plasma::Theme::DefaultFont);
+        QFontMetrics fm(font);
+
+        meter->setPreferredHeight((rows + 1) * fm.height());
+    } else {
+        meter->setPreferredSize(QSizeF(30, 30));
+    }
+}
+
+Meter::Meter(QGraphicsItem *parent)
+    : QGraphicsWidget(parent),
+    d(new MeterPrivate(this))
 {
     d->setSizePolicyAndPreferredSize();
-
     d->animation = new QPropertyAnimation(d, "meterValue");
 }
 
@@ -324,7 +323,7 @@ void Meter::setValue(int value)
         d->animation->stop();
     }
 
-    //kDebug() << d->targetValue << d->value << delta;
+    // kDebug() << d->targetValue << d->value << delta;
     if (!(KGlobalSettings::graphicEffectsLevel() & KGlobalSettings::SimpleAnimationEffects) ||
         delta / qreal(d->maximum) < 0.1) {
         d->value = value;
@@ -527,8 +526,7 @@ void Meter::paint(QPainter *p,
             QPointF rotateCenter;
             if (d->image->hasElement("rotatecenter")) {
                 QRectF r = d->image->elementRect("rotatecenter");
-                rotateCenter = QPointF(r.left() + r.width() / 2,
-                                    r.top() + r.height() / 2);
+                rotateCenter = QPointF(r.left() + r.width() / 2, r.top() + r.height() / 2);
             } else {
                 rotateCenter = QPointF(floatSize.width() / 2, floatSize.height() / 2);
             }
