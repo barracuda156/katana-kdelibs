@@ -480,12 +480,9 @@ void Meter::paint(QPainter *p,
         return;
     }
 
-    QRectF rect(QPointF(0, 0), size());
-    QRectF clipRect;
+    QSizeF floatSize = size();
     qreal percentage = 0.0;
-    qreal angle = 0.0;
-    QPointF rotateCenter;
-    QSize intSize = QSize((int)size().width(), (int)size().height());
+    QSize intSize = QSize((int)floatSize.width(), (int)floatSize.height());
 
     if (intSize != d->image->size()) {
         d->image->resize(intSize);
@@ -502,7 +499,7 @@ void Meter::paint(QPainter *p,
             d->paintBackground(p);
 
             p->save();
-            clipRect = d->barRect();
+            QRectF clipRect = d->barRect();
             if (clipRect.width() > clipRect.height()) {
                 clipRect.setWidth(clipRect.width() * percentage);
             } else {
@@ -527,14 +524,15 @@ void Meter::paint(QPainter *p,
             d->paintBackground(p);
 
             p->save();
+            QPointF rotateCenter;
             if (d->image->hasElement("rotatecenter")) {
                 QRectF r = d->image->elementRect("rotatecenter");
                 rotateCenter = QPointF(r.left() + r.width() / 2,
                                     r.top() + r.height() / 2);
             } else {
-                rotateCenter = QPointF(rect.width() / 2, rect.height() / 2);
+                rotateCenter = QPointF(floatSize.width() / 2, floatSize.height() / 2);
             }
-            angle = percentage * (d->maxrotate - d->minrotate) + d->minrotate;
+            qreal angle = percentage * (d->maxrotate - d->minrotate) + d->minrotate;
 
             if (d->image->hasElement("pointer-shadow")) {
                 p->save();
