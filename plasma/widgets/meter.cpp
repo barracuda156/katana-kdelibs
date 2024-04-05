@@ -94,11 +94,12 @@ void MeterPrivate::text(QPainter *p, int index)
             if (alignments.count() > index) {
                 align = alignments[index];
             }
+            const QString elided = fm.elidedText(text, Qt::ElideRight, elementRect.width());
             if (elementRect.width() > elementRect.height()) {
-                if (align&Qt::AlignLeft) {
-                    p->drawText(elementRect.bottomLeft(), text);
+                if (align & Qt::AlignLeft) {
+                    p->drawText(elementRect.bottomLeft(), elided);
                 } else {
-                    p->drawText(elementRect, align, text);
+                    p->drawText(elementRect, align, elided);
                 }
             } else {
                 p->save();
@@ -110,7 +111,7 @@ void MeterPrivate::text(QPainter *p, int index)
                 p->translate(elementRect.height() / -2,
                              elementRect.width() / -2);
                 QRectF r(0, 0, elementRect.height(), elementRect.width());
-                p->drawText(r, align, text);
+                p->drawText(r, align, elided);
                 p->restore();
             }
         }
