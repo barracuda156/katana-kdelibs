@@ -89,6 +89,24 @@ public:
      * @return path of directory containing the zoneinfo database
      */
     static QString zoneinfoDir();
+
+    /**
+     * Returns translated name for the zone.
+     *
+     * @param name name of time zone
+     * @return translation, or the name if no translation is found
+     * @see zoneComment()
+     */
+    static QString zoneName(const QString &name);
+
+    /**
+     * Returns translated comment for the zone.
+     *
+     * @param name name of time zone
+     * @return translation, or empty if no translation is found
+     * @see zoneName()
+     */
+    static QString zoneComment(const QString &name);
 };
 
 #endif // KSYSTEMTIMEZONE_H

@@ -69,7 +69,7 @@ KTimeZoneWidget::KTimeZoneWidget( QWidget *parent )
   QHash<QString, KTimeZone> zonesByCity;
 
   foreach (const KTimeZone &zone, KSystemTimeZones::zones()) {
-    const QString continentCity = displayName( zone );
+    const QString continentCity = KSystemTimeZones::zoneName(zone.name());
     const int separator = continentCity.lastIndexOf('/');
     // Make up the localized key that will be used for sorting.
     // Example: i18n(Asia/Tokyo) -> key = "i18n(Tokyo)|i18n(Asia)|Asia/Tokyo"
@@ -87,13 +87,13 @@ KTimeZoneWidget::KTimeZoneWidget( QWidget *parent )
     QString comment = zone.comment();
 
     if ( !comment.isEmpty() )
-      comment = i18n( comment.toUtf8() );
+      comment = KSystemTimeZones::zoneComment( tzName );
 
     // Convert:
     //
     //  "Europe/London", "GB" -> "London", "Europe/GB".
     //  "UTC",           ""   -> "UTC",    "".
-    QStringList continentCity = displayName( zone ).split( '/' );
+    QStringList continentCity = KSystemTimeZones::zoneName(tzName).split( '/' );
 
     QTreeWidgetItem *listItem = new QTreeWidgetItem( this );
     listItem->setText( Private::CityColumn, continentCity[ continentCity.count() - 1 ] );
@@ -134,11 +134,6 @@ void KTimeZoneWidget::setItemsCheckable(bool enable)
 bool KTimeZoneWidget::itemsCheckable() const
 {
     return d->itemsCheckable;
-}
-
-QString KTimeZoneWidget::displayName( const KTimeZone &zone )
-{
-    return i18n( zone.name().toUtf8() ).replace( '_', ' ' );
 }
 
 QStringList KTimeZoneWidget::selection() const

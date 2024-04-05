@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, glob
+import sys, glob
 
 def cstringify(s):
     r = s.replace('\\', '\\\\')
