@@ -93,32 +93,14 @@ class KDEUI_EXPORT KTabWidget : public QTabWidget //krazy:exclude=qclasses
     bool isTabBarHidden() const;
 
     /**
-      Reimplemented for internal reasons.
-     *
-    virtual void insertTab( QWidget *, const QString &, int index = -1 );
-
-    *!
-      Reimplemented for internal reasons.
-     *
-    virtual void insertTab( QWidget *child, const QIcon& iconset,
-                            const QString &label, int index = -1 );
-    *!
-      Reimplemented for internal reasons.
-    *
-    virtual void insertTab( QWidget *, QTab *, int index = -1 );*/
-
-    /**
      * Reimplemented for internal reasons.
      */
     QString tabText( int ) const; // but it's not virtual...
-
 
     /**
      * Reimplemented for internal reasons.
      */
     void setTabText( int , const QString & );
-
-    using QTabWidget::tabBar;
 
   public Q_SLOTS:
     /**
