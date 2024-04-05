@@ -50,7 +50,7 @@ for lstfile in lstfiles:
                 splitline = strippedline.split(' ')
                 splitpart0 = splitline[0].strip()
                 splitpart1 = ' '.join(splitline[1:]).strip()
-                print('    { "%s", I18N_NOOP("%s") },' % (splitpart0, cstringify(splitpart1)))
+                print('    { "%s", I18N_NOOP2("Keyboard model description", "%s") },' % (splitpart0, cstringify(splitpart1)))
             elif printlayout:
                 strippedline = lstline.strip()
                 if strippedline.startswith('! layout'):
@@ -63,7 +63,7 @@ for lstfile in lstfiles:
                 splitline = strippedline.split(' ')
                 splitpart0 = splitline[0].strip()
                 splitpart1 = ' '.join(splitline[1:]).strip()
-                print('    { "%s", I18N_NOOP("%s") },' % (splitpart0, cstringify(splitpart1)))
+                print('    { "%s", I18N_NOOP2("Keyboard layout description", "%s") },' % (splitpart0, cstringify(splitpart1)))
             elif printvariant:
                 strippedline = lstline.strip()
                 if strippedline.startswith('! variant'):
@@ -78,7 +78,7 @@ for lstfile in lstfiles:
                 splitpart1 = ' '.join(splitline[1:]).strip()
                 splitlayout = splitpart1.split(':')[0].strip()
                 splitdescription = ' '.join(splitpart1.split(':')[1:]).strip()
-                print('    { "%s", "%s", I18N_NOOP("%s") },' % (splitlayout, cstringify(splitpart0), cstringify(splitdescription)))
+                print('    { "%s", "%s", I18N_NOOP2("Keyboard variant description", "%s") },' % (splitlayout, cstringify(splitpart0), cstringify(splitdescription)))
             elif printoption:
                 strippedline = lstline.strip()
                 if strippedline.startswith('! option'):
@@ -91,5 +91,4 @@ for lstfile in lstfiles:
                 splitline = strippedline.split(' ')
                 splitpart0 = splitline[0].strip()
                 splitpart1 = ' '.join(splitline[1:]).strip()
-                print('    { "%s", I18N_NOOP("%s") },' % (splitpart0, cstringify(splitpart1)))
-                
+                print('    { "%s", I18N_NOOP2("Keyboard option description", "%s") },' % (splitpart0, cstringify(splitpart1)))
