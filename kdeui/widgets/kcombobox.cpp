@@ -172,12 +172,6 @@ void KComboBox::rotateText( KCompletionBase::KeyBindingType type )
         d->klineEdit->rotateText( type );
 }
 
-// Not needed anymore
-bool KComboBox::eventFilter( QObject* o, QEvent* ev )
-{
-    return QComboBox::eventFilter( o, ev );
-}
-
 void KComboBox::setTrapReturnKey( bool grab )
 {
     d->trapReturnKey = grab;

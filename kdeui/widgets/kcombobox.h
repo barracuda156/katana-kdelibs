@@ -309,11 +309,6 @@ public:
     bool trapReturnKey() const;
 
     /**
-    * Re-implemented for internal reasons.  API not affected.
-    */
-    virtual bool eventFilter( QObject *, QEvent * );
-
-    /**
      * @returns the completion-box, that is used in completion mode
      * KGlobalSettings::CompletionPopup and KGlobalSettings::CompletionPopupAuto.
      * This method will create a completion-box by calling
