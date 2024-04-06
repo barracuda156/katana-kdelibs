@@ -36,6 +36,9 @@
 #include <sys/time.h>
 #include <time.h>
 
+// for reference:
+// https://en.wikipedia.org/wiki/Coordinated_Universal_Time
+
 typedef QPair<float, float> KZoneCoordinates;
 
 static const QString s_localtime = QString::fromLatin1("/etc/localtime");
@@ -929,6 +932,10 @@ QString KSystemTimeZones::zoneName(const QString &name)
         return QString();
     }
     const QByteArray namelatin1 = name.toLatin1();
+    if (namelatin1 == "UTC") {
+        // the special case, not in zone.tab
+        return i18nc("Timezone name", "UTC");
+    }
     for (int i = 0; i < timezoneNameTblSize; i++) {
         if (qstrcmp(namelatin1.constData(), timezoneNameTbl[i].name) == 0) {
             // for better or worse replacing underscore with space was done before and is still done for compat
@@ -945,6 +952,10 @@ QString KSystemTimeZones::zoneComment(const QString &name)
         return QString();
     }
     const QByteArray namelatin1 = name.toLatin1();
+    if (namelatin1 == "UTC") {
+        // see above
+        return i18nc("Timezone comment", "Coordinated UniversalTime");
+    }
     for (int i = 0; i < timezoneCommentTblSize; i++) {
         if (qstrcmp(namelatin1.constData(), timezoneCommentTbl[i].name) == 0) {
             return ki18nc("Timezone comment", timezoneCommentTbl[i].translation).toString();
