@@ -34,7 +34,6 @@
 #define KDE_DEFAULT_AUTOSELECTDELAY -1
 #define KDE_DEFAULT_CHANGECURSOR true
 #define KDE_DEFAULT_LARGE_CURSOR false
-#define KDE_DEFAULT_WHEEL_ZOOM false
 #define KDE_DEFAULT_ICON_ON_PUSHBUTTON true
 #define KDE_DEFAULT_OPAQUE_RESIZE true
 #define KDE_DEFAULT_SHADE_SORT_COLUMN true
@@ -318,19 +317,6 @@ public:
      * rulers and other places where space is at a premium.
      */
     static QFont smallestReadableFont();
-
-    /**
-     * Typically, QScrollView derived classes can be scrolled fast by
-     * holding down the Ctrl-button during wheel-scrolling.
-     * But QTextEdit and derived classes perform zooming instead of fast
-     * scrolling.
-     *
-     * This value determines whether the user wants to zoom or scroll fast
-     * with Ctrl-wheelscroll.
-     * @return true if the user wishes to zoom with the mouse wheel,
-     *         false for scrolling
-     */
-    static bool wheelMouseZooms();
 
     /**
      * This function returns the desktop geometry for an application's splash

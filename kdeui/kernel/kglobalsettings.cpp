@@ -328,12 +328,6 @@ QString KGlobalSettings::musicPath()
     return (path.isEmpty() ? QDir::homePath() : path);
 }
 
-bool KGlobalSettings::wheelMouseZooms()
-{
-    KConfigGroup g(KGlobal::config(), "KDE");
-    return g.readEntry("WheelMouseZooms", KDE_DEFAULT_WHEEL_ZOOM);
-}
-
 QRect KGlobalSettings::splashScreenDesktopGeometry()
 {
     QDesktopWidget *dw = QApplication::desktop();

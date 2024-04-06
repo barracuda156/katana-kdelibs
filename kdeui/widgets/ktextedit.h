@@ -268,12 +268,6 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
     virtual void focusInEvent( QFocusEvent* );
 
     /**
-     * Reimplemented to allow fast-wheelscrolling with Ctrl-Wheel
-     * or zoom.
-     */
-    virtual void wheelEvent( QWheelEvent* );
-
-    /**
      * Deletes a word backwards from the current cursor position,
      * if available.
      */

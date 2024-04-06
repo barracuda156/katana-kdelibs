@@ -539,14 +539,6 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-void KTextEdit::wheelEvent( QWheelEvent *event )
-{
-  if ( KGlobalSettings::wheelMouseZooms() )
-    QTextEdit::wheelEvent( event );
-  else // thanks, we don't want to zoom, so skip QTextEdit's impl.
-    QAbstractScrollArea::wheelEvent( event );
-}
-
 void KTextEdit::createHighlighter()
 {
     setHighlighter(new KSpellHighlighter(KGlobal::config().data(), this));
