@@ -50,16 +50,29 @@
 #include <kspellhighlighter.h>
 #include <QDebug>
 
+static void deleteWord(QTextCursor cursor, const QTextCursor::MoveOperation op)
+{
+    cursor.clearSelection();
+    cursor.movePosition(op, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+}
+
 class KTextEdit::Private
 {
   public:
-    Private( KTextEdit *_parent )
-      : parent( _parent ),
-        customPalette( false ),
-        checkSpellingEnabled( false ),
+    Private(KTextEdit *_parent)
+      : parent(_parent),
+        customPalette(false),
+        checkSpellingEnabled(false),
         findReplaceEnabled(true),
         showTabAction(true),
-        highlighter( 0 ), findDlg(0),find(0),repDlg(0),replace(0), findIndex(0), repIndex(0),
+        highlighter(nullptr),
+        findDlg(nullptr),
+        find(nullptr),
+        repDlg(nullptr),
+        replace(nullptr),
+        findIndex(0),
+        repIndex(0),
         lastReplacedPosition(-1)
     {
         //Check the default settings to see if spellchecking should be enabled.
@@ -77,11 +90,11 @@ class KTextEdit::Private
 
     ~Private()
     {
-      delete highlighter;
-      delete findDlg;
-      delete find;
-      delete replace;
-      delete repDlg;
+        delete highlighter;
+        delete findDlg;
+        delete find;
+        delete replace;
+        delete repDlg;
     }
 
     /**
@@ -89,15 +102,15 @@ class KTextEdit::Private
      * This makes it possible to handle shortcuts in the focused widget before any
      * window-global QAction is triggered.
      */
-    bool overrideShortcut(const QKeyEvent* e);
+    bool overrideShortcut(const QKeyEvent *e);
     /**
      * Actually handle a shortcut event.
      */
-    bool handleShortcut(const QKeyEvent* e);
+    bool handleShortcut(const QKeyEvent *e);
 
     void toggleAutoSpellCheck();
 
-    void slotFindHighlight(const QString& text, int matchingIndex, int matchingLength);
+    void slotFindHighlight(const QString &text, int matchingIndex, int matchingLength);
     void slotReplaceText(const QString &text, int replacementIndex, int /*replacedLength*/, int matchedLength);
 
     /**
@@ -107,7 +120,7 @@ class KTextEdit::Private
     void undoableClear();
 
     void slotAllowTab();
-    void menuActivated( QAction* action );
+    void menuActivated(QAction *action);
 
     QRect clickMessageRect() const;
 
@@ -117,12 +130,12 @@ class KTextEdit::Private
     QAction *autoSpellCheckAction;
     QAction *allowTab;
     QString clickMessage;
-    bool italicizePlaceholder : 1;
-    bool customPalette : 1;
+    bool italicizePlaceholder;
+    bool customPalette;
 
-    bool checkSpellingEnabled : 1;
-    bool findReplaceEnabled: 1;
-    bool showTabAction: 1;
+    bool checkSpellingEnabled;
+    bool findReplaceEnabled;
+    bool showTabAction;
     QTextDocumentFragment originalDoc;
     QString spellCheckingLanguage;
     KSpellHighlighter *highlighter;
@@ -136,7 +149,7 @@ class KTextEdit::Private
 
 void KTextEdit::Private::toggleAutoSpellCheck()
 {
-  parent->setCheckSpellingEnabled( !parent->checkSpellingEnabled() );
+    parent->setCheckSpellingEnabled(!parent->checkSpellingEnabled());
 }
 
 void KTextEdit::Private::undoableClear()
@@ -151,22 +164,22 @@ void KTextEdit::Private::undoableClear()
 
 void KTextEdit::Private::slotAllowTab()
 {
-  parent->setTabChangesFocus( !parent->tabChangesFocus() );
+    parent->setTabChangesFocus(!parent->tabChangesFocus());
 }
 
-void KTextEdit::Private::menuActivated( QAction* action )
+void KTextEdit::Private::menuActivated(QAction *action)
 {
-  if ( action == autoSpellCheckAction )
-    toggleAutoSpellCheck();
-  else if ( action == allowTab )
-    slotAllowTab();
+    if (action == autoSpellCheckAction) {
+        toggleAutoSpellCheck();
+    } else if (action == allowTab) {
+        slotAllowTab();
+    }
 }
 
-
-void KTextEdit::Private::slotFindHighlight(const QString& text, int matchingIndex, int matchingLength)
+void KTextEdit::Private::slotFindHighlight(const QString &text, int matchingIndex, int matchingLength)
 {
     Q_UNUSED(text)
-    //kDebug() << "Highlight: [" << text << "] mi:" << matchingIndex << " ml:" << matchingLength;
+    // kDebug() << "Highlight: [" << text << "] mi:" << matchingIndex << " ml:" << matchingLength;
     QTextCursor tc = parent->textCursor();
     tc.setPosition(matchingIndex);
     tc.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, matchingLength);
@@ -174,9 +187,9 @@ void KTextEdit::Private::slotFindHighlight(const QString& text, int matchingInde
     parent->ensureCursorVisible();
 }
 
-
-void KTextEdit::Private::slotReplaceText(const QString &text, int replacementIndex, int replacedLength, int matchedLength) {
-    //kDebug() << "Replace: [" << text << "] ri:" << replacementIndex << " rl:" << replacedLength << " ml:" << matchedLength;
+void KTextEdit::Private::slotReplaceText(const QString &text, int replacementIndex, int replacedLength, int matchedLength)
+{
+    // kDebug() << "Replace: [" << text << "] ri:" << replacementIndex << " rl:" << replacedLength << " ml:" << matchedLength;
     QTextCursor tc = parent->textCursor();
     tc.setPosition(replacementIndex);
     tc.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, matchedLength);
@@ -199,25 +212,29 @@ QRect KTextEdit::Private::clickMessageRect() const
 void KTextEdit::Private::init()
 {
     KCursor::setAutoHideCursor(parent, true, false);
-    parent->connect(parent, SIGNAL(languageChanged(QString)),
-                    parent, SLOT(setSpellCheckingLanguage(QString)));
+    parent->connect(
+        parent, SIGNAL(languageChanged(QString)),
+        parent, SLOT(setSpellCheckingLanguage(QString))
+    );
 }
 
-KTextEdit::KTextEdit( const QString& text, QWidget *parent )
-  : QTextEdit( text, parent ), d( new Private( this ) )
+KTextEdit::KTextEdit(const QString &text, QWidget *parent)
+    : QTextEdit(text, parent),
+    d( new Private(this))
 {
-  d->init();
+    d->init();
 }
 
-KTextEdit::KTextEdit( QWidget *parent )
-  : QTextEdit( parent ), d( new Private( this ) )
+KTextEdit::KTextEdit(QWidget *parent)
+    : QTextEdit(parent),
+    d(new Private(this))
 {
-  d->init();
+    d->init();
 }
 
 KTextEdit::~KTextEdit()
 {
-  delete d;
+    delete d;
 }
 
 const QString& KTextEdit::spellCheckingLanguage() const
@@ -241,7 +258,7 @@ void KTextEdit::setSpellCheckingLanguage(const QString &_language)
 bool KTextEdit::event(QEvent* ev)
 {
     if (ev->type() == QEvent::ShortcutOverride) {
-        QKeyEvent *e = static_cast<QKeyEvent *>( ev );
+        QKeyEvent *e = static_cast<QKeyEvent*>(ev);
         if (d->overrideShortcut(e)) {
             e->accept();
             return true;
@@ -250,182 +267,185 @@ bool KTextEdit::event(QEvent* ev)
     return QTextEdit::event(ev);
 }
 
-bool KTextEdit::Private::handleShortcut(const QKeyEvent* event)
+bool KTextEdit::Private::handleShortcut(const QKeyEvent *event)
 {
-  const int key = event->key() | event->modifiers();
+    const int key = (event->key() | event->modifiers());
 
-  if ( KStandardShortcut::copy().contains( key ) ) {
-    parent->copy();
-    return true;
-  } else if ( KStandardShortcut::paste().contains( key ) ) {
-    parent->paste();
-    return true;
-  } else if ( KStandardShortcut::cut().contains( key ) ) {
-    parent->cut();
-    return true;
-  } else if ( KStandardShortcut::undo().contains( key ) ) {
-      if(!parent->isReadOnly())
-          parent->undo();
-      return true;
-  } else if ( KStandardShortcut::redo().contains( key ) ) {
-      if(!parent->isReadOnly())
-         parent->redo();
-      return true;
-  } else if ( KStandardShortcut::deleteWordBack().contains( key ) ) {
-    if (!parent->isReadOnly())
-        parent->deleteWordBack();
-    return true;
-  } else if ( KStandardShortcut::deleteWordForward().contains( key ) ) {
-    if (!parent->isReadOnly())
-       parent->deleteWordForward();
-    return true;
-  } else if ( KStandardShortcut::backwardWord().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    cursor.movePosition( QTextCursor::PreviousWord );
-    parent->setTextCursor( cursor );
-    return true;
-  } else if ( KStandardShortcut::forwardWord().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    cursor.movePosition( QTextCursor::NextWord );
-    parent->setTextCursor( cursor );
-    return true;
-  } else if ( KStandardShortcut::next().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    bool moved = false;
-    qreal lastY = parent->cursorRect(cursor).bottom();
-    qreal distance = 0;
-    do {
-        qreal y = parent->cursorRect(cursor).bottom();
-        distance += qAbs(y - lastY);
-        lastY = y;
-        moved = cursor.movePosition(QTextCursor::Down);
-    } while (moved && distance < parent->viewport()->height());
+    if (KStandardShortcut::copy().contains(key)) {
+        parent->copy();
+        return true;
+    } else if (KStandardShortcut::paste().contains(key)) {
+        parent->paste();
+        return true;
+    } else if (KStandardShortcut::cut().contains(key)) {
+        parent->cut();
+        return true;
+    } else if (KStandardShortcut::undo().contains(key)) {
+        if (!parent->isReadOnly()) {
+            parent->undo();
+        }
+        return true;
+    } else if (KStandardShortcut::redo().contains(key)) {
+        if (!parent->isReadOnly()) {
+            parent->redo();
+        }
+        return true;
+    } else if (KStandardShortcut::deleteWordBack().contains(key)) {
+        if (!parent->isReadOnly()) {
+            parent->deleteWordBack();
+        }
+        return true;
+    } else if ( KStandardShortcut::deleteWordForward().contains(key)) {
+        if (!parent->isReadOnly()) {
+            parent->deleteWordForward();
+        }
+        return true;
+    } else if ( KStandardShortcut::backwardWord().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        cursor.movePosition(QTextCursor::PreviousWord);
+        parent->setTextCursor(cursor);
+        return true;
+    } else if (KStandardShortcut::forwardWord().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        cursor.movePosition(QTextCursor::NextWord);
+        parent->setTextCursor(cursor);
+        return true;
+    } else if ( KStandardShortcut::next().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        bool moved = false;
+        qreal lastY = parent->cursorRect(cursor).bottom();
+        qreal distance = 0;
+        do {
+            qreal y = parent->cursorRect(cursor).bottom();
+            distance += qAbs(y - lastY);
+            lastY = y;
+            moved = cursor.movePosition(QTextCursor::Down);
+        } while (moved && distance < parent->viewport()->height());
 
-    if (moved) {
-        cursor.movePosition(QTextCursor::Up);
-        parent->verticalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
+        if (moved) {
+            cursor.movePosition(QTextCursor::Up);
+            parent->verticalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
+        }
+        parent->setTextCursor(cursor);
+        return true;
+    } else if (KStandardShortcut::prior().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        bool moved = false;
+        qreal lastY = parent->cursorRect(cursor).bottom();
+        qreal distance = 0;
+        do {
+            qreal y = parent->cursorRect(cursor).bottom();
+            distance += qAbs(y - lastY);
+            lastY = y;
+            moved = cursor.movePosition(QTextCursor::Up);
+        } while (moved && distance < parent->viewport()->height());
+
+        if (moved) {
+            cursor.movePosition(QTextCursor::Down);
+            parent->verticalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
+        }
+        parent->setTextCursor(cursor);
+        return true;
+    } else if ( KStandardShortcut::begin().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        parent->setTextCursor(cursor);
+        return true;
+    } else if (KStandardShortcut::end().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        parent->setTextCursor(cursor);
+        return true;
+    } else if (KStandardShortcut::beginningOfLine().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        cursor.movePosition(QTextCursor::StartOfLine);
+        parent->setTextCursor(cursor);
+        return true;
+    } else if (KStandardShortcut::endOfLine().contains(key)) {
+        QTextCursor cursor = parent->textCursor();
+        cursor.movePosition(QTextCursor::EndOfLine);
+        parent->setTextCursor(cursor);
+        return true;
+    } else if (findReplaceEnabled && KStandardShortcut::find().contains(key)) {
+        parent->slotFind();
+        return true;
+    } else if (findReplaceEnabled && KStandardShortcut::findNext().contains(key)) {
+        parent->slotFindNext();
+        return true;
+    } else if (findReplaceEnabled && KStandardShortcut::replace().contains(key)) {
+        if (!parent->isReadOnly()) {
+            parent->slotReplace();
+        }
+        return true;
+    } else if (KStandardShortcut::pasteSelection().contains(key)) {
+        QString text = QApplication::clipboard()->text(QClipboard::Selection);
+        if (!text.isEmpty()) {
+            // TODO: check if this is html? (MiB)
+            parent->insertPlainText(text);
+        }
+        return true;
     }
-    parent->setTextCursor(cursor);
-    return true;
-  } else if ( KStandardShortcut::prior().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    bool moved = false;
-    qreal lastY = parent->cursorRect(cursor).bottom();
-    qreal distance = 0;
-    do {
-        qreal y = parent->cursorRect(cursor).bottom();
-        distance += qAbs(y - lastY);
-        lastY = y;
-        moved = cursor.movePosition(QTextCursor::Up);
-    } while (moved && distance < parent->viewport()->height());
-
-    if (moved) {
-        cursor.movePosition(QTextCursor::Down);
-        parent->verticalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
-    }
-    parent->setTextCursor(cursor);
-    return true;
-  } else if ( KStandardShortcut::begin().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    cursor.movePosition( QTextCursor::Start );
-    parent->setTextCursor( cursor );
-    return true;
-  } else if ( KStandardShortcut::end().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    cursor.movePosition( QTextCursor::End );
-    parent->setTextCursor( cursor );
-    return true;
-  } else if ( KStandardShortcut::beginningOfLine().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    cursor.movePosition( QTextCursor::StartOfLine );
-    parent->setTextCursor( cursor );
-    return true;
-  } else if ( KStandardShortcut::endOfLine().contains( key ) ) {
-    QTextCursor cursor = parent->textCursor();
-    cursor.movePosition( QTextCursor::EndOfLine );
-    parent->setTextCursor( cursor );
-    return true;
-  } else if (findReplaceEnabled && KStandardShortcut::find().contains(key)) {
-      parent->slotFind();
-      return true;
-  } else if (findReplaceEnabled && KStandardShortcut::findNext().contains(key)) {
-      parent->slotFindNext();
-      return true;
-  } else if (findReplaceEnabled && KStandardShortcut::replace().contains(key)) {
-      if (!parent->isReadOnly())
-          parent->slotReplace();
-      return true;
-  } else if ( KStandardShortcut::pasteSelection().contains( key ) ) {
-    QString text = QApplication::clipboard()->text( QClipboard::Selection );
-    if ( !text.isEmpty() )
-      parent->insertPlainText( text );  // TODO: check if this is html? (MiB)
-    return true;
-  }
-  return false;
-}
-
-static void deleteWord(QTextCursor cursor, QTextCursor::MoveOperation op)
-{
-  cursor.clearSelection();
-  cursor.movePosition( op, QTextCursor::KeepAnchor );
-  cursor.removeSelectedText();
+    return false;
 }
 
 void KTextEdit::deleteWordBack()
 {
-  deleteWord(textCursor(), QTextCursor::PreviousWord);
-}
+    deleteWord(textCursor(), QTextCursor::PreviousWord);
+}       
 
 void KTextEdit::deleteWordForward()
 {
-  deleteWord(textCursor(), QTextCursor::NextWord);
+    deleteWord(textCursor(), QTextCursor::NextWord);
 }
 
 QMenu *KTextEdit::mousePopupMenu()
 {
-  QMenu *popup = createStandardContextMenu();
-  if (!popup) return 0;
-  connect( popup, SIGNAL(triggered(QAction*)),
-             this, SLOT(menuActivated(QAction*)) );
+    QMenu *popup = createStandardContextMenu();
+    if (!popup) {
+        return nullptr;
+    }
+    connect(
+        popup, SIGNAL(triggered(QAction*)),
+        this, SLOT(menuActivated(QAction*))
+    );
 
-  const bool emptyDocument = document()->isEmpty();
+    const bool emptyDocument = document()->isEmpty();
 
-  if( !isReadOnly() )
-  {
-      popup->addSeparator();
-      d->autoSpellCheckAction = popup->addAction( i18n( "Auto Spell Check" ) );
-      d->autoSpellCheckAction->setCheckable( true );
-      d->autoSpellCheckAction->setChecked( checkSpellingEnabled() );
-      popup->addSeparator();
-      if (d->showTabAction) {
-        d->allowTab = popup->addAction( i18n("Allow Tabulations") );
-        d->allowTab->setCheckable( true );
-        d->allowTab->setChecked( !tabChangesFocus() );
-      }
-  }
+    if (!isReadOnly()) {
+        popup->addSeparator();
+        d->autoSpellCheckAction = popup->addAction(i18n("Auto Spell Check"));
+        d->autoSpellCheckAction->setCheckable( true );
+        d->autoSpellCheckAction->setChecked( checkSpellingEnabled());
+        popup->addSeparator();
+        if (d->showTabAction) {
+            d->allowTab = popup->addAction(i18n("Allow Tabulations"));
+            d->allowTab->setCheckable(true);
+            d->allowTab->setChecked(!tabChangesFocus());
+        }
+    }
 
-  if (d->findReplaceEnabled) {
-      KAction *findAction = KStandardAction::find(this, SLOT(slotFind()), popup);
-      KAction *findNextAction = KStandardAction::findNext(this, SLOT(slotFindNext()), popup);
-      if (emptyDocument) {
-          findAction->setEnabled(false);
-          findNextAction->setEnabled(false);
-      } else {
-          findNextAction->setEnabled(d->find != 0);
-      }
-      popup->addSeparator();
-      popup->addAction(findAction);
-      popup->addAction(findNextAction);
+    if (d->findReplaceEnabled) {
+        KAction *findAction = KStandardAction::find(this, SLOT(slotFind()), popup);
+        KAction *findNextAction = KStandardAction::findNext(this, SLOT(slotFindNext()), popup);
+        if (emptyDocument) {
+            findAction->setEnabled(false);
+            findNextAction->setEnabled(false);
+        } else {
+            findNextAction->setEnabled(d->find != 0);
+        }
+        popup->addSeparator();
+        popup->addAction(findAction);
+        popup->addAction(findNextAction);
 
-      if (!isReadOnly()) {
-          KAction *replaceAction = KStandardAction::replace(this, SLOT(slotReplace()), popup);
-          if (emptyDocument) {
-              replaceAction->setEnabled(false);
-          }
-          popup->addAction(replaceAction);
-      }
-  }
-  return popup;
+        if (!isReadOnly()) {
+            KAction *replaceAction = KStandardAction::replace(this, SLOT(slotReplace()), popup);
+            if (emptyDocument) {
+                replaceAction->setEnabled(false);
+            }
+            popup->addAction(replaceAction);
+        }
+    }
+    return popup;
 }
 
 void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
@@ -436,9 +456,11 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
     QTextCursor cursor = textCursor();
 
     // Check if the user clicked a selected word
-    const bool selectedWordClicked = cursor.hasSelection() &&
-                               mousePos >= cursor.selectionStart() &&
-                               mousePos <= cursor.selectionEnd();
+    const bool selectedWordClicked = (
+        cursor.hasSelection() &&
+        mousePos >= cursor.selectionStart() &&
+        mousePos <= cursor.selectionEnd()
+    );
 
     // Get the word under the (mouse-)cursor and see if it is misspelled.
     // Don't include apostrophes at the start/end of the word in the selection.
@@ -449,9 +471,9 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
 
     bool isMouseCursorInsideWord = true;
     if ((mousePos < wordSelectCursor.selectionStart() ||
-            mousePos >= wordSelectCursor.selectionEnd())
-                                        && (selectedWord.length() > 1)) {
-         isMouseCursorInsideWord = false;
+        mousePos >= wordSelectCursor.selectionEnd())
+        && (selectedWord.length() > 1)) {
+        isMouseCursorInsideWord = false;
     }
 
     // Clear the selection again, we re-select it below (without the apostrophes).
@@ -460,27 +482,33 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
         selectedWord = selectedWord.right(selectedWord.size() - 1);
         wordSelectCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor);
     }
-    if (selectedWord.endsWith('\'') || selectedWord.endsWith('\"'))
+    if (selectedWord.endsWith('\'') || selectedWord.endsWith('\"')) {
         selectedWord.chop(1);
+    }
 
-    wordSelectCursor.movePosition(QTextCursor::NextCharacter,
-                                  QTextCursor::KeepAnchor, selectedWord.size());
+    wordSelectCursor.movePosition(
+        QTextCursor::NextCharacter,
+        QTextCursor::KeepAnchor, selectedWord.size()
+    );
 
-    const bool wordIsMisspelled = isMouseCursorInsideWord &&
-                            checkSpellingEnabled() &&
-                            !selectedWord.isEmpty() &&
-                            highlighter() &&
-                            highlighter()->isWordMisspelled(selectedWord);
+    const bool wordIsMisspelled = (
+        isMouseCursorInsideWord &&
+        checkSpellingEnabled() &&
+        !selectedWord.isEmpty() &&
+        highlighter() &&
+        highlighter()->isWordMisspelled(selectedWord)
+    );
 
     // If the user clicked a selected word, do nothing.
     // If the user clicked somewhere else, move the cursor there.
     // If the user clicked on a misspelled word, select that word.
     // Same behavior as in OpenOffice Writer.
     if (!selectedWordClicked) {
-        if (wordIsMisspelled)
+        if (wordIsMisspelled) {
             setTextCursor(wordSelectCursor);
-        else
+        } else {
             setTextCursor(cursorAtMouse);
+        }
         cursor = textCursor();
     }
 
@@ -501,8 +529,7 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
         if (reps.isEmpty()) {
             QAction *suggestionsAction = menu.addAction(i18n("No suggestions for %1", selectedWord));
             suggestionsAction->setEnabled(false);
-        }
-        else {
+        } else {
             QStringList::const_iterator end(reps.constEnd());
             for (QStringList::const_iterator it = reps.constBegin(); it != end; ++it) {
                 menu.addAction(*it);
@@ -511,8 +538,8 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
 
         menu.addSeparator();
 
-        QAction *ignoreAction = menu.addAction(i18n("Ignore"));
-        QAction *addToDictAction = menu.addAction(i18n("Add to Dictionary"));
+        QAction* ignoreAction = menu.addAction(i18n("Ignore"));
+        QAction* addToDictAction = menu.addAction(i18n("Add to Dictionary"));
         //Execute the popup inline
         const QAction *selectedAction = menu.exec(event->globalPos());
 
@@ -522,14 +549,11 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
             if (selectedAction == ignoreAction) {
                 highlighter()->ignoreWord(selectedWord);
                 highlighter()->rehighlight();
-            }
-            else if (selectedAction == addToDictAction) {
+            } else if (selectedAction == addToDictAction) {
                 highlighter()->addWordToDictionary(selectedWord);
                 highlighter()->rehighlight();
-            }
-
-            // Other actions can only be one of the suggested words
-            else {
+            } else {
+                // Other actions can only be one of the suggested words
                 const QString replacement = selectedAction->text();
                 Q_ASSERT(reps.contains(replacement));
                 cursor.insertText(replacement);
@@ -557,36 +581,36 @@ void KTextEdit::setHighlighter(KSpellHighlighter *highLighter)
 
 void KTextEdit::setCheckSpellingEnabled(bool check)
 {
-    emit checkSpellingChanged( check );
-    if ( check == d->checkSpellingEnabled )
+    emit checkSpellingChanged(check);
+    if (check == d->checkSpellingEnabled) {
         return;
+    }
 
     // From the above statment we know know that if we're turning checking
     // on that we need to create a new highlighter and if we're turning it
     // off we should remove the old one.
 
     d->checkSpellingEnabled = check;
-    if ( check )
-    {
-        if ( hasFocus() ) {
+    if (check) {
+        if (hasFocus()) {
             createHighlighter();
-            if (!spellCheckingLanguage().isEmpty())
+            if (!spellCheckingLanguage().isEmpty()) {
                 setSpellCheckingLanguage(spellCheckingLanguage());
+            }
         }
-    }
-    else
-    {
+    } else {
         delete d->highlighter;
-        d->highlighter = 0;
+        d->highlighter = nullptr;
     }
 }
 
-void KTextEdit::focusInEvent( QFocusEvent *event )
+void KTextEdit::focusInEvent(QFocusEvent *event)
 {
-  if ( d->checkSpellingEnabled && !isReadOnly() && !d->highlighter )
-    createHighlighter();
+    if (d->checkSpellingEnabled && !isReadOnly() && !d->highlighter) {
+        createHighlighter();
+    }
 
-  QTextEdit::focusInEvent( event );
+    QTextEdit::focusInEvent(event);
 }
 
 bool KTextEdit::checkSpellingEnabled() const
@@ -594,58 +618,61 @@ bool KTextEdit::checkSpellingEnabled() const
     return d->checkSpellingEnabled;
 }
 
-void KTextEdit::setReadOnly( bool readOnly )
+void KTextEdit::setReadOnly(bool readOnly)
 {
-  if ( !readOnly && hasFocus() && d->checkSpellingEnabled && !d->highlighter )
-    createHighlighter();
+    if (!readOnly && hasFocus() && d->checkSpellingEnabled && !d->highlighter) {
+        createHighlighter();
+    }
 
-  if ( readOnly == isReadOnly() )
-    return;
+    if (readOnly == isReadOnly()) {
+        return;
+    }
 
-  if ( readOnly ) {
-    delete d->highlighter;
-    d->highlighter = 0;
+    if (readOnly) {
+        delete d->highlighter;
+        d->highlighter = nullptr;
 
-    d->customPalette = testAttribute( Qt::WA_SetPalette );
-    QPalette p = palette();
-    QColor color = p.color( QPalette::Disabled, QPalette::Background );
-    p.setColor( QPalette::Base, color );
-    p.setColor( QPalette::Background, color );
-    setPalette( p );
-  } else {
-    if ( d->customPalette && testAttribute( Qt::WA_SetPalette ) ) {
+        d->customPalette = testAttribute(Qt::WA_SetPalette);
         QPalette p = palette();
-        QColor color = p.color( QPalette::Normal, QPalette::Base );
-        p.setColor( QPalette::Base, color );
-        p.setColor( QPalette::Background, color );
-        setPalette( p );
-    } else
-        setPalette( QPalette() );
-  }
+        QColor color = p.color(QPalette::Disabled, QPalette::Background);
+        p.setColor(QPalette::Base, color);
+        p.setColor(QPalette::Background, color);
+        setPalette(p);
+    } else {
+        if (d->customPalette && testAttribute(Qt::WA_SetPalette)) {
+            QPalette p = palette();
+            QColor color = p.color(QPalette::Normal, QPalette::Base);
+            p.setColor(QPalette::Base, color);
+            p.setColor(QPalette::Background, color);
+            setPalette(p);
+        } else {
+            setPalette(QPalette());
+        }
+    }
 
-  QTextEdit::setReadOnly( readOnly );
+    QTextEdit::setReadOnly(readOnly);
 }
 
-void KTextEdit::highlightWord( int length, int pos )
+void KTextEdit::highlightWord(int length, int pos)
 {
-  QTextCursor cursor(document());
-  cursor.setPosition(pos);
-  cursor.setPosition(pos+length,QTextCursor::KeepAnchor);
-  setTextCursor (cursor);
-  ensureCursorVisible();
+    QTextCursor cursor(document());
+    cursor.setPosition(pos);
+    cursor.setPosition(pos+length,QTextCursor::KeepAnchor);
+    setTextCursor (cursor);
+    ensureCursorVisible();
 }
 
 void KTextEdit::replace()
 {
-     if ( document()->isEmpty() )  // saves having to track the text changes
+    if (document()->isEmpty()) {
+        // saves having to track the text changes
         return;
-
-    if ( d->repDlg ) {
-      KWindowSystem::activateWindow( d->repDlg->winId() );
+    }
+    if (d->repDlg) {
+        KWindowSystem::activateWindow(d->repDlg->winId());
     } else {
-      d->repDlg = new KReplaceDialog(this, 0,
-                                    QStringList(), QStringList(), false);
-      connect( d->repDlg, SIGNAL(okClicked()), this, SLOT(slotDoReplace()) );
+        d->repDlg = new KReplaceDialog(this, 0, QStringList(), QStringList(), false);
+        connect(d->repDlg, SIGNAL(okClicked()), this, SLOT(slotDoReplace()));
     }
     d->repDlg->show();
 }
@@ -657,8 +684,8 @@ void KTextEdit::slotDoReplace()
         return;
     }
 
-    if(d->repDlg->pattern().isEmpty()) {
-	delete d->replace;
+    if (d->repDlg->pattern().isEmpty()) {
+        delete d->replace;
         d->replace = 0;
         ensureCursorVisible();
         return;
@@ -673,21 +700,25 @@ void KTextEdit::slotDoReplace()
 
     // Connect highlight signal to code which handles highlighting
     // of found text.
-    connect(d->replace, SIGNAL(highlight(QString,int,int)),
-            this, SLOT(slotFindHighlight(QString,int,int)));
+    connect(
+        d->replace, SIGNAL(highlight(QString,int,int)),
+        this, SLOT(slotFindHighlight(QString,int,int))
+    );
     connect(d->replace, SIGNAL(findNext()), this, SLOT(slotReplaceNext()));
-    connect(d->replace, SIGNAL(replace(QString,int,int,int)),
-            this, SLOT(slotReplaceText(QString,int,int,int)));
+    connect(
+        d->replace, SIGNAL(replace(QString,int,int,int)),
+        this, SLOT(slotReplaceText(QString,int,int,int))
+    );
 
     d->repDlg->close();
     slotReplaceNext();
 }
 
-
 void KTextEdit::slotReplaceNext()
 {
-    if (!d->replace)
+    if (!d->replace) {
         return;
+    }
 
     d->lastReplacedPosition = -1;
     if (!(d->replace->options() & KReplaceDialog::PromptOnReplace)) {
@@ -697,8 +728,9 @@ void KTextEdit::slotReplaceNext()
 
     KFind::Result res = KFind::NoMatch;
 
-    if (d->replace->needData())
+    if (d->replace->needData()) {
         d->replace->setData(toPlainText(), d->repIndex);
+    }
     res = d->replace->replace();
     if (!(d->replace->options() & KReplaceDialog::PromptOnReplace)) {
         textCursor().endEditBlock(); // #48541
@@ -716,15 +748,14 @@ void KTextEdit::slotReplaceNext()
     if (res == KFind::NoMatch) {
         d->replace->displayFinalDialog();
         d->replace->disconnect(this);
-        d->replace->deleteLater(); // we are in a slot connected to m_replace, don't delete it right away
+        d->replace->deleteLater(); // in a slot connected to m_replace, don't delete it right away
         d->replace = 0;
         ensureCursorVisible();
-        //or           if ( m_replace->shouldRestart() ) { reinit (w/o FromCursor) and call slotReplaceNext(); }
+        // or if ( m_replace->shouldRestart() ) { reinit (w/o FromCursor) and call slotReplaceNext(); }
     } else {
-        //m_replace->closeReplaceNextDialog();
+        // m_replace->closeReplaceNextDialog();
     }
 }
-
 
 void KTextEdit::slotDoFind()
 {
@@ -732,10 +763,9 @@ void KTextEdit::slotDoFind()
         // Should really assert()
         return;
     }
-    if( d->findDlg->pattern().isEmpty())
-    {
+    if (d->findDlg->pattern().isEmpty()) {
         delete d->find;
-        d->find = 0;
+        d->find = nullptr;
         return;
     }
     delete d->find;
@@ -747,8 +777,10 @@ void KTextEdit::slotDoFind()
 
     // Connect highlight signal to code which handles highlighting
     // of found text.
-    connect(d->find, SIGNAL(highlight(QString,int,int)),
-            this, SLOT(slotFindHighlight(QString,int,int)));
+    connect(
+        d->find, SIGNAL(highlight(QString,int,int)),
+        this, SLOT(slotFindHighlight(QString,int,int))
+    );
     connect(d->find, SIGNAL(findNext()), this, SLOT(slotFindNext()));
 
     d->findDlg->close();
@@ -756,46 +788,46 @@ void KTextEdit::slotDoFind()
     slotFindNext();
 }
 
-
 void KTextEdit::slotFindNext()
 {
-    if (!d->find)
+    if (!d->find) {
         return;
-    if(document()->isEmpty())
-    {
+    }
+    if (document()->isEmpty()) {
         d->find->disconnect(this);
-        d->find->deleteLater(); // we are in a slot connected to m_find, don't delete right away
-        d->find = 0;
+        d->find->deleteLater(); // in a slot connected to m_find, don't delete right away
+        d->find = nullptr;
         return;
     }
 
     KFind::Result res = KFind::NoMatch;
-    if (d->find->needData())
+    if (d->find->needData()) {
         d->find->setData(toPlainText(), d->findIndex);
+    }
     res = d->find->find();
 
     if (res == KFind::NoMatch) {
         d->find->displayFinalDialog();
         d->find->disconnect(this);
-        d->find->deleteLater(); // we are in a slot connected to m_find, don't delete right away
-        d->find = 0;
-        //or           if ( m_find->shouldRestart() ) { reinit (w/o FromCursor) and call slotFindNext(); }
+        d->find->deleteLater(); // in a slot connected to m_find, don't delete right away
+        d->find = nullptr;
+        // or if ( m_find->shouldRestart() ) { reinit (w/o FromCursor) and call slotFindNext(); }
     } else {
-        //m_find->closeFindNextDialog();
+        // m_find->closeFindNextDialog();
     }
 }
 
-
 void KTextEdit::slotFind()
 {
-    if ( document()->isEmpty() )  // saves having to track the text changes
+    if (document()->isEmpty()) {
+        // saves having to track the text changes
         return;
-
-    if ( d->findDlg ) {
-      KWindowSystem::activateWindow( d->findDlg->winId() );
+    }
+    if (d->findDlg) {
+        KWindowSystem::activateWindow(d->findDlg->winId());
     } else {
-      d->findDlg = new KFindDialog(this);
-      connect( d->findDlg, SIGNAL(okClicked()), this, SLOT(slotDoFind()) );
+        d->findDlg = new KFindDialog(this);
+        connect( d->findDlg, SIGNAL(okClicked()), this, SLOT(slotDoFind()));
     }
     d->findDlg->show();
 }
@@ -803,89 +835,89 @@ void KTextEdit::slotFind()
 
 void KTextEdit::slotReplace()
 {
-    if ( document()->isEmpty() )  // saves having to track the text changes
+    if (document()->isEmpty()) {
+        // saves having to track the text changes
         return;
-
-    if ( d->repDlg ) {
-      KWindowSystem::activateWindow( d->repDlg->winId() );
+    }
+    if (d->repDlg) {
+        KWindowSystem::activateWindow(d->repDlg->winId());
     } else {
-      d->repDlg = new KReplaceDialog(this, 0,
-                                    QStringList(), QStringList(), false);
-      connect( d->repDlg, SIGNAL(okClicked()), this, SLOT(slotDoReplace()) );
+        d->repDlg = new KReplaceDialog(this, 0,  QStringList(), QStringList(), false);
+        connect( d->repDlg, SIGNAL(okClicked()), this, SLOT(slotDoReplace()));
     }
     d->repDlg->show();
 }
 
-void KTextEdit::enableFindReplace( bool enabled )
+void KTextEdit::enableFindReplace(bool enabled)
 {
     d->findReplaceEnabled = enabled;
 }
 
-void KTextEdit::showTabAction( bool show )
+void KTextEdit::showTabAction(bool show)
 {
     d->showTabAction = show;
 }
 
-bool KTextEdit::Private::overrideShortcut(const QKeyEvent* event)
+bool KTextEdit::Private::overrideShortcut(const QKeyEvent *event)
 {
-  const int key = event->key() | event->modifiers();
+    const int key = (event->key() | event->modifiers());
 
-  if ( KStandardShortcut::copy().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::paste().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::cut().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::undo().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::redo().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::deleteWordBack().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::deleteWordForward().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::backwardWord().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::forwardWord().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::next().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::prior().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::begin().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::end().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::beginningOfLine().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::endOfLine().contains( key ) ) {
-    return true;
-  } else if ( KStandardShortcut::pasteSelection().contains( key ) ) {
-    return true;
-  } else if (findReplaceEnabled && KStandardShortcut::find().contains(key)) {
-      return true;
-  } else if (findReplaceEnabled && KStandardShortcut::findNext().contains(key)) {
-      return true;
-  } else if (findReplaceEnabled && KStandardShortcut::replace().contains(key)) {
-      return true;
-  } else if (event->matches(QKeySequence::SelectAll)) { // currently missing in QTextEdit
-      return true;
-  } else if (event->modifiers() == Qt::ControlModifier &&
-            (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
-              qobject_cast<KDialog*>(parent->window()) ) {
-    // ignore Ctrl-Return so that KDialogs can close the dialog
-    return true;
-  }
-  return false;
+    if (KStandardShortcut::copy().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::paste().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::cut().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::undo().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::redo().contains(key)) {
+        return true;
+    } else if ( KStandardShortcut::deleteWordBack().contains(key) ) {
+        return true;
+    } else if (KStandardShortcut::deleteWordForward().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::backwardWord().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::forwardWord().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::next().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::prior().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::begin().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::end().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::beginningOfLine().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::endOfLine().contains(key)) {
+        return true;
+    } else if (KStandardShortcut::pasteSelection().contains(key) ) {
+        return true;
+    } else if (findReplaceEnabled && KStandardShortcut::find().contains(key)) {
+        return true;
+    } else if (findReplaceEnabled && KStandardShortcut::findNext().contains(key)) {
+        return true;
+    } else if (findReplaceEnabled && KStandardShortcut::replace().contains(key)) {
+        return true;
+    } else if (event->matches(QKeySequence::SelectAll)) { // currently missing in QTextEdit
+        return true;
+    } else if (event->modifiers() == Qt::ControlModifier &&
+        (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
+            qobject_cast<KDialog*>(parent->window()) ) {
+        // ignore Ctrl-Return so that KDialogs can close the dialog
+        return true;
+    }
+    return false;
 }
 
-void KTextEdit::keyPressEvent( QKeyEvent *event )
+void KTextEdit::keyPressEvent(QKeyEvent *event)
 {
     if (d->handleShortcut(event)) {
         event->accept();
-    }else if (event->modifiers() == Qt::ControlModifier &&
-            (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
-              qobject_cast<KDialog*>(window()) ) {
+    } else if (event->modifiers() == Qt::ControlModifier &&
+        (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
+        qobject_cast<KDialog*>(window()) ) {
         event->ignore();
     } else {
         QTextEdit::keyPressEvent(event);

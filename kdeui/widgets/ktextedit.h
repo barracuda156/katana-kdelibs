@@ -1,4 +1,5 @@
-/* This file is part of the KDE libraries
+/*
+    This file is part of the KDE libraries
     Copyright (C) 2002 Carsten Pfeiffer <pfeiffer@kde.org>
 
     This library is free software; you can redistribute it and/or
@@ -43,25 +44,25 @@
  * @see QTextEdit
  * @author Carsten Pfeiffer <pfeiffer@kde.org>
  */
-class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
+class KDEUI_EXPORT KTextEdit : public QTextEdit
 {
     Q_OBJECT
-    Q_PROPERTY( QString clickMessage READ clickMessage WRITE setClickMessage )
-    Q_PROPERTY( bool checkSpellingEnabled READ checkSpellingEnabled WRITE setCheckSpellingEnabled )
-    Q_PROPERTY( QString spellCheckingLanguage READ spellCheckingLanguage WRITE setSpellCheckingLanguage )
+    Q_PROPERTY(QString clickMessage READ clickMessage WRITE setClickMessage)
+    Q_PROPERTY(bool checkSpellingEnabled READ checkSpellingEnabled WRITE setCheckSpellingEnabled)
+    Q_PROPERTY(QString spellCheckingLanguage READ spellCheckingLanguage WRITE setSpellCheckingLanguage)
 
-  public:
+public:
     /**
      * Constructs a KTextEdit object. See QTextEdit::QTextEdit
      * for details.
      */
-    explicit KTextEdit( const QString& text, QWidget *parent = 0 );
+    explicit KTextEdit(const QString &text, QWidget *parent = nullptr);
 
     /**
      * Constructs a KTextEdit object. See QTextEdit::QTextEdit
      * for details.
      */
-    explicit KTextEdit( QWidget *parent = 0 );
+    explicit KTextEdit(QWidget *parent = nullptr);
 
     /**
      * Destroys the KTextEdit object.
@@ -71,7 +72,7 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
     /**
      * Reimplemented to set a proper "deactivated" background color.
      */
-    virtual void setReadOnly( bool readOnly );
+    virtual void setReadOnly(bool readOnly);
 
     /**
      * Turns background spell checking for this text edit on or off.
@@ -84,7 +85,7 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      * @see isReadOnly()
      * @see setReadOnly()
      */
-    void setCheckSpellingEnabled( bool check );
+    void setCheckSpellingEnabled(bool check);
 
     /**
      * Returns true if background spell checking is enabled for this text edit.
@@ -104,7 +105,7 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      * @param length The length of the selection, in number of characters
      * @param pos The position of the first character of the selection
      */
-    void highlightWord( int length, int pos );
+    void highlightWord(int length, int pos);
 
     /**
      * Allows to create a specific highlighter if reimplemented.
@@ -150,13 +151,13 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      * @since 4.1
      * @todo mark as virtual
      */
-    QMenu *mousePopupMenu();
+    QMenu* mousePopupMenu();
 
     /**
      * Enable find replace action.
      * @since 4.1
      */
-    void enableFindReplace( bool enabled);
+    void enableFindReplace(bool enabled);
 
     /**
      * @return the spell checking language which was set by
@@ -180,13 +181,12 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      */
     QString clickMessage() const;
 
-
     /**
      * @since 4.10
      */
     void showTabAction(bool show);
 
-  Q_SIGNALS:
+Q_SIGNALS:
     /**
      * emit signal when we activate or not autospellchecking
      *
@@ -215,9 +215,9 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      * @param p the context menu about to be displayed
      * @since 4.5
      */
-    void aboutToShowContextMenu(QMenu* menu);
+    void aboutToShowContextMenu(QMenu *menu);
 
-  public Q_SLOTS:
+public Q_SLOTS:
     /**
      * Set the spell check language which will be used for highlighting spelling
      * mistakes and for the spellcheck dialog.
@@ -234,7 +234,7 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      */
     void replace();
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
     /**
      * @since 4.1
      */
@@ -245,11 +245,11 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
     void slotFindNext();
     void slotReplace();
 
-  protected:
+protected:
     /**
      * Reimplemented to catch "delete word" shortcut events.
      */
-    virtual bool event(QEvent*);
+    virtual bool event(QEvent *);
 
     /**
      * Reimplemented to paint clickMessage.
@@ -259,13 +259,13 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
     /**
      * Reimplemented for internal reasons
      */
-    virtual void keyPressEvent( QKeyEvent* );
+    virtual void keyPressEvent(QKeyEvent *);
 
     /**
      * Reimplemented to instantiate a KDictSpellingHighlighter, if
      * spellchecking is enabled.
      */
-    virtual void focusInEvent( QFocusEvent* );
+    virtual void focusInEvent(QFocusEvent *);
 
     /**
      * Deletes a word backwards from the current cursor position,
@@ -283,17 +283,17 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit //krazy:exclude=qclasses
      * Reimplemented from QTextEdit to add spelling related items
      * when appropriate.
      */
-    virtual void contextMenuEvent( QContextMenuEvent* );
+    virtual void contextMenuEvent(QContextMenuEvent *);
 
-  private:
+private:
     class Private;
     Private *const d;
 
     Q_PRIVATE_SLOT( d, void undoableClear() )
     Q_PRIVATE_SLOT( d, void toggleAutoSpellCheck() )
     Q_PRIVATE_SLOT( d, void slotAllowTab() )
-    Q_PRIVATE_SLOT( d, void menuActivated( QAction* ) )
-    Q_PRIVATE_SLOT( d, void slotFindHighlight(const QString&, int, int))
+    Q_PRIVATE_SLOT( d, void menuActivated(QAction *))
+    Q_PRIVATE_SLOT( d, void slotFindHighlight(const QString &, int, int))
     Q_PRIVATE_SLOT( d, void slotReplaceText(const QString &, int, int, int))
 };
 
