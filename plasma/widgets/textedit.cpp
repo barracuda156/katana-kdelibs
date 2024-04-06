@@ -52,8 +52,8 @@ TextEdit::TextEdit(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new TextEditPrivate(this))
 {
-    setNativeWidget(new KTextEdit());
     d->style = Plasma::Style::sharedStyle();
+    setNativeWidget(new KTextEdit());
     d->initTheming();
 }
 
