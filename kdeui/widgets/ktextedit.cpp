@@ -109,12 +109,9 @@ class KTextEdit::Private
      */
     bool handleShortcut(const QKeyEvent *e);
 
-    void toggleAutoSpellCheck();
-
     void slotFindHighlight(const QString &text, int matchingIndex, int matchingLength);
     void slotReplaceText(const QString &text, int replacementIndex, int /*replacedLength*/, int matchedLength);
 
-    void slotAllowTab();
     void menuActivated(QAction *action);
 
     QRect clickMessageRect() const;
@@ -142,22 +139,12 @@ class KTextEdit::Private
     int lastReplacedPosition;
 };
 
-void KTextEdit::Private::toggleAutoSpellCheck()
-{
-    parent->setCheckSpellingEnabled(!parent->checkSpellingEnabled());
-}
-
-void KTextEdit::Private::slotAllowTab()
-{
-    parent->setTabChangesFocus(!parent->tabChangesFocus());
-}
-
 void KTextEdit::Private::menuActivated(QAction *action)
 {
     if (action == autoSpellCheckAction) {
-        toggleAutoSpellCheck();
+        parent->setCheckSpellingEnabled(!parent->checkSpellingEnabled());
     } else if (action == allowTab) {
-        slotAllowTab();
+        parent->setTabChangesFocus(!parent->tabChangesFocus());
     }
 }
 
