@@ -289,7 +289,6 @@ private:
     class Private;
     Private *const d;
 
-    Q_PRIVATE_SLOT( d, void undoableClear() )
     Q_PRIVATE_SLOT( d, void toggleAutoSpellCheck() )
     Q_PRIVATE_SLOT( d, void slotAllowTab() )
     Q_PRIVATE_SLOT( d, void menuActivated(QAction *))

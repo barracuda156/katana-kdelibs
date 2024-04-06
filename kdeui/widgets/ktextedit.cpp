@@ -28,12 +28,10 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QTextCursor>
-#include <QTextDocumentFragment>
 
 #include <kdebug.h>
 #include <kaction.h>
 #include <kcursor.h>
-#include <kglobalsettings.h>
 #include <kstandardaction.h>
 #include <kstandardshortcut.h>
 #include <kicon.h>
@@ -61,7 +59,10 @@ class KTextEdit::Private
 {
   public:
     Private(KTextEdit *_parent)
-      : parent(_parent),
+        : parent(_parent),
+        autoSpellCheckAction(nullptr),
+        allowTab(nullptr),
+        italicizePlaceholder(true),
         customPalette(false),
         checkSpellingEnabled(false),
         findReplaceEnabled(true),
@@ -75,7 +76,7 @@ class KTextEdit::Private
         repIndex(0),
         lastReplacedPosition(-1)
     {
-        //Check the default settings to see if spellchecking should be enabled.
+        // Check the default settings to see if spellchecking should be enabled.
         KConfigGroup spellgroup(KGlobal::config(), "Spelling");
         checkSpellingEnabled = spellgroup.readEntry("checkerEnabledByDefault", false);
 
@@ -113,12 +114,6 @@ class KTextEdit::Private
     void slotFindHighlight(const QString &text, int matchingIndex, int matchingLength);
     void slotReplaceText(const QString &text, int replacementIndex, int /*replacedLength*/, int matchedLength);
 
-    /**
-     * Similar to QTextEdit::clear(), only that it is possible to undo this
-     * action.
-     */
-    void undoableClear();
-
     void slotAllowTab();
     void menuActivated(QAction *action);
 
@@ -136,30 +131,20 @@ class KTextEdit::Private
     bool checkSpellingEnabled;
     bool findReplaceEnabled;
     bool showTabAction;
-    QTextDocumentFragment originalDoc;
     QString spellCheckingLanguage;
     KSpellHighlighter *highlighter;
     KFindDialog *findDlg;
     KFind *find;
     KReplaceDialog *repDlg;
     KReplace *replace;
-    int findIndex, repIndex;
+    int findIndex;
+    int repIndex;
     int lastReplacedPosition;
 };
 
 void KTextEdit::Private::toggleAutoSpellCheck()
 {
     parent->setCheckSpellingEnabled(!parent->checkSpellingEnabled());
-}
-
-void KTextEdit::Private::undoableClear()
-{
-    QTextCursor cursor = parent->textCursor();
-    cursor.beginEditBlock();
-    cursor.movePosition(QTextCursor::Start);
-    cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
-    cursor.removeSelectedText();
-    cursor.endEditBlock();
 }
 
 void KTextEdit::Private::slotAllowTab()
