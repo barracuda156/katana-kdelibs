@@ -301,6 +301,8 @@ void KDNSSDPrivate::browseCallback(AvahiServiceBrowser *avahibrowser, AvahiIfInd
                                    AvahiLookupResultFlags avahiflags,
                                    void* userdata)
 {
+    Q_UNUSED(avahiflags);
+
     // qDebug() << Q_FUNC_INFO << avahievent << avahiname << avahitype << avahidomain << userdata;
 
     KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
@@ -313,7 +315,7 @@ void KDNSSDPrivate::browseCallback(AvahiServiceBrowser *avahibrowser, AvahiIfInd
                 avahiclient,
                 avahiinterface, avahiprotocol,
                 avahiname, avahitype, avahidomain,
-                s_avahiproto, AvahiLookupFlags(0),
+                s_avahiproto, AVAHI_LOOKUP_NO_TXT,
                 KDNSSDPrivate::resolveCallback,
                 userdata
             );
@@ -349,6 +351,12 @@ void KDNSSDPrivate::resolveCallback(AvahiServiceResolver *avahiresolver, AvahiIf
                                     AvahiLookupResultFlags avahiflags,
                                     void* userdata)
 {
+    Q_UNUSED(avahiinterface);
+    Q_UNUSED(avahiprotocol);
+    Q_UNUSED(avahitxt);
+    Q_UNUSED(avahiflags);
+    Q_UNUSED(avahiflags);
+
     // qDebug() << Q_FUNC_INFO << avahievent << avahiname << avahitype << avahidomain << userdata;
 
     KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
@@ -417,6 +425,10 @@ void KDNSSDPrivate::serviceCallback(AvahiServiceTypeBrowser *avahiservice,
                                     AvahiLookupResultFlags avahiflags,
                                     void *userdata)
 {
+    Q_UNUSED(avahiinterface);
+    Q_UNUSED(avahiprotocol);
+    Q_UNUSED(avahiflags);
+
     // qDebug() << Q_FUNC_INFO << avahievent << avahitype << avahidomain << userdata;
 
     KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
