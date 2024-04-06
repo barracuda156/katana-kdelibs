@@ -212,8 +212,6 @@ install(
     KReplace
     KReplaceDialog
     KRestrictedLine
-    KRichTextEdit
-    KRichTextWidget
     KRuler
     KRun
     KSaveFile

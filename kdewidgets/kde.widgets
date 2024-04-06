@@ -187,16 +187,6 @@ Group=Display (KDE)
 ToolTip=Line Edit for restricted input (KDE)
 Group=Input (KDE)
 
-[KRichTextEdit]
-IncludeFile=krichtextedit.h
-ToolTip=Rich Text Editor (KDE)
-Group=Input (KDE)
-
-[KRichTextWidget]
-IncludeFile=krichtextwidget.h
-ToolTip=Rich Text Widget (KDE)
-Group=Input (KDE)
-
 [KRuler]
 ToolTip=Measuring Ruler Widget (KDE)
 WhatsThis=A measuring ruler widget as seen in KWord for page widths and heights

@@ -209,8 +209,6 @@ set(kdeui_LIB_SRCS
     widgets/kratingpainter.cpp
     widgets/kratingwidget.cpp
     widgets/krestrictedline.cpp
-    widgets/krichtextedit.cpp
-    widgets/krichtextwidget.cpp
     widgets/kruler.cpp
     widgets/kselector.cpp
     widgets/kseparator.cpp
@@ -483,8 +481,6 @@ install(
     widgets/kratingpainter.h
     widgets/kratingwidget.h
     widgets/krestrictedline.h
-    widgets/krichtextedit.h
-    widgets/krichtextwidget.h
     widgets/kseparator.h
     widgets/ksqueezedtextlabel.h
     widgets/ktextedit.h

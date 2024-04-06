@@ -152,7 +152,7 @@ bool KEMailDialog::setSubject(const QString &subject)
 
 QString KEMailDialog::message() const
 {
-    return d->ui.messagetextedit->textOrHtml();
+    return d->ui.messagetextedit->toHtml();
 }
 
 bool KEMailDialog::setMessage(const QString &message)
@@ -225,7 +225,7 @@ void KEMailDialog::slotButtonClicked(int button)
         } else if (d->ui.subjectlineedit->text().isEmpty()) {
             KMessageBox::error(this, i18n("No subject specified"));
             return;
-        } else if (d->ui.messagetextedit->textOrHtml().isEmpty()) {
+        } else if (d->ui.messagetextedit->toHtml().isEmpty()) {
             KMessageBox::error(this, i18n("No message specified"));
             return;
         }
@@ -233,7 +233,7 @@ void KEMailDialog::slotButtonClicked(int button)
         d->sendMail(
             d->ui.recipientslistwidget->items(),
             d->ui.subjectlineedit->text(),
-            d->ui.messagetextedit->textOrHtml(),
+            d->ui.messagetextedit->toHtml(),
             d->ui.attachlistwidget->items()
         );
         return;

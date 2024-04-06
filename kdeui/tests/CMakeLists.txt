@@ -51,7 +51,6 @@ KDEUI_UNIT_TESTS(
     kiconloader_unittest
     ktabwidget_unittest
     ktoolbar_unittest
-    krichtextedittest
     kselectaction_unittest
     klistwidgetsearchlinetest
     kconfigdialog_unittest
