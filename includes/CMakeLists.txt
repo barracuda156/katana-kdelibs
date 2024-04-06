@@ -260,7 +260,6 @@ install(
     KTextEdit
     KTimeEdit
     KTimeZone
-    KTimeZoneWidget
     KTimerDialog
     KTipDatabase
     KTipDialog

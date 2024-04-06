@@ -48,7 +48,6 @@ KDEUI_UNIT_TESTS(
     kstartupinfo_unittest
     kcolorutilstest
     kxmlgui_unittest
-    ktimezonewidget_unittest
     kiconloader_unittest
     ktabwidget_unittest
     ktoolbar_unittest
