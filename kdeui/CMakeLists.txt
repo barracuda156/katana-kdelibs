@@ -225,7 +225,6 @@ set(kdeui_LIB_SRCS
     widgets/kvbox.cpp
     widgets/kxyselector.cpp
     widgets/kdeuiwidgetsproxystyle.cpp
-    widgets/nestedlisthelper.cpp
     xmlgui/kxmlguibuilder.cpp
     xmlgui/kxmlguiwindow.cpp
     xmlgui/kmainwindowiface.cpp
