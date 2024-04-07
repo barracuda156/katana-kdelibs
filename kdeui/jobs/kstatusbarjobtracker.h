@@ -93,7 +93,6 @@ public Q_SLOTS:
     virtual void totalAmount(KJob *job, KJob::Unit unit, qulonglong amount);
     virtual void percent(KJob *job, unsigned long percent);
     virtual void speed(KJob *job, unsigned long value);
-    virtual void slotClean(KJob *job);
 
 private:
     class Private;

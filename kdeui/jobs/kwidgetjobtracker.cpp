@@ -132,24 +132,6 @@ bool KWidgetJobTracker::stopOnClose(KJob *job) const
     return d->progressWidget[job]->stopOnClose;
 }
 
-void KWidgetJobTracker::setAutoDelete(KJob *job, bool autoDelete)
-{
-    if (!d->progressWidget.contains(job)) {
-        return;
-    }
-    d->progressWidget[job]->setAttribute(Qt::WA_DeleteOnClose, autoDelete);
-}
-
-bool KWidgetJobTracker::autoDelete(KJob *job) const
-{
-    if (!d->progressWidget.contains(job)) {
-        kWarning() << "not found widget for job " << job << ". This method will return a "
-                      "hardcoded value";
-        return true;
-    }
-    return d->progressWidget[job]->testAttribute(Qt::WA_DeleteOnClose);
-}
-
 void KWidgetJobTracker::infoMessage(KJob *job, const QString &plain, const QString &rich)
 {
     KWidgetJobTracker::Private::ProgressWidget *pWidget = d->progressWidget.value(job, 0);
@@ -212,16 +194,6 @@ void KWidgetJobTracker::speed(KJob *job, unsigned long value)
     pWidget->speed(value);
 }
 
-void KWidgetJobTracker::slotClean(KJob *job)
-{
-    KWidgetJobTracker::Private::ProgressWidget *pWidget = d->progressWidget.value(job, 0);
-    if (!pWidget) {
-        return;
-    }
-
-    pWidget->slotClean();
-}
-
 void KWidgetJobTracker::suspended(KJob *job)
 {
     KWidgetJobTracker::Private::ProgressWidget *pWidget = d->progressWidget.value(job, 0);
@@ -257,7 +229,22 @@ void KWidgetJobTracker::Private::ProgressWidget::deref()
         if (!keepOpenCheck->isChecked()) {
             closeNow();
         } else {
-            slotClean();
+            percent(100);
+            cancelClose->setGuiItem(KStandardGuiItem::close());
+            openFile->setEnabled(true);
+            if (!totalSizeKnown || totalSize < processedSize)
+                totalSize = processedSize;
+            processedAmount(KJob::Bytes, totalSize);
+            keepOpenCheck->setEnabled(false);
+            pauseButton->setEnabled(false);
+            if (startTime.isValid()) {
+                qint64 s = startTime.elapsed();
+                if (!s) {
+                    s = 1;
+                }
+                speedLabel->setText(i18n("%1/s (done)",
+                                        KGlobal::locale()->formatByteSize(1000 * totalSize / s)));
+            }
         }
     }
 }
@@ -438,26 +425,6 @@ void KWidgetJobTracker::Private::ProgressWidget::speed(unsigned long value)
         } else { // total size is not known (#24228)
             speedLabel->setText(i18nc("speed in bytes per second", "%1/s", speedStr));
         }
-    }
-}
-
-void KWidgetJobTracker::Private::ProgressWidget::slotClean()
-{
-    percent(100);
-    cancelClose->setGuiItem(KStandardGuiItem::close());
-    openFile->setEnabled(true);
-    if (!totalSizeKnown || totalSize < processedSize)
-        totalSize = processedSize;
-    processedAmount(KJob::Bytes, totalSize);
-    keepOpenCheck->setEnabled(false);
-    pauseButton->setEnabled(false);
-    if (startTime.isValid()) {
-        qint64 s = startTime.elapsed();
-        if (!s) {
-            s = 1;
-        }
-        speedLabel->setText(i18n("%1/s (done)",
-                                  KGlobal::locale()->formatByteSize(1000 * totalSize / s)));
     }
 }
 

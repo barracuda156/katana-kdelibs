@@ -95,30 +95,6 @@ public:
      */
     virtual bool stopOnClose(KJob *job) const;
 
-    /**
-     * This controls whether the dialog should be deleted or only cleaned when
-     * the KJob is finished (or canceled).
-     *
-     * If your dialog is an embedded widget and not a separate window, you should
-     * setAutoDelete(false) in the constructor of your custom dialog.
-     *
-     * @param job the job's widget that is going to be auto-deleted
-     * @param autoDelete If false the dialog will only call method slotClean.
-     * If true the dialog will be deleted.
-     * @see autoDelete()
-     */
-    virtual void setAutoDelete(KJob *job, bool autoDelete);
-
-    /**
-     * Checks whether the dialog should be deleted or cleaned.
-     *
-     * @param job the job's widget that will be auto-deleted
-     * @return false if the dialog only calls slotClean, true if it will be
-     *         deleted
-     * @see setAutoDelete()
-     */
-    virtual bool autoDelete(KJob *job) const;
-
 protected Q_SLOTS:
     /**
      * Called when a job is finished, in any case. It is used to notify
@@ -151,14 +127,6 @@ protected Q_SLOTS:
      * @param job The job that is being resumed
      */
     virtual void slotResume(KJob *job);
-
-    /**
-     * This method is called when the widget should be cleaned (after job is finished).
-     * redefine this for custom behavior.
-     *
-     * @param job The job that is being cleaned
-     */
-    virtual void slotClean(KJob *job);
 
 Q_SIGNALS:
     /**

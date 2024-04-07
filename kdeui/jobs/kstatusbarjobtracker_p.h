@@ -106,7 +106,6 @@ public Q_SLOTS:
     virtual void totalAmount(KJob::Unit unit, qulonglong amount);
     virtual void percent(unsigned long percent);
     virtual void speed(unsigned long value);
-    virtual void slotClean();
 
 private Q_SLOTS:
     void killJob();

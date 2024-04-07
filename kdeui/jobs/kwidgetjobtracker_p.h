@@ -138,7 +138,6 @@ public Q_SLOTS:
     virtual void processedAmount(KJob::Unit unit, qulonglong amount);
     virtual void percent(unsigned long percent);
     virtual void speed(unsigned long value);
-    virtual void slotClean();
     virtual void suspended();
     virtual void resumed();
 

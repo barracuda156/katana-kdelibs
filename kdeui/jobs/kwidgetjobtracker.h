@@ -74,8 +74,6 @@ public:
 
     virtual void setStopOnClose(KJob *job, bool stopOnClose);
     virtual bool stopOnClose(KJob *job) const;
-    virtual void setAutoDelete(KJob *job, bool autoDelete);
-    virtual bool autoDelete(KJob *job) const;
 
 protected Q_SLOTS:
     /**
@@ -89,7 +87,6 @@ protected Q_SLOTS:
     virtual void processedAmount(KJob *job, KJob::Unit unit, qulonglong amount);
     virtual void percent(KJob *job, unsigned long percent);
     virtual void speed(KJob *job, unsigned long value);
-    virtual void slotClean(KJob *job);
     virtual void suspended(KJob *job);
     virtual void resumed(KJob *job);
 

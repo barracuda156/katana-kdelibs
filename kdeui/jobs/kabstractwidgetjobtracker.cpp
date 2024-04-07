@@ -52,18 +52,6 @@ bool KAbstractWidgetJobTracker::stopOnClose(KJob *job) const
     return true;
 }
 
-void KAbstractWidgetJobTracker::setAutoDelete(KJob *job, bool autoDelete)
-{
-    Q_UNUSED(job);
-    Q_UNUSED(autoDelete);
-}
-
-bool KAbstractWidgetJobTracker::autoDelete(KJob *job) const
-{
-    Q_UNUSED(job);
-    return true;
-}
-
 void KAbstractWidgetJobTracker::finished(KJob *job)
 {
     Q_UNUSED(job);
@@ -91,11 +79,6 @@ void KAbstractWidgetJobTracker::slotResume(KJob *job)
         job->resume();
         emit resume(job);
     }
-}
-
-void KAbstractWidgetJobTracker::slotClean(KJob *job)
-{
-    Q_UNUSED(job);
 }
 
 #include "moc_kabstractwidgetjobtracker.cpp"

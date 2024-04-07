@@ -132,15 +132,6 @@ void KStatusBarJobTracker::speed(KJob *job, unsigned long value)
     d->progressWidget[job]->speed(value);
 }
 
-void KStatusBarJobTracker::slotClean(KJob *job)
-{
-    if (!d->progressWidget.contains(job)) {
-        return;
-    }
-
-    d->progressWidget[job]->slotClean();
-}
-
 void KStatusBarJobTracker::Private::ProgressWidget::killJob()
 {
     job->kill(KJob::EmitResult); // notify that the job has been killed
@@ -181,8 +172,6 @@ void KStatusBarJobTracker::Private::ProgressWidget::init(KJob *job, QWidget *par
     setMinimumSize(sizeHint());
 
     setMode(KStatusBarJobTracker::LabelOnly);
-
-    q->setAutoDelete(job, true);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(widget);
@@ -245,15 +234,6 @@ void KStatusBarJobTracker::Private::ProgressWidget::speed(unsigned long value)
     } else {
         label->setText(i18n(" %1/s ", KGlobal::locale()->formatByteSize(value)));
     }
-}
-
-void KStatusBarJobTracker::Private::ProgressWidget::slotClean()
-{
-    // we don't want to delete this widget, only clean
-    progressBar->setValue(0);
-    label->clear();
-
-    setMode(KStatusBarJobTracker::NoInformation);
 }
 
 bool KStatusBarJobTracker::Private::ProgressWidget::eventFilter(QObject *obj, QEvent *event)
