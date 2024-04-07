@@ -876,7 +876,7 @@ bool KTextEdit::Private::overrideShortcut(const QKeyEvent *event)
         return true;
     } else if (event->modifiers() == Qt::ControlModifier &&
         (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
-            qobject_cast<KDialog*>(parent->window()) ) {
+        qobject_cast<KDialog*>(parent->window())) {
         // ignore Ctrl-Return so that KDialogs can close the dialog
         return true;
     }
@@ -929,8 +929,7 @@ void KTextEdit::paintEvent(QPaintEvent *ev)
         color.setAlphaF(0.5);
         p.setPen(color);
 
-        QRect cr = d->clickMessageRect();
-        p.drawText(cr, Qt::AlignTop | Qt::TextWordWrap, d->clickMessage);
+        p.drawText(d->clickMessageRect(), Qt::AlignTop | Qt::TextWordWrap, d->clickMessage);
     }
 }
 
