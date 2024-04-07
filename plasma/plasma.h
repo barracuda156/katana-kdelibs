@@ -111,18 +111,6 @@ enum Location {
 };
 
 /**
- * The position enumeration
- *
- **/
-enum Position {
-    LeftPositioned,    /**< Positioned left */
-    RightPositioned,   /**< Positioned right */
-    TopPositioned,     /**< Positioned top */
-    BottomPositioned,  /**< Positioned bottom */
-    CenterPositioned   /**< Positioned in the center */
-};
-
-/**
  * The popup position enumeration relatively to his attached widget
  *
  **/
