@@ -132,7 +132,6 @@ set(kdeui_LIB_SRCS
     jobs/kdialogjobuidelegate.cpp
     jobs/kabstractwidgetjobtracker.cpp
     jobs/kwidgetjobtracker.cpp
-    jobs/kstatusbarjobtracker.cpp
     jobs/kuiserverjobtracker.cpp
     jobs/kdynamicjobtracker.cpp
     kernel/kapplication.cpp
@@ -408,7 +407,6 @@ install(
     jobs/kdialogjobuidelegate.h
     jobs/kabstractwidgetjobtracker.h
     jobs/kwidgetjobtracker.h
-    jobs/kstatusbarjobtracker.h
     jobs/kuiserverjobtracker.h
     jobs/kdynamicjobtracker.h
     kernel/kapplication.h

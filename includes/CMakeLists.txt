@@ -244,7 +244,6 @@ install(
     KStartupInfoData
     KStartupInfoId
     KStatusBar
-    KStatusBarJobTracker
     KStringHandler
     KStyle
     KSycoca
