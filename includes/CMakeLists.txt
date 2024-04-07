@@ -309,7 +309,7 @@ install(
     KWidgetItemDelegate
     KWidgetJobTracker
     KDynamicJobTracker
-    KUiServerJobTracker
+    KPlasmaJobTracker
     KPixmapSequence
     KPixmapSequenceWidget
     KPixmapSequenceOverlayPainter

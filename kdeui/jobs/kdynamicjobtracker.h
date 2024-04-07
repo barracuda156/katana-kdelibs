@@ -25,14 +25,12 @@
 
 /**
  * This class implements a simple job tracker which registers any job to the KWidgetJobTracker if a
- * kuiserver isn't available on the DBus, or to the KUiServerJobTracker, if a kuiserver is
- * available. This way, we have the old dialogs as fallback when the user doesn't use a kuiserver
- * applet or application.
+ * plasma isn't available on the DBus, or to the KPlasmaJobTracker, if a plasma is available. This
+ * way, we have the old dialogs as fallback when the user doesn't use a plasma applet.
  */
 class KDEUI_EXPORT KDynamicJobTracker : public KJobTrackerInterface
 {
     Q_OBJECT
-
 public:
     /**
      * Creates a new KDynamicJobTracker
@@ -48,8 +46,7 @@ public:
 
 public Q_SLOTS:
     /**
-     * Register a new job in this tracker. This call will get forwarded to either KWidgetJobTracker
-     * or KUiServerJobTracker, depending on the availability of the Kuiserver.
+     * Register a new job in this tracker.
      *
      * @param job the job to register
      */
@@ -67,4 +64,4 @@ private:
     Private *const d;
 };
 
-#endif
+#endif // KDYNAMICJOBTRACKER_H

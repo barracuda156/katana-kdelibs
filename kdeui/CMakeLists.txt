@@ -132,7 +132,7 @@ set(kdeui_LIB_SRCS
     jobs/kdialogjobuidelegate.cpp
     jobs/kabstractwidgetjobtracker.cpp
     jobs/kwidgetjobtracker.cpp
-    jobs/kuiserverjobtracker.cpp
+    jobs/kplasmajobtracker.cpp
     jobs/kdynamicjobtracker.cpp
     kernel/kapplication.cpp
     kernel/kuniqueapplication.cpp
@@ -249,13 +249,6 @@ if (X11_Xkb_FOUND AND X11_Xkbfile_FOUND)
         ${X11_Xkbfile_LIB}
     )
 endif()
-
-qt4_add_dbus_interfaces(kdeui_LIB_SRCS jobs/org.kde.JobViewServer.xml )
-
-qt4_add_dbus_interface(kdeui_LIB_SRCS
-    jobs/org.kde.JobView.xml
-    jobviewiface
-)
 
 set(kglobalaccel_xml shortcuts/org.kde.KGlobalAccel.xml)
 set_source_files_properties(${kglobalaccel_xml} PROPERTIES INCLUDE "kglobalshortcutinfo_p.h")
@@ -407,7 +400,7 @@ install(
     jobs/kdialogjobuidelegate.h
     jobs/kabstractwidgetjobtracker.h
     jobs/kwidgetjobtracker.h
-    jobs/kuiserverjobtracker.h
+    jobs/kplasmajobtracker.h
     jobs/kdynamicjobtracker.h
     kernel/kapplication.h
     kernel/kuniqueapplication.h
@@ -517,11 +510,4 @@ install(
 install(
     PROGRAMS preparetips
     DESTINATION ${KDE4_BIN_INSTALL_DIR}
-)
-
-install(
-    FILES
-    jobs/org.kde.JobViewServer.xml
-    jobs/org.kde.JobView.xml
-    DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR}
 )

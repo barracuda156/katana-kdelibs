@@ -20,7 +20,7 @@
 
 #include "kdynamicjobtracker.h"
 
-#include <kuiserverjobtracker.h>
+#include <kplasmajobtracker.h>
 #include <kwidgetjobtracker.h>
 #include <kjobtrackerinterface.h>
 #include <kdebug.h>
@@ -32,7 +32,7 @@
 
 struct AllTrackers
 {
-    KUiServerJobTracker *kuiserverTracker;
+    KPlasmaJobTracker *plasmaTracker;
     KWidgetJobTracker *widgetTracker;
 };
 
@@ -40,18 +40,18 @@ class KDynamicJobTracker::Private
 {
 public:
     Private()
-        : kuiserverTracker(nullptr),
+        : plasmaTracker(nullptr),
         widgetTracker(nullptr)
     {
     }
 
     ~Private()
     {
-        delete kuiserverTracker;
+        delete plasmaTracker;
         delete widgetTracker;
     }
 
-    KUiServerJobTracker *kuiserverTracker;
+    KPlasmaJobTracker *plasmaTracker;
     KWidgetJobTracker *widgetTracker;
     QMap<KJob*, AllTrackers> trackers;
 };
@@ -69,19 +69,16 @@ KDynamicJobTracker::~KDynamicJobTracker()
 
 void KDynamicJobTracker::registerJob(KJob *job)
 {
-    if (!d->kuiserverTracker) {
-        d->kuiserverTracker = new KUiServerJobTracker();
+    if (!d->plasmaTracker) {
+        d->plasmaTracker = new KPlasmaJobTracker();
     }
 
-    d->trackers[job].kuiserverTracker = d->kuiserverTracker;
-    d->trackers[job].kuiserverTracker->registerJob(job);
+    d->trackers[job].plasmaTracker = d->plasmaTracker;
+    d->trackers[job].plasmaTracker->registerJob(job);
 
-    QDBusInterface interface("org.kde.kuiserver", "/JobViewServer", "",
-    QDBusConnection::sessionBus(), this);
-    QDBusReply<bool> reply = interface.call("requiresJobTracker");
-
-    if (reply.isValid() && reply.value()) {
-        //create a widget tracker in addition to kuiservertracker.
+    QDBusInterface interface("org.kde.plasma-desktop", "/JobTracker", "org.kde.JobTracker", QDBusConnection::sessionBus(), this);
+    if (!interface.isValid()) {
+        // create a widget tracker in addition to KPlasmaJobTracker.
         if (!d->widgetTracker) {
             d->widgetTracker = new KWidgetJobTracker();
         }
@@ -89,21 +86,21 @@ void KDynamicJobTracker::registerJob(KJob *job)
         d->trackers[job].widgetTracker->registerJob(job);
     }
 
-    Q_ASSERT(d->trackers[job].kuiserverTracker || d->trackers[job].widgetTracker);
+    Q_ASSERT(d->trackers[job].plasmaTracker || d->trackers[job].widgetTracker);
 }
 
 void KDynamicJobTracker::unregisterJob(KJob *job)
 {
-    KUiServerJobTracker *kuiserverTracker = d->trackers[job].kuiserverTracker;
+    KPlasmaJobTracker *plasmaTracker = d->trackers[job].plasmaTracker;
     KWidgetJobTracker *widgetTracker = d->trackers[job].widgetTracker;
 
-    if (!(widgetTracker || kuiserverTracker)) {
+    if (!(widgetTracker || plasmaTracker)) {
         kWarning() << "Tried to unregister a kio job that hasn't been registered.";
         return;
     }
 
-    if (kuiserverTracker) {
-        kuiserverTracker->unregisterJob(job);
+    if (plasmaTracker) {
+        plasmaTracker->unregisterJob(job);
     }
     if (widgetTracker) {
         widgetTracker->unregisterJob(job);

@@ -556,7 +556,7 @@ void KWidgetJobTracker::Private::ProgressWidget::init()
     resize(sizeHint());
     setMaximumHeight(sizeHint().height());
 
-    setWindowTitle(i18n("Progress Dialog")); // show something better than kuiserver
+    setWindowTitle(i18n("Progress Dialog"));
 }
 
 void KWidgetJobTracker::Private::ProgressWidget::showTotals()
