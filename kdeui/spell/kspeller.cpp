@@ -21,7 +21,6 @@
 #include "kdebug.h"
 
 #include <QLocale>
-#include <QTextBoundaryFinder>
 
 #include <stdlib.h>
 #include <enchant.h>
@@ -271,43 +270,27 @@ void KSpeller::start()
 {
     // qDebug() << Q_FUNC_INFO << d->text.size() << d->text;
     d->interrupt = false;
-    int wordstart = 0;
-    QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->text);
-    while (finder.toNextBoundary() >= 0) {
+    int wordstart = -1;
+    int counter = 0;
+    while (counter < d->text.size()) {
         if (d->interrupt) {
             break;
         }
-        const QTextBoundaryFinder::BoundaryReasons boundary = finder.boundaryReasons();
-        if (boundary & QTextBoundaryFinder::StartWord) {
-            wordstart = finder.position();
-        }
-        if (boundary & QTextBoundaryFinder::EndWord) {
-            QString word = d->text.mid(wordstart, finder.position() - wordstart);
-
-            // remove whitespace at the start and end
-            while (!word.isEmpty() && word.at(0).isSpace()) {
-                word = word.mid(1, word.size() - 1);
-                wordstart++;
-            }
-            while (!word.isEmpty() && word.at(word.size() - 1).isSpace()) {
-                word = word.mid(0, word.size() - 1);
-            }
-
-            // chop punctuation
-            if (!word.isEmpty() && word.at(word.size() - 1).isPunct()) {
-                word = word.mid(0, word.size() - 1);
-            }
-
+        const bool atseparator = KSpeller::isWordSeparator(d->text.at(counter));
+        if (!atseparator && wordstart == -1) {
+            wordstart = counter;
+        } else if (atseparator && wordstart != -1) {
+            const QString word = d->text.mid(wordstart, counter - wordstart);
             // not worth checking if it is less than two characters
-            if (word.size() < 2) {
-                continue;
+            if (word.size() >= 2) {
+                // qDebug() << Q_FUNC_INFO << wordstart << counter << word;
+                if (!check(word)) {
+                    emit misspelling(word, wordstart);
+                }
             }
-
-            // qDebug() << Q_FUNC_INFO << boundary << wordstart << finder.position() << word;
-            if (!check(word)) {
-                emit misspelling(word, wordstart);
-            }
+            wordstart = -1;
         }
+        counter++;
     }
     emit done();
 }
@@ -315,6 +298,49 @@ void KSpeller::start()
 void KSpeller::stop()
 {
     d->interrupt = true;
+}
+
+// the code is similar to the code in QTextEngine on purpose, kate uses different logic for
+// selection tho
+bool KSpeller::isWordSeparator(const QChar c)
+{
+    switch (c.toLatin1()) {
+        case '.':
+        case ',':
+        case '?':
+        case '!':
+        case '@':
+        case '#':
+        case '$':
+        case ':':
+        case ';':
+        case '-':
+        case '<':
+        case '>':
+        case '[':
+        case ']':
+        case '(':
+        case ')':
+        case '{':
+        case '}':
+        case '=':
+        case '/':
+        case '+':
+        case '%':
+        case '&':
+        case '^':
+        case '*':
+        case '\'':
+        case '"':
+        case '`':
+        case '~':
+        case '|': {
+            return true;
+        }
+        default: {
+            return c.isSpace();
+        }
+    }
 }
 
 #include "moc_kspeller.cpp"

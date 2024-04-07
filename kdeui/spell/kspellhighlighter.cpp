@@ -21,24 +21,24 @@
 #include "kcolorscheme.h"
 #include "kdebug.h"
 
-#include <QTextBoundaryFinder>
-
 class KSpellHighlighterPrivate
 {
 public:
     KSpellHighlighterPrivate(KConfig *config);
 
     KSpeller speller;
-    QTextCharFormat charformat;
+    QTextCharFormat emptyformat;
+    QTextCharFormat spellformat;
+
 };
 
 KSpellHighlighterPrivate::KSpellHighlighterPrivate(KConfig *config)
     : speller(config)
 {
-    charformat.setFontUnderline(true);
-    charformat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    spellformat.setFontUnderline(true);
+    spellformat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
     // NOTE: same as the default of Kate
-    charformat.setUnderlineColor(KColorScheme(QPalette::Active, KColorScheme::View).foreground(KColorScheme::NegativeText).color());
+    spellformat.setUnderlineColor(KColorScheme(QPalette::Active, KColorScheme::View).foreground(KColorScheme::NegativeText).color());
 }
 
 KSpellHighlighter::KSpellHighlighter(KConfig *config, QTextEdit *parent)
@@ -93,41 +93,26 @@ void KSpellHighlighter::highlightBlock(const QString &text)
     if (text.isEmpty() || d->speller.dictionary().isEmpty()) {
         return;
     }
-    int wordstart = 0;
-    QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
-    while (finder.toNextBoundary() >= 0) {
-        const QTextBoundaryFinder::BoundaryReasons boundary = finder.boundaryReasons();
-        if (boundary & QTextBoundaryFinder::StartWord) {
-            wordstart = finder.position();
-        }
-        if (boundary & QTextBoundaryFinder::EndWord) {
-            QString word = text.mid(wordstart, finder.position() - wordstart);
 
-            // remove whitespace at the start and end
-            while (!word.isEmpty() && word.at(0).isSpace()) {
-                word = word.mid(1, word.size() - 1);
-                wordstart++;
-            }
-            while (!word.isEmpty() && word.at(word.size() - 1).isSpace()) {
-                word = word.mid(0, word.size() - 1);
-            }
-
-            // chop punctuation
-            if (!word.isEmpty() && word.at(word.size() - 1).isPunct()) {
-                word = word.mid(0, word.size() - 1);
-            }
-
+    int wordstart = -1;
+    int counter = 0;
+    while (counter < text.size()) {
+        const bool atseparator = KSpeller::isWordSeparator(text.at(counter));
+        if (!atseparator && wordstart == -1) {
+            wordstart = counter;
+        } else if (atseparator && wordstart != -1) {
+            const QString word = text.mid(wordstart, counter - wordstart);
             // not worth checking if it is less than two characters
-            if (word.size() < 2) {
-                continue;
+            if (word.size() >= 2) {
+                if (!d->speller.check(word)) {
+                    setFormat(wordstart, word.size(), d->spellformat);
+                } else {
+                    setFormat(wordstart, word.size(), d->emptyformat);
+                }
             }
-
-            if (!d->speller.check(word)) {
-                setFormat(wordstart, word.size(), d->charformat);
-            } else {
-                setFormat(wordstart, word.size(), QTextCharFormat());
-            }
+            wordstart = -1;
         }
+        counter++;
     }
 }
 
