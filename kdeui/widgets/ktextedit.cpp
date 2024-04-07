@@ -553,7 +553,6 @@ void KTextEdit::setHighlighter(KSpellHighlighter *highLighter)
 
 void KTextEdit::setCheckSpellingEnabled(bool check)
 {
-    emit checkSpellingChanged(check);
     if (check == d->checkSpellingEnabled) {
         return;
     }
@@ -564,25 +563,18 @@ void KTextEdit::setCheckSpellingEnabled(bool check)
 
     d->checkSpellingEnabled = check;
     if (check) {
-        if (hasFocus()) {
+        if (!isReadOnly() && !d->highlighter) {
             createHighlighter();
-            if (!spellCheckingLanguage().isEmpty()) {
-                setSpellCheckingLanguage(spellCheckingLanguage());
+            if (!d->spellCheckingLanguage.isEmpty()) {
+                setSpellCheckingLanguage(d->spellCheckingLanguage);
             }
         }
     } else {
         delete d->highlighter;
         d->highlighter = nullptr;
     }
-}
 
-void KTextEdit::focusInEvent(QFocusEvent *event)
-{
-    if (d->checkSpellingEnabled && !isReadOnly() && !d->highlighter) {
-        createHighlighter();
-    }
-
-    QTextEdit::focusInEvent(event);
+    emit checkSpellingChanged(check);
 }
 
 bool KTextEdit::checkSpellingEnabled() const
@@ -592,10 +584,6 @@ bool KTextEdit::checkSpellingEnabled() const
 
 void KTextEdit::setReadOnly(bool readOnly)
 {
-    if (!readOnly && hasFocus() && d->checkSpellingEnabled && !d->highlighter) {
-        createHighlighter();
-    }
-
     if (readOnly == isReadOnly()) {
         return;
     }
@@ -619,6 +607,13 @@ void KTextEdit::setReadOnly(bool readOnly)
             setPalette(p);
         } else {
             setPalette(QPalette());
+        }
+
+        if (d->checkSpellingEnabled && !d->highlighter) {
+            createHighlighter();
+            if (!d->spellCheckingLanguage.isEmpty()) {
+                setSpellCheckingLanguage(d->spellCheckingLanguage);
+            }
         }
     }
 

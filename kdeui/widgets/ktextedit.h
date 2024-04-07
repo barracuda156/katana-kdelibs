@@ -262,12 +262,6 @@ protected:
     virtual void keyPressEvent(QKeyEvent *);
 
     /**
-     * Reimplemented to instantiate a KDictSpellingHighlighter, if
-     * spellchecking is enabled.
-     */
-    virtual void focusInEvent(QFocusEvent *);
-
-    /**
      * Deletes a word backwards from the current cursor position,
      * if available.
      */
