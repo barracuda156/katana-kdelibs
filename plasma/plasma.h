@@ -111,18 +111,6 @@ enum Location {
 };
 
 /**
- * The position enumeration
- *
- **/
-enum Position {
-    LeftPositioned,    /**< Positioned left */
-    RightPositioned,   /**< Positioned right */
-    TopPositioned,     /**< Positioned top */
-    BottomPositioned,  /**< Positioned bottom */
-    CenterPositioned   /**< Positioned in the center */
-};
-
-/**
  * The popup position enumeration relatively to his attached widget
  *
  **/
@@ -188,21 +176,6 @@ enum AspectRatioMode {
                                     ones) than a square */
     FixedSize = 4                /** The applet cannot be resized */
 };
-
-/**
- * The ComonentType enumeration refers to the various types of components,
- * or plugins, supported by plasma.
- */
-enum ComponentType {
-    AppletComponent = 1,      /**< Plasma::Applet based plugins **/
-    DataEngineComponent = 2,  /**< Plasma::DataEngine based plugins **/
-    RunnerComponent = 4,      /**< Plasma::AbstractRunner based plugins **/
-    AnimatorComponent = 8,    /**< Plasma::Animator based plugins **/
-    ContainmentComponent = 16,/**< Plasma::Containment based plugins **/
-    WallpaperComponent = 32,   /**< Plasma::Wallpaper based plugins **/
-    GenericComponent = 64      /** Generic repositories of files, usually they keep QML files and their assets **/
-};
-Q_DECLARE_FLAGS(ComponentTypes, ComponentType)
 
 enum MarginEdge {
     TopMargin = 0, /**< The top margin **/
@@ -277,7 +250,6 @@ PLASMA_EXPORT QList<QAction*> actionsFromMenu(QMenu *menu,
 } // Plasma namespace
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::Constraints)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::ComponentTypes)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Plasma::MessageButtons)
 
 
