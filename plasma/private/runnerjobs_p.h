@@ -21,7 +21,6 @@
 #define PLASMA_RUNNERJOBS_P_H
 
 #include <QHash>
-#include <QMutex>
 #include <QSet>
 #include <QRunnable>
 

@@ -24,7 +24,6 @@
 #include "pluginloader.h"
 #include "querymatch.h"
 
-#include <QMutex>
 #include <QTimer>
 #include <QCoreApplication>
 #include <QThreadPool>

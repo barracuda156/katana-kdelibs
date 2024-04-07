@@ -42,7 +42,6 @@ public:
     KPluginInfo runnerDescription;
     AbstractRunner *runner;
     int fastRuns;
-    QMutex speedMutex;
     QHash<QString, QAction*> actions;
     QList<RunnerSyntax> syntaxes;
     RunnerSyntax *defaultSyntax;

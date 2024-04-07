@@ -23,7 +23,6 @@
 #include <QHash>
 #include <QMenu>
 #include <QMimeData>
-#include <QMutex>
 #include <QElapsedTimer>
 
 #include <kdebug.h>
@@ -212,7 +211,6 @@ AbstractRunner::Speed AbstractRunner::speed() const
 
 void AbstractRunner::setSpeed(Speed speed)
 {
-    QMutexLocker locker(&d->speedMutex);
     d->speed = speed;
 }
 
@@ -252,7 +250,6 @@ QString AbstractRunner::name() const
     if (d->runnerDescription.isValid()) {
         return d->runnerDescription.name();
     }
-
     return objectName();
 }
 
@@ -261,7 +258,6 @@ QIcon AbstractRunner::icon() const
     if (d->runnerDescription.isValid()) {
         return KIcon(d->runnerDescription.icon());
     }
-
     return QIcon();
 }
 
@@ -270,7 +266,6 @@ QString AbstractRunner::id() const
     if (d->runnerDescription.isValid()) {
         return d->runnerDescription.pluginName();
     }
-
     return objectName();
 }
 
@@ -279,7 +274,6 @@ QString AbstractRunner::description() const
     if (d->runnerDescription.isValid()) {
         return d->runnerDescription.property("Comment").toString();
     }
-
     return objectName();
 }
 
@@ -303,7 +297,6 @@ void AbstractRunner::suspendMatching(bool suspend)
     if (d->suspendMatching == suspend) {
         return;
     }
-
     d->suspendMatching = suspend;
     emit matchingSuspended(suspend);
 }
