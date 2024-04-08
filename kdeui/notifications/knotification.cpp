@@ -163,12 +163,11 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
                 this, SLOT(slotActionRequested(QString,QString))
             );
         }
-        const int eventtimeout = (persistent ? 0 : -1);
         if (!m_notificationsiface || !m_notificationsiface->isValid()) {
             kWarning(s_knotificationarea) << "notifications interface is not valid";
             const QPixmap eventpixmap = KIconLoader::global()->loadIcon(eventicon, KIconLoader::Small);
             KPassivePopup* kpassivepopup = new KPassivePopup(notification->widget());
-            kpassivepopup->setTimeout(eventtimeout);
+            kpassivepopup->setTimeout(persistent ? 0 : -1);
             kpassivepopup->setView(eventtitle, eventtext, eventpixmap);
             kpassivepopup->setAutoDelete(true);
             // NOTE: KPassivePopup positions itself depending on the windows
@@ -197,7 +196,6 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
             eventdata.insert("appIcon", eventicon);
             eventdata.insert("summary", eventtitle); // unused
             eventdata.insert("body", eventtext);
-            eventdata.insert("timeout", eventtimeout); // unused
             eventdata.insert("actions", eventactions);
             eventdata.insert("configurable", true);
             // NOTE: has to be set to be configurable via plasma notifications applet
