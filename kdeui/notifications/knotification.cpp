@@ -266,6 +266,7 @@ void KNotificationManager::close(KNotification *notification)
             if (!closereply.isValid()) {
                 kWarning(s_knotificationarea) << "invalid close reply" << closereply.error().message();
             }
+            break;
         }
     }
 }
@@ -280,6 +281,7 @@ void KNotificationManager::slotCloseRequested(const QString &eventid)
         const QString notifyid = kNotifyID(notification);
         if (notifyid == eventid) {
             notification->close();
+            break;
         }
     }
 }
@@ -294,6 +296,7 @@ void KNotificationManager::slotActionRequested(const QString &eventid, const QSt
         const QString notifyid = kNotifyID(notification);
         if (notifyid == eventid) {
             notification->activate(action.toUInt());
+            break;
         }
     }
 }
