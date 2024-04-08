@@ -197,7 +197,6 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
             eventdata.insert("summary", eventtitle); // unused
             eventdata.insert("body", eventtext);
             eventdata.insert("actions", eventactions);
-            eventdata.insert("configurable", true);
             // NOTE: has to be set to be configurable via plasma notifications applet
             eventdata.insert("appRealName", spliteventid.at(0));
             bool updatenotification = false;
