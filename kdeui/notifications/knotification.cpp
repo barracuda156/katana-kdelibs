@@ -38,6 +38,14 @@
 // see kdebug.areas
 static const int s_knotificationarea = 299;
 static const int s_closedelay = 1000; // ms
+// strings cache
+static const QString s_popupaction = QString::fromLatin1("Popup");
+static const QString s_taskbaraction = QString::fromLatin1("Taskbar");
+static const QString s_soundaction = QString::fromLatin1("Sound");
+static const QString s_closemethod = QString::fromLatin1("closeNotification");
+static const QString s_playmethod = QString::fromLatin1("play");
+static const QString s_addmethod = QString::fromLatin1("addNotification");
+static const QString s_updatemethod = QString::fromLatin1("updateNotification");
 
 static QString kNotifyID(const KNotification *notification)
 {
@@ -140,7 +148,7 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
         eventactions = globalgroup.readEntry("Actions", QStringList());
     }
     // qDebug() << Q_FUNC_INFO << eventactions << notification->actions();
-    if (eventactions.contains(QString::fromLatin1("Popup"))) {
+    if (eventactions.contains(s_popupaction)) {
         if (!m_notificationsiface) {
             m_notificationsiface = new QDBusInterface(
                 "org.kde.plasma-desktop", "/Notifications", "org.kde.Notifications",
@@ -197,7 +205,7 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
             bool updatenotification = false;
             QDBusReply<void> notifyreply;
             if (addnotification) {
-                notifyreply = m_notificationsiface->call("addNotification", notifyid);
+                notifyreply = m_notificationsiface->call(s_addmethod, notifyid);
                 if (!notifyreply.isValid()) {
                     kWarning(s_knotificationarea) << "invalid add reply" << notifyreply.error().message();
                 } else {
@@ -206,7 +214,7 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
                 }
             }
             if (updatenotification) {
-                notifyreply = m_notificationsiface->call("updateNotification", notifyid, eventdata);
+                notifyreply = m_notificationsiface->call(s_updatemethod, notifyid, eventdata);
                 if (!notifyreply.isValid()) {
                     kWarning(s_knotificationarea) << "invalid update reply" << notifyreply.error().message();
                 }
@@ -214,7 +222,7 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
         }
     }
 
-    if (eventactions.contains(QString::fromLatin1("Sound"))) {
+    if (eventactions.contains(s_soundaction)) {
         QString eventsound = eventgroup.readEntry("Sound");
         if (eventsound.isEmpty()) {
             eventsound = globalgroup.readEntry("Sound");
@@ -231,14 +239,14 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
                 );
             }
             // the sound player is configurable and is used by the bball plasma applet for example
-            QDBusReply<void> playreply = m_kaudioplayeriface->call(QString::fromLatin1("play"), eventsoundfiles.first());
+            QDBusReply<void> playreply = m_kaudioplayeriface->call(s_playmethod, eventsoundfiles.first());
             if (!playreply.isValid()) {
                 kWarning(s_knotificationarea) << "invalid play reply" << playreply.error().message();
             }
         }
     }
 
-    if (eventactions.contains(QString::fromLatin1("Taskbar"))) {
+    if (eventactions.contains(s_taskbaraction)) {
         const QWidget* eventwidget = notification->widget();
         if (!eventwidget) {
             kWarning(s_knotificationarea) << "taskbar event with no widget set" << eventid;
@@ -259,10 +267,7 @@ void KNotificationManager::close(KNotification *notification)
         if (iter.key() == notification) {
             const QString notifyid = kNotifyID(iter.key());
             iter.remove();
-            QDBusReply<void> closereply = m_notificationsiface->call(
-                QString::fromLatin1("closeNotification"),
-                notifyid
-            );
+            QDBusReply<void> closereply = m_notificationsiface->call(s_closemethod, notifyid);
             if (!closereply.isValid()) {
                 kWarning(s_knotificationarea) << "invalid close reply" << closereply.error().message();
             }
