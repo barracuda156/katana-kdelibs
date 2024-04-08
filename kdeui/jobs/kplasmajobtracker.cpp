@@ -135,7 +135,7 @@ void KPlasmaJobTracker::unregisterJob(KJob *job)
         return;
     }
 
-    // both finished() and unregistrJob will be called, either does it
+    // both finished() and unregistrJob() will be called, either does it
     kDebug() << "unregisterd job" << kJobID(job);
     finished(job);
     d->jobs.remove(job);
@@ -222,7 +222,7 @@ void KPlasmaJobTracker::percent(KJob *job, unsigned long percent)
 
     const QString jobid = kJobID(job);
     QVariantMap jobdata = d->jobs.value(job);
-    jobdata.insert("percent", qulonglong(percent));
+    jobdata.insert("percentage", qulonglong(percent));
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job percent" << jobid << percent;
 }
