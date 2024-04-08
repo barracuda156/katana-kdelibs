@@ -135,15 +135,6 @@ enum PopupPlacement {
                                      to the bottom of the widget */
 };
 
-/**
- * Possible timing alignments
- **/
-enum IntervalAlignment {
-    NoAlignment = 0, /**< No alignment **/
-    AlignToMinute, /**< Align to the minute **/
-    AlignToHour /**< Align to the hour **/
-};
-
 enum ItemTypes {
     AppletType = QGraphicsItem::UserType + 1
 };
