@@ -128,7 +128,6 @@ class KTextEdit::Private
     bool checkSpellingEnabled;
     bool findReplaceEnabled;
     bool showTabAction;
-    QString spellCheckingLanguage;
     KSpellHighlighter *highlighter;
     KFindDialog *findDlg;
     KFind *find;
@@ -184,10 +183,6 @@ QRect KTextEdit::Private::clickMessageRect() const
 void KTextEdit::Private::init()
 {
     KCursor::setAutoHideCursor(parent, true, false);
-    parent->connect(
-        parent, SIGNAL(languageChanged(QString)),
-        parent, SLOT(setSpellCheckingLanguage(QString))
-    );
 }
 
 KTextEdit::KTextEdit(const QString &text, QWidget *parent)
@@ -207,24 +202,6 @@ KTextEdit::KTextEdit(QWidget *parent)
 KTextEdit::~KTextEdit()
 {
     delete d;
-}
-
-const QString& KTextEdit::spellCheckingLanguage() const
-{
-    return d->spellCheckingLanguage;
-}
-
-void KTextEdit::setSpellCheckingLanguage(const QString &_language)
-{
-    if (highlighter()) {
-        highlighter()->setCurrentLanguage(_language);
-        highlighter()->rehighlight();
-    }
-
-    if (_language != d->spellCheckingLanguage) {
-        d->spellCheckingLanguage = _language;
-        emit languageChanged(_language);
-    }
 }
 
 bool KTextEdit::event(QEvent* ev)
@@ -535,11 +512,6 @@ void KTextEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-void KTextEdit::createHighlighter()
-{
-    setHighlighter(new KSpellHighlighter(KGlobal::config().data(), this));
-}
-
 KSpellHighlighter* KTextEdit::highlighter() const
 {
     return d->highlighter;
@@ -547,7 +519,6 @@ KSpellHighlighter* KTextEdit::highlighter() const
 
 void KTextEdit::setHighlighter(KSpellHighlighter *highLighter)
 {
-    delete d->highlighter;
     d->highlighter = highLighter;
 }
 
@@ -564,14 +535,15 @@ void KTextEdit::setCheckSpellingEnabled(bool check)
     d->checkSpellingEnabled = check;
     if (check) {
         if (!isReadOnly() && !d->highlighter) {
-            createHighlighter();
-            if (!d->spellCheckingLanguage.isEmpty()) {
-                setSpellCheckingLanguage(d->spellCheckingLanguage);
-            }
+            d->highlighter = new KSpellHighlighter(KGlobal::config().data(), this);
+        }
+        if (d->highlighter) {
+            d->highlighter->setDocument(document());
         }
     } else {
-        delete d->highlighter;
-        d->highlighter = nullptr;
+        if (d->highlighter) {
+            d->highlighter->setDocument(nullptr);
+        }
     }
 
     emit checkSpellingChanged(check);
@@ -589,9 +561,6 @@ void KTextEdit::setReadOnly(bool readOnly)
     }
 
     if (readOnly) {
-        delete d->highlighter;
-        d->highlighter = nullptr;
-
         d->customPalette = testAttribute(Qt::WA_SetPalette);
         QPalette p = palette();
         QColor color = p.color(QPalette::Disabled, QPalette::Background);
@@ -608,16 +577,11 @@ void KTextEdit::setReadOnly(bool readOnly)
         } else {
             setPalette(QPalette());
         }
-
-        if (d->checkSpellingEnabled && !d->highlighter) {
-            createHighlighter();
-            if (!d->spellCheckingLanguage.isEmpty()) {
-                setSpellCheckingLanguage(d->spellCheckingLanguage);
-            }
-        }
     }
 
     QTextEdit::setReadOnly(readOnly);
+
+    setCheckSpellingEnabled(!readOnly);
 }
 
 void KTextEdit::highlightWord(int length, int pos)

@@ -49,7 +49,6 @@ class KDEUI_EXPORT KTextEdit : public QTextEdit
     Q_OBJECT
     Q_PROPERTY(QString clickMessage READ clickMessage WRITE setClickMessage)
     Q_PROPERTY(bool checkSpellingEnabled READ checkSpellingEnabled WRITE setCheckSpellingEnabled)
-    Q_PROPERTY(QString spellCheckingLanguage READ spellCheckingLanguage WRITE setSpellCheckingLanguage)
 
 public:
     /**
@@ -78,9 +77,6 @@ public:
      * Turns background spell checking for this text edit on or off.
      * Note that spell checking is only available in read-writable KTextEdits.
      *
-     * Enabling spell checking will set back the current highlighter to the one
-     * returned by createHighlighter().
-     *
      * @see checkSpellingEnabled()
      * @see isReadOnly()
      * @see setReadOnly()
@@ -108,43 +104,23 @@ public:
     void highlightWord(int length, int pos);
 
     /**
-     * Allows to create a specific highlighter if reimplemented.
-     *
-     * By default, it creates a normal highlighter.
-     *
-     * This highlighter is set each time spell checking is toggled on by
-     * calling setCheckSpellingEnabled(), but can later be overridden by calling
-     * setHighlighter().
+     * Returns the current highlighter, may be null if spell checking is not
+     * enabled. The default highlighter might be overridden by setHighlighter().
      *
      * @see setHighlighter()
-     * @see highlighter()
-     */
-    virtual void createHighlighter();
-
-    /**
-     * Returns the current highlighter, which is 0 if spell checking is disabled.
-     * The default highlighter is the one created by createHighlighter(), but
-     * might be overridden by setHighlighter().
-     *
-     * @see setHighlighter()
-     * @see createHighlighter()
      */
     KSpellHighlighter* highlighter() const;
 
     /**
      * Sets a custom backgound spell highlighter for this text edit.
-     * Normally, the highlighter returned by createHighlighter() will be
-     * used to detect and highlight incorrectly spelled words, but this
-     * function allows to set a custom highlighter.
-     *
-     * This has to be called after enabling spell checking with
-     * setCheckSpellingEnabled(), otherwise it has no effect.
+     * Normally, the highlighter is created when spell checking is enabled but
+     * this function allows to set a custom highlighter. Note that ownership
+     * of the highlighter belongs to the caller.
      *
      * @see highlighter()
-     * @see createHighlighter()
      * @param highLighter the new highlighter which will be used now
      */
-    void setHighlighter(KSpellHighlighter *_highLighter);
+    void setHighlighter(KSpellHighlighter *highLighter);
 
     /**
      * Return standard KTextEdit popupMenu
@@ -158,14 +134,6 @@ public:
      * @since 4.1
      */
     void enableFindReplace(bool enabled);
-
-    /**
-     * @return the spell checking language which was set by
-     *         setSpellCheckingLanguage(), the spellcheck dialog or the spellcheck
-     *         config dialog, or an empty string if that has never been called.
-     * @since 4.2
-     */
-    const QString& spellCheckingLanguage() const;
 
     /**
      * This makes the text edit display a grayed-out hinting text as long as
@@ -192,15 +160,7 @@ Q_SIGNALS:
      *
      * @since 4.1
      */
-     void checkSpellingChanged( bool );
-
-     /**
-      * Emitted when calling setSpellCheckingLanguage().
-      *
-      * @param language the new language the user selected
-      * @since 4.1
-      */
-     void languageChanged(const QString &language);
+     void checkSpellingChanged(bool check);
 
     /**
      * Emitted before the context menu is displayed.
@@ -218,16 +178,6 @@ Q_SIGNALS:
     void aboutToShowContextMenu(QMenu *menu);
 
 public Q_SLOTS:
-    /**
-     * Set the spell check language which will be used for highlighting spelling
-     * mistakes and for the spellcheck dialog.
-     * The languageChanged() signal will be emitted when the new language is
-     * different from the old one.
-     *
-     * @since 4.1
-     */
-    void setSpellCheckingLanguage(const QString &language);
-
     /**
      * Create replace dialogbox
      * @since 4.1
