@@ -64,25 +64,21 @@ class KDEUI_EXPORT KNotification : public QObject
 public:
     enum NotificationFlag {
         /**
-         * The notification will be automatically closed after a timeout. (this is the default)
+         * The notification will be automatically closed after short time (this is the default)
          */
-        CloseOnTimeout = 0x00,
+        AutoClose = 0x00,
 
         /**
-         * The notification will NOT be automatically closed after a timeout. You will have to
-         * track the notification, and close it with the close function manually when the event is
-         * done, otherwise there will be a memory leak
+         * The notification will NOT be automatically closed. It has to be tracked and close with
+         * the close method manually when the event is done, otherwise there will be a memory leak
          */
         Persistent = 0x02,
 
         /**
-         * The notification will be automatically closed if the widget() becomes activated.
-         *
-         * If the widget is already activated when the notification occurs, the notification will
-         * be closed after a small timeout. This only works if the widget is the toplevel widget
+         * The notification will be automatically closed when the widget() becomes activated. This
+         * works only if the widget is toplevel widget
          */
-        CloseWhenWidgetActivated = 0x03,
-            
+        CloseWhenWidgetActivated = 0x04
     };
     Q_DECLARE_FLAGS(NotificationFlags , NotificationFlag)
 
@@ -108,7 +104,7 @@ public:
     void setActions(const QStringList &actions);
 
     NotificationFlags flags() const;
-    void setFlags(const NotificationFlags &flags);
+    void setFlags(const NotificationFlags flags);
 
     /**
      * Convenience method - creates KNotification, sets it up and automatically sends the event.
@@ -116,7 +112,7 @@ public:
     static void event(const QString &eventid,
                       const QString &title = QString(), const QString &text = QString(),
                       const QString &icon = QString(), QWidget *widget = nullptr,
-                      const NotificationFlags &flags = CloseOnTimeout);
+                      const NotificationFlags flags = AutoClose);
 
     /**
      * This is a simple substitution for QApplication::beep().

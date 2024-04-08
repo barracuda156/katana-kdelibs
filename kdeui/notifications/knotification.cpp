@@ -419,7 +419,7 @@ KNotification::NotificationFlags KNotification::flags() const
     return d->flags;
 }
 
-void KNotification::setFlags(const NotificationFlags &flags)
+void KNotification::setFlags(const NotificationFlags flags)
 {
     d->flags = flags;
 }
@@ -479,7 +479,7 @@ bool KNotification::eventFilter(QObject *watched, QEvent *event)
 }
 
 void KNotification::event(const QString &eventid, const QString &title, const QString &text,
-                          const QString &icon, QWidget *widget, const NotificationFlags &flags)
+                          const QString &icon, QWidget *widget, const NotificationFlags flags)
 {
     KNotification* knotification = new KNotification(widget);
     knotification->setEventID(eventid);
@@ -495,7 +495,7 @@ void KNotification::beep(const QString &reason, QWidget *widget)
 {
     event(
         QString::fromLatin1("kde/beep"), QString(), reason, QString(), widget,
-        KNotification::CloseOnTimeout
+        KNotification::AutoClose
     );
 }
 
