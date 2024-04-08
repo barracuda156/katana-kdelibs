@@ -282,11 +282,6 @@ void AbstractRunner::init()
     reloadConfiguration();
 }
 
-DataEngine *AbstractRunner::dataEngine(const QString &name) const
-{
-    return d->dataEngine(name);
-}
-
 bool AbstractRunner::isMatchingSuspended() const
 {
     return d->suspendMatching;

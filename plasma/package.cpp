@@ -21,7 +21,6 @@
 #include "package.h"
 #include "packagemetadata.h"
 #include "private/package_p.h"
-#include "private/service_p.h"
 
 #include <QDir>
 #include <QFile>
@@ -68,7 +67,6 @@ Package &Package::operator=(const Package &rhs)
     if (&rhs != this) {
         *d = *rhs.d;
     }
-
     return *this;
 }
 
@@ -279,23 +277,20 @@ QStringList Package::listInstalledPaths(const QString &packageRoot) // static
 }
 
 PackagePrivate::PackagePrivate(const PackageStructure::Ptr st, const QString &p)
-        : structure(st),
-          service(0)
+    : structure(st)
 {
     setPathFromStructure(p);
 }
 
 PackagePrivate::PackagePrivate(const PackageStructure::Ptr st, const QString &packageRoot, const QString &path)
-        : structure(st),
-          service(0)
+    : structure(st)
 {
     setPathFromStructure(packageRoot.isEmpty() ? path : packageRoot + "/" + path);
 }
 
 PackagePrivate::PackagePrivate(const PackagePrivate &other)
-        : structure(other.structure),
-          service(other.service),
-          valid(other.valid)
+    : structure(other.structure),
+    valid(other.valid)
 {
 }
 
@@ -306,7 +301,6 @@ PackagePrivate::~PackagePrivate()
 PackagePrivate &PackagePrivate::operator=(const PackagePrivate &rhs)
 {
     structure = rhs.structure;
-    service = rhs.service;
     valid = rhs.valid;
     return *this;
 }

@@ -123,20 +123,6 @@ void TextEdit::append(const QString &text)
     return nativeWidget()->append(text);
 }
 
-void TextEdit::dataUpdated(const QString &sourceName, const Plasma::DataEngine::Data &data)
-{
-    Q_UNUSED(sourceName)
-
-    KTextEdit *te = nativeWidget();
-    te->clear();
-
-    foreach (const QVariant &v, data) {
-        if (v.canConvert(QVariant::String)) {
-            te->append(v.toString() + '\n');
-        }
-    }
-}
-
 void TextEdit::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     QMenu *popup = nativeWidget()->mousePopupMenu();

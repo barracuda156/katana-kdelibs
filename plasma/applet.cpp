@@ -24,7 +24,6 @@
 #include "abstracttoolbox.h"
 #include "containment.h"
 #include "corona.h"
-#include "dataenginemanager.h"
 #include "dialog.h"
 #include "extenders/extender.h"
 #include "extenders/extenderitem.h"
@@ -54,7 +53,6 @@
 #include "private/package_p.h"
 #include "private/packages_p.h"
 #include "private/popupapplet_p.h"
-#include "private/service_p.h"
 
 #include <QApplication>
 #include <QEvent>
@@ -600,11 +598,6 @@ void AppletPrivate::destroyMessageOverlay()
     } else if (q->sender() == messageOverlay) {
         emit q->messageButtonPressed(ButtonCancel);
     }
-}
-
-DataEngine *Applet::dataEngine(const QString &name) const
-{
-    return d->dataEngine(name);
 }
 
 QGraphicsView *Applet::view() const
@@ -2251,31 +2244,30 @@ bool Applet::isContainment() const
 // PRIVATE CLASS IMPLEMENTATION
 
 AppletPrivate::AppletPrivate(KService::Ptr service, const KPluginInfo *info, int uniqueID, Applet *applet)
-        : appletId(uniqueID),
-          q(applet),
-          service(0),
-          preferredBackgroundHints(Applet::StandardBackground),
-          backgroundHints(Applet::NoBackground),
-          aspectRatioMode(Plasma::KeepAspectRatio),
-          immutability(Mutable),
-          appletDescription(info ? *info : KPluginInfo(service)),
-          background(0),
-          mainConfig(0),
-          pendingConstraints(NoConstraint),
-          messageOverlay(0),
-          messageOverlayProxy(0),
-          busyWidget(0),
-          actions(AppletPrivate::defaultActions(applet)),
-          activationAction(0),
-          itemStatus(UnknownStatus),
-          preferredSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored),
-          modificationsTimer(0),
-          hasConfigurationInterface(false),
-          failed(false),
-          isContainment(false),
-          transient(false),
-          needsConfig(false),
-          started(false)
+    : appletId(uniqueID),
+    q(applet),
+    preferredBackgroundHints(Applet::StandardBackground),
+    backgroundHints(Applet::NoBackground),
+    aspectRatioMode(Plasma::KeepAspectRatio),
+    immutability(Mutable),
+    appletDescription(info ? *info : KPluginInfo(service)),
+    background(0),
+    mainConfig(0),
+    pendingConstraints(NoConstraint),
+    messageOverlay(0),
+    messageOverlayProxy(0),
+    busyWidget(0),
+    actions(AppletPrivate::defaultActions(applet)),
+    activationAction(0),
+    itemStatus(UnknownStatus),
+    preferredSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored),
+    modificationsTimer(0),
+    hasConfigurationInterface(false),
+    failed(false),
+    isContainment(false),
+    transient(false),
+    needsConfig(false),
+    started(false)
 {
     if (appletId == 0) {
         appletId = ++s_maxAppletId;

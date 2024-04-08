@@ -24,12 +24,12 @@
 #include <QtCore/QQueue>
 #include <QtCore/qsharedpointer.h>
 
-#include "plasma/private/dataengineconsumer_p.h"
+#include "plasma/plasma.h"
 
 namespace Plasma
 {
 
-class WallpaperPrivate : public DataEngineConsumer
+class WallpaperPrivate
 {
 public:
     WallpaperPrivate(KService::Ptr service, Wallpaper *wallpaper);

@@ -26,7 +26,6 @@
 namespace Plasma {
 
 class Applet;
-class DataEngine;
 class AbstractRunner;
 
 //TODO:
@@ -40,7 +39,7 @@ class AbstractRunner;
  * default PluginLoader implementation will be used. The reimplemented version should
  * not do more than simply returning a loaded plugin. It should not init() it, and it should not
  * hang on to it. The associated methods will be called only when a component of Plasma
- * needs to load a _new_ plugin. (e.g. DataEngine does its own caching).
+ * needs to load a _new_ plugin.
  *
  * @author Ryan Rix <ry@n.rix.si>
  * @since 4.6
@@ -59,14 +58,6 @@ public:
      **/
     static Applet *loadApplet(const QString &name, uint appletId = 0,
                               const QVariantList &args = QVariantList());
-
-    /**
-     * Load a DataEngine plugin.
-     *
-     * @param name the name of the engine
-     * @return the DataEngine that was loaded, or the NullEngine on failure.
-     **/
-    static DataEngine *loadDataEngine(const QString &name);
 
     /**
      * Load a Runner plugin
@@ -93,18 +84,6 @@ public:
      * @return list of applets
      **/
     static KPluginInfo::List listAppletInfo(const QString &category, const QString &parentApp = QString());
-
-    /**
-     * Returns a list of all known DataEngines.
-     *
-     * @param parentApp the application to filter applets on. Uses the
-     *                  X-KDE-ParentApp entry (if any) in the plugin info.
-     *                  The default value of QString() will result in a
-     *                  list containing only applets not specifically
-     *                  registered to an application.
-     * @return list of DataEngines
-     **/
-    static KPluginInfo::List listDataEngineInfo(const QString &parentApp = QString());
 
     /**
      * Returns a list of all known Runner implementations

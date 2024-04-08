@@ -70,8 +70,6 @@ class ExtenderItemPrivate;
  * void MyApplet::initExtenderItem(Plasma::ExtenderItem *item)
  * {
  *     QGraphicsWidget *myNetworkMonitorWidget = new NetworkMonitorWidget(item);
- *     dataEngine("networktraffic")->connectSource(item->config().readEntry("device", ""),
- *                                                 myNetworkMonitorWidget);
  *     item->setWidget(myNetworkMonitorWidget);
  * }
  * @endcode

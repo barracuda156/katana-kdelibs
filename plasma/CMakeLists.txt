@@ -37,9 +37,6 @@ set(plasma_LIB_SRCS
     containmentactions.cpp
     containmentactionspluginsconfig.cpp
     corona.cpp
-    datacontainer.cpp
-    dataengine.cpp
-    dataenginemanager.cpp
     delegate.cpp
     dialog.cpp
     dialogshadows.cpp
@@ -53,8 +50,6 @@ set(plasma_LIB_SRCS
     popupapplet.cpp
     private/applethandle.cpp
     private/associatedapplicationmanager.cpp
-    private/datacontainer_p.cpp
-    private/dataengineconsumer.cpp
     private/extenderapplet.cpp
     private/extenderitemmimedata.cpp
     private/nativetabbar.cpp
@@ -69,8 +64,6 @@ set(plasma_LIB_SRCS
     runnercontext.cpp
     runnermanager.cpp
     runnersyntax.cpp
-    service.cpp
-    servicejob.cpp
     svg.cpp
     theme.cpp
     tooltipcontent.cpp
@@ -157,9 +150,6 @@ install(
     containmentactions.h
     containmentactionspluginsconfig.h
     corona.h
-    datacontainer.h
-    dataengine.h
-    dataenginemanager.h
     delegate.h
     dialog.h
     dialogshadows.h
@@ -176,8 +166,6 @@ install(
     runnercontext.h
     runnermanager.h
     runnersyntax.h
-    service.h
-    servicejob.h
     svg.h
     theme.h
     tooltipcontent.h
@@ -232,7 +220,6 @@ install(
     data/servicetypes/plasma-applet-popupapplet.desktop
     data/servicetypes/plasma-containment.desktop
     data/servicetypes/plasma-containmentactions.desktop
-    data/servicetypes/plasma-dataengine.desktop
     data/servicetypes/plasma-runner.desktop
     data/servicetypes/plasma-toolbox.desktop
     data/servicetypes/plasma-wallpaper.desktop

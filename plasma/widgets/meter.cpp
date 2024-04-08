@@ -399,21 +399,6 @@ QRectF Meter::labelRect(int index) const
     return d->image->elementRect(elementID);
 }
 
-void Meter::dataUpdated(const QString &sourceName, const Plasma::DataEngine::Data &data)
-{
-    Q_UNUSED(sourceName)
-
-    foreach (const QVariant &v, data) {
-        if (v.type() == QVariant::Int ||
-            v.type() == QVariant::UInt ||
-            v.type() == QVariant::LongLong ||
-            v.type() == QVariant::ULongLong) {
-            setValue(v.toInt());
-            return;
-        }
-    }
-}
-
 void Meter::setSvg(const QString &svg)
 {
     if (d->svg == svg) {

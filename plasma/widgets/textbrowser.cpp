@@ -140,20 +140,6 @@ void TextBrowser::append(const QString &text)
     return nativeWidget()->append(text);
 }
 
-void TextBrowser::dataUpdated(const QString &sourceName, const Plasma::DataEngine::Data &data)
-{
-    Q_UNUSED(sourceName)
-
-    QTextBrowser *te = nativeWidget();
-    te->clear();
-
-    foreach (const QVariant &v, data) {
-        if (v.canConvert(QVariant::String)) {
-            te->append(v.toString() + '\n');
-        }
-    }
-}
-
 void TextBrowser::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     QMenu *popup = nativeWidget()->createStandardContextMenu(event->screenPos());

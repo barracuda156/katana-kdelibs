@@ -47,7 +47,6 @@ namespace Plasma
 class AppletPrivate;
 class Containment;
 class Context;
-class DataEngine;
 class Extender;
 class ExtenderItem;
 
@@ -59,12 +58,9 @@ class ExtenderItem;
  * Applet provides several important roles for add-ons widgets in Plasma.
  *
  * First, it is the base class for the plugin system and therefore is the
- * interface to applets for host applications. It also handles the life time
- * management of data engines (e.g. all data engines accessed via
- * Applet::dataEngine(const QString&) are properly deref'd on Applet
- * destruction), background painting (allowing for consistent and complex
- * look and feel in just one line of code for applets), providing access to
- * the to configuration data.
+ * interface to applets for host applications. It also handles the background
+ * painting (allowing for consistent and complex look and feel in just one
+ * line of code for applets), providing access to the to configuration data.
  */
 class PLASMA_EXPORT Applet : public QGraphicsWidget
 {
@@ -157,25 +153,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          * named plasma_\<appletname\>rc in the local config directory.
          */
         KConfigGroup globalConfig() const;
-
-        /**
-         * Loads the given DataEngine
-         *
-         * Tries to load the data engine given by @p name.  Each engine is
-         * only loaded once, and that instance is re-used on all subsequent
-         * requests.
-         *
-         * If the data engine was not found, an invalid data engine is returned
-         * (see DataEngine::isValid()).
-         *
-         * Note that you should <em>not</em> delete the returned engine.
-         *
-         * @param name Name of the data engine to load
-         * @return pointer to the data engine if it was loaded,
-         *         or an invalid data engine if the requested engine
-         *         could not be loaded
-         */
-        Q_INVOKABLE DataEngine *dataEngine(const QString &name) const;
 
         /**
          * Returns the view this widget is visible on, or 0 if none can be found.
@@ -518,7 +495,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
          *
          * @code
          * SuperCoolWidget *widget = new SuperCoolWidget();
-         * dataEngine("engine")->connectSource(item->config("dataSourceName"), widget);
          * item->setWidget(widget);
          * @endcode
          *

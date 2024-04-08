@@ -24,7 +24,6 @@
 #include <QtGui/QTextBrowser>
 
 #include <plasma/plasma_export.h>
-#include <plasma/dataengine.h>
 
 namespace Plasma
 {
@@ -96,8 +95,6 @@ public Q_SLOTS:
      * @since 4.4
      */
     void append(const QString &text);
-
-    void dataUpdated(const QString &sourceName, const Plasma::DataEngine::Data &data);
 
 Q_SIGNALS:
     void textChanged();

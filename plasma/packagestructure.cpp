@@ -124,9 +124,6 @@ PackageStructure::Ptr PackageStructure::load(const QString &packageFormat)
     if (packageFormat == "Plasma/Applet") {
         structure = defaultPackageStructure();
         structure->d->type = "Plasma/Applet";
-    } else if (packageFormat == "Plasma/DataEngine") {
-        structure = defaultPackageStructure();
-        structure->d->type = "Plasma/DataEngine";
     } else if (packageFormat == "Plasma/Runner") {
         structure = defaultPackageStructure();
         structure->d->type = "Plasma/Runner";

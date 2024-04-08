@@ -21,7 +21,6 @@
 
 #include "../plasma.h"
 #include "../package.h"
-#include "../service.h"
 
 #include <QString>
 
@@ -43,7 +42,6 @@ public:
 
 
     PackageStructure::Ptr structure;
-    Service *service;
     bool valid;
 };
 

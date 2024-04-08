@@ -462,9 +462,6 @@ install(
     Plasma/Containment
     Plasma/ContainmentActions
     Plasma/Corona
-    Plasma/DataContainer
-    Plasma/DataEngine
-    Plasma/DataEngineManager
     Plasma/Delegate
     Plasma/Dialog
     Plasma/DialogShadows
@@ -495,8 +492,6 @@ install(
     Plasma/ScrollBar
     Plasma/ScrollWidget
     Plasma/Separator
-    Plasma/Service
-    Plasma/ServiceJob
     Plasma/SignalPlotter
     Plasma/Slider
     Plasma/SpinBox

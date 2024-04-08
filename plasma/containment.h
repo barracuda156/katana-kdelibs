@@ -37,7 +37,6 @@ namespace Plasma
 {
 
 class AppletHandle;
-class DataEngine;
 class Corona;
 class View;
 class Wallpaper;

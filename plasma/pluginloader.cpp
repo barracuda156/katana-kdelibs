@@ -82,32 +82,6 @@ Applet *PluginLoader::loadApplet(const QString &name, uint appletId, const QVari
     return applet;
 }
 
-DataEngine *PluginLoader::loadDataEngine(const QString &name)
-{ 
-    // load the engine, add it to the engines
-    QString constraint = QString("[X-KDE-PluginInfo-Name] == '%1'").arg(name);
-    KService::List offers = KServiceTypeTrader::self()->query("Plasma/DataEngine",
-                                                              constraint);
-
-    DataEngine *engine = 0;
-    QString error;
-    if (offers.isEmpty()) {
-        kDebug() << "offers are empty for " << name << " with constraint " << constraint;
-    } else {
-        QVariantList allArgs;
-        allArgs << offers.first()->storageId();
-        if (offers.first()) {
-            engine = offers.first()->createInstance<Plasma::DataEngine>(0, allArgs, &error);
-        }
-    }
-
-    if (!engine) {
-        kDebug() << "Couldn't load engine \"" << name << "\". Error given: " << error;
-    }
-
-    return engine;
-}
-
 AbstractRunner *PluginLoader::loadRunner(const QString &name)
 {
     // FIXME: RunnerManager is all wrapped around runner loading; that should be sorted out
@@ -137,19 +111,6 @@ KPluginInfo::List PluginLoader::listAppletInfo(const QString &category, const QS
 
     //kDebug() << "Applet::listAppletInfo constraint was '" << constraint
     //         << "' which got us " << offers.count() << " matches";
-    return KPluginInfo::fromServices(offers);
-}
-
-KPluginInfo::List PluginLoader::listDataEngineInfo(const QString &parentApp)
-{
-    QString constraint;
-    if (parentApp.isEmpty()) {
-        constraint.append("not exist [X-KDE-ParentApp]");
-    } else {
-        constraint.append("[X-KDE-ParentApp] == '").append(parentApp).append("'");
-    }
-
-    KService::List offers = KServiceTypeTrader::self()->query("Plasma/DataEngine", constraint);
     return KPluginInfo::fromServices(offers);
 }
 

@@ -21,7 +21,6 @@
 #include "wallpaper.h"
 #include "plasma/plasma.h"
 #include "plasma/package.h"
-#include "plasma/private/dataengineconsumer_p.h"
 #include "plasma/private/packages_p.h"
 #include "plasma/private/wallpaper_p.h"
 
@@ -278,11 +277,6 @@ void Wallpaper::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void Wallpaper::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
-}
-
-DataEngine *Wallpaper::dataEngine(const QString &name) const
-{
-    return d->dataEngine(name);
 }
 
 bool Wallpaper::configurationRequired() const

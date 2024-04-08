@@ -20,16 +20,14 @@
 #ifndef ABSTRACTRUNNER_P_H
 #define ABSTRACTRUNNER_P_H
 
-#include <QMutex>
-
-#include "dataengineconsumer_p.h"
+#include <plasma/plasma.h>
 
 namespace Plasma
 {
 
 class AbstractRunner;
 
-class AbstractRunnerPrivate : public DataEngineConsumer
+class AbstractRunnerPrivate
 {
 public:
     AbstractRunnerPrivate(AbstractRunner *r);
@@ -50,6 +48,7 @@ public:
 };
 
 } // namespace Plasma
+
 #endif
 
 

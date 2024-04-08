@@ -29,7 +29,6 @@
 #include <QtGui/QIcon>
 #include <QtGui/QGraphicsWidget>
 
-#include <plasma/dataengine.h>
 #include <plasma/animator.h>
 #include <plasma/plasma_export.h>
 

@@ -21,7 +21,6 @@
 #define PLASMA_METER_H
 
 #include <plasma/plasma_export.h>
-#include <plasma/dataengine.h>
 #include <QtGui/QGraphicsWidget>
 
 namespace Plasma
@@ -181,11 +180,6 @@ public:
     QRectF labelRect(int index) const;
 
 public Q_SLOTS:
-    /**
-     * Used when connecting to a DataEngine
-     */
-    void dataUpdated(const QString &sourceName, const Plasma::DataEngine::Data &data);
-
     /**
      * Set maximum value for the meter
      */

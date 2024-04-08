@@ -30,7 +30,6 @@
 
 #include "plasma/animator.h"
 #include "plasma/private/applethandle_p.h"
-#include "plasma/private/dataengineconsumer_p.h"
 
 class KKeySequenceWidget;
 
@@ -89,7 +88,7 @@ protected Q_SLOTS:
     void overlayAnimationComplete();
 };
 
-class AppletPrivate : public DataEngineConsumer
+class AppletPrivate
 {
 public:
     AppletPrivate(KService::Ptr service, const KPluginInfo *info, int uniqueID, Applet *applet);
@@ -143,7 +142,6 @@ public:
 
     // applet attributes
     QWeakPointer<Extender> extender;
-    Service *service;
     Applet::BackgroundHints preferredBackgroundHints;
     Applet::BackgroundHints backgroundHints;
     Plasma::AspectRatioMode aspectRatioMode;

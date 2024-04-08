@@ -20,7 +20,6 @@
 #include "containmentactions.h"
 #include "containment.h"
 
-#include "private/dataengineconsumer_p.h"
 #include "private/containmentactions_p.h"
 #include "private/containment_p.h"
 
@@ -184,11 +183,6 @@ QList<QAction*> ContainmentActions::contextualActions()
 {
     //empty list
     return QList<QAction*>();
-}
-
-DataEngine *ContainmentActions::dataEngine(const QString &name) const
-{
-    return d->dataEngine(name);
 }
 
 bool ContainmentActions::configurationRequired() const
