@@ -103,6 +103,7 @@ void KPlasmaJobTracker::registerJob(KJob *job)
     if (appIconName.isEmpty()) {
         appIconName = componentData.aboutData()->appName();
     }
+    // NOTE: destUrl never changes, it is set when the job is created
     const QString destUrl = job->property("destUrl").toString();
 
     const QString jobid = kJobID(job);
@@ -149,6 +150,9 @@ void KPlasmaJobTracker::finished(KJob *job)
 
     const QString jobid = kJobID(job);
     QVariantMap jobdata = d->jobs.value(job);
+    if (job->error() != KJob::NoError) {
+        jobdata.insert("error", job->errorText());
+    }
     jobdata.insert("state", "stopped");
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job finished" << jobid;
@@ -164,6 +168,7 @@ void KPlasmaJobTracker::suspended(KJob *job)
     const QString jobid = kJobID(job);
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("state", "suspended");
+    d->jobs.insert(job, jobdata);
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job suspended" << jobid;
 }
@@ -177,6 +182,7 @@ void KPlasmaJobTracker::resumed(KJob *job)
     const QString jobid = kJobID(job);
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("state", "running");
+    d->jobs.insert(job, jobdata);
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job resumed" << jobid;
 }
@@ -195,6 +201,7 @@ void KPlasmaJobTracker::description(KJob *job, const QString &title,
     jobdata.insert("label0", field1.second);
     jobdata.insert("labelName1", field2.first);
     jobdata.insert("label1", field2.second);
+    d->jobs.insert(job, jobdata);
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job description" << jobid << field1 << field2;
 }
@@ -210,6 +217,8 @@ void KPlasmaJobTracker::infoMessage(KJob *job, const QString &plain, const QStri
     const QString jobid = kJobID(job);
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("infoMessage", plain);
+    // NOTE: the message is used in the notificatin plasma applet, it should be stored
+    d->jobs.insert(job, jobdata);
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job info message" << jobid << plain << rich;
 }
@@ -223,6 +232,7 @@ void KPlasmaJobTracker::percent(KJob *job, unsigned long percent)
     const QString jobid = kJobID(job);
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("percentage", qulonglong(percent));
+    d->jobs.insert(job, jobdata);
     d->interface.call("updateJob", jobid, jobdata);
     kDebug() << "job percent" << jobid << percent;
 }
