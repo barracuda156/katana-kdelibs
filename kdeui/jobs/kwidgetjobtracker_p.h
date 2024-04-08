@@ -141,8 +141,6 @@ public Q_SLOTS:
     virtual void suspended();
     virtual void resumed();
 
-    //TODO: Misses canResume()
-
 protected:
     void closeEvent(QCloseEvent *event);
 

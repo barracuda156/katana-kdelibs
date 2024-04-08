@@ -90,8 +90,6 @@ protected Q_SLOTS:
     virtual void suspended(KJob *job);
     virtual void resumed(KJob *job);
 
-    //TODO: Misses canResume()
-
 private:
     class Private;
     Private *const d;
