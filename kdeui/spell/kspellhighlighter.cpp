@@ -60,6 +60,7 @@ QString KSpellHighlighter::currentLanguage() const
 void KSpellHighlighter::setCurrentLanguage(const QString &lang)
 {
     d->speller.setDictionary(lang);
+    rehighlight();
 }
 
 void KSpellHighlighter::addWordToDictionary(const QString &word)
