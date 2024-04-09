@@ -258,7 +258,6 @@ QString KSpeller::defaultLanguage()
 void KSpeller::setText(const QString &text)
 {
     d->text = text;
-    start();
 }
 
 QString KSpeller::text() const
