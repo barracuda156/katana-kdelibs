@@ -55,7 +55,7 @@ KSpellerPrivate::KSpellerPrivate(KConfig *kconfig)
     enchantdict(nullptr)
 {
     enchantbroker = enchant_broker_init();
-    if (!enchantbroker) {
+    if (Q_UNLIKELY(!enchantbroker)) {
         kWarning() << "Could not create broker";
         return;
     }
@@ -95,7 +95,7 @@ KSpeller::KSpeller(KConfig *config, QObject *parent)
     : QObject(parent),
     d(new KSpellerPrivate(config))
 {
-    if (!config) {
+    if (Q_UNLIKELY(!config)) {
         setDictionary(KSpeller::defaultLanguage());
         kWarning() << "Null config passed";
         return;
@@ -129,7 +129,7 @@ QStringList KSpeller::dictionaries() const
 
 bool KSpeller::setDictionary(const QString &dictionary)
 {
-    if (!d->enchantbroker || dictionary.isEmpty()) {
+    if (Q_UNLIKELY(!d->enchantbroker || dictionary.isEmpty())) {
         return false;
     }
     if (d->enchantdict) {
@@ -138,7 +138,7 @@ bool KSpeller::setDictionary(const QString &dictionary)
     }
     const QByteArray dictionarybytes = dictionary.toUtf8();
     d->enchantdict = enchant_broker_request_dict(d->enchantbroker, dictionarybytes.constData());
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         kWarning() << "Could not create dictionary" << enchant_broker_get_error(d->enchantbroker);
         return false;
     }
@@ -155,7 +155,7 @@ bool KSpeller::setDictionary(const QString &dictionary)
 
 bool KSpeller::check(const QString &word)
 {
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         return true;
     }
     const QByteArray wordbytes = word.toUtf8();
@@ -163,7 +163,7 @@ bool KSpeller::check(const QString &word)
         d->enchantdict,
         wordbytes.constData(), wordbytes.size()
     );
-    if (enchantresult < 0) {
+    if (Q_UNLIKELY(enchantresult < 0)) {
         kWarning() << "Could not check word" << enchant_dict_get_error(d->enchantdict);
         return true;
     }
@@ -173,7 +173,7 @@ bool KSpeller::check(const QString &word)
 QStringList KSpeller::suggest(const QString &word)
 {
     QStringList result;
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         return result;
     }
     const QByteArray wordbytes = word.toUtf8();
@@ -192,7 +192,7 @@ QStringList KSpeller::suggest(const QString &word)
 
 bool KSpeller::addToPersonal(const QString &word)
 {
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         return false;
     }
     const QByteArray wordbytes = word.toUtf8();
@@ -206,7 +206,7 @@ bool KSpeller::addToPersonal(const QString &word)
 
 bool KSpeller::removeFromPersonal(const QString &word)
 {
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         return false;
     }
     const QByteArray wordbytes = word.toUtf8();
@@ -219,7 +219,7 @@ bool KSpeller::removeFromPersonal(const QString &word)
 }
 bool KSpeller::addToSession(const QString &word)
 {
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         return false;
     }
     const QByteArray wordbytes = word.toUtf8();
@@ -232,7 +232,7 @@ bool KSpeller::addToSession(const QString &word)
 
 bool KSpeller::removeFromSession(const QString &word)
 {
-    if (!d->enchantdict) {
+    if (Q_UNLIKELY(!d->enchantdict)) {
         return false;
     }
     const QByteArray wordbytes = word.toUtf8();
@@ -301,7 +301,7 @@ void KSpeller::stop()
 
 // the code is similar to the code in QTextEngine on purpose, kate uses different logic for
 // selection tho
-bool KSpeller::isWordSeparator(const QChar c)
+bool KSpeller::isWordSeparator(const QChar &c)
 {
     switch (c.toLatin1()) {
         case '.':

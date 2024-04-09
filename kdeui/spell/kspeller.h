@@ -52,7 +52,7 @@ public:
     bool removeFromSession(const QString &word);
 
     static QString defaultLanguage();
-    static bool isWordSeparator(const QChar c);
+    static bool isWordSeparator(const QChar &c);
 
     void setText(const QString &text);
     QString text() const;
