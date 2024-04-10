@@ -60,6 +60,13 @@ bool WebPHandler::canRead() const
 
 bool WebPHandler::read(QImage *image)
 {
+    if (m_currentimage == 0 && !m_webpanimdec) {
+        // lazy init for compat
+        if (!jumpToImage(0)) {
+            return false;
+        }
+    }
+
     WebPIterator webpiter;
     const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(m_webpanimdec);
     // NOTE: 0 will return the last frame
