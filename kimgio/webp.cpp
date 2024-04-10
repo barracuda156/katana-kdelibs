@@ -85,7 +85,8 @@ bool WebPHandler::read(QImage *image)
 
     const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(webpanimdec);
     WebPIterator webpiter;
-    webpstatus = WebPDemuxGetFrame(webpdemuxer, m_currentimage, &webpiter);
+    // NOTE: 0 will return the last frame, first frame is 1 but for QImageIOHandler first frame is 0
+    webpstatus = WebPDemuxGetFrame(webpdemuxer, m_currentimage + 1, &webpiter);
     if (Q_UNLIKELY(webpstatus == 0)) {
         kWarning() << "Could not get frame";
         WebPAnimDecoderDelete(webpanimdec);
