@@ -22,11 +22,17 @@
 #include <QStringList>
 #include <QImageIOHandler>
 #include <QImage>
+#include <QPainter>
+
+#include <webp/decode.h>
+#include <webp/encode.h>
+#include <webp/demux.h>
 
 class WebPHandler : public QImageIOHandler
 {
 public:
     WebPHandler();
+    ~WebPHandler();
 
     bool canRead() const final;
     bool read(QImage *image) final;
@@ -40,7 +46,6 @@ public:
 
     static bool canRead(QIODevice *device);
 
-    bool jumpToNextImage() final;
     bool jumpToImage(int imageNumber) final;
     int loopCount() const final;
     int imageCount() const final;
@@ -53,6 +58,14 @@ private:
     int m_imagecount;
     int m_imagedelay;
     int m_currentimage;
+    QByteArray m_data;
+    WebPData m_webpdata;
+    WebPAnimDecoderOptions m_webpanimoptions;
+    WebPAnimDecoder* m_webpanimdec;
+    QImage m_framebuffer;
+    QPainter* m_framepainter;
+    QRectF m_previousrect;
+    QColor m_background;
 };
 
 

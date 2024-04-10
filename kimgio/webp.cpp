@@ -20,11 +20,6 @@
 #include "kdebug.h"
 
 #include <QVariant>
-#include <QPainter>
-
-#include <webp/decode.h>
-#include <webp/encode.h>
-#include <webp/demux.h>
 
 static const char* const s_webppluginformat = "webp";
 
@@ -35,8 +30,23 @@ WebPHandler::WebPHandler()
     m_loopcount(0),
     m_imagecount(1),
     m_imagedelay(100),
-    m_currentimage(0)
+    m_currentimage(0),
+    m_webpanimdec(nullptr),
+    m_framepainter(nullptr)
 {
+}
+
+WebPHandler::~WebPHandler()
+{
+    if (m_webpanimdec) {
+        WebPAnimDecoderDelete(m_webpanimdec);
+        m_webpanimdec = nullptr;
+    }
+
+    if (m_framepainter) {
+        delete m_framepainter;
+        m_framepainter = nullptr;
+    }
 }
 
 bool WebPHandler::canRead() const
@@ -50,144 +60,81 @@ bool WebPHandler::canRead() const
 
 bool WebPHandler::read(QImage *image)
 {
-    // NOTE: QMovie will continuously call read() to get each frame
-    const qint64 devicepos = device()->pos();
-    const QByteArray data = device()->readAll();
-    device()->seek(devicepos);
-
-    const WebPData webpdata = { reinterpret_cast<const uint8_t*>(data.constData()), size_t(data.size()) };
-    WebPAnimDecoderOptions webpanimoptions;
-    WebPAnimDecoderOptionsInit(&webpanimoptions);
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    webpanimoptions.color_mode = WEBP_CSP_MODE::MODE_ARGB;
-#else
-    webpanimoptions.color_mode = WEBP_CSP_MODE::MODE_BGRA;
-#endif
-    WebPAnimDecoder* webpanimdec = WebPAnimDecoderNew(
-        &webpdata,
-        &webpanimoptions
-    );
-    if (Q_UNLIKELY(!webpanimdec)) {
-        kWarning() << "Could not create animation decoder";
-        return false;
-    }
-
-    WebPAnimInfo webpaniminfo;
-    int webpstatus = WebPAnimDecoderGetInfo(webpanimdec, &webpaniminfo);
-    if (Q_UNLIKELY(webpstatus == 0)) {
-        kWarning() << "Could not get animation information";
-        WebPAnimDecoderDelete(webpanimdec);
-        return false;
-    }
-
-    m_loopcount = webpaniminfo.loop_count;
-    m_imagecount = webpaniminfo.frame_count;
-
-    QImage buffer(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32_Premultiplied);
-    if (Q_UNLIKELY(buffer.isNull())) {
-        kWarning() << "Could not create buffer image";
-        return false;
-    }
-    // NOTE: have to fill, areas of frames may not be drawn
-    buffer.fill(Qt::transparent);
-
-    QRectF previousrect;
-    QPainter painter(&buffer);
-    const QColor background = QColor(QRgb(webpaniminfo.bgcolor));
-    int framecounter = 0;
     WebPIterator webpiter;
-    const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(webpanimdec);
-    // NOTE: painting of all images up to the requested frame is done because QImageIOHandler API
-    // allows to jump to any frame via jumpToImage(), if not done like this skipping one frame will
-    // produce busted result
-    while (framecounter < m_imagecount) {
-        // NOTE: 0 will return the last frame
-        webpstatus = WebPDemuxGetFrame(webpdemuxer, framecounter + 1, &webpiter);
-        if (Q_UNLIKELY(webpstatus == 0)) {
-            kWarning() << "Could not get frame";
-            WebPDemuxReleaseIterator(&webpiter);
-            WebPAnimDecoderDelete(webpanimdec);
-            return false;
-        }
+    const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(m_webpanimdec);
+    // NOTE: 0 will return the last frame
+    int webpstatus = WebPDemuxGetFrame(webpdemuxer, m_currentimage + 1, &webpiter);
+    if (Q_UNLIKELY(webpstatus == 0)) {
+        kWarning() << "Could not get frame" << m_currentimage << webpstatus << m_webpanimdec;
+        WebPDemuxReleaseIterator(&webpiter);
+        return false;
+    }
 
-        QImage frame(webpiter.width, webpiter.height, QImage::Format_ARGB32);
-        if (Q_UNLIKELY(frame.isNull())) {
-            kWarning() << "Could not create image";
-            WebPDemuxReleaseIterator(&webpiter);
-            WebPAnimDecoderDelete(webpanimdec);
-            return false;
-        }
+    QImage frame(webpiter.width, webpiter.height, QImage::Format_ARGB32);
+    if (Q_UNLIKELY(frame.isNull())) {
+        kWarning() << "Could not create image";
+        WebPDemuxReleaseIterator(&webpiter);
+        return false;
+    }
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        const uint8_t* webpoutput = WebPDecodeARGBInto(
+    const uint8_t* webpoutput = WebPDecodeARGBInto(
 #else
-        const uint8_t* webpoutput = WebPDecodeBGRAInto(
+    const uint8_t* webpoutput = WebPDecodeBGRAInto(
 #endif
-            webpiter.fragment.bytes, webpiter.fragment.size,
-            reinterpret_cast<uint8_t*>(frame.bits()), frame.byteCount(),
-            frame.bytesPerLine()
-        );
-        if (Q_UNLIKELY(!webpoutput)) {
-            kWarning() << "Could not decode image";
-            WebPDemuxReleaseIterator(&webpiter);
-            WebPAnimDecoderDelete(webpanimdec);
-            return false;
-        }
+        webpiter.fragment.bytes, webpiter.fragment.size,
+        reinterpret_cast<uint8_t*>(frame.bits()), frame.byteCount(),
+        frame.bytesPerLine()
+    );
+    if (Q_UNLIKELY(!webpoutput)) {
+        kWarning() << "Could not decode image";
+        WebPDemuxReleaseIterator(&webpiter);
+        return false;
+    }
 
-        switch (webpiter.dispose_method) {
-            case WEBP_MUX_DISPOSE_BACKGROUND: {
-                // yep, there are images attempting to dispose the background without previous frame
-                if (!previousrect.isNull()) {
-                    painter.setCompositionMode(QPainter::CompositionMode_Clear);
-                    painter.fillRect(previousrect, background);
-                }
-                break;
+    switch (webpiter.dispose_method) {
+        case WEBP_MUX_DISPOSE_BACKGROUND: {
+            // yep, there are images attempting to dispose the background without previous frame
+            if (!m_previousrect.isNull()) {
+                m_framepainter->setCompositionMode(QPainter::CompositionMode_Clear);
+                m_framepainter->fillRect(m_previousrect, m_background);
             }
-            case WEBP_MUX_DISPOSE_NONE: {
-                break;
-            }
-            default: {
-                kWarning() << "Unknown dispose method" << webpiter.dispose_method;
-                break;
-            }
-        }
-
-        switch (webpiter.blend_method) {
-            case WEBP_MUX_BLEND: {
-                painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-                break;
-            }
-            case WEBP_MUX_NO_BLEND: {
-                painter.setCompositionMode(QPainter::CompositionMode_Source);
-                break;
-            }
-            default: {
-                kWarning() << "Unknown blend method" << webpiter.blend_method;
-                painter.setCompositionMode(QPainter::CompositionMode_Source);
-                break;
-            }
-        }
-        previousrect = QRectF(webpiter.x_offset, webpiter.y_offset, webpiter.width, webpiter.height);
-        painter.drawImage(previousrect, frame);
-
-
-        if (framecounter == m_currentimage) {
-            // bound to reasonable limits
-            m_imagedelay = qBound(10, webpiter.duration, 10000);
             break;
         }
-        framecounter++;
+        case WEBP_MUX_DISPOSE_NONE: {
+            break;
+        }
+        default: {
+            kWarning() << "Unknown dispose method" << webpiter.dispose_method;
+            break;
+        }
     }
-    painter.end();
-    *image = buffer;
 
-    m_currentimage++;
-    if (m_currentimage >= m_imagecount) {
-        m_currentimage = 0;
+    switch (webpiter.blend_method) {
+        case WEBP_MUX_BLEND: {
+            m_framepainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
+            break;
+        }
+        case WEBP_MUX_NO_BLEND: {
+            m_framepainter->setCompositionMode(QPainter::CompositionMode_Source);
+            break;
+        }
+        default: {
+            kWarning() << "Unknown blend method" << webpiter.blend_method;
+            m_framepainter->setCompositionMode(QPainter::CompositionMode_Source);
+            break;
+        }
     }
+    m_previousrect = QRectF(webpiter.x_offset, webpiter.y_offset, webpiter.width, webpiter.height);
+    m_framepainter->drawImage(m_previousrect, frame);
+
+
+    // bound to reasonable limits
+    m_imagedelay = qBound(10, webpiter.duration, 10000);
+
+    *image = m_framebuffer;
 
     WebPDemuxReleaseIterator(&webpiter);
-    WebPAnimDecoderDelete(webpanimdec);
     return true;
 }
 
@@ -306,13 +253,64 @@ void WebPHandler::setOption(QImageIOHandler::ImageOption option, const QVariant 
     }
 }
 
-bool WebPHandler::jumpToNextImage()
-{
-    return jumpToImage(m_currentimage + 1);
-}
-
 bool WebPHandler::jumpToImage(int imageNumber)
 {
+    if (imageNumber == 0) {
+        const qint64 devicepos = device()->pos();
+        m_data = device()->readAll();
+        device()->seek(devicepos);
+
+        if (m_webpanimdec) {
+            WebPAnimDecoderDelete(m_webpanimdec);
+            m_webpanimdec = nullptr;
+        }
+
+        if (m_framepainter) {
+            delete m_framepainter;
+            m_framepainter = nullptr;
+        }
+        m_framebuffer = QImage();
+        m_background = QColor();
+
+        m_webpdata = { reinterpret_cast<const uint8_t*>(m_data.constData()), size_t(m_data.size()) };
+        WebPAnimDecoderOptionsInit(&m_webpanimoptions);
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        m_webpanimoptions.color_mode = WEBP_CSP_MODE::MODE_ARGB;
+#else
+        m_webpanimoptions.color_mode = WEBP_CSP_MODE::MODE_BGRA;
+#endif
+        m_webpanimdec = WebPAnimDecoderNew(
+            &m_webpdata,
+            &m_webpanimoptions
+        );
+        if (Q_UNLIKELY(!m_webpanimdec)) {
+            kWarning() << "Could not create animation decoder";
+            m_data.clear();
+            return false;
+        }
+
+        WebPAnimInfo webpaniminfo;
+        int webpstatus = WebPAnimDecoderGetInfo(m_webpanimdec, &webpaniminfo);
+        if (Q_UNLIKELY(webpstatus == 0)) {
+            kWarning() << "Could not get animation information";
+            m_data.clear();
+            WebPAnimDecoderDelete(m_webpanimdec);
+            return false;
+        }
+
+        m_loopcount = webpaniminfo.loop_count;
+        m_imagecount = webpaniminfo.frame_count;
+
+        m_framebuffer = QImage(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32_Premultiplied);
+        if (Q_UNLIKELY(m_framebuffer.isNull())) {
+            kWarning() << "Could not create buffer image";
+            return false;
+        }
+        // NOTE: have to fill, areas of frames may not be drawn
+        m_framebuffer.fill(Qt::transparent);
+        m_framepainter = new QPainter(&m_framebuffer);
+        m_background = QColor(QRgb(webpaniminfo.bgcolor));
+    }
     if (imageNumber >= m_imagecount) {
         return false;
     }
