@@ -135,7 +135,6 @@ bool WebPHandler::read(QImage *image)
     m_previousrect = QRectF(webpiter.x_offset, webpiter.y_offset, webpiter.width, webpiter.height);
     m_framepainter->drawImage(m_previousrect, frame);
 
-
     // bound to reasonable limits
     m_imagedelay = qBound(10, webpiter.duration, 10000);
 
@@ -262,6 +261,10 @@ void WebPHandler::setOption(QImageIOHandler::ImageOption option, const QVariant 
 
 bool WebPHandler::jumpToImage(int imageNumber)
 {
+    if (imageNumber != 0 && (imageNumber < m_currentimage || (imageNumber - 1) != m_currentimage)) {
+        kWarning() << "Only jumping forward is supported";
+        return false;
+    }
     if (imageNumber == 0) {
         const qint64 devicepos = device()->pos();
         m_data = device()->readAll();
@@ -302,6 +305,7 @@ bool WebPHandler::jumpToImage(int imageNumber)
             kWarning() << "Could not get animation information";
             m_data.clear();
             WebPAnimDecoderDelete(m_webpanimdec);
+            m_webpanimdec = nullptr;
             return false;
         }
 
@@ -311,6 +315,9 @@ bool WebPHandler::jumpToImage(int imageNumber)
         m_framebuffer = QImage(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32_Premultiplied);
         if (Q_UNLIKELY(m_framebuffer.isNull())) {
             kWarning() << "Could not create buffer image";
+            m_data.clear();
+            WebPAnimDecoderDelete(m_webpanimdec);
+            m_webpanimdec = nullptr;
             return false;
         }
         // NOTE: have to fill, areas of frames may not be drawn
