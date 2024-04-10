@@ -253,8 +253,7 @@ QVariant Label::itemChange(GraphicsItemChange change, const QVariant & value)
     if (change == QGraphicsItem::ItemCursorHasChanged) {
         nativeWidget()->setCursor(cursor());
     }
-
-    return QGraphicsWidget::itemChange(change, value);
+    return QGraphicsProxyWidget::itemChange(change, value);
 }
 
 QSizeF Label::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
