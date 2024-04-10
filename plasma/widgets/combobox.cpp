@@ -72,16 +72,6 @@ QString ComboBox::text() const
     return static_cast<KComboBox*>(widget())->currentText();
 }
 
-void ComboBox::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString ComboBox::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 void ComboBox::setNativeWidget(KComboBox *nativeWidget)
 {
     if (widget()) {

@@ -573,16 +573,6 @@ bool TabBar::isTabBarShown() const
     return d->tabBarShown;
 }
 
-void TabBar::setStyleSheet(const QString &stylesheet)
-{
-    d->tabProxy->native->setStyleSheet(stylesheet);
-}
-
-QString TabBar::styleSheet() const
-{
-    return d->tabProxy->native->styleSheet();
-}
-
 void TabBar::setTabHighlighted(int index, bool highlight)
 {
     d->tabProxy->native->setTabHighlighted(index, highlight);

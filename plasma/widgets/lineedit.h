@@ -44,7 +44,6 @@ class PLASMA_EXPORT LineEdit : public QGraphicsProxyWidget
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(bool clearButtonShown READ isClearButtonShown WRITE setClearButtonShown)
     Q_PROPERTY(QString clickMessage READ clickMessage WRITE setClickMessage)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(KLineEdit *nativeWidget READ nativeWidget WRITE setNativeWidget)
 
 public:
@@ -88,18 +87,6 @@ public:
      * @since 4.5
      */
     QString clickMessage() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this LineEdit
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * Sets the line edit wrapped by this LineEdit (widget must inherit KLineEdit), ownership is transferred to the LineEdit

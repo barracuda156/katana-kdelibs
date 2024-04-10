@@ -134,16 +134,6 @@ QString CheckBox::image() const
     return d->imagePath;
 }
 
-void CheckBox::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString CheckBox::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QCheckBox *CheckBox::nativeWidget() const
 {
     return static_cast<QCheckBox*>(widget());

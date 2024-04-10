@@ -56,11 +56,6 @@ public:
         m_document->setDefaultTextOption(option);
     }
 
-    void setStyleSheet(const QString &css)
-    {
-        m_document->setDefaultStyleSheet(css);
-    }
-
     void setContent(const ToolTipContent &data)
     {
         QString html;

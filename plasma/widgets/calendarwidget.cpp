@@ -82,16 +82,6 @@ QDate CalendarWidget::selectedDate() const
     return nativeWidget()->selectedDate();
 }
 
-void CalendarWidget::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString CalendarWidget::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 KCalendarWidget* CalendarWidget::nativeWidget() const
 {
     return static_cast<KCalendarWidget*>(widget());

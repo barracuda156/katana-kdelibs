@@ -284,16 +284,6 @@ bool ToolButton::isDown() const
     return nativeWidget()->isDown();
 }
 
-void ToolButton::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString ToolButton::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QToolButton *ToolButton::nativeWidget() const
 {
     return static_cast<QToolButton*>(widget());
@@ -326,7 +316,7 @@ void ToolButton::paint(QPainter *painter,
                        const QStyleOptionGraphicsItem *option,
                        QWidget *widget)
 {
-    if (!styleSheet().isNull() || Theme::defaultTheme()->useNativeWidgetStyle()) {
+    if (Theme::defaultTheme()->useNativeWidgetStyle()) {
         QGraphicsProxyWidget::paint(painter, option, widget);
         return;
     }

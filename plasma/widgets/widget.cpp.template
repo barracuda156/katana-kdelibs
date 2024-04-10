@@ -133,16 +133,6 @@ QString <Name>::image() const
     return d->imagePath;
 }
 
-void <Name>::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString <Name>::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 <Native>* <Name>::nativeWidget() const
 {
     return static_cast<<Native>*>(widget());

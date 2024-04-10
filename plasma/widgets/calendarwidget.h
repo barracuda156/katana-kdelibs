@@ -42,7 +42,6 @@ class PLASMA_EXPORT CalendarWidget : public QGraphicsProxyWidget
 
     Q_PROPERTY(QDate selectedDate READ selectedDate WRITE setSelectedDate)
     Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(KCalendarWidget *nativeWidget READ nativeWidget)
 
 public:
@@ -60,18 +59,6 @@ public:
      * @param date the date to display
      */
     void setSelectedDate(const QDate &date);
-
-    /**
-     * Sets the stylesheet used to control the visual display of this CalendarWidget
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * @return the native widget wrapped by this CalendarWidget

@@ -171,16 +171,6 @@ QString PushButton::image() const
     return d->imagePath;
 }
 
-void PushButton::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString PushButton::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 void PushButton::setAction(QAction *action)
 {
     d->setAction(action);

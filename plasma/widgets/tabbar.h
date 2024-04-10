@@ -50,7 +50,6 @@ class PLASMA_EXPORT TabBar : public QGraphicsWidget
     Q_PROPERTY(KTabBar *nativeWidget READ nativeWidget)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentChanged)
     Q_PROPERTY(int count READ count)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(bool tabBarShown READ isTabBarShown WRITE setTabBarShown)
     Q_PROPERTY(QGraphicsWidget *firstPositionWidget READ firstPositionWidget WRITE setFirstPositionWidget)
     Q_PROPERTY(QGraphicsWidget *lastPositionWidget READ lastPositionWidget WRITE setLastPositionWidget)
@@ -191,18 +190,6 @@ public:
       * @since 4.3
       */
      bool isTabBarShown() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this TabBar
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet() const;
 
     /**
      * Highlight the specified tab

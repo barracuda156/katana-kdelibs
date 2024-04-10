@@ -123,16 +123,6 @@ QString RadioButton::image() const
     return d->imagePath;
 }
 
-void RadioButton::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString RadioButton::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QRadioButton *RadioButton::nativeWidget() const
 {
     return static_cast<QRadioButton*>(widget());

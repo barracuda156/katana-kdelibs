@@ -104,16 +104,6 @@ int SpinBox::value() const
     return static_cast<KIntSpinBox*>(widget())->value();
 }
 
-void SpinBox::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString SpinBox::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 KIntSpinBox *SpinBox::nativeWidget() const
 {
     return static_cast<KIntSpinBox*>(widget());

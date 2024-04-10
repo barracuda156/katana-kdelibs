@@ -197,16 +197,6 @@ bool Label::wordWrap() const
     return nativeWidget()->wordWrap();
 }
 
-void Label::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString Label::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QLabel *Label::nativeWidget() const
 {
     return static_cast<QLabel*>(widget());

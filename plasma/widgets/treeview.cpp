@@ -67,16 +67,6 @@ QAbstractItemModel *TreeView::model()
     return nativeWidget()->model();
 }
 
-void TreeView::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString TreeView::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QTreeView *TreeView::nativeWidget() const
 {
     return static_cast<QTreeView*>(widget());

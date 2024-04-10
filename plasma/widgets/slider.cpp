@@ -117,16 +117,6 @@ Qt::Orientation Slider::orientation() const
     return static_cast<QSlider*>(widget())->orientation();
 }
 
-void Slider::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString Slider::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QSlider *Slider::nativeWidget() const
 {
     return static_cast<QSlider*>(widget());

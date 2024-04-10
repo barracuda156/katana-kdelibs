@@ -71,16 +71,6 @@ QString GroupBox::text() const
     return static_cast<QGroupBox*>(widget())->title();
 }
 
-void GroupBox::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString GroupBox::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QGroupBox *GroupBox::nativeWidget() const
 {
     return static_cast<QGroupBox*>(widget());

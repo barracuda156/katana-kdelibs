@@ -42,7 +42,6 @@ class PLASMA_EXPORT GroupBox : public QGraphicsProxyWidget
 
     Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(QGroupBox *nativeWidget READ nativeWidget)
 
 public:
@@ -60,18 +59,6 @@ public:
      * @return the display text
      */
     QString text() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this GroupBox
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * @return the native widget wrapped by this GroupBox

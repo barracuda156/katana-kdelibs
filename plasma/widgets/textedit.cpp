@@ -83,16 +83,6 @@ bool TextEdit::isReadOnly() const
     return static_cast<KTextEdit*>(widget())->isReadOnly();
 }
 
-void TextEdit::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString TextEdit::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 void TextEdit::setNativeWidget(KTextEdit *nativeWidget)
 {
     if (widget()) {

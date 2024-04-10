@@ -45,7 +45,6 @@ class PLASMA_EXPORT SpinBox : public QGraphicsProxyWidget
     Q_PROPERTY(int maximum READ maximum WRITE setMinimum)
     Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(KIntSpinBox *nativeWidget READ nativeWidget)
 
 public:
@@ -66,18 +65,6 @@ public:
      * @return the current value
      */
     int value() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this SpinBox
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * @return the native widget wrapped by this SpinBox

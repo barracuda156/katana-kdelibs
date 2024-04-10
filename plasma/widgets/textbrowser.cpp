@@ -120,16 +120,6 @@ void TextBrowser::setVerticalScrollBarPolicy(Qt::ScrollBarPolicy policy)
     nativeWidget()->setVerticalScrollBarPolicy(policy);
 }
 
-void TextBrowser::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString TextBrowser::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 QTextBrowser *TextBrowser::nativeWidget() const
 {
     return static_cast<QTextBrowser*>(widget());

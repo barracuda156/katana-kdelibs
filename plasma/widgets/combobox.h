@@ -20,11 +20,11 @@
 #ifndef PLASMA_COMBOBOX_H
 #define PLASMA_COMBOBOX_H
 
+#include <plasma/plasma_export.h>
+
 #include <QtGui/QGraphicsProxyWidget>
 
 class KComboBox;
-
-#include <plasma/plasma_export.h>
 
 namespace Plasma
 {
@@ -42,7 +42,6 @@ class PLASMA_EXPORT ComboBox : public QGraphicsProxyWidget
 
     Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text NOTIFY textChanged)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(KComboBox *nativeWidget READ nativeWidget WRITE setNativeWidget)
     Q_PROPERTY(int count READ count)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
@@ -55,18 +54,6 @@ public:
      * @return the display text
      */
     QString text() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this ComboBox
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * Sets the combo box wrapped by this ComboBox (widget must inherit KComboBox), ownership is transferred to the ComboBox

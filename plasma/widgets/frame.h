@@ -46,7 +46,6 @@ class PLASMA_EXPORT Frame : public QGraphicsWidget
     Q_PROPERTY(Shadow frameShadow READ frameShadow WRITE setFrameShadow)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(QString image READ image WRITE setImage)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_ENUMS(Shadow)
 
 public:
@@ -113,18 +112,6 @@ public:
      * @return the image path being displayed currently, or an empty string if none.
      */
     QString image() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this Frame
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet() const;
 
     /**
      * @return the native widget wrapped by this Frame

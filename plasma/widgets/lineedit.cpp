@@ -98,16 +98,6 @@ QString LineEdit::clickMessage() const
     return nativeWidget()->clickMessage();
 }
 
-void LineEdit::setStyleSheet(const QString &stylesheet)
-{
-    widget()->setStyleSheet(stylesheet);
-}
-
-QString LineEdit::styleSheet()
-{
-    return widget()->styleSheet();
-}
-
 void LineEdit::setNativeWidget(KLineEdit *nativeWidget)
 {
     if (widget()) {

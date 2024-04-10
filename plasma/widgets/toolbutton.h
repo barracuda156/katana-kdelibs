@@ -44,7 +44,6 @@ class PLASMA_EXPORT ToolButton : public QGraphicsProxyWidget
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
     Q_PROPERTY(QString image READ image WRITE setImage)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(QToolButton *nativeWidget READ nativeWidget)
     Q_PROPERTY(QAction *action READ action WRITE setAction)
     Q_PROPERTY(bool down READ isDown WRITE setDown)
@@ -114,18 +113,6 @@ public:
      * @since 4.4
      */
     bool isDown() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this ToolButton
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * Associate an action with this IconWidget

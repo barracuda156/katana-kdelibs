@@ -43,7 +43,6 @@ class PLASMA_EXPORT TextBrowser : public QGraphicsProxyWidget
 
     Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(QTextBrowser *nativeWidget READ nativeWidget)
 
 public:
@@ -71,18 +70,6 @@ public:
      * Sets the policy used to show/hide the vertical scrollbar
      */
     void setVerticalScrollBarPolicy(Qt::ScrollBarPolicy policy);
-
-    /**
-     * Sets the stylesheet used to control the visual display of this TextBrowser
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * @return the native widget wrapped by this TextBrowser

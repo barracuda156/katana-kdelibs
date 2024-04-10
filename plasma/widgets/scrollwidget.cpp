@@ -1028,7 +1028,6 @@ public:
     Qt::ScrollBarPolicy verticalScrollBarPolicy;
     ScrollBar *horizontalScrollBar;
     Qt::ScrollBarPolicy horizontalScrollBarPolicy;
-    QString styleSheet;
     QWeakPointer<QGraphicsWidget> widgetToBeVisible;
     QRectF rectToBeVisible;
     QTimer *wheelTimer;
@@ -1249,18 +1248,6 @@ void ScrollWidget::setSnapSize(const QSizeF &size)
 QSizeF ScrollWidget::snapSize() const
 {
     return d->snapSize;
-}
-
-void ScrollWidget::setStyleSheet(const QString &styleSheet)
-{
-    d->styleSheet = styleSheet;
-    d->verticalScrollBar->setStyleSheet(styleSheet);
-    d->horizontalScrollBar->setStyleSheet(styleSheet);
-}
-
-QString ScrollWidget::styleSheet() const
-{
-    return d->styleSheet;
 }
 
 QWidget *ScrollWidget::nativeWidget() const

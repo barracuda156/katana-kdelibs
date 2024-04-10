@@ -47,7 +47,6 @@ class PLASMA_EXPORT Label : public QGraphicsProxyWidget
     Q_PROPERTY(bool hasScaledContents READ hasScaledContents WRITE setScaledContents)
     Q_PROPERTY(bool textSelectable READ textSelectable WRITE setTextSelectable)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
-    Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
     Q_PROPERTY(QLabel *nativeWidget READ nativeWidget)
 
 public:
@@ -134,18 +133,6 @@ public:
      * @since 4.5
      */
     bool wordWrap() const;
-
-    /**
-     * Sets the stylesheet used to control the visual display of this Label
-     *
-     * @param stylesheet a CSS string
-     */
-    void setStyleSheet(const QString &stylesheet);
-
-    /**
-     * @return the stylesheet currently used with this widget
-     */
-    QString styleSheet();
 
     /**
      * @return the native widget wrapped by this Label

@@ -57,7 +57,6 @@ public:
     FrameSvg *svg;
     Frame::Shadow shadow;
     QString text;
-    QString styleSheet;
     QString imagePath;
     QString absImagePath;
     Svg *image;
@@ -188,17 +187,6 @@ void Frame::setImage(const QString &path)
 QString Frame::image() const
 {
     return d->imagePath;
-}
-
-void Frame::setStyleSheet(const QString &styleSheet)
-{
-    //TODO: implement stylesheets painting
-    d->styleSheet = styleSheet;
-}
-
-QString Frame::styleSheet() const
-{
-    return d->styleSheet;
 }
 
 QWidget *Frame::nativeWidget() const

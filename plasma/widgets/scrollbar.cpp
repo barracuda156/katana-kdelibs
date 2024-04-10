@@ -113,16 +113,6 @@ void ScrollBar::setMaximum(const int max) const
     static_cast<QScrollBar*>(widget())->setMaximum(max);
 }
 
-void ScrollBar::setStyleSheet(const QString &stylesheet)
-{
-   widget()->setStyleSheet(stylesheet);
-}
-
-QString ScrollBar::styleSheet()
-{
-   return widget()->styleSheet();
-}
-
 QScrollBar *ScrollBar::nativeWidget() const
 {
    return static_cast<QScrollBar *>(widget());
