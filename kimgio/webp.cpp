@@ -33,7 +33,7 @@ WebPHandler::WebPHandler()
     : m_quality(100),
     m_loopcount(0),
     m_imagecount(1),
-    m_imagedelay(80),
+    m_imagedelay(100),
     m_currentimage(0)
 {
 }
@@ -90,6 +90,9 @@ bool WebPHandler::read(QImage *image)
         WebPAnimDecoderDelete(webpanimdec);
         return false;
     }
+
+    // bound to reasonable limits
+    m_imagedelay = qBound(10, webpiter.duration, 10000);
 
     *image = QImage(webpiter.width, webpiter.height, QImage::Format_ARGB32);
     if (Q_UNLIKELY(image->isNull())) {
