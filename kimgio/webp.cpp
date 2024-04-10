@@ -370,7 +370,7 @@ QImageIOPlugin::Capabilities WebPPlugin::capabilities(QIODevice *device, const Q
     if (!device || !device->isOpen()) {
         return 0;
     }
-    QImageIOPlugin::Capabilities cap;
+    QImageIOPlugin::Capabilities cap = 0;
     if (device->isReadable() && WebPHandler::canRead(device)) {
         cap |= QImageIOPlugin::CanRead;
     }
