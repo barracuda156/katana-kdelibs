@@ -83,11 +83,13 @@ bool WebPHandler::read(QImage *image)
     m_loopcount = webpaniminfo.loop_count;
     m_imagecount = webpaniminfo.frame_count;
 
-    QImage buffer(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32);
+    QImage buffer(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32_Premultiplied);
     if (Q_UNLIKELY(buffer.isNull())) {
         kWarning() << "Could not create buffer image";
         return false;
     }
+    // NOTE: have to fill, areas of frames may not be drawn
+    buffer.fill(Qt::transparent);
 
     QRectF previousrect;
     QPainter painter(&buffer);
