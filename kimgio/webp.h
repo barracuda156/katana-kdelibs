@@ -21,6 +21,7 @@
 
 #include <QStringList>
 #include <QImageIOHandler>
+#include <QImage>
 
 class WebPHandler : public QImageIOHandler
 {
@@ -52,6 +53,7 @@ private:
     int m_imagecount;
     int m_imagedelay;
     int m_currentimage;
+    QImage m_lastframe;
 };
 
 

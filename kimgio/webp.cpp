@@ -18,8 +18,9 @@
 
 #include "webp.h"
 #include "kdebug.h"
-#include <QImage>
+
 #include <QVariant>
+#include <QPainter>
 
 #include <webp/decode.h>
 #include <webp/encode.h>
@@ -119,10 +120,33 @@ bool WebPHandler::read(QImage *image)
         return false;
     }
 
+    switch (webpiter.blend_method) {
+        case WEBP_MUX_BLEND: {
+            if (Q_UNLIKELY(m_lastframe.isNull())) {
+                kWarning() << "Last frame is null";
+            } else {
+                QPainter p(image);
+                // TODO: offsets (webpiter.x_offset and webpiter.y_offset)
+                p.setCompositionMode(QPainter::CompositionMode_DestinationOver);
+                p.drawImage(0, 0, m_lastframe);
+                p.end();
+            }
+            break;
+        }
+        case WEBP_MUX_NO_BLEND: {
+            break;
+        }
+        default: {
+            kWarning() << "Unknown blend method" << webpiter.blend_method;
+            break;
+        }
+    }
+
     m_currentimage++;
     if (m_currentimage >= m_imagecount) {
         m_currentimage = 0;
     }
+    m_lastframe = *image;
 
     WebPDemuxReleaseIterator(&webpiter);
     WebPAnimDecoderDelete(webpanimdec);
