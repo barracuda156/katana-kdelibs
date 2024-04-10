@@ -83,14 +83,15 @@ bool WebPHandler::read(QImage *image)
     m_loopcount = webpaniminfo.loop_count;
     m_imagecount = webpaniminfo.frame_count;
 
-    QRectF previousrect;
     QImage buffer(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32);
     if (Q_UNLIKELY(buffer.isNull())) {
         kWarning() << "Could not create buffer image";
         return false;
     }
-    const QColor background = QColor(QRgb(webpaniminfo.bgcolor));
 
+    QRectF previousrect;
+    QPainter painter(&buffer);
+    const QColor background = QColor(QRgb(webpaniminfo.bgcolor));
     int framecounter = 0;
     WebPIterator webpiter;
     const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(webpanimdec);
@@ -131,7 +132,6 @@ bool WebPHandler::read(QImage *image)
             return false;
         }
 
-        QPainter painter(&buffer);
         switch (webpiter.dispose_method) {
             case WEBP_MUX_DISPOSE_BACKGROUND: {
                 // yep, there are images attempting to dispose the background without previous frame
@@ -167,7 +167,7 @@ bool WebPHandler::read(QImage *image)
         }
         previousrect = QRectF(webpiter.x_offset, webpiter.y_offset, webpiter.width, webpiter.height);
         painter.drawImage(previousrect, frame);
-        painter.end();
+
 
         if (framecounter == m_currentimage) {
             // bound to reasonable limits
@@ -176,6 +176,7 @@ bool WebPHandler::read(QImage *image)
         }
         framecounter++;
     }
+    painter.end();
     *image = buffer;
 
     m_currentimage++;
