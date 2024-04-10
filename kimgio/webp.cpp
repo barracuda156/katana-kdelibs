@@ -122,9 +122,8 @@ bool WebPHandler::read(QImage *image)
 
     switch (webpiter.blend_method) {
         case WEBP_MUX_BLEND: {
-            if (Q_UNLIKELY(m_lastframe.isNull())) {
-                kWarning() << "Last frame is null";
-            } else {
+            // NOTE: there are bogus images that want to blend all frames, including the first one
+            if (!m_lastframe.isNull()) {
                 QPainter p(image);
                 // TODO: offsets (webpiter.x_offset and webpiter.y_offset)
                 p.setCompositionMode(QPainter::CompositionMode_DestinationOver);
@@ -134,6 +133,7 @@ bool WebPHandler::read(QImage *image)
             break;
         }
         case WEBP_MUX_NO_BLEND: {
+            m_lastframe = *image;
             break;
         }
         default: {
@@ -146,7 +146,6 @@ bool WebPHandler::read(QImage *image)
     if (m_currentimage >= m_imagecount) {
         m_currentimage = 0;
     }
-    m_lastframe = *image;
 
     WebPDemuxReleaseIterator(&webpiter);
     WebPAnimDecoderDelete(webpanimdec);
