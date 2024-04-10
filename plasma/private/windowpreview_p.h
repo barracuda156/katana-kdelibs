@@ -40,8 +40,6 @@ class WindowPreview : public QWidget
     Q_OBJECT
 
 public:
-    static bool previewsAvailable();
-
     WindowPreview(QWidget *parent = 0);
 
     void setWindowIds(const QList<WId> w);
@@ -62,7 +60,6 @@ protected:
     void leaveEvent(QEvent *event);
 
 private:
-
     QList<WId> ids;
     mutable QList<QSize> windowSizes;
     QList <QRect> m_thumbnailRects;
