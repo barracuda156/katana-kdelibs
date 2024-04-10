@@ -53,7 +53,6 @@ private:
     int m_imagecount;
     int m_imagedelay;
     int m_currentimage;
-    QImage m_lastframe;
 };
 
 

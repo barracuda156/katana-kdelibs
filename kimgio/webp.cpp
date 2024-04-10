@@ -83,65 +83,100 @@ bool WebPHandler::read(QImage *image)
     m_loopcount = webpaniminfo.loop_count;
     m_imagecount = webpaniminfo.frame_count;
 
-    const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(webpanimdec);
+    QRectF previousrect;
+    QImage buffer(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32);
+    if (Q_UNLIKELY(buffer.isNull())) {
+        kWarning() << "Could not create buffer image";
+        return false;
+    }
+    const QColor background = QColor(QRgb(webpaniminfo.bgcolor));
+
+    int framecounter = 0;
     WebPIterator webpiter;
-    // NOTE: 0 will return the last frame, first frame is 1 but for QImageIOHandler first frame is 0
-    webpstatus = WebPDemuxGetFrame(webpdemuxer, m_currentimage + 1, &webpiter);
-    if (Q_UNLIKELY(webpstatus == 0)) {
-        kWarning() << "Could not get frame";
-        WebPAnimDecoderDelete(webpanimdec);
-        return false;
-    }
+    const WebPDemuxer* webpdemuxer = WebPAnimDecoderGetDemuxer(webpanimdec);
+    // NOTE: painting of all images up to the requested frame is done because QImageIOHandler API
+    // allows to jump to any frame via jumpToImage(), if not done like this skipping one frame will
+    // produce busted result
+    while (framecounter < m_imagecount) {
+        // NOTE: 0 will return the last frame
+        webpstatus = WebPDemuxGetFrame(webpdemuxer, framecounter + 1, &webpiter);
+        if (Q_UNLIKELY(webpstatus == 0)) {
+            kWarning() << "Could not get frame";
+            WebPDemuxReleaseIterator(&webpiter);
+            WebPAnimDecoderDelete(webpanimdec);
+            return false;
+        }
 
-    // bound to reasonable limits
-    m_imagedelay = qBound(10, webpiter.duration, 10000);
-
-    *image = QImage(webpiter.width, webpiter.height, QImage::Format_ARGB32);
-    if (Q_UNLIKELY(image->isNull())) {
-        kWarning() << "Could not create image";
-        WebPDemuxReleaseIterator(&webpiter);
-        WebPAnimDecoderDelete(webpanimdec);
-        return false;
-    }
+        QImage frame(webpiter.width, webpiter.height, QImage::Format_ARGB32);
+        if (Q_UNLIKELY(frame.isNull())) {
+            kWarning() << "Could not create image";
+            WebPDemuxReleaseIterator(&webpiter);
+            WebPAnimDecoderDelete(webpanimdec);
+            return false;
+        }
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    const uint8_t* webpoutput = WebPDecodeARGBInto(
+        const uint8_t* webpoutput = WebPDecodeARGBInto(
 #else
-    const uint8_t* webpoutput = WebPDecodeBGRAInto(
+        const uint8_t* webpoutput = WebPDecodeBGRAInto(
 #endif
-        webpiter.fragment.bytes, webpiter.fragment.size,
-        reinterpret_cast<uint8_t*>(image->bits()), image->byteCount(),
-        image->bytesPerLine()
-    );
-    if (Q_UNLIKELY(!webpoutput)) {
-        kWarning() << "Could not decode image";
-        *image = QImage();
-        WebPDemuxReleaseIterator(&webpiter);
-        WebPAnimDecoderDelete(webpanimdec);
-        return false;
-    }
+            webpiter.fragment.bytes, webpiter.fragment.size,
+            reinterpret_cast<uint8_t*>(frame.bits()), frame.byteCount(),
+            frame.bytesPerLine()
+        );
+        if (Q_UNLIKELY(!webpoutput)) {
+            kWarning() << "Could not decode image";
+            WebPDemuxReleaseIterator(&webpiter);
+            WebPAnimDecoderDelete(webpanimdec);
+            return false;
+        }
 
-    switch (webpiter.blend_method) {
-        case WEBP_MUX_BLEND: {
-            // NOTE: there are bogus images that want to blend all frames, including the first one
-            if (!m_lastframe.isNull()) {
-                QPainter p(image);
-                // TODO: offsets (webpiter.x_offset and webpiter.y_offset)
-                p.setCompositionMode(QPainter::CompositionMode_DestinationOver);
-                p.drawImage(0, 0, m_lastframe);
-                p.end();
+        QPainter painter(&buffer);
+        switch (webpiter.dispose_method) {
+            case WEBP_MUX_DISPOSE_BACKGROUND: {
+                // yep, there are images attempting to dispose the background without previous frame
+                if (!previousrect.isNull()) {
+                    painter.setCompositionMode(QPainter::CompositionMode_Clear);
+                    painter.fillRect(previousrect, background);
+                }
+                break;
             }
+            case WEBP_MUX_DISPOSE_NONE: {
+                break;
+            }
+            default: {
+                kWarning() << "Unknown dispose method" << webpiter.dispose_method;
+                break;
+            }
+        }
+
+        switch (webpiter.blend_method) {
+            case WEBP_MUX_BLEND: {
+                painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+                break;
+            }
+            case WEBP_MUX_NO_BLEND: {
+                painter.setCompositionMode(QPainter::CompositionMode_Source);
+                break;
+            }
+            default: {
+                kWarning() << "Unknown blend method" << webpiter.blend_method;
+                painter.setCompositionMode(QPainter::CompositionMode_Source);
+                break;
+            }
+        }
+        previousrect = QRectF(webpiter.x_offset, webpiter.y_offset, webpiter.width, webpiter.height);
+        painter.drawImage(previousrect, frame);
+        painter.end();
+
+        if (framecounter == m_currentimage) {
+            // bound to reasonable limits
+            m_imagedelay = qBound(10, webpiter.duration, 10000);
             break;
         }
-        case WEBP_MUX_NO_BLEND: {
-            m_lastframe = *image;
-            break;
-        }
-        default: {
-            kWarning() << "Unknown blend method" << webpiter.blend_method;
-            break;
-        }
+        framecounter++;
     }
+    *image = buffer;
 
     m_currentimage++;
     if (m_currentimage >= m_imagecount) {
