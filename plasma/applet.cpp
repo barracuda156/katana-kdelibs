@@ -2337,15 +2337,6 @@ QString AppletPrivate::globalName() const
     return appletDescription.service()->library();
 }
 
-QString AppletPrivate::instanceName()
-{
-    if (!appletDescription.isValid()) {
-        return QString();
-    }
-
-    return appletDescription.service()->library() + QString::number(appletId);
-}
-
 void AppletPrivate::scheduleConstraintsUpdate(Plasma::Constraints c)
 {
     // Don't start up a timer if we're just starting up

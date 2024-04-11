@@ -103,7 +103,6 @@ public:
 
     void handleDisappeared(AppletHandle *handle);
     QString globalName() const;
-    QString instanceName();
     void scheduleConstraintsUpdate(Plasma::Constraints c);
     void scheduleModificationNotification();
     KConfigGroup *mainConfigGroup();
