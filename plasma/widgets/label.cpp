@@ -95,7 +95,7 @@ Label::Label(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new LabelPrivate(this))
 {
-    QLabel *native = new QLabel;
+    QLabel *native = new QLabel();
 
     native->setWindowFlags(native->windowFlags()|Qt::BypassGraphicsProxyWidget);
     native->setAttribute(Qt::WA_NoSystemBackground);

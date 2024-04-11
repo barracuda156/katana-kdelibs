@@ -1065,32 +1065,6 @@ void IconWidgetPrivate::layoutTextItems(const QStyleOptionGraphicsItem *option,
     //kDebug() << "final position is" << labelLayout->position();
 }
 
-QBrush IconWidgetPrivate::foregroundBrush(const QStyleOptionGraphicsItem *option) const
-{
-    const QPalette::ColorGroup group = option->state & QStyle::State_Enabled ?
-            QPalette::Normal : QPalette::Disabled;
-
-    // Always use the highlight color for selected items
-    if (option->state & QStyle::State_Selected) {
-        return option->palette.brush(group, QPalette::HighlightedText);
-    }
-    return option->palette.brush(group, QPalette::Text);
-}
-
-QBrush IconWidgetPrivate::backgroundBrush(const QStyleOptionGraphicsItem *option) const
-{
-    const QPalette::ColorGroup group = option->state & QStyle::State_Enabled ?
-            QPalette::Normal : QPalette::Disabled;
-
-    QBrush background(Qt::NoBrush);
-
-    // Always use the highlight color for selected items
-    if (option->state & QStyle::State_Selected) {
-        background = option->palette.brush(group, QPalette::Highlight);
-    }
-    return background;
-}
-
 void IconWidgetPrivate::drawTextItems(QPainter *painter,
                                       const QStyleOptionGraphicsItem *option,
                                       const QTextLayout &labelLayout,

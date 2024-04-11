@@ -153,9 +153,6 @@ public:
 
     QSizeF displaySizeHint(const QStyleOptionGraphicsItem *option, const qreal width) const;
 
-    QBrush foregroundBrush(const QStyleOptionGraphicsItem *option) const;
-    QBrush backgroundBrush(const QStyleOptionGraphicsItem *option) const;
-
     QString elidedText(QTextLayout &layout,
                        const QSizeF &maxSize) const;
 
