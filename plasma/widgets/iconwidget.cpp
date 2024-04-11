@@ -1005,7 +1005,7 @@ QString IconWidgetPrivate::elidedText(QTextLayout &layout, const QSizeF &size) c
 
 void IconWidgetPrivate::layoutTextItems(const QStyleOptionGraphicsItem *option,
                                         const QPixmap &icon, QTextLayout *labelLayout,
-                                        QTextLayout *infoLayout, QRectF *textBoundingRect) const
+                                        QTextLayout *infoLayout, QRectF *textBoundingRect)
 {
     bool showInformation = false;
 

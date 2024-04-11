@@ -167,7 +167,7 @@ public:
 
     void layoutTextItems(const QStyleOptionGraphicsItem *option,
                          const QPixmap &icon, QTextLayout *labelLayout,
-                         QTextLayout *infoLayout, QRectF *textBoundingRect) const;
+                         QTextLayout *infoLayout, QRectF *textBoundingRect);
 
     int maxWordWidth(const QString text) const;
 
@@ -236,7 +236,7 @@ public:
     int numDisplayLines;
     QSizeF currentSize;
     QPointF clickStartPos;
-    mutable QList<QRect> haloRects;
+    QList<QRect> haloRects;
     QTimer *iconChangeTimer;
 
     QList<IconAction*> cornerActions;
@@ -245,10 +245,10 @@ public:
     Margin horizontalMargin[NMargins];
     Margin *activeMargins;
 
-    bool iconSvgElementChanged : 1;
-    bool invertLayout : 1;
-    bool drawBg : 1;
-    bool textBgCustomized : 1;
+    bool iconSvgElementChanged;
+    bool invertLayout;
+    bool drawBg;
+    bool textBgCustomized;
     static const int maxDisplayLines = 5;
     static const int iconActionSize = 26;
     static const int iconActionMargin = 4;
