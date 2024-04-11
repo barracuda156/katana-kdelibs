@@ -280,6 +280,7 @@ bool WebPHandler::jumpToImage(int imageNumber)
             m_framepainter = nullptr;
         }
         m_framebuffer = QImage();
+        m_previousrect = QRectF();
         m_background = QColor();
 
         m_webpdata = { reinterpret_cast<const uint8_t*>(m_data.constData()), size_t(m_data.size()) };
