@@ -91,6 +91,7 @@ public:
     KConfigGroup cfgGroup;
     KPluginSelector::PluginLoadMethod pluginLoadMethod;
     bool isCheckable;
+    QString tooltip;
 
     bool operator==(const PluginEntry &pe) const
     {

@@ -467,6 +467,8 @@ QVariant KPluginSelector::Private::PluginModel::data(const QModelIndex &index, i
             return pluginEntry->pluginInfo.icon();
         case Qt::CheckStateRole:
             return pluginEntry->checked;
+        case Qt::ToolTipRole:
+            return pluginEntry->tooltip;
         case KCategorizedSortFilterProxyModel::CategoryDisplayRole: // fall through
         case KCategorizedSortFilterProxyModel::CategorySortRole:
             return pluginEntry->category;
@@ -486,6 +488,9 @@ bool KPluginSelector::Private::PluginModel::setData(const QModelIndex &index, co
     if (role == Qt::CheckStateRole) {
         static_cast<PluginEntry*>(index.internalPointer())->checked = value.toBool();
         ret = true;
+    } else if (role == Qt::ToolTipRole) {
+        static_cast<PluginEntry*>(index.internalPointer())->tooltip = value.toString();
+        ret = false;
     }
 
     if (ret) {
@@ -689,6 +694,7 @@ void KPluginSelector::Private::PluginDelegate::updateItemWidgets(const QList<QWi
     } else {
         checkBox->setChecked(index.model()->data(index, Qt::CheckStateRole).toBool());
         checkBox->setEnabled(index.model()->data(index, IsCheckableRole).toBool());
+        checkBox->setToolTip(index.model()->data(index, Qt::ToolTipRole).toString());
         configurePushButton->setVisible(index.model()->data(index, ServicesCountRole).toBool());
         configurePushButton->setEnabled(index.model()->data(index, Qt::CheckStateRole).toBool());
     }
