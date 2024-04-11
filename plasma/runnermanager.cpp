@@ -234,7 +234,7 @@ public:
             QString error;
             runner = service->createInstance<AbstractRunner>(q, args, &error);
             if (!runner) {
-                kDebug() << "Failed to load runner:" << service->name() << ". error reported:" << error;
+                kWarning() << "Failed to load runner:" << service->name() << ". error reported:" << error;
             }
         }
 
