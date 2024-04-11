@@ -278,8 +278,8 @@ void KSpeller::start()
         const bool atseparator = KSpeller::isWordSeparator(d->text.at(counter));
         if (!atseparator && wordstart == -1) {
             wordstart = counter;
-        } else if (atseparator && wordstart != -1) {
-            const QString word = d->text.mid(wordstart, counter - wordstart);
+        } else if ((atseparator || (counter + 1) == d->text.size()) && wordstart != -1) {
+            const QString word = d->text.mid(wordstart, counter - wordstart + (atseparator ? 0 : 1));
             // not worth checking if it is less than two characters
             if (word.size() >= 2) {
                 // qDebug() << Q_FUNC_INFO << wordstart << counter << word;

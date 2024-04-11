@@ -101,8 +101,8 @@ void KSpellHighlighter::highlightBlock(const QString &text)
         const bool atseparator = KSpeller::isWordSeparator(text.at(counter));
         if (!atseparator && wordstart == -1) {
             wordstart = counter;
-        } else if (atseparator && wordstart != -1) {
-            const QString word = text.mid(wordstart, counter - wordstart);
+        } else if ((atseparator || (counter + 1) == text.size()) && wordstart != -1) {
+            const QString word = text.mid(wordstart, counter - wordstart + (atseparator ? 0 : 1));
             // not worth checking if it is less than two characters
             if (word.size() >= 2) {
                 if (!d->speller.check(word)) {
