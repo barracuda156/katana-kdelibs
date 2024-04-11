@@ -38,15 +38,7 @@ WebPHandler::WebPHandler()
 
 WebPHandler::~WebPHandler()
 {
-    if (m_webpanimdec) {
-        WebPAnimDecoderDelete(m_webpanimdec);
-        m_webpanimdec = nullptr;
-    }
-
-    if (m_framepainter) {
-        delete m_framepainter;
-        m_framepainter = nullptr;
-    }
+    deinit();
 }
 
 bool WebPHandler::canRead() const
@@ -74,6 +66,7 @@ bool WebPHandler::read(QImage *image)
     if (Q_UNLIKELY(webpstatus == 0)) {
         kWarning() << "Could not get frame" << m_currentimage << webpstatus << m_webpanimdec;
         WebPDemuxReleaseIterator(&webpiter);
+        deinit();
         return false;
     }
 
@@ -81,6 +74,7 @@ bool WebPHandler::read(QImage *image)
     if (Q_UNLIKELY(frame.isNull())) {
         kWarning() << "Could not create image";
         WebPDemuxReleaseIterator(&webpiter);
+        deinit();
         return false;
     }
 
@@ -96,6 +90,7 @@ bool WebPHandler::read(QImage *image)
     if (Q_UNLIKELY(!webpoutput)) {
         kWarning() << "Could not decode image";
         WebPDemuxReleaseIterator(&webpiter);
+        deinit();
         return false;
     }
 
@@ -141,6 +136,11 @@ bool WebPHandler::read(QImage *image)
     *image = m_framebuffer;
 
     WebPDemuxReleaseIterator(&webpiter);
+    if ((m_currentimage + 1) >= m_imagecount) {
+        // last frame, release resources
+        deinit();
+    }
+
     return true;
 }
 
@@ -266,22 +266,11 @@ bool WebPHandler::jumpToImage(int imageNumber)
         return false;
     }
     if (imageNumber == 0) {
+        deinit();
+
         const qint64 devicepos = device()->pos();
         m_data = device()->readAll();
         device()->seek(devicepos);
-
-        if (m_webpanimdec) {
-            WebPAnimDecoderDelete(m_webpanimdec);
-            m_webpanimdec = nullptr;
-        }
-
-        if (m_framepainter) {
-            delete m_framepainter;
-            m_framepainter = nullptr;
-        }
-        m_framebuffer = QImage();
-        m_previousrect = QRectF();
-        m_background = QColor();
 
         m_webpdata = { reinterpret_cast<const uint8_t*>(m_data.constData()), size_t(m_data.size()) };
         WebPAnimDecoderOptionsInit(&m_webpanimoptions);
@@ -296,17 +285,15 @@ bool WebPHandler::jumpToImage(int imageNumber)
         );
         if (Q_UNLIKELY(!m_webpanimdec)) {
             kWarning() << "Could not create animation decoder";
-            m_data.clear();
+            deinit();
             return false;
         }
 
         WebPAnimInfo webpaniminfo;
         int webpstatus = WebPAnimDecoderGetInfo(m_webpanimdec, &webpaniminfo);
         if (Q_UNLIKELY(webpstatus == 0)) {
-            kWarning() << "Could not get animation information";
-            m_data.clear();
-            WebPAnimDecoderDelete(m_webpanimdec);
-            m_webpanimdec = nullptr;
+            kWarning() << "Could not get animation information" << webpstatus;
+            deinit();
             return false;
         }
 
@@ -316,9 +303,7 @@ bool WebPHandler::jumpToImage(int imageNumber)
         m_framebuffer = QImage(webpaniminfo.canvas_width, webpaniminfo.canvas_height, QImage::Format_ARGB32_Premultiplied);
         if (Q_UNLIKELY(m_framebuffer.isNull())) {
             kWarning() << "Could not create buffer image";
-            m_data.clear();
-            WebPAnimDecoderDelete(m_webpanimdec);
-            m_webpanimdec = nullptr;
+            deinit();
             return false;
         }
         // NOTE: have to fill, areas of frames may not be drawn
@@ -327,6 +312,7 @@ bool WebPHandler::jumpToImage(int imageNumber)
         m_background = QColor(QRgb(webpaniminfo.bgcolor));
     }
     if (imageNumber >= m_imagecount) {
+        deinit();
         return false;
     }
     m_currentimage = imageNumber;
@@ -366,6 +352,23 @@ bool WebPHandler::canRead(QIODevice *device)
         return true;
     }
     return false;
+}
+
+void WebPHandler::deinit()
+{
+    if (m_webpanimdec) {
+        WebPAnimDecoderDelete(m_webpanimdec);
+        m_webpanimdec = nullptr;
+    }
+
+    if (m_framepainter) {
+        delete m_framepainter;
+        m_framepainter = nullptr;
+    }
+    m_data.clear();
+    m_framebuffer = QImage();
+    m_previousrect = QRectF();
+    m_background = QColor();
 }
 
 QList<QByteArray> WebPPlugin::mimeTypes() const

@@ -53,6 +53,8 @@ public:
     int currentImageNumber() const final;
 
 private:
+    void deinit();
+
     int m_quality;
     int m_loopcount;
     int m_imagecount;
