@@ -446,7 +446,7 @@ QVariant KPluginSelector::Private::PluginModel::data(const QModelIndex &index, i
         case ServicesCountRole:
             return pluginEntry->pluginInfo.kcmServices().count();
         case NameRole:
-            return pluginEntry->pluginInfo.name();
+            return pluginEntry->pluginInfo.pluginName();
         case CommentRole:
             return pluginEntry->pluginInfo.comment();
         case AuthorRole:
@@ -739,7 +739,7 @@ void KPluginSelector::Private::PluginDelegate::slotAboutClicked()
         }
     }
 
-    const QString name = model->data(index, NameRole).toString();
+    const QString name = model->data(index, Qt::DisplayRole).toString();
     const QString comment = model->data(index, CommentRole).toString();
     const QString author = model->data(index, AuthorRole).toString();
     const QString email = model->data(index, EmailRole).toString();
@@ -775,7 +775,7 @@ void KPluginSelector::Private::PluginDelegate::slotConfigureClicked()
     KPluginInfo pluginInfo = pluginEntry->pluginInfo;
 
     KDialog configDialog(itemView());
-    configDialog.setWindowTitle(model->data(index, NameRole).toString());
+    configDialog.setWindowTitle(model->data(index, Qt::DisplayRole).toString());
     // The number of KCModuleProxies in use determines whether to use a tabwidget
     KTabWidget *newTabWidget = 0;
     // Widget to use for the setting dialog's main widget,
