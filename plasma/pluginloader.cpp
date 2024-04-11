@@ -93,14 +93,8 @@ KPluginInfo::List PluginLoader::listAppletInfo(const QString &category, const QS
 {
     QString constraint = AppletPrivate::parentAppConstraint(parentApp);
 
-    //note: constraint guaranteed non-empty from here down
-    if (category.isEmpty()) { //use all but the excluded categories
-        KConfigGroup group(KGlobal::config(), "General");
-        QStringList excluded = group.readEntry("ExcludeCategories", QStringList());
-        foreach (const QString &category, excluded) {
-            constraint.append(" and [X-KDE-PluginInfo-Category] != '").append(category).append("'");
-        }
-    } else { //specific category (this could be an excluded one - is that bad?)
+    if (!category.isEmpty()) {
+        // specific category
         constraint.append(" and [X-KDE-PluginInfo-Category] == '").append(category).append("'");
         if (category == "Miscellaneous") {
             constraint.append(" or (not exist [X-KDE-PluginInfo-Category] or [X-KDE-PluginInfo-Category] == '')");

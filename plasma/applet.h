@@ -229,7 +229,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
 
         /**
          * Returns a list of all known applets.
-         * This may skip applets based on ExcludeCategories in the application's config.
          *
          * @param category Only applets matchin this category will be returned.
          *                 Useful in conjunction with knownCategories.

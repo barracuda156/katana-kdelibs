@@ -1993,12 +1993,6 @@ QStringList Applet::listCategories(const QString &parentApp, bool visibleOnly)
     QString constraint = AppletPrivate::parentAppConstraint(parentApp);
     constraint.append(" and exist [X-KDE-PluginInfo-Category]");
 
-    KConfigGroup group(KGlobal::config(), "General");
-    const QStringList excluded = group.readEntry("ExcludeCategories", QStringList());
-    foreach (const QString &category, excluded) {
-        constraint.append(" and [X-KDE-PluginInfo-Category] != '").append(category).append("'");
-    }
-
     KService::List offers = KServiceTypeTrader::self()->query("Plasma/Applet", constraint);
 
     QStringList categories;
@@ -2006,11 +2000,11 @@ QStringList Applet::listCategories(const QString &parentApp, bool visibleOnly)
     foreach (const KService::Ptr &applet, offers) {
         QString appletCategory = applet->property("X-KDE-PluginInfo-Category").toString();
         if (visibleOnly && applet->noDisplay()) {
-            // we don't want to show the hidden category
+            // don't want to show the hidden category
             continue;
         }
 
-        //kDebug() << "   and we have " << appletCategory;
+        // kDebug() << "   and have " << appletCategory;
         if (!appletCategory.isEmpty() && !known.contains(appletCategory.toLower())) {
             kDebug() << "Unknown category: " << applet->name() << "says it is in the"
                      << appletCategory << "category which is unknown to us";
