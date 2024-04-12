@@ -581,8 +581,7 @@ KService::Ptr KService::serviceByDesktopPath( const QString& _name )
 
 KService::Ptr KService::serviceByDesktopName( const QString& _name )
 {
-    QString name = _name.toLower();
-    return KServiceFactory::self()->findServiceByDesktopName( name );
+    return KServiceFactory::self()->findServiceByDesktopName( _name.toLower() );
 }
 
 KService::Ptr KService::serviceByMenuId( const QString& _name )
