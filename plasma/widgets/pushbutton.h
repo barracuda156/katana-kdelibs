@@ -91,7 +91,7 @@ public:
     QString image() const;
 
     /**
-     * Associate an action with this IconWidget
+     * Associate an action with this PushButton
      * this makes the button follow the state of the action, using its icon, text, etc.
      * when the button is clicked, it will also trigger the action.
      *

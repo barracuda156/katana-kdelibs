@@ -32,7 +32,7 @@ namespace Plasma
 class ToolButtonPrivate;
 
 /**
- * @class ToolButton plasma/widgets/pushbutton.h <Plasma/Widgets/ToolButton>
+ * @class ToolButton plasma/widgets/toolbutton.h <Plasma/Widgets/ToolButton>
  *
  * @short Provides a plasma-themed QToolButton.
  */
@@ -115,7 +115,7 @@ public:
     bool isDown() const;
 
     /**
-     * Associate an action with this IconWidget
+     * Associate an action with this ToolButton
      * this makes the button follow the state of the action, using its icon, text, etc.
      * when the button is clicked, it will also trigger the action.
      *
