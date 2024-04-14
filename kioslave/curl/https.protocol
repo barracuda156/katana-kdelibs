@@ -15,4 +15,4 @@ maxInstancesPerHost=5
 defaultMimetype=application/octet-stream
 determineMimetypeFromExtension=false
 X-DocPath=kioslave/curl/index.html
-Class=:internet
+local=false

@@ -401,7 +401,7 @@ KIO_EXPORT QByteArray KIO::rawErrorDetail(int errorCode, const QString &errorTex
     path = reqUrl->path();
 
     // detect if protocol is a network protocol...
-    isSlaveNetwork = KProtocolInfo::protocolClass(protocol) == ":internet";
+    isSlaveNetwork = !KProtocolInfo::protocolIsLocal(protocol);
   } else {
     // assume that the errorText has the location we are interested in
     url = host = domain = path = filename = errorText;

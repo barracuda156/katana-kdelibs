@@ -181,28 +181,21 @@ public:
     static QString docPath(const QString &protocol);
 
     /**
-     * Returns the protocol class for the specified protocol.
+     * Returns whether the specified protocol is local.
      *
-     * This corresponds to the "Class=" field in the protocol description file.
-     *
-    * The following classes are defined:
-     * @li ":internet" for common internet protocols
-     * @li ":local" for protocols that access local resources
-     *
-     * Protocol classes always start with a ':' so that they can not be confused with
-     * the protocols themselves.
+     * This corresponds to the "local=" field in the protocol description file.
      *
      * @param protocol the protocol to check
-     * @return the class of the protocol, or an empty string if unknown
+     * @return true if protocol is local, false otherwise
      */
-    static QString protocolClass(const QString &protocol);
+    static bool protocolIsLocal(const QString &protocol);
 
     /**
      * Returns whether file previews should be shown for the specified protocol.
      *
      * This corresponds to the "ShowPreviews=" field in the protocol description file.
      *
-     * By default previews are shown if protocolClass is :local.
+     * By default previews are shown if protocol is local.
      *
      * @param protocol the protocol to check
      * @return true if previews should be shown by default, false otherwise

@@ -13,4 +13,4 @@ Icon=folder-remote
 maxInstances=20
 maxInstancesPerHost=5
 X-DocPath=kioslave/curl/index.html
-Class=:internet
+local=false

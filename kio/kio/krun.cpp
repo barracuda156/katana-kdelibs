@@ -686,7 +686,7 @@ static KUrl::List resolveURLs(const KUrl::List& _urls, const KService& _service)
             const KUrl url = *it;
             bool supported = isProtocolInSupportedList(url, appSupportedProtocols);
             kDebug(7010) << "Looking at url=" << url << " supported=" << supported;
-            if (!supported && KProtocolInfo::protocolClass(url.protocol()) == ":local") {
+            if (!supported && KProtocolInfo::protocolIsLocal(url.protocol())) {
                 // Maybe we can resolve to a local URL?
                 KUrl localURL = KIO::NetAccess::mostLocalUrl(url, 0);
                 if (localURL != url) {

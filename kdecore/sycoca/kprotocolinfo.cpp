@@ -85,11 +85,8 @@ KProtocolInfo::KProtocolInfo(const QString &path)
     }
     d->maxSlavesPerHost = config.readEntry("maxInstancesPerHost", 0);
     d->docPath = config.readPathEntry("X-DocPath", QString());
-    d->protClass = config.readEntry("Class").toLower();
-    if (d->protClass[0] != QLatin1Char(':')) {
-        d->protClass.prepend(QLatin1Char(':'));
-    }
-    d->showPreviews = config.readEntry("ShowPreviews", d->protClass == QLatin1String(":local"));
+    d->local = config.readEntry("local", false);
+    d->showPreviews = config.readEntry("ShowPreviews", d->local);
 }
 
 KProtocolInfo::KProtocolInfo(QDataStream &str, int offset)
@@ -123,7 +120,7 @@ void KProtocolInfo::load(QDataStream &str)
         >> i_supportsMakeDir >> i_supportsDeleting
         >> i_supportsLinking >> i_supportsMoving
         >> i_canCopyFromFile >> i_canCopyToFile
-        >> m_config >> m_maxSlaves >> d->docPath >> d->protClass
+        >> m_config >> m_maxSlaves >> d->docPath >> d->local
         >> i_showPreviews
         >> i_canRenameFromFile >> i_canRenameToFile
         >> i_canDeleteRecursive >> i_fileNameUsedForCopying
@@ -186,7 +183,7 @@ void KProtocolInfoPrivate::save(QDataStream &str)
         << i_supportsMakeDir << i_supportsDeleting
         << i_supportsLinking << i_supportsMoving
         << i_canCopyFromFile << i_canCopyToFile
-        << q->m_config << q->m_maxSlaves << docPath << protClass
+        << q->m_config << q->m_maxSlaves << docPath << local
         << i_showPreviews
         << i_canRenameFromFile << i_canRenameToFile
         << i_canDeleteRecursive << i_fileNameUsedForCopying
@@ -272,13 +269,13 @@ QString KProtocolInfo::docPath(const QString &protocol)
     return prot->d_func()->docPath;
 }
 
-QString KProtocolInfo::protocolClass(const QString &protocol)
+bool KProtocolInfo::protocolIsLocal(const QString &protocol)
 {
     KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(protocol);
     if (!prot) {
-        return QString();
+        return false;
     }
-    return prot->d_func()->protClass;
+    return prot->d_func()->local;
 }
 
 bool KProtocolInfo::showFilePreview(const QString &protocol)

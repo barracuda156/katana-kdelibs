@@ -47,7 +47,7 @@ public:
 
   KProtocolInfo *q;
   QString docPath;
-  QString protClass;
+  bool local;
   bool showPreviews;
   bool canRenameFromFile;
   bool canRenameToFile;

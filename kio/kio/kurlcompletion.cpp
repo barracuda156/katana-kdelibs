@@ -997,15 +997,10 @@ bool KUrlCompletionPrivate::fileCompletion(const KUrlCompletionPrivate::MyURL& u
 // URLs not handled elsewhere...
 //
 
-static bool isLocalProtocol(const QString& protocol)
-{
-    return (KProtocolInfo::protocolClass(protocol) == QLatin1String(":local"));
-}
-
 bool KUrlCompletionPrivate::urlCompletion(const KUrlCompletionPrivate::MyURL& url, QString* pMatch)
 {
     //kDebug() << *url.kurl();
-    if (onlyLocalProto && isLocalProtocol(url.protocol()))
+    if (onlyLocalProto && KProtocolInfo::protocolIsLocal(url.protocol()))
         return false;
 
     // Use d->cwd as base url in case url is not absolute
@@ -1021,7 +1016,7 @@ bool KUrlCompletionPrivate::urlCompletion(const KUrlCompletionPrivate::MyURL& ur
         return false;
 
     // non local urls
-    if (!isLocalProtocol(url.protocol())) {
+    if (!KProtocolInfo::protocolIsLocal(url.protocol())) {
         // url does not specify host
         if (url_dir.host().isEmpty())
             return false;
