@@ -63,9 +63,7 @@ class KDEUI_EXPORT KTitleWidget : public QWidget
     Q_OBJECT
     Q_ENUMS(ImageAlignment)
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString comment READ comment WRITE setComment)
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap)
-    Q_PROPERTY(int autoHideTimeout READ autoHideTimeout WRITE setAutoHideTimeout)
 
 public:
     /**
@@ -80,13 +78,13 @@ public:
     };
 
     /**
-     * Comment message types
+     * Message types
      */
     enum MessageType {
-        PlainMessage, /**< Normal comment */
-        InfoMessage, /**< Information the user should be alerted to */
+        PlainMessage,   /**< Normal message */
+        InfoMessage,    /**< Information the user should be alerted to */
         WarningMessage, /**< A warning the user should be alerted to */
-        ErrorMessage /**< An error message */
+        ErrorMessage    /**< An error message */
     };
 
     /**
@@ -97,21 +95,10 @@ public:
     virtual ~KTitleWidget();
 
     /**
-     * @param widget Widget displayed on the title widget.
-     */
-    void setWidget(QWidget *widget);
-
-    /**
      * @return the text displayed in the title
      * @see setText()
      */
     QString text() const;
-
-    /**
-     * @return the text displayed in the comment below the title, if any
-     * @see setComment()
-     */
-    QString comment() const;
 
     /**
      * @return the pixmap displayed in the title
@@ -128,12 +115,6 @@ public:
      */
     void setBuddy(QWidget *buddy);
 
-    /**
-     * Get the current timeout value in milliseconds
-     * @return timeout value in msecs
-     */
-    int autoHideTimeout() const;
-
 public Q_SLOTS:
     /**
      * @param text Text displayed on the label. It can either be plain text or rich text. If it
@@ -149,14 +130,6 @@ public Q_SLOTS:
      * @see text()
      */
     void setText(const QString &text, MessageType type);
-
-    /**
-     * @param comment Text displayed beneath the main title as a comment.
-     *                It can either be plain text or rich text.
-     * @param type The sort of message it is. @see MessageType
-     * @see comment()
-     */
-    void setComment(const QString &comment, MessageType type = PlainMessage);
 
     /**
      * @param pixmap Pixmap displayed in the header. The pixmap is by default right, but
@@ -177,7 +150,7 @@ public Q_SLOTS:
      * @param alignment can be used to display it also left.
      * @see pixmap()
      */
-    void setPixmap(const QIcon& icon, ImageAlignment alignment = ImageRight);
+    void setPixmap(const QIcon &icon, ImageAlignment alignment = ImageRight);
 
     /**
      * @param pixmap the icon to display in the header. The pixmap is by default right, but
@@ -186,24 +159,14 @@ public Q_SLOTS:
      */
     void setPixmap(MessageType type, ImageAlignment alignment = ImageRight);
 
-    /**
-     * Set the autohide timeout of the label
-     * Set value to 0 to disable autohide, which is the default.
-     * @param msecs timeout value in milliseconds
-     */
-    void setAutoHideTimeout(int msecs);
-
 protected:
     void changeEvent(QEvent *e);
-    void showEvent(QShowEvent *event);
-    bool eventFilter(QObject *object, QEvent *event);
 
 private:
     class Private;
     Private* const d;
 
-    Q_PRIVATE_SLOT(d, void _k_timeoutFinished())
     Q_DISABLE_COPY(KTitleWidget)
 };
 
-#endif
+#endif // KTITLEWIDGET_H
