@@ -34,16 +34,10 @@
 
 static int kInitAddLibraryAndPluginPaths()
 {
-    foreach (const QString &it, KGlobal::dirs()->resourceDirs("lib")) {
-        QCoreApplication::addLibraryPath(it);
-    }
-    foreach (const QString &it, KGlobal::dirs()->resourceDirs("module")) {
-        QCoreApplication::addLibraryPath(it);
-    }
-
-    foreach (const QString &it, KGlobal::dirs()->resourceDirs("qtplugins")) {
-        QCoreApplication::addPluginPath(it);
-    }
+    // NOTE: there is only one for each and it is set when building
+    QCoreApplication::addLibraryPath(KStandardDirs::installPath("lib"));
+    QCoreApplication::addLibraryPath(KStandardDirs::installPath("module"));
+    QCoreApplication::addPluginPath(KStandardDirs::installPath("qtplugins"));
     return 0;
 }
 Q_CONSTRUCTOR_FUNCTION(kInitAddLibraryAndPluginPaths);
