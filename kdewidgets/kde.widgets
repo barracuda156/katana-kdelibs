@@ -33,11 +33,6 @@ Group=Graphics (KDE)
 ToolTip=Color Combo Box (KDE)
 Group=Graphics (KDE)
 
-[KColorValueSelector]
-IncludeFile=kcolorvalueselector.h
-ToolTip=Color Value Selector (KDE)
-Group=Input (KDE)
-
 [KComboBox]
 ToolTip=Combo Box (KDE)
 Group=Input (KDE)
@@ -91,11 +86,6 @@ IncludeFile=kfontrequester.h
 IconSet=kfontrequester.png
 ToolTip=Font Requester (KDE)
 WhatsThis=A compact font selection and preview widget
-Group=Input (KDE)
-
-[KGradientSelector]
-IncludeFile=kselector.h
-ToolTip=Gradient Color Selector (KDE)
 Group=Input (KDE)
 
 [KHistoryComboBox]

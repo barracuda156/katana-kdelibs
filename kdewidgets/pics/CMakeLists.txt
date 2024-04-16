@@ -18,7 +18,6 @@ install(
     kcolorcombo.png
     khsselector.png
     kcolorbutton.png
-    kgradientselector.png
     kpushbutton.png
     kcalendarwidget.png
     kdialog.png

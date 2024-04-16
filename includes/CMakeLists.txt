@@ -51,7 +51,6 @@ install(
     KColorMimeData
     KColorScheme
     KColorUtils
-    KColorValueSelector
     KComboBox
     KCompletion
     KCompletionBase
@@ -122,7 +121,6 @@ install(
     KGlobalAccel
     KGlobalSettings
     KGlobalShortcutInfo
-    KGradientSelector
     KGuiItem
     KHBox
     KHelpMenu
@@ -216,7 +214,6 @@ install(
     KSaveFile
     KSelectAction
     KSelectionOwner
-    KSelector
     KSeparator
     KService
     KServiceAction
@@ -295,7 +292,6 @@ install(
     KXMLGUIFactory
     KXmlGuiWindow
     KXMessages
-    KXYSelector
     NET
     NETRootInfo
     NETWinInfo
