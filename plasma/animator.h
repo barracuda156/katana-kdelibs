@@ -53,8 +53,7 @@ public:
         SlideAnimation,            /* Move the position of animated object */
         GeometryAnimation,         /* Geometry animation */
         ZoomAnimation,             /* Zoom animation */
-        PixmapTransitionAnimation, /* Transition between two pixmaps */
-        LastAnimation = 1024
+        PixmapTransitionAnimation /* Transition between two pixmaps */
     };
 
     /**
@@ -62,7 +61,7 @@ public:
      * check \ref AbstractAnimation properties.
      * @since 4.4
      **/
-    static Plasma::Animation *create(Animator::Animation type, QObject *parent = 0);
+    static Plasma::Animation *create(Animator::Animation type, QObject *parent = nullptr);
 
 private:
     Animator();

@@ -33,7 +33,7 @@ namespace Plasma
 
 Plasma::Animation* Animator::create(Animator::Animation type, QObject *parent)
 {
-    Plasma::Animation *result = 0;
+    Plasma::Animation *result = nullptr;
 
     switch (type) {
         case FadeAnimation: {
