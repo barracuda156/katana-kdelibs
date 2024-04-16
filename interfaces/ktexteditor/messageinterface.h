@@ -102,10 +102,9 @@ class KTEXTEDITOR_EXPORT Message : public QObject
      * For simple notifications either use Positive or Information.
      */
     enum MessageType {
-      Positive = 0, ///< positive information message
-      Information,  ///< information message type
-      Warning,      ///< warning message type
-      Error         ///< error message type
+      Information = 0, ///< information message type
+      Warning,         ///< warning message type
+      Error            ///< error message type
     };
 
     /**

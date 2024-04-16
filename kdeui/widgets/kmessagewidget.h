@@ -22,7 +22,8 @@
 
 #include <kdeui_export.h>
 
-#include <QFrame>
+#include <QEvent>
+#include <QWidget>
 
 class KMessageWidgetPrivate;
 
@@ -36,60 +37,10 @@ class KMessageWidgetPrivate;
  * to "OK Only" message boxes. If you do not need the modalness of KMessageBox,
  * consider using KMessageWidget instead.
  *
- * <b>Negative feedback</b>
- *
- * The KMessageWidget can be used as a secondary indicator of failure: the
- * first indicator is usually the fact the action the user expected to happen
- * did not happen.
- *
- * Example: User fills a form, clicks "Submit".
- *
- * @li Expected feedback: form closes
- * @li First indicator of failure: form stays there
- * @li Second indicator of failure: a KMessageWidget appears on top of the
- * form, explaining the error condition
- *
- * When used to provide negative feedback, KMessageWidget should be placed
- * close to its context. In the case of a form, it should appear on top of the
- * form entries.
- *
- * KMessageWidget should get inserted in the existing layout. Space should not
- * be reserved for it, otherwise it becomes "dead space", ignored by the user.
- * KMessageWidget should also not appear as an overlay to prevent blocking
- * access to elements the user needs to interact with to fix the failure.
- *
- * <b>Positive feedback</b>
- *
- * KMessageWidget can be used for positive feedback but it shouldn't be
- * overused. It is often enough to provide feedback by simply showing the
- * results of an action.
- *
- * Examples of acceptable uses:
- *
- * @li Confirm success of "critical" transactions
- * @li Indicate completion of background tasks
- *
- * Example of inadapted uses:
- *
- * @li Indicate successful saving of a file
- * @li Indicate a file has been successfully removed
- *
- * <b>Opportunistic interaction</b>
- *
- * Opportunistic interaction is the situation where the application suggests to
- * the user an action he could be interested in perform, either based on an
- * action the user just triggered or an event which the application noticed.
- *
- * Example of acceptable uses:
- *
- * @li A browser can propose remembering a recently entered password
- * @li A music collection can propose ripping a CD which just got inserted
- * @li A chat application may notify the user a "special friend" just connected
- *
  * @author Aurélien Gâteau <agateau@kde.org>
  * @since 4.7
  */
-class KDEUI_EXPORT KMessageWidget : public QFrame
+class KDEUI_EXPORT KMessageWidget : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(MessageType)
@@ -101,7 +52,6 @@ class KDEUI_EXPORT KMessageWidget : public QFrame
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon)
 public:
     enum MessageType {
-        Positive,
         Information,
         Warning,
         Error
@@ -111,28 +61,12 @@ public:
      * Constructs a KMessageWidget with the specified parent.
      */
     explicit KMessageWidget(QWidget *parent = nullptr);
-
-    explicit KMessageWidget(const QString &text, QWidget *parent = nullptr);
-
     ~KMessageWidget();
 
     QString text() const;
-
     bool wordWrap() const;
-
     bool isCloseButtonVisible() const;
-
     MessageType messageType() const;
-
-    void addAction(QAction *action);
-
-    void removeAction(QAction *action);
-
-    QSize sizeHint() const;
-
-    QSize minimumSizeHint() const;
-
-    int heightForWidth(int width) const;
 
     /**
      * The icon shown on the left of the text. By default, no icon is shown.
@@ -142,11 +76,8 @@ public:
 
 public Q_SLOTS:
     void setText(const QString &text);
-
     void setWordWrap(bool wordWrap);
-
     void setCloseButtonVisible(bool visible);
-
     void setMessageType(KMessageWidget::MessageType type);
 
     /**
