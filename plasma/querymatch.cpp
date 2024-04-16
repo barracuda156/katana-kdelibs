@@ -269,17 +269,5 @@ void QueryMatch::run(const RunnerContext &context) const
     }
 }
 
-bool QueryMatch::hasConfigurationInterface() const
-{
-    return d->runner && d->runner.data()->hasRunOptions();
-}
-
-void QueryMatch::createConfigurationInterface(QWidget *parent)
-{
-    if (hasConfigurationInterface()) {
-        d->runner.data()->createRunOptions(parent);
-    }
-}
-
 } // Plasma namespace
 

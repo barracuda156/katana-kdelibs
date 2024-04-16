@@ -20,16 +20,13 @@
 #ifndef PLASMA_QUERYMATCH_H
 #define PLASMA_QUERYMATCH_H
 
-#include <QtCore/QList>
-#include <QtCore/qshareddata.h>
-
 #include <plasma/plasma_export.h>
 
 #include <QAction>
 #include <QIcon>
 #include <QString>
 #include <QVariant>
-#include <QWidget>
+#include <QSharedDataPointer>
 
 namespace Plasma
 {
@@ -85,7 +82,6 @@ class PLASMA_EXPORT QueryMatch
         bool operator==(const QueryMatch &other) const;
         bool operator!=(const QueryMatch &other) const;
         bool operator<(const QueryMatch &other) const;
-
 
         /**
          * @return the runner associated with this action
@@ -229,22 +225,6 @@ class PLASMA_EXPORT QueryMatch
          * Sets the selected action
          */
         void setSelectedAction(QAction *action);
-
-        /**
-         * @return true if this match can be configured before being run
-         * @since 4.3
-         */
-        bool hasConfigurationInterface() const;
-
-        /**
-         * If hasConfigurationInterface() returns true, this method may be called to get
-         * a widget displaying the options the user can interact with to modify
-         * the behaviour of what happens when the match is run.
-         *
-         * @param widget the parent of the options widgets.
-         * @since 4.3
-         */
-        void createConfigurationInterface(QWidget *parent);
 
     private:
         QSharedDataPointer<QueryMatchPrivate> d;

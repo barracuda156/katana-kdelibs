@@ -189,21 +189,6 @@ QMimeData * AbstractRunner::mimeDataForMatch(const QueryMatch *match)
     return 0;
 }
 
-bool AbstractRunner::hasRunOptions() const
-{
-    return d->hasRunOptions;
-}
-
-void AbstractRunner::setHasRunOptions(bool hasRunOptions)
-{
-    d->hasRunOptions = hasRunOptions;
-}
-
-void AbstractRunner::createRunOptions(QWidget *parent)
-{
-    Q_UNUSED(parent)
-}
-
 AbstractRunner::Speed AbstractRunner::speed() const
 {
     return d->speed;
@@ -303,7 +288,6 @@ AbstractRunnerPrivate::AbstractRunnerPrivate(AbstractRunner *r)
       runner(r),
       fastRuns(0),
       defaultSyntax(0),
-      hasRunOptions(false),
       suspendMatching(false)
 {
 }

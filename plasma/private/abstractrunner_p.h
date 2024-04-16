@@ -43,8 +43,7 @@ public:
     QHash<QString, QAction*> actions;
     QList<RunnerSyntax> syntaxes;
     RunnerSyntax *defaultSyntax;
-    bool hasRunOptions : 1;
-    bool suspendMatching : 1;
+    bool suspendMatching;
 };
 
 } // namespace Plasma

@@ -144,22 +144,6 @@ class PLASMA_EXPORT AbstractRunner : public QObject
         void performMatch(Plasma::RunnerContext &context);
 
         /**
-         * If the runner has options that the user can interact with to modify
-         * what happens when run or one of the actions created in match
-         * is called, the runner should return true
-         */
-        bool hasRunOptions() const;
-
-        /**
-         * If hasRunOptions() returns true, this method may be called to get
-         * a widget displaying the options the user can interact with to modify
-         * the behaviour of what happens when a given match is selected.
-         *
-         * @param widget the parent of the options widgets.
-         */
-        virtual void createRunOptions(QWidget *widget);
-
-        /**
          * Called whenever an exact or possible match associated with this
          * runner is triggered.
          *
@@ -284,11 +268,6 @@ class PLASMA_EXPORT AbstractRunner : public QObject
          * Provides access to the runner's configuration object.
          */
         KConfigGroup config() const;
-
-        /**
-         * Sets whether or not the runner has options for matches
-         */
-        void setHasRunOptions(bool hasRunOptions);
 
         /**
          * Sets the nominal speed of the runner. Only slow runners need
