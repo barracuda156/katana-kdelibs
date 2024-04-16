@@ -76,11 +76,13 @@ void KMessageLabel::paintEvent(QPaintEvent *event)
 class KMessageWidgetPrivate
 {
 public:
-    KMessageWidgetPrivate();
+    KMessageWidgetPrivate(KMessageWidget *messagewidget);
     ~KMessageWidgetPrivate();
 
     void updateColors();
+    void updateLayout();
 
+    KMessageWidget* messagewidget;
     QVBoxLayout* mainlayout;
     QHBoxLayout* messagelayout;
     KPixmapWidget* iconwidget;
@@ -92,8 +94,9 @@ public:
     QList<QToolButton*> buttons;
 };
 
-KMessageWidgetPrivate::KMessageWidgetPrivate()
-    : mainlayout(nullptr),
+KMessageWidgetPrivate::KMessageWidgetPrivate(KMessageWidget *_messagewidget)
+    : messagewidget(_messagewidget),
+    mainlayout(nullptr),
     messagelayout(nullptr),
     iconwidget(nullptr),
     textlabel(nullptr),
@@ -108,6 +111,9 @@ KMessageWidgetPrivate::~KMessageWidgetPrivate()
     qDeleteAll(buttons);
     buttons.clear();
     delete buttonslayout;
+    delete iconwidget;
+    delete textlabel;
+    delete closebutton;
     delete messagelayout;
 }
 
@@ -133,12 +139,37 @@ void KMessageWidgetPrivate::updateColors()
     textlabel->border = KColorScheme::shade(textlabel->bg, KColorScheme::DarkShade);
 }
 
+void KMessageWidgetPrivate::updateLayout()
+{
+    qDeleteAll(buttons);
+    buttons.clear();
+    delete buttonslayout;
+    buttonslayout = new QHBoxLayout();
+    mainlayout->addLayout(buttonslayout);
+    buttonslayout->addStretch();
+    foreach (QAction* action, messagewidget->actions()) {
+        QToolButton* button = new QToolButton(messagewidget);
+        button->setDefaultAction(action);
+        button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        buttons.append(button);
+        buttonslayout->addWidget(button, 1, Qt::AlignCenter);
+    }
+    if (!textlabel->wordWrap()) {
+        messagelayout->removeWidget(closebutton);
+        buttonslayout->addWidget(closebutton, 1, Qt::AlignCenter);
+    } else {
+        buttonslayout->removeWidget(closebutton);
+        messagelayout->addWidget(closebutton);
+    }
+    buttonslayout->addStretch();
+}
+
 //---------------------------------------------------------------------
 // KMessageWidget
 //---------------------------------------------------------------------
 KMessageWidget::KMessageWidget(QWidget *parent)
     : QWidget(parent),
-    d(new KMessageWidgetPrivate())
+    d(new KMessageWidgetPrivate(this))
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
@@ -161,9 +192,6 @@ KMessageWidget::KMessageWidget(QWidget *parent)
     d->messagelayout->addWidget(d->textlabel);
     d->mainlayout->addLayout(d->messagelayout);
 
-    d->buttonslayout = new QHBoxLayout();
-    d->mainlayout->addLayout(d->buttonslayout);
-
     // NOTE: the standard close action tooltip refers to document, this is not one
     d->closebutton = new QToolButton(this);
     d->closebutton->setText(i18n("&Close"));
@@ -171,11 +199,9 @@ KMessageWidget::KMessageWidget(QWidget *parent)
     d->closebutton->setToolTip(i18n("Close message"));
     d->closebutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     connect(d->closebutton, SIGNAL(clicked()), this, SLOT(hide()));
-    d->buttonslayout->addStretch();
-    d->buttonslayout->addWidget(d->closebutton, 1, Qt::AlignCenter);
-    d->buttonslayout->addStretch();
 
     d->updateColors();
+    d->updateLayout();
 }
 
 KMessageWidget::~KMessageWidget()
@@ -213,6 +239,7 @@ bool KMessageWidget::wordWrap() const
 void KMessageWidget::setWordWrap(bool wordWrap)
 {
     d->textlabel->setWordWrap(wordWrap);
+    d->updateLayout();
 }
 
 bool KMessageWidget::isCloseButtonVisible() const
@@ -254,21 +281,7 @@ bool KMessageWidget::event(QEvent *event)
         case QEvent::ActionChanged:
         case QEvent::ActionAdded:
         case QEvent::ActionRemoved: {
-            qDeleteAll(d->buttons);
-            d->buttons.clear();
-            delete d->buttonslayout;
-            d->buttonslayout = new QHBoxLayout();
-            d->mainlayout->addLayout(d->buttonslayout);
-            d->buttonslayout->addStretch();
-            foreach (QAction* action, actions()) {
-                QToolButton* button = new QToolButton(this);
-                button->setDefaultAction(action);
-                button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-                d->buttons.append(button);
-                d->buttonslayout->addWidget(button, 1, Qt::AlignCenter);
-            }
-            d->buttonslayout->addWidget(d->closebutton, 1, Qt::AlignCenter);
-            d->buttonslayout->addStretch();
+            d->updateLayout();
             break;
         }
     }
