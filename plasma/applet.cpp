@@ -41,7 +41,6 @@
 #include "tooltipmanager.h"
 #include "wallpaper.h"
 #include "paintutils.h"
-#include "pluginloader.h"
 #include "animations/animation.h"
 #include "private/applet_p.h"
 #include "private/applethandle_p.h"
@@ -1953,7 +1952,21 @@ QString AppletPrivate::parentAppConstraint(const QString &parentApp)
 
 KPluginInfo::List Applet::listAppletInfo(const QString &category, const QString &parentApp)
 {
-   return PluginLoader::listAppletInfo(category, parentApp);
+    QString constraint = AppletPrivate::parentAppConstraint(parentApp);
+
+    if (!category.isEmpty()) {
+        // specific category
+        constraint.append(" and [X-KDE-PluginInfo-Category] == '").append(category).append("'");
+        if (category == "Miscellaneous") {
+            constraint.append(" or (not exist [X-KDE-PluginInfo-Category] or [X-KDE-PluginInfo-Category] == '')");
+        }
+    }
+
+    KService::List offers = KServiceTypeTrader::self()->query("Plasma/Applet", constraint);
+
+    //kDebug() << "Applet::listAppletInfo constraint was '" << constraint
+    //         << "' which got us " << offers.count() << " matches";
+    return KPluginInfo::fromServices(offers);
 }
 
 KPluginInfo::List Applet::listAppletInfoForMimetype(const QString &mimetype)
@@ -2026,13 +2039,54 @@ QStringList Applet::listCategories(const QString &parentApp, bool visibleOnly)
 
 Applet *Applet::load(const QString &appletName, uint appletId, const QVariantList &args)
 {
-    return PluginLoader::loadApplet(appletName, appletId, args);
+    if (appletName.isEmpty()) {
+        return nullptr;
+    }
+
+    const QString constraint = QString("[X-KDE-PluginInfo-Name] == '%1'").arg(appletName);
+    KService::List offers = KServiceTypeTrader::self()->query("Plasma/Applet", constraint);
+
+    if (offers.isEmpty()) {
+        offers = KServiceTypeTrader::self()->query("Plasma/Containment", constraint);
+    }
+
+    if (offers.count() > 1) {
+        kDebug() << "got more than one! blindly taking the first one";
+    }
+
+    if (offers.isEmpty()) {
+        kDebug() << "applet offers is empty for " << appletName;
+        return 0;
+    }
+
+    KService::Ptr offer = offers.first();
+ 
+    if (appletId == 0) {
+        appletId = ++AppletPrivate::s_maxAppletId;
+    }
+
+    QVariantList allArgs;
+    allArgs << offer->storageId() << appletId << args;
+
+    Applet* applet = nullptr;
+    QString error;
+    if (appletName == "internal:extender") {
+        applet = new ExtenderApplet(nullptr, allArgs);
+    } else {
+        applet = offer->createInstance<Plasma::Applet>(nullptr, allArgs, &error);
+    }
+
+    if (!applet) {
+        kWarning() << "Could not load applet" << appletName << "! reason given:" << error;
+    }
+
+    return applet;
 }
 
-Applet *Applet::load(const KPluginInfo &info, uint appletId, const QVariantList &args)
+Applet* Applet::load(const KPluginInfo &info, uint appletId, const QVariantList &args)
 {
     if (!info.isValid()) {
-        return 0;
+        return nullptr;
     }
 
     return load(info.pluginName(), appletId, args);

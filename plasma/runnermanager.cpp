@@ -21,7 +21,6 @@
 
 #include "runnermanager.h"
 #include "private/runnerjobs_p.h"
-#include "pluginloader.h"
 #include "querymatch.h"
 
 #include <QTimer>
@@ -224,21 +223,13 @@ public:
             return 0;
         }
 
-        AbstractRunner *runner = PluginLoader::loadRunner(service->property("X-KDE-PluginInfo-Name", QVariant::String).toString());
-
-        if (runner) {
-            runner->setParent(q);
+        QVariantList args;
+        args << service->storageId();
+        QString error;
+        AbstractRunner *runner = service->createInstance<AbstractRunner>(q, args, &error);
+        if (!runner) {
+            kWarning() << "Failed to load runner:" << service->name() << ". error reported:" << error;
         } else {
-            QVariantList args;
-            args << service->storageId();
-            QString error;
-            runner = service->createInstance<AbstractRunner>(q, args, &error);
-            if (!runner) {
-                kWarning() << "Failed to load runner:" << service->name() << ". error reported:" << error;
-            }
-        }
-
-        if (runner) {
             kDebug() << "================= loading runner:" << service->name() << "=================";
             QObject::connect(runner, SIGNAL(matchingSuspended(bool)), q, SLOT(runnerMatchingSuspended(bool)));
             QMetaObject::invokeMethod(runner, "init");
@@ -512,7 +503,15 @@ QMimeData * RunnerManager::mimeDataForMatch(const QueryMatch &match) const
 
 KPluginInfo::List RunnerManager::listRunnerInfo(const QString &parentApp)
 {
-    return PluginLoader::listRunnerInfo(parentApp);
+    QString constraint;
+    if (parentApp.isEmpty()) {
+        constraint.append("not exist [X-KDE-ParentApp]");
+    } else {
+        constraint.append("[X-KDE-ParentApp] == '").append(parentApp).append("'");
+    }
+
+    KService::List offers = KServiceTypeTrader::self()->query("Plasma/Runner", constraint);
+    return KPluginInfo::fromServices(offers);
 }
 
 void RunnerManager::setupMatchSession()

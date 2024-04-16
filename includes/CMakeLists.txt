@@ -477,7 +477,6 @@ install(
     Plasma/PackageStructure
     Plasma/PaintUtils
     Plasma/Plasma
-    Plasma/PluginLoader
     Plasma/PopupApplet
     Plasma/PushButton
     Plasma/QueryMatch
