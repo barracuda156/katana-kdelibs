@@ -1,22 +1,22 @@
-/* This file is part of the KDE libraries
- *
- * Copyright (c) 2011 Aurélien Gâteau <agateau@kde.org>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301  USA
- */
+/*
+    This file is part of the KDE libraries
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License version 2, as published by the Free Software Foundation.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
+
 #ifndef KMESSAGEWIDGET_H
 #define KMESSAGEWIDGET_H
 
@@ -30,21 +30,19 @@ class KMessageWidgetPrivate;
 /**
  * @short A widget to provide feedback or propose opportunistic interactions.
  *
- * KMessageWidget can be used to provide inline positive or negative
- * feedback, or to implement opportunistic interactions.
+ * KMessageWidget can be used to provide inline feedback or to implement opportunistic
+ * interactions.
  *
- * As a feedback widget, KMessageWidget provides a less intrusive alternative
- * to "OK Only" message boxes. If you do not need the modalness of KMessageBox,
- * consider using KMessageWidget instead.
+ * As a feedback widget, KMessageWidget provides a less intrusive alternative to "OK Only" message
+ * boxes. If you do not need the modalness of KMessageBox, consider using KMessageWidget instead.
  *
- * @author Aurélien Gâteau <agateau@kde.org>
+ * @author Ivailo Monev <xakepa10@gmail.com>
  * @since 4.7
  */
 class KDEUI_EXPORT KMessageWidget : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(MessageType)
-
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool closeButtonVisible READ isCloseButtonVisible WRITE setCloseButtonVisible)
@@ -81,14 +79,14 @@ public Q_SLOTS:
     void setMessageType(KMessageWidget::MessageType type);
 
     /**
-     * Show the widget using an animation, unless
-     * KGlobalSettings::graphicsEffectLevel() does not allow simple effects.
+     * Show the widget using an animation, unless KGlobalSettings::graphicsEffectLevel() does not
+     * allow simple effects.
      */
     void animatedShow();
 
     /**
-     * Hide the widget using an animation, unless
-     * KGlobalSettings::graphicsEffectLevel() does not allow simple effects.
+     * Hide the widget using an animation, unless KGlobalSettings::graphicsEffectLevel() does not
+     * allow simple effects.
      */
     void animatedHide();
 
@@ -100,8 +98,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     /**
-     * This signal is emitted when the user clicks a link in the text label.
-     * The URL referred to by the href anchor is passed in contents.
+     * This signal is emitted when the user clicks a link in the text label. The URL referred to by
+     * the href anchor is passed in contents.
+     *
      * @param contents text of the href anchor
      * @see QLabel::linkActivated()
      * @since 4.10
@@ -109,8 +108,9 @@ Q_SIGNALS:
     void linkActivated(const QString &contents);
 
     /**
-     * This signal is emitted when the user hovers over a link in the text label.
-     * The URL referred to by the href anchor is passed in contents.
+     * This signal is emitted when the user hovers over a link in the text label. The URL referred
+     * to by the href anchor is passed in contents.
+     *
      * @param contents text of the href anchor
      * @see QLabel::linkHovered()
      * @since 4.11
@@ -121,8 +121,8 @@ protected:
     bool event(QEvent *event);
 
 private:
+    friend KMessageWidgetPrivate;
     KMessageWidgetPrivate *const d;
-    friend class KMessageWidgetPrivate;
 };
 
-#endif /* KMESSAGEWIDGET_H */
+#endif // KMESSAGEWIDGET_H

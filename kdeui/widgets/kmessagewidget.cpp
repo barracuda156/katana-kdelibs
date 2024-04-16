@@ -1,28 +1,28 @@
-/* This file is part of the KDE libraries
- *
- * Copyright (c) 2011 Aurélien Gâteau <agateau@kde.org>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301  USA
- */
+/*
+    This file is part of the KDE libraries
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License version 2, as published by the Free Software Foundation.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
+
 #include "kmessagewidget.h"
+#include "klocale.h"
 #include "kaction.h"
 #include "kicon.h"
 #include "kiconloader.h"
 #include "kcolorscheme.h"
-#include "kstandardaction.h"
 #include "kpixmapwidget.h"
 #include "kdebug.h"
 
@@ -140,7 +140,7 @@ KMessageWidget::KMessageWidget(QWidget *parent)
     : QWidget(parent),
     d(new KMessageWidgetPrivate())
 {
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
     d->mainlayout = new QVBoxLayout(this);
     setLayout(d->mainlayout);
@@ -153,23 +153,27 @@ KMessageWidget::KMessageWidget(QWidget *parent)
     d->messagelayout->addWidget(d->iconwidget);
 
     d->textlabel = new KMessageLabel(this);
-    d->textlabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    d->textlabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     d->textlabel->setTextInteractionFlags(Qt::TextBrowserInteraction | Qt::LinksAccessibleByMouse);
     d->textlabel->setAlignment(Qt::AlignCenter);
     connect(d->textlabel, SIGNAL(linkActivated(QString)), this, SIGNAL(linkActivated(QString)));
     connect(d->textlabel, SIGNAL(linkHovered(QString)), this, SIGNAL(linkHovered(QString)));
     d->messagelayout->addWidget(d->textlabel);
-
-    KAction* closeAction = KStandardAction::close(this, SLOT(animatedHide()), this);
-    // The default shortcut assigned by KStandardAction is Ctrl+W,
-    // which might conflict with application-specific shortcuts.
-    closeAction->setShortcut(QKeySequence());
-    d->closebutton = new QToolButton(this);
-    d->closebutton->setAutoRaise(true);
-    d->closebutton->setDefaultAction(closeAction);
-    d->messagelayout->addWidget(d->closebutton);
-
     d->mainlayout->addLayout(d->messagelayout);
+
+    d->buttonslayout = new QHBoxLayout();
+    d->mainlayout->addLayout(d->buttonslayout);
+
+    // NOTE: the standard close action tooltip refers to document, this is not one
+    d->closebutton = new QToolButton(this);
+    d->closebutton->setText(i18n("&Close"));
+    d->closebutton->setIcon(KIcon("window-close"));
+    d->closebutton->setToolTip(i18n("Close message"));
+    d->closebutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    connect(d->closebutton, SIGNAL(clicked()), this, SLOT(animatedHide()));
+    d->buttonslayout->addStretch();
+    d->buttonslayout->addWidget(d->closebutton, 1, Qt::AlignCenter);
+    d->buttonslayout->addStretch();
 
     d->updateColors();
 }
@@ -187,7 +191,6 @@ QString KMessageWidget::text() const
 void KMessageWidget::setText(const QString& text)
 {
     d->textlabel->setText(text);
-    updateGeometry();
 }
 
 KMessageWidget::MessageType KMessageWidget::messageType() const
@@ -210,7 +213,6 @@ bool KMessageWidget::wordWrap() const
 void KMessageWidget::setWordWrap(bool wordWrap)
 {
     d->textlabel->setWordWrap(wordWrap);
-    adjustSize();
 }
 
 bool KMessageWidget::isCloseButtonVisible() const
@@ -221,7 +223,6 @@ bool KMessageWidget::isCloseButtonVisible() const
 void KMessageWidget::setCloseButtonVisible(bool show)
 {
     d->closebutton->setVisible(show);
-    updateGeometry();
 }
 
 void KMessageWidget::animatedShow()
@@ -286,6 +287,7 @@ bool KMessageWidget::event(QEvent *event)
                 d->buttons.append(button);
                 d->buttonslayout->addWidget(button, 1, Qt::AlignCenter);
             }
+            d->buttonslayout->addWidget(d->closebutton, 1, Qt::AlignCenter);
             d->buttonslayout->addStretch();
             break;
         }
