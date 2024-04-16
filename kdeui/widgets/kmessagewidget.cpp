@@ -30,9 +30,10 @@
 #include <QLabel>
 #include <QToolButton>
 #include <QPainter>
+#include <QPen>
 
-static const qreal s_roundness = 4.0;
-static const qreal s_bordersize = 0.5;
+static const qreal s_roundness = 4;
+static const qreal s_bordersize = 0.6;
 static const qreal s_margin = 4;
 
 class KMessageLabel : public QLabel
@@ -58,12 +59,14 @@ void KMessageLabel::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setBrush(border);
+    QPen borderpen(border);
+    borderpen.setWidth(s_bordersize * 2);
+    painter.setPen(borderpen);
     QRectF widgetrect = rect();
-    painter.drawRoundedRect(widgetrect, s_roundness, s_roundness);
+    painter.drawRoundedRect(widgetrect, s_roundness, s_roundness, Qt::AbsoluteSize);
     painter.setBrush(bg);
     widgetrect = widgetrect.adjusted(s_bordersize, s_bordersize, -s_bordersize, -s_bordersize);
-    painter.drawRoundedRect(widgetrect, s_roundness, s_roundness);
+    painter.drawRoundedRect(widgetrect, s_roundness, s_roundness, Qt::AbsoluteSize);
     QLabel::paintEvent(event);
 }
 
