@@ -11,7 +11,6 @@ install(
     kled.png
     ksqueezedtextlabel.png
     kurllabel.png
-    kruler.png
     kdoublenuminput.png
     klistbox.png
     kactivelabel.png
@@ -20,7 +19,6 @@ install(
     khsselector.png
     kcolorbutton.png
     kgradientselector.png
-    kdualcolorbutton.png
     kpushbutton.png
     kcalendarwidget.png
     kdialog.png
@@ -30,8 +28,6 @@ install(
     krestrictedline.png
     ktextedit.png
     kurlcomborequester.png
-    kkeybutton.png
-    kpalettetable.png
     kactionselector.png
     DESTINATION ${KDE4_DATA_INSTALL_DIR}/kdewidgets/pics
 )

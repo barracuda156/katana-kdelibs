@@ -212,7 +212,6 @@ install(
     KReplace
     KReplaceDialog
     KRestrictedLine
-    KRuler
     KRun
     KSaveFile
     KSelectAction

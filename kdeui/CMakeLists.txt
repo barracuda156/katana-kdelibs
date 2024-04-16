@@ -208,7 +208,6 @@ set(kdeui_LIB_SRCS
     widgets/kratingpainter.cpp
     widgets/kratingwidget.cpp
     widgets/krestrictedline.cpp
-    widgets/kruler.cpp
     widgets/kselector.cpp
     widgets/kseparator.cpp
     widgets/kshortcutwidget.cpp
@@ -478,7 +477,6 @@ install(
     widgets/ktitlewidget.h
     widgets/ktabbar.h
     widgets/ktabwidget.h
-    widgets/kruler.h
     widgets/kselector.h
     widgets/kshortcutwidget.h
     widgets/kstatusbar.h
