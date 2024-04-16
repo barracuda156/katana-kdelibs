@@ -79,18 +79,6 @@ public Q_SLOTS:
     void setMessageType(KMessageWidget::MessageType type);
 
     /**
-     * Show the widget using an animation, unless KGlobalSettings::graphicsEffectLevel() does not
-     * allow simple effects.
-     */
-    void animatedShow();
-
-    /**
-     * Hide the widget using an animation, unless KGlobalSettings::graphicsEffectLevel() does not
-     * allow simple effects.
-     */
-    void animatedHide();
-
-    /**
      * Define an icon to be shown on the left of the text
      * @since 4.11
      */

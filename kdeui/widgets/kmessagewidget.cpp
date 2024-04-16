@@ -170,7 +170,7 @@ KMessageWidget::KMessageWidget(QWidget *parent)
     d->closebutton->setIcon(KIcon("window-close"));
     d->closebutton->setToolTip(i18n("Close message"));
     d->closebutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    connect(d->closebutton, SIGNAL(clicked()), this, SLOT(animatedHide()));
+    connect(d->closebutton, SIGNAL(clicked()), this, SLOT(hide()));
     d->buttonslayout->addStretch();
     d->buttonslayout->addWidget(d->closebutton, 1, Qt::AlignCenter);
     d->buttonslayout->addStretch();
@@ -223,26 +223,6 @@ bool KMessageWidget::isCloseButtonVisible() const
 void KMessageWidget::setCloseButtonVisible(bool show)
 {
     d->closebutton->setVisible(show);
-}
-
-void KMessageWidget::animatedShow()
-{
-    if (isVisible()) {
-        return;
-    }
-
-    // yep, no animation. changing the geometry for 500ms looks exactly the same as showing the
-    // widget without doing so
-    QWidget::show();
-}
-
-void KMessageWidget::animatedHide()
-{
-    if (!isVisible()) {
-        return;
-    }
-
-    QWidget::hide();
 }
 
 QIcon KMessageWidget::icon() const
