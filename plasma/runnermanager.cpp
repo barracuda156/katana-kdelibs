@@ -229,7 +229,7 @@ AbstractRunner* RunnerManager::runner(const QString &name) const
     return d->runners.value(name, nullptr);
 }
 
-QList<AbstractRunner *> RunnerManager::runners() const
+QList<AbstractRunner*> RunnerManager::runners() const
 {
     return d->runners.values();
 }
@@ -292,7 +292,7 @@ QMimeData* RunnerManager::mimeDataForMatch(const QueryMatch &match) const
         return mimeData;
     }
 
-    return 0;
+    return nullptr;
 }
 
 KPluginInfo::List RunnerManager::listRunnerInfo(const QString &parentApp)

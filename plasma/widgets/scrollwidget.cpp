@@ -158,12 +158,7 @@ public:
         stealEvent = false;
         hasOvershoot = true;
 
-        alignment = Qt::AlignLeft | Qt::AlignTop;
-
-        hasContentsProperty = false;
-        hasOffsetProperty = false;
-        hasXProperty = false;
-        hasYProperty = false;
+        alignment = (Qt::AlignLeft | Qt::AlignTop);
     }
 
     void adjustScrollbars()
@@ -389,12 +384,6 @@ public:
             }
             duration = qAbs((endY-startY)/ (-v/2));
 
-            if (hasYProperty) {
-                startY = -startY;
-                endY = -endY;
-            }
-
-
 #if DEBUG
             qDebug()<<"XXX velocity = "<<v <<", target = "<< target
                     <<", maxDist = "<<maxDistance;
@@ -419,12 +408,12 @@ public:
     }
     void flickX(qreal velocity)
     {
-        flick(flickAnimationX, velocity, widgetX(), minXExtent(), maxXExtent(),
+        flick(flickAnimationX, velocity, widget.data()->x(), minXExtent(), maxXExtent(),
               q->viewportGeometry().width());
     }
     void flickY(qreal velocity)
     {
-        flick(flickAnimationY, velocity, widgetY(),minYExtent(), maxYExtent(),
+        flick(flickAnimationY, velocity, widget.data()->y(),minYExtent(), maxYExtent(),
               q->viewportGeometry().height());
     }
     void fixup(QAnimationGroup *group,
@@ -434,11 +423,6 @@ public:
         if (val > minExtent || maxExtent > minExtent) {
             if (!qFuzzyCompare(val, minExtent)) {
                 if (FixupDuration) {
-                    //TODO: we should consider the case where there is one axis available not the other
-                    if (hasXProperty && hasYProperty) {
-                        val = -val;
-                        minExtent = -minExtent;
-                    }
                     qreal dist = minExtent - val;
                     start->setStartValue(val);
                     start->setEndValue(minExtent - dist/2);
@@ -454,10 +438,6 @@ public:
             }
         } else if (val < maxExtent) {
             if (FixupDuration) {
-                if (hasXProperty && hasYProperty) {
-                    val = -val;
-                    maxExtent = -maxExtent;
-                }
                 qreal dist = maxExtent - val;
                 start->setStartValue(val);
                 start->setEndValue(maxExtent - dist/2);
@@ -489,12 +469,12 @@ public:
     void fixupX()
     {
         fixup(fixupAnimation.groupX, fixupAnimation.startX, fixupAnimation.endX,
-              widgetX(), minXExtent(), maxXExtent());
+              widget.data()->x(), minXExtent(), maxXExtent());
     }
     void fixupY()
     {
         fixup(fixupAnimation.groupY, fixupAnimation.startY, fixupAnimation.endY,
-              widgetY(), minYExtent(), maxYExtent());
+              widget.data()->y(), minYExtent(), maxYExtent());
     }
 
     void makeRectVisible()
@@ -556,35 +536,6 @@ public:
         flickAnimationY->stop();
         fixupAnimation.groupX->stop();
         fixupAnimation.groupY->stop();
-    }
-
-    void setWidgetX(qreal x)
-    {
-        if (hasXProperty) {
-            widget.data()->setProperty("scrollPositionX", -x);
-        } else
-            widget.data()->setX(x);
-    }
-    void setWidgetY(qreal y)
-    {
-        if (hasYProperty) {
-            widget.data()->setProperty("scrollPositionY", -y);
-        } else
-            widget.data()->setY(y);
-    }
-    qreal widgetX() const
-    {
-        if (hasXProperty) {
-            return -widget.data()->property("scrollPositionX").toReal();
-        } else
-            return widget.data()->x();
-    }
-    qreal widgetY() const
-    {
-        if (hasYProperty) {
-            return -widget.data()->property("scrollPositionY").toReal();
-        } else
-            return widget.data()->y();
     }
 
     void handleKeyPressEvent(QKeyEvent *event)
@@ -677,7 +628,7 @@ public:
                         rejectY = true;
                 }
                 if (!rejectY && stealEvent) {
-                    setWidgetY(qRound(newY));
+                    widget.data()->setY(qRound(newY));
                 }
                 if (qAbs(dy) > KGlobalSettings::dndEventDelay())
                     stealEvent = true;
@@ -703,7 +654,7 @@ public:
                         rejectX = true;
                 }
                 if (!rejectX && stealEvent) {
-                    setWidgetX(qRound(newX));
+                    widget.data()->setX(qRound(newX));
                 }
 
                 if (qAbs(dx) > KGlobalSettings::dndEventDelay())
@@ -895,11 +846,6 @@ public:
             QString xProp = QString::fromLatin1("x");
             QString yProp = QString::fromLatin1("y");
 
-            if (hasXProperty)
-                xProp = QString::fromLatin1("scrollPositionX");
-            if (hasYProperty)
-                yProp = QString::fromLatin1("scrollPositionY");
-
             flickAnimationX = new QPropertyAnimation(widget.data(),
                                                      xProp.toLatin1(), widget.data());
             flickAnimationY = new QPropertyAnimation(widget.data(),
@@ -1059,11 +1005,6 @@ public:
     bool overflowBordersVisible;
 
     Qt::Alignment alignment;
-
-    bool hasContentsProperty;
-    bool hasOffsetProperty;
-    bool hasXProperty;
-    bool hasYProperty;
 };
 
 
@@ -1095,12 +1036,8 @@ void ScrollWidget::setWidget(QGraphicsWidget *widget)
     }
 
     d->widget = widget;
-    //it's not good it's setting a size policy here, but it's done to be retrocompatible with older applications
+    // it's not good it's setting a size policy here, but it's done to be retrocompatible with older applications
     if (widget) {
-        d->hasContentsProperty = widget->property("contentsSize").isValid();
-        d->hasOffsetProperty = widget->property("scrollPosition").isValid();
-        d->hasXProperty = widget->property("scrollPositionX").isValid();
-        d->hasYProperty = widget->property("scrollPositionY").isValid();
         d->createFlickAnimations();
 
         connect(widget, SIGNAL(xChanged()), this, SLOT(setScrollX()));
@@ -1208,11 +1145,7 @@ QRectF ScrollWidget::viewportGeometry() const
 QSizeF ScrollWidget::contentsSize() const
 {
     if (d->widget) {
-        if (d->hasContentsProperty) {
-            QVariant var = d->widget.data()->property("contentsSize");
-            return var.toSizeF();
-        } else
-            return d->widget.data()->size();
+        return d->widget.data()->size();
     }
     return QSizeF();
 }
@@ -1220,22 +1153,14 @@ QSizeF ScrollWidget::contentsSize() const
 void ScrollWidget::setScrollPosition(const QPointF &position)
 {
     if (d->widget) {
-        if (d->hasOffsetProperty)
-            d->widget.data()->setProperty("scrollPosition", position);
-        else
-            d->widget.data()->setPos(-position.toPoint());
+        d->widget.data()->setPos(-position.toPoint());
     }
 }
 
 QPointF ScrollWidget::scrollPosition() const
 {
     if (d->widget) {
-        if (d->hasOffsetProperty) {
-            QVariant var = d->widget.data()->property("scrollPosition");
-            return var.toPointF();
-        } else {
-            return -d->widget.data()->pos();
-        }
+        return -d->widget.data()->pos();
     }
     return QPointF();
 }
