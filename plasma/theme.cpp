@@ -54,11 +54,6 @@ static const int DEFAULT_WALLPAPER_HEIGHT = 1200;
 #define DEFAULT_WALLPAPER_THEME "default"
 #define DEFAULT_WALLPAPER_SUFFIX ".png"
 
-enum styles {
-    DEFAULTSTYLE,
-    SVGSTYLE
-};
-
 enum CacheType {
     NoCache = 0,
     PixmapCache = 1,
@@ -141,8 +136,6 @@ public:
     void setThemeName(const QString &themeName, bool writeSettings);
     void processWallpaperSettings(KConfigBase *metadata);
 
-    QString processStyleSheet(const QString &css);
-
     static const char *defaultTheme;
     static const char *systemColorsTheme;
     static const char *themeRcFile;
@@ -167,7 +160,6 @@ public:
     QHash<QString, QPixmap> pixmapsToCache;
     QHash<QString, QString> keysToCache;
     QHash<QString, QString> idsToCache;
-    QHash<styles, QString> cachedStyleSheets;
     QHash<QString, QString> discoveries;
     QTimer *saveTimer;
     QTimer *updateNotificationTimer;
@@ -281,8 +273,6 @@ void ThemePrivate::discardCache(CacheTypes caches)
         pixmapCache->data()->clear();
     }
 
-    cachedStyleSheets.clear();
-
     if (caches & SvgElementsCache) {
         discoveries.clear();
         invalidElements.clear();
@@ -325,86 +315,6 @@ void ThemePrivate::notifyOfChanged()
     discardCache(cachesToDiscard);
     cachesToDiscard = NoCache;
     emit q->themeChanged();
-}
-
-QString ThemePrivate::processStyleSheet(const QString &css)
-{
-    QString stylesheet;
-    if (css.isEmpty()) {
-        stylesheet = cachedStyleSheets.value(DEFAULTSTYLE);
-        if (stylesheet.isEmpty()) {
-            stylesheet = QString("\n\
-                        body {\n\
-                            color: %textcolor;\n\
-                            font-size: %fontsize;\n\
-                            font-family: %fontfamily;\n\
-                        }\n\
-                        a:active  { color: %activatedlink; }\n\
-                        a:link    { color: %link; }\n\
-                        a:visited { color: %visitedlink; }\n\
-                        a:hover   { color: %hoveredlink; text-decoration: none; }\n\
-                        ");
-            stylesheet = processStyleSheet(stylesheet);
-            cachedStyleSheets.insert(DEFAULTSTYLE, stylesheet);
-        }
-
-        return stylesheet;
-    } else if (css == "SVG") {
-        stylesheet = cachedStyleSheets.value(SVGSTYLE);
-        if (stylesheet.isEmpty()) {
-            QString skel = ".ColorScheme-%1{color:%2;}";
-
-            stylesheet += skel.arg("Text","%textcolor");
-            stylesheet += skel.arg("Background","%backgroundcolor");
-
-            stylesheet += skel.arg("ButtonText","%buttontextcolor");
-            stylesheet += skel.arg("ButtonBackground","%buttonbackgroundcolor");
-            stylesheet += skel.arg("ButtonHover","%buttonhovercolor");
-            stylesheet += skel.arg("ButtonFocus","%buttonfocuscolor");
-
-            stylesheet += skel.arg("ViewText","%viewtextcolor");
-            stylesheet += skel.arg("ViewBackground","%viewbackgroundcolor");
-            stylesheet += skel.arg("ViewHover","%viewhovercolor");
-            stylesheet += skel.arg("ViewFocus","%viewfocuscolor");
-
-            stylesheet = processStyleSheet(stylesheet);
-            cachedStyleSheets.insert(SVGSTYLE, stylesheet);
-        }
-
-        return stylesheet;
-    } else {
-        stylesheet = css;
-    }
-
-    QHash<QString, QString> elements;
-    // If you add elements here, make sure their names are sufficiently unique to not cause
-    // clashes between element keys
-    elements["%textcolor"] = q->color(Theme::TextColor).name();
-    elements["%backgroundcolor"] = q->color(Theme::BackgroundColor).name();
-    elements["%visitedlink"] = q->color(Theme::VisitedLinkColor).name();
-    elements["%activatedlink"] = q->color(Theme::HighlightColor).name();
-    elements["%hoveredlink"] = q->color(Theme::HighlightColor).name();
-    elements["%link"] = q->color(Theme::LinkColor).name();
-    elements["%buttontextcolor"] = q->color(Theme::ButtonTextColor).name();
-    elements["%buttonbackgroundcolor"] = q->color(Theme::ButtonBackgroundColor).name();
-    elements["%buttonhovercolor"] = q->color(Theme::ButtonHoverColor).name();
-    elements["%buttonfocuscolor"] = q->color(Theme::ButtonFocusColor).name();
-    elements["%viewtextcolor"] = q->color(Theme::ViewTextColor).name();
-    elements["%viewbackgroundcolor"] = q->color(Theme::ViewBackgroundColor).name();
-    elements["%viewhovercolor"] = q->color(Theme::ViewHoverColor).name();
-    elements["%viewfocuscolor"] = q->color(Theme::ViewFocusColor).name();
-
-    QFont font = q->font(Theme::DefaultFont);
-    elements["%fontsize"] = QString("%1pt").arg(font.pointSize());
-    elements["%fontfamily"] = font.family().split('[').first();
-    elements["%smallfontsize"] = QString("%1pt").arg(KGlobalSettings::smallestReadableFont().pointSize());
-
-    QHashIterator<QString, QString> it(elements);
-    while (it.hasNext()) {
-        it.next();
-        stylesheet.replace(it.key(), it.value());
-    }
-    return stylesheet;
 }
 
 class ThemeSingleton
@@ -689,11 +599,6 @@ QString Theme::imagePath(const QString &name) const
     */
 
     return path;
-}
-
-QString Theme::styleSheet(const QString &css) const
-{
-    return d->processStyleSheet(css);
 }
 
 QString Theme::wallpaperPath(const QSize &size) const

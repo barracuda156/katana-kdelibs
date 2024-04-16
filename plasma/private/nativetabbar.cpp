@@ -251,11 +251,6 @@ bool NativeTabBar::isTabHighlighted(int index) const
 }
 void NativeTabBar::paintEvent(QPaintEvent *event)
 {
-    if (!styleSheet().isNull()) {
-        KTabBar::paintEvent(event);
-        return;
-    }
-
     QPainter painter(this);
     //int numTabs = count();
     //bool ltr = painter.layoutDirection() == Qt::LeftToRight; // Not yet used

@@ -268,7 +268,6 @@ KCmdLineArgsStatic::KCmdLineArgsStatic () {
     qt_options.add("sync", ki18n("switches to synchronous mode for debugging"));
     qt_options.add("title <title>", ki18n("sets the application title (caption)"));
     qt_options.add("reverse", ki18n("mirrors the whole layout of widgets"));
-    qt_options.add("stylesheet <file.qss>", ki18n("applies the Katie stylesheet to the application widgets"));
     qt_options.add("style <style>", ki18n("sets the application GUI style"));
     // KDE options
     kde_options.add("caption <caption>",   ki18n("Use 'caption' as name in the titlebar"));
