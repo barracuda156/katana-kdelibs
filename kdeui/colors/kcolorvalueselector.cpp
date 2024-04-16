@@ -23,14 +23,17 @@
 
 #include "kcolorchoosermode_p.h"
 
-using namespace KDEPrivate;
-
 class KColorValueSelector::Private
 {
 public:
-    Private(KColorValueSelector *q): q(q), _hue(0), _sat(0), _colorValue(0), _mode(ChooserClassic) {}
+    Private()
+        : _hue(0),
+        _sat(0),
+        _colorValue(0),
+        _mode(KColorChooserMode::ChooserClassic)
+    {
+    }
 
-    KColorValueSelector *q;
     int _hue;
     int _sat;
     int _colorValue;
@@ -38,16 +41,18 @@ public:
     QPixmap pixmap;
 };
 
-KColorValueSelector::KColorValueSelector( QWidget *parent )
-        : KSelector( Qt::Vertical, parent ), d( new Private( this ) )
+KColorValueSelector::KColorValueSelector(QWidget *parent)
+    : KSelector(Qt::Vertical, parent),
+    d( new Private())
 {
-    setRange( 0, 255 );
+    setRange(0, 255);
 }
 
-KColorValueSelector::KColorValueSelector( Qt::Orientation o, QWidget *parent )
-        : KSelector( o, parent ), d( new Private( this ) )
+KColorValueSelector::KColorValueSelector(Qt::Orientation o, QWidget *parent)
+    : KSelector(o, parent),
+    d(new Private())
 {
-    setRange( 0, 255 );
+    setRange(0, 255);
 }
 
 KColorValueSelector::~KColorValueSelector()
@@ -60,7 +65,7 @@ int KColorValueSelector::hue() const
     return d->_hue;
 }
 
-void KColorValueSelector::setHue( int hue )
+void KColorValueSelector::setHue(int hue)
 {
     d->_hue = hue;
 }
@@ -70,7 +75,7 @@ int KColorValueSelector::saturation() const
     return d->_sat;
 }
 
-void KColorValueSelector::setSaturation( int saturation )
+void KColorValueSelector::setSaturation(int saturation)
 {
     d->_sat = saturation;
 }
@@ -80,47 +85,46 @@ int KColorValueSelector::colorValue () const
     return d->_colorValue;
 }
 
-void KColorValueSelector::setColorValue ( int colorValue )
+void KColorValueSelector::setColorValue(int colorValue)
 {
     d->_colorValue = colorValue;
 }
 
-
-
 void KColorValueSelector::updateContents()
 {
-    drawPalette( &d->pixmap );
+    drawPalette(&d->pixmap);
 }
 
-void KColorValueSelector::resizeEvent( QResizeEvent * )
+void KColorValueSelector::resizeEvent(QResizeEvent *event)
 {
+    Q_UNUSED(event);
     updateContents();
 }
 
-void KColorValueSelector::drawContents( QPainter *painter )
+void KColorValueSelector::drawContents(QPainter *painter)
 {
-    painter->drawPixmap( contentsRect().x(), contentsRect().y(), d->pixmap );
+    painter->drawPixmap(contentsRect().x(), contentsRect().y(), d->pixmap);
 }
 
-void KColorValueSelector::setChooserMode( KColorChooserMode c )
+void KColorValueSelector::setChooserMode(KColorChooserMode chooserMode)
 {
-    if ( c == ChooserHue ) {
-        setRange( 0, 360 );
+    if (chooserMode == KColorChooserMode::ChooserHue) {
+        setRange(0, 360);
     } else {
-        setRange( 0, 255 );
+        setRange(0, 255);
     }
-    d->_mode = c;
+    d->_mode = chooserMode;
 
-    //really needed?
-    //emit modeChanged();
+    // really needed?
+    // emit modeChanged();
 }
 
-KColorChooserMode KColorValueSelector::chooserMode () const
+KColorChooserMode KColorValueSelector::chooserMode() const
 {
     return d->_mode;
 }
 
-void KColorValueSelector::drawPalette( QPixmap *pixmap )
+void KColorValueSelector::drawPalette(QPixmap *pixmap)
 {
     QColor color;
     if (chooserMode() == ChooserHue) {
@@ -138,9 +142,9 @@ void KColorValueSelector::drawPalette( QPixmap *pixmap )
         gradient.setFinalStop(contentsRect().width(), 0);
     }
 
-    const int steps = componentValueSteps(chooserMode());
+    const int steps = KDEPrivate::componentValueSteps(chooserMode());
     for (int v = 0; v <= steps; ++v) {
-        setComponentValue(color, chooserMode(), v * (1.0 / steps));
+        KDEPrivate::setComponentValue(color, chooserMode(), v * (1.0 / steps));
         gradient.setColorAt(v * (1.0 / steps), color);
     }
 
@@ -148,6 +152,5 @@ void KColorValueSelector::drawPalette( QPixmap *pixmap )
     QPainter painter(pixmap);
     painter.fillRect(pixmap->rect(), gradient);
 }
-
 
 #include "moc_kcolorvalueselector.cpp"

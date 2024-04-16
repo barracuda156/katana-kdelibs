@@ -19,11 +19,9 @@
 
 #include "khuesaturationselect.h"
 
-#include <QtGui/QPainter>
+#include <QPainter>
 
 #include "kcolorchoosermode_p.h"
-
-using namespace KDEPrivate;
 
 class KHueSaturationSelector::Private
 {
@@ -135,17 +133,17 @@ void KHueSaturationSelector::drawContents(QPainter *painter)
 
 void KHueSaturationSelector::drawPalette(QPixmap *pixmap)
 {
-    int xSteps = componentXSteps(chooserMode());
-    int ySteps = componentYSteps(chooserMode());
+    int xSteps = KDEPrivate::componentXSteps(chooserMode());
+    int ySteps = KDEPrivate::componentYSteps(chooserMode());
 
     QColor color;
-    color.setHsv(hue(), saturation(), chooserMode() == ChooserClassic ? 192 : colorValue());
+    color.setHsv(hue(), saturation(), chooserMode() == KColorChooserMode::ChooserClassic ? 192 : colorValue());
 
     QImage image(QSize(xSteps + 1, ySteps + 1), QImage::Format_RGB32);
     for (int y = 0; y <= ySteps; ++y) {
-        setComponentY(color, chooserMode(), y * (1.0 / ySteps));
+        KDEPrivate::setComponentY(color, chooserMode(), y * (1.0 / ySteps));
         for (int x = 0; x <= xSteps; ++x) {
-            setComponentX(color, chooserMode(), x * (1.0 / xSteps));
+            KDEPrivate::setComponentX(color, chooserMode(), x * (1.0 / xSteps));
             image.setPixel(x, ySteps - y, color.rgb());
         }
     }
