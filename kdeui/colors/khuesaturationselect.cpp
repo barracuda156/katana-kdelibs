@@ -28,9 +28,14 @@ using namespace KDEPrivate;
 class KHueSaturationSelector::Private
 {
 public:
-    Private(KHueSaturationSelector *q): q(q) {}
+    Private()
+        : _mode(KColorChooserMode::ChooserClassic),
+        _hue(0),
+        _sat(0),
+        _colorValue(0)
+    {
+    }
 
-    KHueSaturationSelector *q;
     QPixmap pixmap;
 
     /**
@@ -45,11 +50,11 @@ public:
 };
 
 
-
-KHueSaturationSelector::KHueSaturationSelector( QWidget *parent )
-        : KXYSelector( parent ), d( new Private( this ) )
+KHueSaturationSelector::KHueSaturationSelector(QWidget *parent)
+    : KXYSelector(parent),
+    d(new Private())
 {
-    setChooserMode( ChooserClassic );
+    setChooserMode(KColorChooserMode::ChooserClassic);
 }
 
 KColorChooserMode KHueSaturationSelector::chooserMode() const
@@ -57,14 +62,14 @@ KColorChooserMode KHueSaturationSelector::chooserMode() const
     return d->_mode;
 }
 
-void KHueSaturationSelector::setChooserMode( KColorChooserMode chooserMode )
+void KHueSaturationSelector::setChooserMode(KColorChooserMode chooserMode)
 {
-    int x;
+    int x = 0;
     int y = 255;
 
-    switch ( chooserMode ) {
-    case ChooserSaturation:
-    case ChooserValue:
+    switch (chooserMode) {
+    case KColorChooserMode::ChooserSaturation:
+    case KColorChooserMode::ChooserValue:
         x = 359;
         break;
     default:
@@ -72,27 +77,27 @@ void KHueSaturationSelector::setChooserMode( KColorChooserMode chooserMode )
         break;
     }
 
-    setRange( 0, 0, x, y );
+    setRange(0, 0, x, y);
     d->_mode = chooserMode;
 }
 
-int KHueSaturationSelector::hue () const
+int KHueSaturationSelector::hue() const
 {
     return d->_hue;
 }
 
-void KHueSaturationSelector::setHue ( int hue )
+void KHueSaturationSelector::setHue(int hue)
 {
     d->_hue = hue;
 }
 
-int KHueSaturationSelector::saturation () const
+int KHueSaturationSelector::saturation() const
 
 {
     return d->_sat;
 }
 
-void KHueSaturationSelector::setSaturation( int saturation )
+void KHueSaturationSelector::setSaturation(int saturation)
 {
     d->_sat = saturation;
 }
@@ -102,7 +107,7 @@ int KHueSaturationSelector::colorValue() const
     return d->_colorValue;
 }
 
-void KHueSaturationSelector::setColorValue( int colorValue )
+void KHueSaturationSelector::setColorValue(int colorValue)
 {
     d->_colorValue = colorValue;
 }
@@ -117,17 +122,18 @@ void KHueSaturationSelector::updateContents()
     drawPalette( &d->pixmap );
 }
 
-void KHueSaturationSelector::resizeEvent( QResizeEvent * )
+void KHueSaturationSelector::resizeEvent(QResizeEvent *event)
 {
+    Q_UNUSED(event);
     updateContents();
 }
 
-void KHueSaturationSelector::drawContents( QPainter *painter )
+void KHueSaturationSelector::drawContents(QPainter *painter)
 {
-    painter->drawPixmap( contentsRect().x(), contentsRect().y(), d->pixmap );
+    painter->drawPixmap(contentsRect().x(), contentsRect().y(), d->pixmap);
 }
 
-void KHueSaturationSelector::drawPalette( QPixmap *pixmap )
+void KHueSaturationSelector::drawPalette(QPixmap *pixmap)
 {
     int xSteps = componentXSteps(chooserMode());
     int ySteps = componentYSteps(chooserMode());

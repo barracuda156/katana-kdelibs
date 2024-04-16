@@ -32,7 +32,7 @@ public:
     /**
      * Constructs a hue/saturation selection widget.
      */
-    explicit KHueSaturationSelector( QWidget *parent = 0 );
+    explicit KHueSaturationSelector(QWidget *parent = 0);
 
     /**
      * Destructor.
@@ -45,14 +45,14 @@ public:
      * 
      * @param    The chooser mode as defined in KColorChooserMode
      */
-    void setChooserMode ( KColorChooserMode chooserMode );
+    void setChooserMode(KColorChooserMode chooserMode);
 
     /**
      * Returns the chooser mode.
      * 
      * @return   The chooser mode (defined in KColorChooserMode)
      */
-    KColorChooserMode chooserMode () const;
+    KColorChooserMode chooserMode() const;
 
 
     /**
@@ -67,7 +67,7 @@ public:
      * 
      * @param  hue  The hue value (0-360)
      */
-    void setHue( int hue );
+    void setHue(int hue);
 
     /**
      * Returns the saturation (0-255)
@@ -81,7 +81,7 @@ public:
      * 
      * @param  saturation   The saturation (0-255)
      */
-    void setSaturation( int saturation );
+    void setSaturation(int saturation);
 
     /**
      * Returns the color value (also known as lumniousity, 0-255)
@@ -95,7 +95,7 @@ public:
      * 
      * @param  colorValue  The color value (0-255)
      */
-    void setColorValue( int colorValue );
+    void setColorValue(int colorValue);
 
 
     /**
@@ -108,15 +108,15 @@ protected:
      * Draws the contents of the widget on a pixmap,
      * which is used for buffering.
      */
-    virtual void drawPalette( QPixmap *pixmap );
-    virtual void resizeEvent( QResizeEvent * );
+    virtual void drawPalette(QPixmap *pixmap);
+    virtual void resizeEvent(QResizeEvent *event);
 
     /**
      * Reimplemented from KXYSelector. This drawing is
      * buffered in a pixmap here. As real drawing
      * routine, drawPalette() is used.
      */
-    virtual void drawContents( QPainter *painter );
+    virtual void drawContents(QPainter *painter);
 
 private:
 
@@ -124,7 +124,7 @@ private:
     friend class Private;
     Private * const d;
 
-    Q_DISABLE_COPY( KHueSaturationSelector )
+    Q_DISABLE_COPY(KHueSaturationSelector)
 };
 
 #endif /*KHUESATURATIONSELECT_H_*/
