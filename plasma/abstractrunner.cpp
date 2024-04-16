@@ -97,10 +97,6 @@ void AbstractRunner::performMatch(Plasma::RunnerContext &localContext)
     static const int reasonableRunTime = 1500;
     static const int fastEnoughTime = 250;
 
-    if (d->suspendMatching) {
-        return;
-    }
-
     QElapsedTimer time;
     time.restart();
 
@@ -256,27 +252,12 @@ void AbstractRunner::init()
     reloadConfiguration();
 }
 
-bool AbstractRunner::isMatchingSuspended() const
-{
-    return d->suspendMatching;
-}
-
-void AbstractRunner::suspendMatching(bool suspend)
-{
-    if (d->suspendMatching == suspend) {
-        return;
-    }
-    d->suspendMatching = suspend;
-    emit matchingSuspended(suspend);
-}
-
 AbstractRunnerPrivate::AbstractRunnerPrivate(AbstractRunner *r)
     : priority(AbstractRunner::NormalPriority),
       speed(AbstractRunner::NormalSpeed),
       blackListed(0),
       runner(r),
-      fastRuns(0),
-      suspendMatching(false)
+      fastRuns(0)
 {
 }
 

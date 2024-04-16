@@ -32,7 +32,7 @@
 #include <kservicetypetrader.h>
 #include <kstandarddirs.h>
 
-//#define MEASURE_PREPTIME
+// #define MEASURE_PREPTIME
 
 namespace Plasma
 {
@@ -44,10 +44,9 @@ namespace Plasma
 class RunnerManagerPrivate
 {
 public:
-
     RunnerManagerPrivate(RunnerManager *parent)
-      : q(parent),
-        threadPool(0),
+        : q(parent),
+        threadPool(nullptr),
         prepped(false),
         allRunnersPrepped(false),
         teardownRequested(false)
@@ -77,17 +76,6 @@ public:
         emit q->matchesChanged(context.matches());
     }
 
-    void loadConfiguration()
-    {
-        int maxThreads = QThread::idealThreadCount();
-        if (maxThreads < 0) {
-            maxThreads = 4;
-        }
-        kDebug() << "limiting runner threads to" << maxThreads;
-        //This entry allows to define a hard upper limit independent of the number of processors.
-        threadPool->setMaxThreadCount(maxThreads);
-    }
-
     void loadRunners()
     {
         KPluginInfo::List offers = RunnerManager::listRunnerInfo();
@@ -96,11 +84,10 @@ public:
         QMutableListIterator<KPluginInfo> it(offers);
         while (it.hasNext()) {
             const KPluginInfo& description = it.next();
-            // kDebug() << "Loading runner: " << service->name() << service->storageId();
-            QString tryExec = description.property("TryExec").toString();
+            const QString tryExec = description.property("TryExec").toString();
             // kDebug() << "TryExec is" << tryExec;
             if (!tryExec.isEmpty() && KStandardDirs::findExe(tryExec).isEmpty()) {
-                // we don't actually have this application!
+                kWarning() << "Runner executable missing:" << tryExec;
                 continue;
             }
 
@@ -109,7 +96,7 @@ public:
             const bool loaded = runners.contains(runnerName);
             const bool selected = allowedRunners.contains(runnerName);
 
-            // kDebug() << loadAll << description.isPluginEnabled() << noWhiteList << whiteList.contains(runnerName);
+            // kDebug() << description.isPluginEnabled() << loaded << selected;
             if (selected) {
                 if (!loaded) {
                     AbstractRunner *runner = loadInstalledRunner(description.service());
@@ -119,9 +106,8 @@ public:
                     }
                 }
             } else if (loaded) {
-                //Remove runner
                 deadRunners.insert(runners.take(runnerName));
-                kDebug() << "Removing runner: " << runnerName;
+                kDebug() << "Removing runner:" << runnerName;
             }
         }
 
@@ -146,7 +132,6 @@ public:
             kWarning() << "Failed to load runner:" << service->name() << ". error reported:" << error;
         } else {
             kDebug() << "================= loading runner:" << service->name() << "=================";
-            QObject::connect(runner, SIGNAL(matchingSuspended(bool)), q, SLOT(runnerMatchingSuspended(bool)));
             QMetaObject::invokeMethod(runner, "init");
             if (prepped) {
                 emit runner->prepare();
@@ -180,27 +165,6 @@ public:
         }
     }
 
-    void runnerMatchingSuspended(bool suspended)
-    {
-        if (suspended || !prepped || teardownRequested) {
-            return;
-        }
-
-        AbstractRunner *runner = qobject_cast<AbstractRunner *>(q->sender());
-
-        if (runner) {
-            startJob(runner);
-        }
-    }
-
-    void startJob(AbstractRunner *runner)
-    {
-        if ((runner->ignoredTypes() & context.type()) == 0) {
-            FindMatchesJob *job = new FindMatchesJob(runner, &context);
-            threadPool->start(job);
-        }
-    }
-
     RunnerManager *q;
     RunnerContext context;
     QTimer matchChangeTimer;
@@ -220,7 +184,13 @@ RunnerManager::RunnerManager(QObject *parent)
     : QObject(parent),
       d(new RunnerManagerPrivate(this))
 {
-    d->loadConfiguration();
+    int maxThreads = QThread::idealThreadCount();
+    if (maxThreads < 0) {
+        maxThreads = 4;
+    }
+    kDebug() << "limiting runner threads to" << maxThreads;
+    //This entry allows to define a hard upper limit independent of the number of processors.
+    d->threadPool->setMaxThreadCount(maxThreads);
 }
 
 RunnerManager::~RunnerManager()
@@ -256,8 +226,7 @@ AbstractRunner* RunnerManager::runner(const QString &name) const
     if (d->runners.isEmpty()) {
         d->loadRunners();
     }
-
-    return d->runners.value(name, 0);
+    return d->runners.value(name, nullptr);
 }
 
 QList<AbstractRunner *> RunnerManager::runners() const
@@ -278,7 +247,6 @@ RunnerContext* RunnerManager::searchContext() const
     return &d->context;
 }
 
-//Reordering is here so data is not reordered till strictly needed
 QList<QueryMatch> RunnerManager::matches() const
 {
     return d->context.matches();
@@ -303,17 +271,15 @@ QList<QAction*> RunnerManager::actionsForMatch(const QueryMatch &match)
     if (runner) {
         return runner->actionsForMatch(match);
     }
-
     return QList<QAction*>();
 }
 
-QMimeData * RunnerManager::mimeDataForMatch(const QString &id) const
+QMimeData* RunnerManager::mimeDataForMatch(const QString &id) const
 {
     return mimeDataForMatch(d->context.match(id));
 }
 
-
-QMimeData * RunnerManager::mimeDataForMatch(const QueryMatch &match) const
+QMimeData* RunnerManager::mimeDataForMatch(const QueryMatch &match) const
 {
     AbstractRunner *runner = match.runner();
     QMimeData *mimeData;
@@ -398,12 +364,11 @@ void RunnerManager::launchQuery(const QString &untrimmedTerm)
     // kDebug() << "runners searching for" << term;
     d->context.setQuery(term);
 
-    foreach (Plasma::AbstractRunner *r, d->runners) {
-        if (r->isMatchingSuspended()) {
-            continue;
+    foreach (Plasma::AbstractRunner *runner, d->runners) {
+        if ((runner->ignoredTypes() & d->context.type()) == 0) {
+            FindMatchesJob *job = new FindMatchesJob(runner, &d->context);
+            d->threadPool->start(job);
         }
-
-        d->startJob(r);
     }
 }
 
