@@ -82,12 +82,6 @@ void AbstractRunner::addSyntax(const RunnerSyntax &syntax)
     d->syntaxes.append(syntax);
 }
 
-void AbstractRunner::setDefaultSyntax(const RunnerSyntax &syntax)
-{
-    d->syntaxes.append(syntax);
-    d->defaultSyntax = &(d->syntaxes.last());
-}
-
 void AbstractRunner::setSyntaxes(const QList<RunnerSyntax> &syntaxes)
 {
     d->syntaxes = syntaxes;
@@ -96,11 +90,6 @@ void AbstractRunner::setSyntaxes(const QList<RunnerSyntax> &syntaxes)
 QList<RunnerSyntax> AbstractRunner::syntaxes() const
 {
     return d->syntaxes;
-}
-
-RunnerSyntax *AbstractRunner::defaultSyntax() const
-{
-    return d->defaultSyntax;
 }
 
 void AbstractRunner::performMatch(Plasma::RunnerContext &localContext)
@@ -287,7 +276,6 @@ AbstractRunnerPrivate::AbstractRunnerPrivate(AbstractRunner *r)
       blackListed(0),
       runner(r),
       fastRuns(0),
-      defaultSyntax(0),
       suspendMatching(false)
 {
 }

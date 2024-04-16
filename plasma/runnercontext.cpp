@@ -152,19 +152,16 @@ class RunnerContextPrivate : public QSharedData
         RunnerContextPrivate(RunnerContext *context)
             : QSharedData(),
               type(RunnerContext::UnknownType),
-              q(context),
-              singleRunnerQueryMode(false)
+              q(context)
         {
         }
 
         RunnerContextPrivate(const RunnerContextPrivate &p)
             : QSharedData(),
-              launchCounts(p.launchCounts),
               type(RunnerContext::None),
-              q(p.q),
-              singleRunnerQueryMode(false)
+              q(p.q)
         {
-            //kDebug() << "¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿boo yeah" << type;
+            //kDebug() << "boo yeah" << type;
         }
 
         ~RunnerContextPrivate()
@@ -173,7 +170,6 @@ class RunnerContextPrivate : public QSharedData
 
         /**
          * Determines type of query
-                    &&
          */
         void determineType()
         {
@@ -246,13 +242,11 @@ class RunnerContextPrivate : public QSharedData
         QMutex lock;
         QList<QueryMatch> matches;
         QMap<QString, const QueryMatch*> matchesById;
-        QHash<QString, int> launchCounts;
         QString term;
         QString mimeType;
         RunnerContext::Type type;
         RunnerContext * q;
         static RunnerContext s_dummyContext;
-        bool singleRunnerQueryMode;
 };
 
 RunnerContext RunnerContextPrivate::s_dummyContext;
@@ -321,8 +315,7 @@ void RunnerContext::reset()
     d->term.clear();
     d->mimeType.clear();
     d->type = UnknownType;
-    d->singleRunnerQueryMode = false;
-    //kDebug() << "match count" << d->matches.count();
+    // kDebug() << "match count" << d->matches.count();
 }
 
 void RunnerContext::setQuery(const QString &term)
@@ -374,13 +367,7 @@ bool RunnerContext::addMatches(const QString &term, const QList<QueryMatch> &mat
     }
 
     LOCK_FOR_WRITE(d)
-    foreach (QueryMatch match, matches) {
-        // Give previously launched matches a slight boost in relevance
-        // The boost smoothly saturates to 0.5;
-        if (int count = d->launchCounts.value(match.id())) {
-            match.setRelevance(match.relevance() + 0.5 * (1-exp(-count*0.3)));
-        }
-
+    foreach (const QueryMatch &match, matches) {
         d->matches.append(match);
 #ifndef NDEBUG
         if (d->matchesById.contains(match.id())) {
@@ -411,10 +398,6 @@ bool RunnerContext::addMatch(const QString &term, const QueryMatch &match)
     QueryMatch m(match); // match must be non-const to modify relevance
 
     LOCK_FOR_WRITE(d)
-
-    if (int count = d->launchCounts.value(m.id())) {
-        m.setRelevance(m.relevance() + 0.05 * count);
-    }
 
     d->matches.append(m);
     d->matchesById.insert(m.id(), &d->matches.at(d->matches.size() - 1));
@@ -534,46 +517,8 @@ QueryMatch RunnerContext::match(const QString &id) const
     return QueryMatch(0);
 }
 
-void RunnerContext::setSingleRunnerQueryMode(bool enabled)
-{
-    d->singleRunnerQueryMode = enabled;
-}
-
-bool RunnerContext::singleRunnerQueryMode() const
-{
-    return d->singleRunnerQueryMode;
-}
-
-void RunnerContext::restore(const KConfigGroup &config)
-{
-    const QStringList cfgList = config.readEntry("LaunchCounts", QStringList());
-
-    const QRegExp r("(\\d*) (.*)");
-    foreach (const QString& entry, cfgList) {
-        r.indexIn(entry);
-        int count = r.cap(1).toInt();
-        QString id = r.cap(2);
-        d->launchCounts[id] = count;
-    }
-}
-
-void RunnerContext::save(KConfigGroup &config)
-{
-    QStringList countList;
-
-    QHashIterator<QString, int> it(d->launchCounts);
-    while( it.hasNext()) {
-        it.next();
-        countList << QString("%2 %1").arg(it.key()).arg(it.value());
-    }
-
-    config.writeEntry("LaunchCounts", countList);
-    config.sync();
-}
-
 void RunnerContext::run(const QueryMatch &match)
 {
-    ++d->launchCounts[match.id()];
     match.run(*this);
 }
 

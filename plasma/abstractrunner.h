@@ -50,10 +50,6 @@ class AbstractRunnerPrivate;
  * Be aware that runners have to be thread-safe. This is due to the fact that
  * each runner is executed in its own thread for each new term. Thus, a runner
  * may be executed more than once at the same time. See match() for details.
- * To let krunner expose a global shortcut for the single runner query mode, the runner
- * must set the "X-Plasma-AdvertiseSingleRunnerMode" key to true in the .desktop file 
- * and set a default syntax. See setDefaultSyntax() for details.
- *
  */
 class PLASMA_EXPORT AbstractRunner : public QObject
 {
@@ -210,13 +206,6 @@ class PLASMA_EXPORT AbstractRunner : public QObject
         QList<RunnerSyntax> syntaxes() const;
 
         /**
-         * @return the default syntax for the runner or 0 if no default syntax has been defined
-         *
-         * @since 4.4
-         */
-        RunnerSyntax *defaultSyntax() const;
-
-        /**
          * @return true if the runner is currently busy with non-interuptable work, signaling that
          * new threads should not be created for it at this time
          * @since 4.6
@@ -349,22 +338,6 @@ class PLASMA_EXPORT AbstractRunner : public QObject
          * @since 4.3
          */
         void addSyntax(const RunnerSyntax &syntax);
-
-        /**
-         * Set @p syntax as the default syntax for the runner; the default syntax will be
-         * substituted to the empty query in single runner mode. This is also used to
-         * display to the user what this runner can understand and how it can be
-         * used.
-         * The default syntax is automatically added to the list of registered syntaxes, there
-         * is no need to add it using addSyntax.
-         * Note that there can be only one default syntax; if called more than once, the last 
-         * call will determine the default syntax.
-         * A default syntax (even trivial) is required to advertise single runner mode
-         *
-         * @param syntax the syntax to register and to set as default
-         * @since 4.4
-         **/
-        void setDefaultSyntax(const RunnerSyntax &syntax);
 
         /**
          * Sets the list of syntaxes; passing in an empty list effectively clears

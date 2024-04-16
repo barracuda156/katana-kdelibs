@@ -31,8 +31,6 @@
 #include <plasma/plasma_export.h>
 #include "abstractrunner.h"
 
-class KConfigGroup;
-
 namespace Plasma
 {
     class QueryMatch;
@@ -52,7 +50,6 @@ class PLASMA_EXPORT RunnerManager : public QObject
 
     public:
         explicit RunnerManager(QObject *parent=0);
-        explicit RunnerManager(KConfigGroup &config, QObject *parent=0);
         ~RunnerManager();
 
         /**
@@ -61,42 +58,6 @@ class PLASMA_EXPORT RunnerManager : public QObject
          * @return Pointer to the runner
          */
         AbstractRunner *runner(const QString &name) const;
-
-        /**
-         * @return the currently active "single mode" runner, or null if none
-         * @since 4.4
-         */
-        AbstractRunner *singleModeRunner() const;
-
-        /**
-         * Puts the manager into "single runner" mode using the given
-         * runner; if the runner does not exist or can not be loaded then
-         * the single runner mode will not be started and singleModeRunner()
-         * will return NULL
-         * @param id the id of the runner to use
-         * @since 4.4
-         */
-        void setSingleModeRunnerId(const QString &id);
-
-        /**
-         * @return the id of the runner to use in single mode
-         * @since 4.4
-         */
-        QString singleModeRunnerId() const;
-
-        /**
-         * @return true if the manager is set to run in single runner mode
-         * @since 4.4
-         */
-        bool singleMode() const;
-
-        /**
-         * Sets whether or not the manager is in single mode.
-         *
-         * @param singleMode true if the manager should be in single mode, false otherwise
-         * @since 4.4
-         */
-        void setSingleMode(bool singleMode);
 
         /**
          * Returns the translated name of a runner
@@ -109,13 +70,7 @@ class PLASMA_EXPORT RunnerManager : public QObject
         /**
          * @return the list of all currently loaded runners
          */
-        QList<AbstractRunner *> runners() const;
-
-        /**
-         * @return the names of all runners that advertise single query mode
-         * @since 4.4
-         */
-        QStringList singleModeAdvertisedRunnerIds() const;
+        QList<AbstractRunner*> runners() const;
 
         /**
          * Retrieves the current context
@@ -152,11 +107,6 @@ class PLASMA_EXPORT RunnerManager : public QObject
         QString query() const;
 
         /**
-         * Causes a reload of the current configuration
-         */
-        void reloadConfiguration();
-
-        /**
          * Sets a whitelist for the plugins that can be loaded
          *
          * @param plugins the plugin names of allowed runners
@@ -186,13 +136,13 @@ class PLASMA_EXPORT RunnerManager : public QObject
          * @return mime data of the specified match
          * @since 4.5
          */
-        QMimeData * mimeDataForMatch(const QueryMatch &match) const;
+        QMimeData* mimeDataForMatch(const QueryMatch &match) const;
 
         /**
          * @return mime data of the specified match
          * @since 4.5
          */
-        QMimeData * mimeDataForMatch(const QString &id) const;
+        QMimeData* mimeDataForMatch(const QString &id) const;
 
         /**
          * Returns a list of all known Runner implementations
@@ -231,31 +181,8 @@ class PLASMA_EXPORT RunnerManager : public QObject
          * matchesChanged signal.
          *
          * @param term the term we want to find matches for
-         * @param runnerId optional, if only one specific runner is to be used;
-         *               providing an id will put the manager into single runner mode
-         */
-        void launchQuery(const QString &term, const QString &runnerId);
-
-        /**
-         * Convenience version of above
          */
         void launchQuery(const QString &term);
-
-        /**
-         * Execute a query, this method will only return when the query is executed
-         * This means that the method may be dangerous as it wait a variable amount
-         * of time for the runner to finish.
-         * The runner parameter is mandatory, to avoid launching unwanted runners.
-         * @param term the term we want to find matches for
-         * @param runner the runner we will use, it is mandatory
-         * @return 0 if nothing was launched, 1 if launched.
-         */
-        bool execQuery(const QString &term, const QString &runnerName);
-
-        /**
-         * Convenience version of above
-         */
-        bool execQuery(const QString &term);
 
         /**
          * Reset the current data and stops the query

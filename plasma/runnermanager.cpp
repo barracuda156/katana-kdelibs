@@ -47,14 +47,10 @@ public:
 
     RunnerManagerPrivate(RunnerManager *parent)
       : q(parent),
-        currentSingleRunner(0),
         threadPool(0),
         prepped(false),
         allRunnersPrepped(false),
-        singleRunnerPrepped(false),
-        teardownRequested(false),
-        singleMode(false),
-        singleRunnerWasLoaded(false)
+        teardownRequested(false)
     {
         threadPool = new QThreadPool();
 
@@ -66,9 +62,6 @@ public:
 
     ~RunnerManagerPrivate()
     {
-        KConfigGroup config = configGroup();
-        context.save(config);
-
         kDebug() << "waiting for runner jobs";
         threadPool->waitForDone();
         delete threadPool;
@@ -86,110 +79,37 @@ public:
 
     void loadConfiguration()
     {
-        KConfigGroup config = configGroup();
-
-        int idealThreads = QThread::idealThreadCount();
-        if (idealThreads < 0) {
-            idealThreads = 4;
+        int maxThreads = QThread::idealThreadCount();
+        if (maxThreads < 0) {
+            maxThreads = 4;
         }
-        const int maxThreads = config.readEntry("maxThreads", idealThreads);
         kDebug() << "limiting runner threads to" << maxThreads;
         //This entry allows to define a hard upper limit independent of the number of processors.
         threadPool->setMaxThreadCount(maxThreads);
-
-        context.restore(config);
-    }
-
-    KConfigGroup configGroup()
-    {
-        return conf.isValid() ? conf : KConfigGroup(KGlobal::config(), "PlasmaRunnerManager");
-    }
-
-    void clearSingleRunner()
-    {
-        if (singleRunnerWasLoaded) {
-            delete currentSingleRunner;
-        }
-
-        currentSingleRunner = 0;
-    }
-
-    void loadSingleRunner()
-    {
-        if (!singleMode || singleModeRunnerId.isEmpty()) {
-            clearSingleRunner();
-            return;
-        }
-
-        if (currentSingleRunner) {
-            if (currentSingleRunner->id() == singleModeRunnerId) {
-                return;
-            }
-
-            clearSingleRunner();
-        }
-
-        AbstractRunner *loadedRunner = q->runner(singleModeRunnerId);
-        if (loadedRunner) {
-            singleRunnerWasLoaded = false;
-            currentSingleRunner = loadedRunner;
-            return;
-        }
-
-        KService::List offers = KServiceTypeTrader::self()->query("Plasma/Runner", QString("[X-KDE-PluginInfo-Name] == '%1'").arg(singleModeRunnerId));
-        if (!offers.isEmpty()) {
-            const KService::Ptr &service = offers[0];
-            currentSingleRunner = loadInstalledRunner(service);
-
-            if (currentSingleRunner) {
-                emit currentSingleRunner->prepare();
-                singleRunnerWasLoaded = true;
-            }
-        }
     }
 
     void loadRunners()
     {
-        KConfigGroup config = configGroup();
         KPluginInfo::List offers = RunnerManager::listRunnerInfo();
-
-        const bool loadAll = config.readEntry("loadAll", false);
-        const QStringList whiteList = config.readEntry("pluginWhiteList", QStringList());
-        const bool noWhiteList = whiteList.isEmpty();
-        KConfigGroup pluginConf;
-        if (conf.isValid()) {
-            pluginConf = KConfigGroup(&conf, "Plugins");
-        } else {
-            pluginConf = KConfigGroup(KGlobal::config(), "Plugins");
-        }
-
-        advertiseSingleRunnerIds.clear();
 
         QSet<AbstractRunner *> deadRunners;
         QMutableListIterator<KPluginInfo> it(offers);
         while (it.hasNext()) {
-            KPluginInfo &description = it.next();
-            //kDebug() << "Loading runner: " << service->name() << service->storageId();
+            const KPluginInfo& description = it.next();
+            // kDebug() << "Loading runner: " << service->name() << service->storageId();
             QString tryExec = description.property("TryExec").toString();
-            //kDebug() << "TryExec is" << tryExec;
+            // kDebug() << "TryExec is" << tryExec;
             if (!tryExec.isEmpty() && KStandardDirs::findExe(tryExec).isEmpty()) {
                 // we don't actually have this application!
                 continue;
             }
 
             const QString runnerName = description.pluginName();
-            description.load(pluginConf);
 
             const bool loaded = runners.contains(runnerName);
-            const bool selected = loadAll || (description.isPluginEnabled() && (noWhiteList || whiteList.contains(runnerName)));
+            const bool selected = allowedRunners.contains(runnerName);
 
-            const bool singleQueryModeEnabled = description.property("X-Plasma-AdvertiseSingleRunnerQueryMode").toBool();
-
-            if (singleQueryModeEnabled) {
-                advertiseSingleRunnerIds.insert(runnerName, description.name());
-            }
-
-            //kDebug() << loadAll << description.isPluginEnabled() << noWhiteList << whiteList.contains(runnerName);
+            // kDebug() << loadAll << description.isPluginEnabled() << noWhiteList << whiteList.contains(runnerName);
             if (selected) {
                 if (!loaded) {
                     AbstractRunner *runner = loadInstalledRunner(description.service());
@@ -207,11 +127,6 @@ public:
 
         if (!deadRunners.isEmpty()) {
              qDeleteAll(deadRunners);
-        }
-
-        if (!singleRunnerWasLoaded) {
-            // in case we deleted it up above
-            clearSingleRunner();
         }
 
         kDebug() << "All runners loaded, total:" << runners.count();
@@ -258,14 +173,6 @@ public:
                 allRunnersPrepped = false;
             }
 
-            if (singleRunnerPrepped) {
-                if (currentSingleRunner) {
-                    emit currentSingleRunner->teardown();
-                }
-
-                singleRunnerPrepped = false;
-            }
-
             emit q->queryFinished();
 
             prepped = false;
@@ -298,18 +205,11 @@ public:
     RunnerContext context;
     QTimer matchChangeTimer;
     QHash<QString, AbstractRunner*> runners;
-    QHash<QString, QString> advertiseSingleRunnerIds;
-    AbstractRunner* currentSingleRunner;
     QThreadPool *threadPool;
-    KConfigGroup conf;
-    QString singleModeRunnerId;
-    bool loadAll : 1;
-    bool prepped : 1;
-    bool allRunnersPrepped : 1;
-    bool singleRunnerPrepped : 1;
-    bool teardownRequested : 1;
-    bool singleMode : 1;
-    bool singleRunnerWasLoaded : 1;
+    QStringList allowedRunners;
+    bool prepped;
+    bool allRunnersPrepped;
+    bool teardownRequested;
 };
 
 /*****************************************************
@@ -323,42 +223,20 @@ RunnerManager::RunnerManager(QObject *parent)
     d->loadConfiguration();
 }
 
-RunnerManager::RunnerManager(KConfigGroup &c, QObject *parent)
-    : QObject(parent),
-      d(new RunnerManagerPrivate(this))
-{
-    // Should this be really needed? Maybe d->loadConfiguration(c) would make
-    // more sense.
-    d->conf = KConfigGroup(&c, "PlasmaRunnerManager");
-    d->loadConfiguration();
-}
-
 RunnerManager::~RunnerManager()
 {
     delete d;
 }
 
-void RunnerManager::reloadConfiguration()
-{
-    d->loadConfiguration();
-    d->loadRunners();
-}
-
 void RunnerManager::setAllowedRunners(const QStringList &runners)
 {
-    KConfigGroup config = d->configGroup();
-    config.writeEntry("pluginWhiteList", runners);
-
-    if (!d->runners.isEmpty()) {
-        // this has been called with runners already created. so let's do an instant reload
-        d->loadRunners();
-    }
+    d->allowedRunners = runners;
+    d->loadRunners();
 }
 
 QStringList RunnerManager::allowedRunners() const
 {
-    KConfigGroup config = d->configGroup();
-    return config.readEntry("pluginWhiteList", QStringList());
+    return d->allowedRunners;
 }
 
 void RunnerManager::loadRunner(const KService::Ptr service)
@@ -382,67 +260,17 @@ AbstractRunner* RunnerManager::runner(const QString &name) const
     return d->runners.value(name, 0);
 }
 
-AbstractRunner *RunnerManager::singleModeRunner() const
-{
-    return d->currentSingleRunner;
-}
-
-void RunnerManager::setSingleModeRunnerId(const QString &id)
-{
-    d->singleModeRunnerId = id;
-    d->loadSingleRunner();
-}
-
-QString RunnerManager::singleModeRunnerId() const
-{
-    return d->singleModeRunnerId;
-}
-
-bool RunnerManager::singleMode() const
-{
-    return d->singleMode;
-}
-
-void RunnerManager::setSingleMode(bool singleMode)
-{
-    if (d->singleMode == singleMode) {
-        return;
-    }
-
-
-    Plasma::AbstractRunner *prevSingleRunner = d->currentSingleRunner;
-    d->singleMode = singleMode;
-    d->loadSingleRunner();
-    d->singleMode = d->currentSingleRunner;
-
-    if (prevSingleRunner != d->currentSingleRunner) {
-        if (d->prepped) {
-            matchSessionComplete();
-
-            if (d->singleMode) {
-                setupMatchSession();
-            }
-        }
-    }
-}
-
 QList<AbstractRunner *> RunnerManager::runners() const
 {
     return d->runners.values();
-}
-
-QStringList RunnerManager::singleModeAdvertisedRunnerIds() const
-{
-    return d->advertiseSingleRunnerIds.keys();
 }
 
 QString RunnerManager::runnerName(const QString &id) const
 {
     if (runner(id)) {
         return runner(id)->name();
-    } else {
-        return d->advertiseSingleRunnerIds.value(id, QString());
     }
+    return QString();
 }
 
 RunnerContext* RunnerManager::searchContext() const
@@ -523,25 +351,18 @@ void RunnerManager::setupMatchSession()
     }
 
     d->prepped = true;
-    if (d->singleMode) {
-        if (d->currentSingleRunner) {
-            emit d->currentSingleRunner->prepare();
-            d->singleRunnerPrepped = true;
-        }
-    } else {
-        foreach (AbstractRunner *runner, d->runners) {
+    foreach (AbstractRunner *runner, d->runners) {
 #ifdef MEASURE_PREPTIME
-            QTime t;
-            t.start();
+        QTime t;
+        t.start();
 #endif
-            emit runner->prepare();
+        emit runner->prepare();
 #ifdef MEASURE_PREPTIME
-            kDebug() << t.elapsed() << runner->name();
+        kDebug() << t.elapsed() << runner->name();
 #endif
-        }
-
-        d->allRunnersPrepped = true;
     }
+
+    d->allRunnersPrepped = true;
 }
 
 void RunnerManager::matchSessionComplete()
@@ -554,35 +375,18 @@ void RunnerManager::matchSessionComplete()
     d->checkTearDown();
 }
 
-void RunnerManager::launchQuery(const QString &term)
-{
-    launchQuery(term, QString());
-}
-
-void RunnerManager::launchQuery(const QString &untrimmedTerm, const QString &runnerName)
+void RunnerManager::launchQuery(const QString &untrimmedTerm)
 {
     setupMatchSession();
     QString term = untrimmedTerm.trimmed();
 
-    setSingleModeRunnerId(runnerName);
-    setSingleMode(!runnerName.isEmpty());
-
     if (term.isEmpty()) {
-        if (d->singleMode && d->currentSingleRunner && d->currentSingleRunner->defaultSyntax()) {
-            term = d->currentSingleRunner->defaultSyntax()->exampleQueries().first().remove(QRegExp(":q:"));
-        } else {
-            reset();
-            return;
-        }
-    }
-
-    if (d->context.query() == term) {
-        // we already are searching for this!
+        reset();
         return;
     }
 
-    if (d->singleMode && !d->currentSingleRunner) {
-        reset();
+    if (d->context.query() == term) {
+        // already searching for this!
         return;
     }
 
@@ -591,71 +395,16 @@ void RunnerManager::launchQuery(const QString &untrimmedTerm, const QString &run
     }
 
     reset();
-//    kDebug() << "runners searching for" << term << "on" << runnerName;
+    // kDebug() << "runners searching for" << term;
     d->context.setQuery(term);
 
-    QHash<QString, AbstractRunner*> runable;
-
-    //if the name is not empty we will launch only the specified runner
-    if (d->singleMode && d->currentSingleRunner) {
-        runable.insert(QString(), d->currentSingleRunner);
-        d->context.setSingleRunnerQueryMode(true);
-    } else {
-        runable = d->runners;
-    }
-
-    foreach (Plasma::AbstractRunner *r, runable) {
+    foreach (Plasma::AbstractRunner *r, d->runners) {
         if (r->isMatchingSuspended()) {
             continue;
         }
 
         d->startJob(r);
     }
-}
-
-bool RunnerManager::execQuery(const QString &term)
-{
-    return execQuery(term, QString());
-}
-
-bool RunnerManager::execQuery(const QString &untrimmedTerm, const QString &runnerName)
-{
-    QString term = untrimmedTerm.trimmed();
-
-    if (term.isEmpty()) {
-        reset();
-        return false;
-    }
-
-    if (d->runners.isEmpty()) {
-        d->loadRunners();
-    }
-
-    if (d->context.query() == term) {
-        // we already are searching for this!
-        emit matchesChanged(d->context.matches());
-        return false;
-    }
-
-    reset();
-    //kDebug() << "executing query about " << term << "on" << runnerName;
-    d->context.setQuery(term);
-    AbstractRunner *r = runner(runnerName);
-
-    if (!r) {
-        //kDebug() << "failed to find the runner";
-        return false;
-    }
-
-    if ((r->ignoredTypes() & d->context.type()) != 0) {
-        //kDebug() << "ignored!";
-        return false;
-    }
-
-    r->performMatch(d->context);
-    //kDebug() << "succeeded with" << d->context.matches().count() << "results";
-    emit matchesChanged(d->context.matches());
-    return true;
 }
 
 QString RunnerManager::query() const

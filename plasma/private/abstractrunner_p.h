@@ -42,7 +42,6 @@ public:
     int fastRuns;
     QHash<QString, QAction*> actions;
     QList<RunnerSyntax> syntaxes;
-    RunnerSyntax *defaultSyntax;
     bool suspendMatching;
 };
 

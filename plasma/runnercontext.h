@@ -208,38 +208,6 @@ class PLASMA_EXPORT RunnerContext : public QObject
         QueryMatch match(const QString &id) const;
 
         /**
-         * Sets single runner query mode. Note that a call to reset() will
-         * turn off single runner query mode.
-         *
-         * @see reset()
-         * @since 4.4
-         */
-         void setSingleRunnerQueryMode(bool enabled);
-
-        /**
-         * @return true if the current query is a single runner query
-         * @since 4.4
-         */
-        bool singleRunnerQueryMode() const;
-
-        /**
-         * Sets the launch counts for the associated match ids
-         *
-         * If a runner adds a match to this context, the context will check if the
-         * match id has been launched before and increase the matches relevance
-         * correspondingly. In this manner, any front end can implement adaptive search
-         * by sorting items according to relevance.
-         *
-         * @param config the config group where launch data was stored
-         */
-        void restore(const KConfigGroup &config);
-
-        /**
-         * @param config the config group where launch data should be stored
-         */
-        void save(KConfigGroup &config);
-
-        /**
          * Run a match using the information from this context
          *
          * The context will also keep track of the number of times the match was
