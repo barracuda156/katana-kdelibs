@@ -33,7 +33,7 @@
 
 static const qreal s_roundness = 4.0;
 static const qreal s_bordersize = 0.5;
-static const qreal s_margin = 5;
+static const qreal s_margin = 4;
 
 class KMessageLabel : public QLabel
 {
@@ -127,7 +127,6 @@ void KMessageWidgetPrivate::updateColors()
             break;
         }
     }
-    // textlabel->bg = textlabel->bg.darker(60);
     textlabel->border = KColorScheme::shade(textlabel->bg, KColorScheme::DarkShade);
 }
 
@@ -168,9 +167,6 @@ KMessageWidget::KMessageWidget(QWidget *parent)
     d->messagelayout->addWidget(d->closebutton);
 
     d->mainlayout->addLayout(d->messagelayout);
-
-    d->buttonslayout = new QHBoxLayout();
-    d->mainlayout->addLayout(d->buttonslayout);
 
     d->updateColors();
 }
