@@ -258,7 +258,7 @@ RunnerContext::RunnerContext(QObject *parent)
 }
 
 //copy ctor
-RunnerContext::RunnerContext(RunnerContext &other, QObject *parent)
+RunnerContext::RunnerContext(const RunnerContext &other, QObject *parent)
     : QObject(parent)
 {
     LOCK_FOR_READ(other.d)
@@ -406,7 +406,7 @@ bool RunnerContext::addMatch(const QString &term, const QueryMatch &match)
     return true;
 }
 
-bool RunnerContext::removeMatches(const QStringList matchIdList)
+bool RunnerContext::removeMatches(const QStringList &matchIdList)
 {
     if (!isValid()) {
         return false;
@@ -443,13 +443,13 @@ bool RunnerContext::removeMatches(const QStringList matchIdList)
     return true;
 }
 
-bool RunnerContext::removeMatch(const QString matchId)
+bool RunnerContext::removeMatch(const QString &matchId)
 {
     if (!isValid()) {
         return false;
     }
     LOCK_FOR_READ(d)
-    const QueryMatch* match = d->matchesById.value(matchId, 0);
+    const QueryMatch* match = d->matchesById.value(matchId, nullptr);
     UNLOCK(d)
     if (!match) {
         return false;
@@ -505,14 +505,14 @@ QList<QueryMatch> RunnerContext::matches() const
 QueryMatch RunnerContext::match(const QString &id) const
 {
     LOCK_FOR_READ(d)
-    const QueryMatch *match = d->matchesById.value(id, 0);
+    const QueryMatch *match = d->matchesById.value(id, nullptr);
     UNLOCK(d)
 
     if (match) {
         return *match;
     }
 
-    return QueryMatch(0);
+    return QueryMatch(nullptr);
 }
 
 void RunnerContext::run(const QueryMatch &match)
