@@ -367,7 +367,7 @@ void RunnerManager::launchQuery(const QString &untrimmedTerm)
     foreach (Plasma::AbstractRunner *runner, d->runners) {
         if ((runner->ignoredTypes() & d->context.type()) == 0) {
             FindMatchesJob *job = new FindMatchesJob(runner, &d->context);
-            d->threadPool->start(job);
+            d->threadPool->start(job, static_cast<int>(runner->priority()));
         }
     }
 }
