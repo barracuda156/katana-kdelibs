@@ -39,10 +39,6 @@ public:
       :ThemedWidgetInterface<GroupBox>(groupBox)
     {
     }
-
-    ~GroupBoxPrivate()
-    {
-    }
 };
 
 GroupBox::GroupBox(QGraphicsWidget *parent)

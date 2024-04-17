@@ -50,7 +50,27 @@ class SignalPlotterPrivate
 {
 public:
     SignalPlotterPrivate()
-        : svgBackground(nullptr)
+        : samples(0),
+        bezierCurveOffset(0),
+        scaledBy(1),
+        verticalMin(0.0),
+        verticalMax(0.0),
+        niceVertMin(0.0),
+        niceVertMax(0.0),
+        niceVertRange(0),
+        verticalLinesOffset(0),
+        verticalLinesDistance(30),
+        showHorizontalLines(true),
+        horizontalScale(1),
+        horizontalLinesCount(5),
+        svgBackground(nullptr),
+        fillPlots(true),
+        showLabels(true),
+        stackPlots(true),
+        useAutoRange(true),
+        showThinFrame(true),
+        showVerticalLines(true),
+        verticalLinesScroll(true)
     {
     }
 
@@ -113,28 +133,6 @@ SignalPlotter::SignalPlotter(QGraphicsItem *parent)
     : QGraphicsWidget(parent),
       d(new SignalPlotterPrivate)
 {
-    d->bezierCurveOffset = 0;
-    d->samples = 0;
-    d->verticalMin = d->verticalMax = 0.0;
-    d->niceVertMin = d->niceVertMax = 0.0;
-    d->niceVertRange = 0;
-    d->useAutoRange = true;
-    d->scaledBy = 1;
-    d->showThinFrame = true;
-
-    d->showVerticalLines = true;
-    d->verticalLinesDistance = 30;
-    d->verticalLinesScroll = true;
-    d->verticalLinesOffset = 0;
-    d->horizontalScale = 1;
-
-    d->showHorizontalLines = true;
-    d->horizontalLinesCount = 5;
-
-    d->showLabels = true;
-    d->stackPlots = true;
-    d->fillPlots = true;
-
     // Anything smaller than this does not make sense.
     setMinimumSize(QSizeF(KIconLoader::SizeSmall, KIconLoader::SizeSmall));
 
