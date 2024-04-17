@@ -251,6 +251,7 @@ install(
     KTempDir
     KTemporaryFile
     KTextEdit
+    KThreadPool
     KTimeEdit
     KTimeZone
     KTimerDialog

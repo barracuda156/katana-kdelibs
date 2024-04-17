@@ -18,13 +18,9 @@
  */
 
 #include "runnerjobs_p.h"
-
-#include <QTimer>
-
-#include <kdebug.h>
-
 #include "runnermanager.h"
 #include "plasma/querymatch.h"
+#include "kdebug.h"
 
 namespace Plasma {
 
@@ -34,7 +30,7 @@ namespace Plasma {
 
 FindMatchesJob::FindMatchesJob(Plasma::AbstractRunner *runner,
                                Plasma::RunnerContext *context)
-    : QRunnable(),
+    : QThread(runner),
       m_context(*context, 0),
       m_runner(runner)
 {

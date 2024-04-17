@@ -25,12 +25,12 @@
 
 #include <QTimer>
 #include <QCoreApplication>
-#include <QThreadPool>
 
-#include <kdebug.h>
-#include <kplugininfo.h>
-#include <kservicetypetrader.h>
-#include <kstandarddirs.h>
+#include "kplugininfo.h"
+#include "kservicetypetrader.h"
+#include "kstandarddirs.h"
+#include "kthreadpool.h"
+#include "kdebug.h"
 
 // #define MEASURE_PREPTIME
 
@@ -51,7 +51,7 @@ public:
         allRunnersPrepped(false),
         teardownRequested(false)
     {
-        threadPool = new QThreadPool();
+        threadPool = new KThreadPool(q);
 
         matchChangeTimer.setSingleShot(true);
 
@@ -165,11 +165,34 @@ public:
         }
     }
 
+    static QThread::Priority threadPriority(AbstractRunner::Priority priority)
+    {
+        switch (priority) {
+            case AbstractRunner::LowestPriority: {
+                return QThread::LowestPriority;
+            }
+            case AbstractRunner::LowPriority: {
+                return QThread::LowPriority;
+            }
+            case AbstractRunner::NormalPriority: {
+                return QThread::NormalPriority;
+            }
+            case AbstractRunner::HighPriority: {
+                return QThread::HighPriority;
+            }
+            case AbstractRunner::HighestPriority: {
+                return QThread::HighestPriority;
+            }
+        }
+        kWarning() << "unhandled runner priority" << priority;
+        return QThread::InheritPriority;
+    }
+
     RunnerManager *q;
     RunnerContext context;
     QTimer matchChangeTimer;
     QHash<QString, AbstractRunner*> runners;
-    QThreadPool *threadPool;
+    KThreadPool *threadPool;
     QStringList allowedRunners;
     bool prepped;
     bool allRunnersPrepped;
@@ -367,7 +390,7 @@ void RunnerManager::launchQuery(const QString &untrimmedTerm)
     foreach (Plasma::AbstractRunner *runner, d->runners) {
         if ((runner->ignoredTypes() & d->context.type()) == 0) {
             FindMatchesJob *job = new FindMatchesJob(runner, &d->context);
-            d->threadPool->start(job, static_cast<int>(runner->priority()));
+            d->threadPool->start(job, RunnerManagerPrivate::threadPriority(runner->priority()));
         }
     }
 }

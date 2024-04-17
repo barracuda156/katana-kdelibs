@@ -18,10 +18,9 @@
 
 #include "khttp.h"
 #include "klocale.h"
+#include "kthreadpool.h"
 #include "kdebug.h"
 
-#include <QRunnable>
-#include <QThreadPool>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QNetworkInterface>
@@ -380,10 +379,11 @@ void KHTTPHeadersParser::parseHeaders(const QByteArray &header, const bool authe
     // qDebug() << Q_FUNC_INFO << m_method << m_path << m_version << m_authuser << m_authpass;
 }
 
-class KHTTPRunnable : public QRunnable
+class KHTTPThread : public QThread
 {
+    Q_OBJECT
 public:
-    KHTTPRunnable(QFile *file, QTcpSocket *client, QAtomicInt *ref);
+    KHTTPThread(QObject *parent, QFile *file, QTcpSocket *client, QAtomicInt *ref);
 
 protected:
     void run() final;
@@ -394,15 +394,15 @@ private:
     QAtomicInt* m_ref;
 };
 
-KHTTPRunnable::KHTTPRunnable(QFile *file, QTcpSocket *client, QAtomicInt *ref)
-    : QRunnable(),
+KHTTPThread::KHTTPThread(QObject *parent, QFile *file, QTcpSocket *client, QAtomicInt *ref)
+    : QThread(parent),
     m_file(file),
     m_client(client),
     m_ref(ref)
 {
 }
 
-void KHTTPRunnable::run()
+void KHTTPThread::run()
 {
     QByteArray httpbuffer(KHTTP_BUFFSIZE, '\0');
     qint64 httpfileresult = m_file->read(httpbuffer.data(), httpbuffer.size());
@@ -460,7 +460,7 @@ private:
     void writeResponse(const ushort httpstatus, const bool authenticate, QTcpSocket *client, const bool get);
 
     QAtomicInt m_ref;
-    QThreadPool* m_filepool;
+    KThreadPool* m_filepool;
 };
 
 KHTTPPrivate::KHTTPPrivate(QObject *parent)
@@ -472,7 +472,7 @@ KHTTPPrivate::KHTTPPrivate(QObject *parent)
     serverid = QCoreApplication::applicationName();
 
     // NOTE: the default thread limit is number of CPU cores online
-    m_filepool = new QThreadPool(this);
+    m_filepool = new KThreadPool(this);
 
     // NOTE: the default maximum for pending connections is 30
     tcpserver = new QTcpServer(this);
@@ -567,7 +567,7 @@ void KHTTPPrivate::slotNewConnection()
         client->flush();
 
         if (get) {
-            m_filepool->start(new KHTTPRunnable(httpfile, client, &m_ref));
+            m_filepool->start(new KHTTPThread(m_filepool, httpfile, client, &m_ref));
         } else {
             kDebug(s_khttpdebugarea) << "done with client" << client->peerAddress() << client->peerPort();
             client->disconnectFromHost();

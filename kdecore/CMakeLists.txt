@@ -72,6 +72,7 @@ set(kdecore_LIB_SRCS
     kernel/kglobal.cpp
     kernel/kcomponentdata.cpp
     kernel/kstandarddirs.cpp
+    kernel/kthreadpool.cpp
     services/kmimetypefactory.cpp
     services/kmimemagicrule.cpp
     services/kmimetypetrader.cpp
@@ -218,6 +219,7 @@ install(
     kernel/kglobal.h
     kernel/kcomponentdata.h
     kernel/kstandarddirs.h
+    kernel/kthreadpool.h
     services/kmimetype.h
     services/kmimetypetrader.h
     services/kservice.h
