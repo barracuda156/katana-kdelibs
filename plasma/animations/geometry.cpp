@@ -27,7 +27,7 @@ namespace Plasma
 {
 
 GeometryAnimation::GeometryAnimation(QObject *parent)
-    : EasingAnimation(parent),
+    : Animation(parent),
     m_startGeometry(-1, -1, -1, -1)
 {
 }
@@ -70,19 +70,26 @@ void GeometryAnimation::updateState(QAbstractAnimation::State newState, QAbstrac
     }
 }
 
-void GeometryAnimation::updateEffectiveTime(int currentTime)
+void GeometryAnimation::updateCurrentTime(int currentTime)
 {
     QGraphicsWidget *w = targetWidget();
     if (w) {
-        const qreal delta = currentTime / qreal(duration());
+        const qreal delta = easingCurve().valueForProgress(qreal(currentTime) / qreal(duration()));
 
         QRectF newGeo;
-
-        newGeo.moveTopLeft(QPointF(m_startGeometry.left()*(1-delta) + m_targetGeometry.left()*(delta),
-                        m_startGeometry.top()*(1-delta) + m_targetGeometry.top()*(delta)));
+        newGeo.moveTopLeft(
+            QPointF(
+                m_startGeometry.left()*(1-delta) + m_targetGeometry.left()*(delta),
+                m_startGeometry.top()*(1-delta) + m_targetGeometry.top()*(delta)
+            )
+        );
         if (m_startGeometry.size() != m_targetGeometry.size()) {
-            newGeo.setSize(QSizeF(m_startGeometry.width()*(1-delta) + m_targetGeometry.width()*(delta),
-                    m_startGeometry.height()*(1-delta) + m_targetGeometry.height()*(delta)));
+            newGeo.setSize(
+                QSizeF(
+                    m_startGeometry.width()*(1-delta) + m_targetGeometry.width()*(delta),
+                    m_startGeometry.height()*(1-delta) + m_targetGeometry.height()*(delta)
+                )
+            );
         } else {
             newGeo.setSize(m_targetGeometry.size());
         }

@@ -26,10 +26,9 @@
 namespace Plasma
 {
 
-
 AnimationPrivate::AnimationPrivate()
     : easingCurve(QEasingCurve::Linear),
-      duration(250)
+    duration(250)
 {
 }
 

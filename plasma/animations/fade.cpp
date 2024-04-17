@@ -18,22 +18,17 @@
  */
 
 #include "fade_p.h"
+#include "kdebug.h"
 
 #include <QRect>
-
-#include <kdebug.h>
 
 namespace Plasma
 {
 
 FadeAnimation::FadeAnimation(QObject *parent)
-    : EasingAnimation(parent),
+    : Animation(parent),
     m_startOpacity(0),
     m_targetOpacity(1)
-{
-}
-
-FadeAnimation::~FadeAnimation()
 {
 }
 
@@ -71,11 +66,11 @@ void FadeAnimation::updateState(QAbstractAnimation::State newState, QAbstractAni
     }
 }
 
-void FadeAnimation::updateEffectiveTime(int currentTime)
+void FadeAnimation::updateCurrentTime(int currentTime)
 {
     QGraphicsWidget *w = targetWidget();
     if (w) {
-        qreal delta = currentTime / qreal(duration());
+        qreal delta = easingCurve().valueForProgress(qreal(currentTime) / qreal(duration()));
         delta *= m_startOpacity - m_targetOpacity;
         w->setOpacity(m_startOpacity - delta);
     }

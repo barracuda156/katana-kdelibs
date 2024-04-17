@@ -79,18 +79,18 @@ public:
      * \ref Animator::create factory).
      *
      */
-    explicit Animation(QObject* parent = 0);
+    explicit Animation(QObject *parent = nullptr);
 
     /**
      * Destructor.
      */
-    ~Animation() = 0;
+    virtual ~Animation();
 
     /**
      * Set the widget on which the animation is to be performed.
      * @param widget The QGraphicsWidget to be animated.
      */
-    void setTargetWidget(QGraphicsWidget* widget);
+    void setTargetWidget(QGraphicsWidget *widget);
 
     /**
      * @return The widget that the animation will be performed upon

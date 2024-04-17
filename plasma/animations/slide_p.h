@@ -24,9 +24,7 @@
 #ifndef PLASMA_ANIMATIONS_SLIDE_P_H
 #define PLASMA_ANIMATIONS_SLIDE_P_H
 
-#include "plasma/animations/easinganimation_p.h"
-#include "plasma/plasma_export.h"
-#include "plasma/plasma.h"
+#include "animations/animation.h"
 
 namespace Plasma
 {
@@ -38,7 +36,7 @@ namespace Plasma
  * Effect that moves the object a specific distance in a given direction. The
  * object is optionally made invisible at the beginning or at the end.
  */
-class SlideAnimation : public EasingAnimation
+class SlideAnimation : public Animation
 {
     Q_OBJECT
     Q_PROPERTY(qreal distance READ distance WRITE setDistance)
@@ -46,7 +44,7 @@ class SlideAnimation : public EasingAnimation
     Q_PROPERTY(QPointF distancePointF READ distancePointF WRITE setDistancePointF)
 
 public:
-    explicit SlideAnimation(QObject *parent = 0, MovementDirection direction = MoveUp, qreal distance = 0);
+    explicit SlideAnimation(QObject *parent = nullptr, MovementDirection direction = MoveUp, qreal distance = 0);
 
     /**
      * Set the animation distance
@@ -74,7 +72,7 @@ public:
     Animation::MovementDirection movementDirection() const;
 
 protected:
-    void updateEffectiveTime(int currentTime);
+    void updateCurrentTime(int currentTime);
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
 
 private:

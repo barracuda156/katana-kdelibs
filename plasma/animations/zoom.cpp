@@ -18,15 +18,14 @@
  */
 
 #include "zoom_p.h"
-
-#include <kdebug.h>
+#include "kdebug.h"
 
 namespace Plasma
 {
 
 ZoomAnimation::ZoomAnimation(QObject *parent)
-    : EasingAnimation(parent),
-      m_zoom(0)
+    : Animation(parent),
+    m_zoom(0)
 {
 }
 
@@ -55,11 +54,11 @@ void ZoomAnimation::updateState(QAbstractAnimation::State newState, QAbstractAni
     }
 }
 
-void ZoomAnimation::updateEffectiveTime(int currentTime)
+void ZoomAnimation::updateCurrentTime(int currentTime)
 {
     QGraphicsWidget *w = targetWidget();
     if (w) {
-        qreal delta = currentTime / qreal(duration());
+        qreal delta = easingCurve().valueForProgress(qreal(currentTime) / qreal(duration()));
         if (m_zoom != 1) {
             delta = (1 - m_zoom) * delta;
             w->setScale(1 - delta);

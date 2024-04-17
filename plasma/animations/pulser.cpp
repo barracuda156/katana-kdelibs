@@ -20,8 +20,6 @@
 
 #include <QEvent>
 #include <QGraphicsWidget>
-#include <QParallelAnimationGroup>
-#include <QPropertyAnimation>
 #include <QWeakPointer>
 
 #include <kdebug.h>
@@ -30,7 +28,7 @@ namespace Plasma
 {
 
 PulseAnimation::PulseAnimation(QObject *parent)
-    : EasingAnimation(parent),
+    : Animation(parent),
     m_zvalue(0),
     m_scale(0),
     m_opacity(0),
@@ -111,16 +109,17 @@ void PulseAnimation::updateState(QAbstractAnimation::State newState, QAbstractAn
     }
 }
 
-void PulseAnimation::updateEffectiveTime(int currentTime)
+void PulseAnimation::updateCurrentTime(int currentTime)
 {
     if (m_under.data()) {
-        qreal delta = currentTime / qreal(duration());
+        const qreal progress = easingCurve().valueForProgress(qreal(currentTime) / qreal(duration()));
+        qreal delta = progress;
 
         m_under.data()->setScale(delta);
         delta = (1 - m_endScale) * delta;
         m_under.data()->setScale(1 - delta);
 
-        delta = currentTime / qreal(duration());
+        delta = progress;
         if (direction() == Forward) {
             m_under.data()->setOpacity(1.0 - delta);
         } else if (direction() == Backward) {

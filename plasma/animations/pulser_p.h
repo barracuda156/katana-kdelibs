@@ -23,8 +23,7 @@
 #ifndef PLASMA_ANIMATIONS_PULSER_P_H
 #define PLASMA_ANIMATIONS_PULSER_P_H
 
-#include <plasma/animations/easinganimation_p.h>
-#include <plasma/plasma_export.h>
+#include "animations/animation.h"
 
 namespace Plasma
 {
@@ -38,14 +37,14 @@ class WidgetSnapShot;
  * Effect that pulses a shadow copy of any QGraphicsWidget making
  * it more translucent and bigger along the time until it vanishes.
  */
-class PulseAnimation : public EasingAnimation
+class PulseAnimation : public Animation
 {
     Q_OBJECT
     Q_PROPERTY(qreal targetScale READ targetScale WRITE setTargetScale)
 
 public:
     /** Default Constructor */
-    explicit PulseAnimation(QObject *parent = 0);
+    explicit PulseAnimation(QObject *parent = nullptr);
 
     /** Destructor */
     ~PulseAnimation();
@@ -75,7 +74,7 @@ public:
 
 protected:
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
-    void updateEffectiveTime(int currentTime);
+    void updateCurrentTime(int currentTime);
     void setCopy();
 
 private:

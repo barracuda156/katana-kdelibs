@@ -24,8 +24,7 @@
 #ifndef PLASMA_ANIMATIONS_GEOMETRY_P_H
 #define PLASMA_ANIMATIONS_GEOMETRY_P_H
 
-#include <plasma/animations/easinganimation_p.h>
-#include <plasma/plasma_export.h>
+#include "animations/animation.h"
 
 namespace Plasma
 {
@@ -36,7 +35,7 @@ namespace Plasma
  * Use this class when you want to change the geometry of an QGraphicsWidget
  * in an animated way (you should at least set the target geometry).
  */
-class GeometryAnimation : public EasingAnimation
+class GeometryAnimation : public Animation
 {
     Q_OBJECT
     Q_PROPERTY(QRectF startGeometry READ startGeometry WRITE setStartGeometry)
@@ -44,7 +43,7 @@ class GeometryAnimation : public EasingAnimation
 
 public:
     /** Default constructor */
-    explicit GeometryAnimation(QObject *parent = 0);
+    explicit GeometryAnimation(QObject *parent = nullptr);
 
     /**
      * Access the initial geometry of animated widget.
@@ -54,6 +53,7 @@ public:
      * @return Start geometry.
      */
     QRectF startGeometry() const;
+
     /**
      * Set the initial geometry of animated widget.
      *
@@ -80,7 +80,7 @@ public:
 
 protected:
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
-    void updateEffectiveTime(int currentTime);
+    void updateCurrentTime(int currentTime);
 
 private:
     /** Initial geometry */

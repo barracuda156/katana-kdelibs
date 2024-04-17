@@ -25,8 +25,7 @@
 #ifndef PLASMA_ANIMATIONS_PIXMAPTRANSITION_P_H
 #define PLASMA_ANIMATIONS_PIXMAPTRANSITION_P_H
 
-#include <plasma/animations/easinganimation_p.h>
-#include <plasma/plasma_export.h>
+#include "animations/animation.h"
 
 namespace Plasma
 {
@@ -37,7 +36,7 @@ namespace Plasma
  *
  * Effect that paints a transition between two pixmaps
  */
-class PixmapTransition : public EasingAnimation
+class PixmapTransition : public Animation
 {
     Q_OBJECT
     Q_PROPERTY(QPixmap startPixmap READ startPixmap WRITE setStartPixmap)
@@ -46,7 +45,7 @@ class PixmapTransition : public EasingAnimation
     Q_PROPERTY(QPixmap currentPixmap READ currentPixmap)
 
 public:
-    explicit PixmapTransition(QObject *parent = 0);
+    explicit PixmapTransition(QObject *parent = nullptr);
 
     /**
      * @return The first pixmap of the animation
@@ -56,7 +55,7 @@ public:
     /**
      * Set the first pixmap of the animation
      */
-    void setStartPixmap(const QPixmap &);
+    void setStartPixmap(const QPixmap &pixmap);
 
     /**
      * The pixmap the animation will evolve to
@@ -66,7 +65,7 @@ public:
     /**
      * Set the pixmap the animation will evolve to
      */
-    void setTargetPixmap(const QPixmap &);
+    void setTargetPixmap(const QPixmap &pixmap);
 
     /**
      * @return the current pixmap
@@ -87,7 +86,7 @@ public:
 
 protected:
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
-    void updateEffectiveTime(int currentTime);
+    void updateCurrentTime(int currentTime);
 
 private:
     QPixmap alignedTargetPixmap() const;

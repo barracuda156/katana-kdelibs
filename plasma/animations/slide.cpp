@@ -18,15 +18,15 @@
  */
 
 #include "slide_p.h"
+#include "kdebug.h"
 
-#include <QtCore/qpoint.h>
-#include <kdebug.h>
+#include <QPoint>
 
 namespace Plasma
 {
 
 SlideAnimation::SlideAnimation(QObject *parent, MovementDirection direction, qreal distance)
-    : EasingAnimation(parent)
+    : Animation(parent)
 {
     setMovementDirection(direction);
     setDistance(distance);
@@ -63,11 +63,11 @@ Animation::MovementDirection SlideAnimation::movementDirection() const
     return m_animDirection;
 }
 
-void SlideAnimation::updateEffectiveTime(int currentTime)
+void SlideAnimation::updateCurrentTime(int currentTime)
 {
     QGraphicsWidget *w = targetWidget();
     if (w && state() == QAbstractAnimation::Running) {
-        const qreal delta = currentTime / qreal(duration());
+        const qreal delta = easingCurve().valueForProgress(qreal(currentTime) / qreal(duration()));
         w->setPos(m_startPos * (1-delta) + (m_targetPos * delta));
     }
 }

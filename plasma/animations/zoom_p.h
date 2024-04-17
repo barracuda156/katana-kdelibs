@@ -24,8 +24,7 @@
 #ifndef PLASMA_ANIMATIONS_ZOOM_P_H
 #define PLASMA_ANIMATIONS_ZOOM_P_H
 
-#include <plasma/animations/easinganimation_p.h>
-#include <plasma/plasma_export.h>
+#include "animations/animation.h"
 
 namespace Plasma
 {
@@ -35,20 +34,20 @@ namespace Plasma
  * @short Zoom Animation
  *
  */
-class ZoomAnimation : public EasingAnimation
+class ZoomAnimation : public Animation
 {
     Q_OBJECT
     Q_PROPERTY(qreal zoom READ zoom WRITE setZoom)
 
 public:
-    explicit ZoomAnimation(QObject *parent = 0);
+    explicit ZoomAnimation(QObject *parent = nullptr);
 
     qreal zoom() const;
     void setZoom(qreal);
 
 protected:
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
-    void updateEffectiveTime(int currentTime);
+    void updateCurrentTime(int currentTime);
 
 private:
     qreal m_zoom;
