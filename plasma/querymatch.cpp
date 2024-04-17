@@ -39,12 +39,11 @@ class QueryMatchPrivate : public QSharedData
     public:
         QueryMatchPrivate(AbstractRunner *r)
             : QSharedData(),
-              runner(r),
-              type(QueryMatch::ExactMatch),
-              relevance(.7),
-              selAction(0),
-              enabled(true),
-              idSetByData(false)
+            runner(r),
+            relevance(0.7),
+            selAction(nullptr),
+            enabled(true),
+            idSetByData(false)
         {
         }
 
@@ -53,7 +52,6 @@ class QueryMatchPrivate : public QSharedData
         {
             std::lock_guard<std::recursive_mutex> lock(other.mutex);
             runner = other.runner;
-            type = other.type;
             relevance = other.relevance;
             selAction = other.selAction;
             enabled = other.enabled;
@@ -65,13 +63,8 @@ class QueryMatchPrivate : public QSharedData
             data = other.data;
         }
 
-        ~QueryMatchPrivate()
-        {
-        }
-
         mutable std::recursive_mutex mutex;
         QWeakPointer<AbstractRunner> runner;
-        QueryMatch::Type type;
         QString id;
         QString text;
         QString subtext;
@@ -79,14 +72,14 @@ class QueryMatchPrivate : public QSharedData
         QVariant data;
         qreal relevance;
         QAction *selAction;
-        bool enabled : 1;
-        bool idSetByData : 1;
+        bool enabled;
+        bool idSetByData;
 };
 
 QueryMatch::QueryMatch(AbstractRunner *runner)
     : d(new QueryMatchPrivate(runner))
 {
-//    kDebug() << "new match created";
+    // kDebug() << "new match created";
 }
 
 QueryMatch::QueryMatch(const QueryMatch &other)
@@ -100,7 +93,7 @@ QueryMatch::~QueryMatch()
 
 bool QueryMatch::isValid() const
 {
-    return d->runner != 0;
+    return d->runner != nullptr;
 }
 
 QString QueryMatch::id() const
@@ -108,18 +101,7 @@ QString QueryMatch::id() const
     if (d->id.isEmpty() && d->runner) {
         return d->runner.data()->id();
     }
-
     return d->id;
-}
-
-void QueryMatch::setType(Type type)
-{
-    d->type = type;
-}
-
-QueryMatch::Type QueryMatch::type() const
-{
-    return d->type;
 }
 
 void QueryMatch::setRelevance(qreal relevance)
@@ -225,21 +207,17 @@ void QueryMatch::setSelectedAction(QAction *action)
 
 bool QueryMatch::operator<(const QueryMatch &other) const
 {
-    if (d->type == other.d->type) {
-        if (isEnabled() != other.isEnabled()) {
-            return other.isEnabled();
-        }
-
-        if (d->relevance != other.d->relevance) {
-            return d->relevance < other.d->relevance;
-        }
-
-        // when resorting to sort by alpha, we want the
-        // reverse sort order!
-        return d->text > other.d->text;
+    if (isEnabled() != other.isEnabled()) {
+        return other.isEnabled();
     }
 
-    return d->type < other.d->type;
+    if (d->relevance != other.d->relevance) {
+        return d->relevance < other.d->relevance;
+    }
+
+    // when resorting to sort by alpha, we want the
+    // reverse sort order!
+    return d->text > other.d->text;
 }
 
 QueryMatch &QueryMatch::operator=(const QueryMatch &other)
@@ -247,7 +225,6 @@ QueryMatch &QueryMatch::operator=(const QueryMatch &other)
     if (d != other.d) {
         d = other.d;
     }
-
     return *this;
 }
 

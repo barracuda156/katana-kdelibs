@@ -45,28 +45,7 @@ class PLASMA_EXPORT QueryMatch
 {
     public:
         /**
-         * The type of match. Value is important here as it is used for sorting
-         */
-        enum Type {
-            NoMatch = 0,         /**< Null match */
-            CompletionMatch = 10, /**< Possible completion for the data of the query */
-            PossibleMatch = 30,   /**< Something that may match the query */
-            InformationalMatch = 50, /**< A purely informational, non-actionable match,
-                                       such as the answer to a question or calculation*/
-            HelperMatch = 70, /**< A match that represents an action not directly related
-                                 to activating the given search term, such as a search
-                                 in an external tool or a command learning trigger. Helper
-                                 matches tend to be generic to the query and should not
-                                 be autoactivated just because the user hits "Enter"
-                                 while typing. They must be explicitly selected to
-                                 be activated, but unlike InformationalMatch cause
-                                 an action to be triggered. */
-            ExactMatch = 100 /**< An exact match to the query */
-        };
-
-        /**
-         * Constructs a PossibleMatch associated with a given RunnerContext
-         * and runner.
+         * Constructs a match associated with a given runner.
          *
          * @param runner the runner this match belongs to
          */
@@ -78,6 +57,7 @@ class PLASMA_EXPORT QueryMatch
         QueryMatch(const QueryMatch &other);
 
         ~QueryMatch();
+
         QueryMatch &operator=(const QueryMatch &other);
         bool operator==(const QueryMatch &other) const;
         bool operator!=(const QueryMatch &other) const;
@@ -86,23 +66,13 @@ class PLASMA_EXPORT QueryMatch
         /**
          * @return the runner associated with this action
          */
-        AbstractRunner *runner() const;
+        AbstractRunner* runner() const;
 
         /**
          * @return true if the match is valid and can therefore be run,
          *         an invalid match does not have an associated AbstractRunner
          */
         bool isValid() const;
-
-        /**
-         * Sets the type of match this action represents.
-         */
-        void setType(Type type);
-
-        /**
-         * The type of action this is. Defaults to PossibleMatch.
-         */
-        Type type() const;
 
         /**
          * Sets the relevance of this action for the search

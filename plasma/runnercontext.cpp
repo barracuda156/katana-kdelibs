@@ -350,7 +350,7 @@ QString RunnerContext::mimeType() const
 
 bool RunnerContext::isValid() const
 {
-    // if our qptr is dirty, we aren't useful anymore
+    // if the qptr is dirty, it is not valid
     LOCK_FOR_READ(d)
     const bool valid = (d->q != &(d->s_dummyContext));
     UNLOCK(d)
@@ -362,7 +362,7 @@ bool RunnerContext::addMatches(const QString &term, const QList<QueryMatch> &mat
     Q_UNUSED(term)
 
     if (matches.isEmpty() || !isValid()) {
-       //Bail out if the query is empty or the qptr is dirty
+        // bail out if the query is empty or the qptr is dirty
         return false;
     }
 
@@ -377,7 +377,7 @@ bool RunnerContext::addMatches(const QString &term, const QList<QueryMatch> &mat
         d->matchesById.insert(match.id(), &d->matches.at(d->matches.size() - 1));
     }
     UNLOCK(d);
-    //kDebug()<< "add matches";
+    // kDebug()<< "add matches";
     // A copied searchContext may share the d pointer,
     // we always want to sent the signal of the object that created
     // the d pointer
@@ -391,7 +391,7 @@ bool RunnerContext::addMatch(const QString &term, const QueryMatch &match)
     Q_UNUSED(term)
 
     if (!isValid()) {
-        // Bail out if the qptr is dirty
+        // bail out if the qptr is dirty
         return false;
     }
 
