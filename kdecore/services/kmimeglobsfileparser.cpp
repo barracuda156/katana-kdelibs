@@ -27,10 +27,6 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QFile>
 
-KMimeGlobsFileParser::KMimeGlobsFileParser()
-{
-}
-
 KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs()
 {
     const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QString::fromLatin1("globs2"));

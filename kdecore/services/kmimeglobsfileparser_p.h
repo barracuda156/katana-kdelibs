@@ -32,8 +32,6 @@
 class KMimeGlobsFileParser
 {
 public:
-    explicit KMimeGlobsFileParser();
-
     class AllGlobs;
 
     // Read globs (patterns) files
@@ -94,9 +92,6 @@ public:
     };
 
     static bool parseGlobFile(QIODevice *file, AllGlobs &globs);
-
-private:
-    AllGlobs m_mimeTypeGlobs;
 };
 
 #endif /* KMIMEFILEPARSER_H */
