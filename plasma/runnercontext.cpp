@@ -395,12 +395,10 @@ bool RunnerContext::addMatch(const QString &term, const QueryMatch &match)
         return false;
     }
 
-    QueryMatch m(match); // match must be non-const to modify relevance
-
     LOCK_FOR_WRITE(d)
 
-    d->matches.append(m);
-    d->matchesById.insert(m.id(), &d->matches.at(d->matches.size() - 1));
+    d->matches.append(match);
+    d->matchesById.insert(match.id(), &d->matches.at(d->matches.size() - 1));
     UNLOCK(d);
     //kDebug()<< "added match" << match->text();
     emit d->q->matchesChanged();
