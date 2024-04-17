@@ -33,27 +33,8 @@ class KMimeFileParserTest : public QObject
     Q_OBJECT
 public:
     KMimeFileParserTest() {}
-private:
 
 private Q_SLOTS:
-    void initTestCase()
-    {
-    }
-
-    void testParseGlobsFile()
-    {
-        const QString ext1 = "*.kmimefileparserunittest";
-        const QString ext2 = "*.kmimefileparserunittest2";
-
-        QByteArray testFile = "# Test data\ntext/plain:*.kmimefileparserunittest\ntext/plain:*.kmimefileparserunittest2";
-        QBuffer buf(&testFile);
-        KMimeGlobsFileParser::AllGlobs mimeTypeGlobs;
-        QVERIFY(KMimeGlobsFileParser::parseGlobFile(&buf, KMimeGlobsFileParser::OldGlobs, mimeTypeGlobs));
-        KMimeGlobsFileParser::PatternsMap patMap = mimeTypeGlobs.patternsMap();
-        QCOMPARE(patMap.count(), 1);
-        QVERIFY(patMap.contains("text/plain"));
-    }
-
     void testParseGlobs2File()
     {
         const QString ext1 = "*.kmimefileparserunittest";
@@ -65,7 +46,7 @@ private Q_SLOTS:
                               "20:text/plain:*.kmimefileparserunittest2::futureextension";
         QBuffer buf(&testFile);
         KMimeGlobsFileParser::AllGlobs mimeTypeGlobs;
-        QVERIFY(KMimeGlobsFileParser::parseGlobFile(&buf, KMimeGlobsFileParser::Globs2WithWeight, mimeTypeGlobs));
+        QVERIFY(KMimeGlobsFileParser::parseGlobFile(&buf, mimeTypeGlobs));
         //kDebug() << mimeTypeGlobs.keys();
         const KMimeGlobsFileParser::GlobList textGlobs = mimeTypeGlobs.m_lowWeightGlobs;
         QCOMPARE(textGlobs.count(), 2);
@@ -88,7 +69,7 @@ private Q_SLOTS:
 
         KTemporaryFile globTempFile;
         QVERIFY(globTempFile.open());
-        const QByteArray testFile = "# Test data\ntext/plain:*.kmimefileparserunittest\ntext/plain:*.kmimefileparserunittest2";
+        const QByteArray testFile = "# Test data\n50:text/plain:*.kmimefileparserunittest\n50:text/plain:*.kmimefileparserunittest2";
         globTempFile.write(testFile);
         const QString fileName = globTempFile.fileName();
         globTempFile.close();
@@ -115,7 +96,7 @@ private Q_SLOTS:
         // Defining ext2 twice is a bonus in this test: it tests the case where
         // people install freedesktop.org.xml and kde.xml into the same prefix;
         // we shouldn't end up with *.txt twice in the text/plain patterns.
-        const QByteArray testFile1 = "# Test data\ntext/plain:*.ext1\ntext/plain:*.ext2\ntext/plain:*.ext2";
+        const QByteArray testFile1 = "# Test data\n50:text/plain:*.ext1\n50:text/plain:*.ext2\n50:text/plain:*.ext2";
         globTempFile1.write(testFile1);
         const QString fileName1 = globTempFile1.fileName();
         globTempFile1.close();
@@ -123,7 +104,7 @@ private Q_SLOTS:
         // It defines *.ext1 and *.globalext
         KTemporaryFile globTempFile2;
         QVERIFY(globTempFile2.open());
-        const QByteArray testFile2 = "# Test data\ntext/plain:*.ext1\ntext/plain:*.globalext";
+        const QByteArray testFile2 = "# Test data\n50:text/plain:*.ext1\n50:text/plain:*.globalext";
         globTempFile2.write(testFile2);
         const QString fileName2 = globTempFile2.fileName();
         globTempFile2.close();
@@ -148,7 +129,7 @@ private Q_SLOTS:
         // It defines *.o1 and *.o2
         KTemporaryFile globTempFile1;
         QVERIFY(globTempFile1.open());
-        const QByteArray testFile1 = "# Test data\ntext/plain:__NOGLOBS__\ntext/plain:*.o1\ntext/plain:*.o2\ntext/plain:*.o2";
+        const QByteArray testFile1 = "# Test data\n50:text/plain:__NOGLOBS__\n50:text/plain:*.o1\n50:text/plain:*.o2\n50:text/plain:*.o2";
         globTempFile1.write(testFile1);
         const QString fileName1 = globTempFile1.fileName();
         globTempFile1.close();
@@ -158,7 +139,7 @@ private Q_SLOTS:
         // so it won't appear.
         KTemporaryFile globTempFile2;
         QVERIFY(globTempFile2.open());
-        const QByteArray testFile2 = "# Test data\ntext/plain:*.o1\ntext/plain:*.exttoberemoved";
+        const QByteArray testFile2 = "# Test data\n50:text/plain:*.o1\n50:text/plain:*.exttoberemoved";
         globTempFile2.write(testFile2);
         const QString fileName2 = globTempFile2.fileName();
         globTempFile2.close();
@@ -195,11 +176,11 @@ private Q_SLOTS:
         // tar.bz2:          160K,  76K,  214K
 
         // Prepare m_allGlobs
-        const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", "globs");
+        const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", "globs2");
         m_allGlobs = KMimeGlobsFileParser::parseGlobs(globFiles);
         m_patternsMap = m_allGlobs.patternsMap();
         const int patCount = m_allGlobs.m_highWeightGlobs.count() + m_allGlobs.m_lowWeightGlobs.count();
-        kDebug() << m_patternsMap.count() << "mimetypes," << patCount << "patterns";
+        qDebug() << m_patternsMap.count() << "mimetypes," << patCount << "patterns";
     }
 
     void testGlobMatchingPerformance()

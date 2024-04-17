@@ -92,9 +92,8 @@ public:
         GlobList m_highWeightGlobs; // >= 50 patterns
         GlobList m_lowWeightGlobs; // < 50 patterns
     };
-    enum Format { OldGlobs, Globs2WithWeight };
 
-    static bool parseGlobFile(QIODevice *file, Format format, AllGlobs &globs);
+    static bool parseGlobFile(QIODevice *file, AllGlobs &globs);
 
 private:
     AllGlobs m_mimeTypeGlobs;

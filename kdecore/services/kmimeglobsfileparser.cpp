@@ -33,7 +33,7 @@ KMimeGlobsFileParser::KMimeGlobsFileParser()
 
 KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs()
 {
-    const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QString::fromLatin1("globs"));
+    const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QString::fromLatin1("globs2"));
     //kDebug() << globFiles;
     return parseGlobs(globFiles);
 }
@@ -46,16 +46,10 @@ KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs(const QStringLis
     // At each level, we must be able to override (not just add to) the information that we read at higher levels
     // (if glob-deleteall is used).
     while (globIter.hasPrevious()) { // global first, then local
-        Format format = OldGlobs;
         QString fileName = globIter.previous();
-        QString fileNamev2 = fileName + QLatin1Char('2'); // NOTE: this relies on u-m-d always generating the old globs file
-        if (QFile::exists(fileNamev2)) {
-            fileName = fileNamev2;
-            format = Globs2WithWeight;
-        }
         QFile globFile(fileName);
         //kDebug() << "Now parsing" << fileName;
-        parseGlobFile(&globFile, format, allGlobs);
+        parseGlobFile(&globFile, allGlobs);
     }
     return allGlobs;
 }
@@ -73,7 +67,7 @@ static void filterEmptyFromList(QList<QByteArray>* bytelist)
 }
 
 // uses a QIODevice to make unit tests possible
-bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, Format format, AllGlobs& globs)
+bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, AllGlobs& globs)
 {
     Q_ASSERT(file);
     if (!file->open(QIODevice::ReadOnly)) {
@@ -101,19 +95,14 @@ bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, Format format, AllGlob
         QByteArray mimeTypeName, pattern;
         QList<QByteArray> flagList;
         int weight = 50;
-        if (format == Globs2WithWeight) {
-            if (fields.count() < 3) // syntax error
-                continue;
-            weight = fields.at(0).toInt();
-            mimeTypeName = fields.at(1);
-            pattern = fields.at(2);
-            const QByteArray flagsStr = fields.value(3); // could be empty
-            flagList = flagsStr.split(',');
-            filterEmptyFromList(&flagList);
-        } else {
-            mimeTypeName = fields.at(0);
-            pattern = fields.at(1);
-        }
+        if (fields.count() < 3) // syntax error
+            continue;
+        weight = fields.at(0).toInt();
+        mimeTypeName = fields.at(1);
+        pattern = fields.at(2);
+        const QByteArray flagsStr = fields.value(3); // could be empty
+        flagList = flagsStr.split(',');
+        filterEmptyFromList(&flagList);
         Q_ASSERT(!pattern.isEmpty());
         Q_ASSERT(!pattern.contains(':'));
 

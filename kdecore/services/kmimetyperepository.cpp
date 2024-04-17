@@ -215,7 +215,7 @@ KMimeType::Ptr KMimeTypeRepository::findMimeTypeByName(const QString &_name, KMi
 bool KMimeTypeRepository::checkMimeTypes()
 {
     // check if there are mimetypes
-    const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QLatin1String("globs"));
+    const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QLatin1String("globs2"));
     return !globFiles.isEmpty();
 }
 
