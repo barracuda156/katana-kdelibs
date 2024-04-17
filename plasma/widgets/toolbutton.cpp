@@ -46,6 +46,8 @@ public:
     ToolButtonPrivate(ToolButton *toolButton)
         : ActionWidgetInterface<ToolButton>(toolButton),
           background(nullptr),
+          animation(nullptr),
+          opacity(1.0),
           svg(nullptr),
           underMouse(false)
     {
@@ -118,7 +120,10 @@ void ToolButtonPrivate::syncActiveRect()
 {
     background->setElementPrefix("normal");
 
-    qreal left, top, right, bottom;
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
     background->getMargins(left, top, right, bottom);
 
     background->setElementPrefix("active");
@@ -135,13 +140,15 @@ void ToolButtonPrivate::syncActiveRect()
 void ToolButtonPrivate::syncBorders()
 {
     //set margins from the normal element
-    qreal left, top, right, bottom;
-
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
     background->setElementPrefix("normal");
     background->getMargins(left, top, right, bottom);
     q->setContentsMargins(left, top, right, bottom);
 
-    //calc the rect for the over effect
+    // calc the rect for the over effect
     syncActiveRect();
 }
 
@@ -294,7 +301,7 @@ void ToolButton::resizeEvent(QGraphicsSceneResizeEvent *event)
     d->setPixmap();
 
    if (d->background) {
-        //resize all four panels
+        // resize all four panels
         d->background->setElementPrefix("pressed");
         d->background->resizeFrame(size());
         d->background->setElementPrefix("focus");
@@ -330,8 +337,7 @@ void ToolButton::paint(QPainter *painter,
     buttonOpt.iconSize = button->iconSize();
     buttonOpt.toolButtonStyle = button->toolButtonStyle();
 
-    bool animationState = (d->animation->state() == QAbstractAnimation::Running)? \
-                          1:0;
+    bool animationState = (d->animation->state() == QAbstractAnimation::Running ? true : false);
     if (button->isEnabled() && (animationState || !button->autoRaise() || d->underMouse || (buttonOpt.state & QStyle::State_On) || button->isChecked() || button->isDown())) {
         if (button->isDown() || (buttonOpt.state & QStyle::State_On) || button->isChecked()) {
             d->background->setElementPrefix("pressed");
