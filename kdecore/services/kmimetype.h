@@ -403,15 +403,14 @@ public:
     static int sharedMimeInfoVersion();
 
 protected:
-    friend class KMimeTypeRepository; // for KMimeType(QString,QString,QString)
+    friend class KMimeTypeRepository; // for KMimeType(QString,QString)
 
     /**
      * Construct a mimetype and take all information from an XML file.
      * @param fullpath the path to the xml that describes the mime type
      * @param name the name of the mimetype (usually the end of the path)
-     * @param comment the comment associated with the mimetype
      */
-    KMimeType(const QString &fullpath, const QString &name, const QString &comment);
+    KMimeType(const QString &fullpath, const QString &name);
 
 private:
     KMimeTypePrivate* d_ptr;

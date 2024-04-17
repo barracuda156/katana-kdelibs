@@ -453,13 +453,11 @@ bool KMimeType::isBinaryData(const QString &fileName)
     return isBufferBinaryData(file.read(32));
 }
 
-KMimeType::KMimeType(const QString &fullpath, const QString &name,
-                     const QString &comment)
+KMimeType::KMimeType(const QString &fullpath, const QString &name)
     : QSharedData(),
     d_ptr(new KMimeTypePrivate(fullpath))
 {
     d_ptr->m_strName = name;
-    d_ptr->m_strComment = comment;
 }
 
 
