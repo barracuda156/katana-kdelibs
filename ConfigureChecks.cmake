@@ -47,7 +47,7 @@ kde4_bool_to_01(X11_XSync_FOUND HAVE_XSYNC)                           # kidletim
 # check is to be added to get the proper set of headers.
 check_symbol_exists(strmode         "string.h"           HAVE_STRMODE)      # karchive
 
-check_function_exists(backtrace          HAVE_BACKTRACE)                    # kdecore, kio
+check_function_exists(backtrace          HAVE_BACKTRACE)                    # kdecore
 check_function_exists(fdatasync          HAVE_FDATASYNC)                    # kdecore
 check_function_exists(arc4random_uniform HAVE_ARC4RANDOM_UNIFORM)           # kdecore
 check_function_exists(sendfile           HAVE_SENDFILE)                     # kioslave

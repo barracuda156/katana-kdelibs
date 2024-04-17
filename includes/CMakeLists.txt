@@ -373,15 +373,6 @@ install(
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/KDE/KParts
 )
 
-
-install(
-    FILES
-    KSettings/Dialog
-    KSettings/Dispatcher
-    KSettings/PluginPage
-    DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/KDE/KSettings
-)
-
 install(
     FILES
     KTextEditor/Attribute

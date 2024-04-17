@@ -27,10 +27,6 @@ set(kcmutils_LIB_SRCS
     kpluginselector.cpp
     kcmodulecontainer.cpp
     ksettingswidgetadaptor.cpp
-    ksettings/dispatcher.cpp
-    ksettings/dialog.cpp
-    ksettings/pluginpage.cpp
-    ksettings/componentsdialog.cpp
 )
 
 add_library(kcmutils SHARED ${kcmutils_LIB_SRCS})
@@ -58,14 +54,6 @@ install(
     kpluginselector.h
     kcmodulecontainer.h
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}
-)
-
-install(
-    FILES
-    ksettings/dispatcher.h
-    ksettings/dialog.h
-    ksettings/pluginpage.h
-    DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/ksettings
 )
 
 install(
