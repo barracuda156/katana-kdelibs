@@ -26,8 +26,6 @@
 #define PLASMA_ANIMATION_H
 
 #include <QGraphicsWidget>
-#include <QObject>
-#include <QPropertyAnimation>
 #include <QAbstractAnimation>
 #include <QEasingCurve>
 
@@ -54,12 +52,6 @@ class PLASMA_EXPORT Animation : public QAbstractAnimation
 
 public:
     /**
-     * Get the animation duration. It can be set using the property duration.
-     * @return duration in ms.
-     */
-    int duration() const;
-
-    /**
      * Animation movement direction.
      */
     enum MovementDirectionFlag {
@@ -69,7 +61,6 @@ public:
         MoveDown = 0x4,
         MoveLeft = 0x8
     };
-
     Q_DECLARE_FLAGS(MovementDirection, MovementDirectionFlag)
 
     /**
@@ -107,13 +98,19 @@ public:
      */
     QEasingCurve easingCurve() const;
 
-protected:
     /**
-     * Change the animation duration. Default is 250ms.
+     * Get the animation duration. Default is 250ms.
+     * @return duration in ms.
+     */
+    int duration() const;
+
+    /**
+     * Change the animation duration.
      * @param duration The new duration of the animation.
      */
-    virtual void setDuration(int duration = 250);
+    void setDuration(int duration);
 
+protected:
     /**
      * QAbstractAnimation will call this method while the animation
      * is running. Each specialized animation class should implement
@@ -125,7 +122,6 @@ protected:
     virtual void updateCurrentTime(int currentTime);
 
 private:
-
     /**
      * Internal pimple (actually is used as a data structure, see
      * \ref AnimationPrivate).
