@@ -101,15 +101,6 @@ public:
     Type type() const;
 
     /**
-     * The mimetype that the search term refers to, if discoverable.
-     *
-     * @return QString() if the mimetype can not be determined, otherwise
-     *         the mimetype of the object being referred to by the search
-     *         string.
-     */
-    QString mimeType() const;
-
-    /**
      * @returns true if this context is no longer valid and therefore
      * matching using it should abort. Most useful as an optimization technique
      * inside of AbstractRunner subclasses in the match method, e.g.:

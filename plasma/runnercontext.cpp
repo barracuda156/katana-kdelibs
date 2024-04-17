@@ -30,7 +30,6 @@
 #include <kcompletion.h>
 #include <kconfiggroup.h>
 #include <kdebug.h>
-#include <kmimetype.h>
 #include <kshell.h>
 #include <kstandarddirs.h>
 #include <kurl.h>
@@ -164,10 +163,6 @@ class RunnerContextPrivate : public QSharedData
             //kDebug() << "boo yeah" << type;
         }
 
-        ~RunnerContextPrivate()
-        {
-        }
-
         /**
          * Determines type of query
          */
@@ -218,13 +213,8 @@ class RunnerContextPrivate : public QSharedData
                             }
                             if (info.isDir()) {
                                 type = RunnerContext::Directory;
-                                mimeType = "inode/folder";
                             } else if (info.isFile()) {
                                 type = RunnerContext::File;
-                                KMimeType::Ptr mimeTypePtr = KMimeType::findByPath(path);
-                                if (mimeTypePtr) {
-                                    mimeType = mimeTypePtr->name();
-                                }
                             }
                         }
                     }
@@ -243,7 +233,6 @@ class RunnerContextPrivate : public QSharedData
         QList<QueryMatch> matches;
         QMap<QString, const QueryMatch*> matchesById;
         QString term;
-        QString mimeType;
         RunnerContext::Type type;
         RunnerContext * q;
         static RunnerContext s_dummyContext;
@@ -313,7 +302,6 @@ void RunnerContext::reset()
     }
 
     d->term.clear();
-    d->mimeType.clear();
     d->type = UnknownType;
     // kDebug() << "match count" << d->matches.count();
 }
@@ -341,11 +329,6 @@ QString RunnerContext::query() const
 RunnerContext::Type RunnerContext::type() const
 {
     return d->type;
-}
-
-QString RunnerContext::mimeType() const
-{
-    return d->mimeType;
 }
 
 bool RunnerContext::isValid() const
