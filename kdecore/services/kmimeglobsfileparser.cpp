@@ -85,28 +85,23 @@ bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, AllGlobs& globs)
         if (line.isEmpty() || line.startsWith('#'))
             continue;
 
+        // kDebug() << "line=" << line;
+
         QList<QByteArray> fields = line.split(':');
         filterEmptyFromList(&fields);
-        if (fields.count() < 2) // syntax error
-            continue;
 
-        //kDebug() << "line=" << line;
-
-        QByteArray mimeTypeName, pattern;
-        QList<QByteArray> flagList;
-        int weight = 50;
         if (fields.count() < 3) // syntax error
             continue;
-        weight = fields.at(0).toInt();
-        mimeTypeName = fields.at(1);
-        pattern = fields.at(2);
+        const int weight = fields.at(0).toInt();
+        const QByteArray mimeTypeName = fields.at(1);
+        const QByteArray pattern = fields.at(2);
         const QByteArray flagsStr = fields.value(3); // could be empty
-        flagList = flagsStr.split(',');
+        QList<QByteArray> flagList = flagsStr.split(',');
         filterEmptyFromList(&flagList);
         Q_ASSERT(!pattern.isEmpty());
         Q_ASSERT(!pattern.contains(':'));
 
-        //kDebug() << " got:" << mimeTypeName << pattern;
+        // kDebug() << " got:" << mimeTypeName << pattern;
 
         if (lastMime == mimeTypeName && lastPattern == pattern) {
             // Ignore duplicates, especially important for those with no flags after a line with flags:
@@ -119,7 +114,7 @@ bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, AllGlobs& globs)
 
         const QString mimeTypeNameStr = QString::fromLatin1(mimeTypeName.constData(), mimeTypeName.size());
         if (pattern == "__NOGLOBS__") {
-            //kDebug() << "removing" << mimeTypeName;
+            // kDebug() << "removing" << mimeTypeName;
             globs.removeMime(mimeTypeNameStr);
             lastMime.clear();
         } else {
