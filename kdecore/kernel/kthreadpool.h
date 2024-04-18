@@ -45,7 +45,7 @@ public:
     void waitForDone(const int timeout = 30000);
 
     int maxThreadCount() const;
-    void setMaxThreadCount(int count);
+    void setMaxThreadCount(int maxthreads);
 
     int activeThreadCount() const;
 

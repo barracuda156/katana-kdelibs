@@ -50,6 +50,7 @@ KThreadPoolPrivate::KThreadPoolPrivate(KThreadPool *_parent)
     maxthreads(QThread::idealThreadCount()),
     activethreadcount(0)
 {
+    kDebug() << "threads limits is" << maxthreads;
 }
 
 void KThreadPoolPrivate::appendThread(QThread *thread)
@@ -152,9 +153,10 @@ int KThreadPool::maxThreadCount() const
     return d->maxthreads;
 }
 
-void KThreadPool::setMaxThreadCount(int count)
+void KThreadPool::setMaxThreadCount(int maxthreads)
 {
-    d->maxthreads = count;
+    d->maxthreads = maxthreads;
+    kDebug() << "limiting threads to" << maxthreads;
 }
 
 int KThreadPool::activeThreadCount() const

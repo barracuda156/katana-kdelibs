@@ -165,7 +165,7 @@ public:
         }
     }
 
-    static QThread::Priority threadPriority(AbstractRunner::Priority priority)
+    static QThread::Priority threadPriority(const AbstractRunner::Priority priority)
     {
         switch (priority) {
             case AbstractRunner::LowestPriority: {
@@ -207,13 +207,6 @@ RunnerManager::RunnerManager(QObject *parent)
     : QObject(parent),
       d(new RunnerManagerPrivate(this))
 {
-    int maxThreads = QThread::idealThreadCount();
-    if (maxThreads < 0) {
-        maxThreads = 4;
-    }
-    kDebug() << "limiting runner threads to" << maxThreads;
-    //This entry allows to define a hard upper limit independent of the number of processors.
-    d->threadPool->setMaxThreadCount(maxThreads);
 }
 
 RunnerManager::~RunnerManager()
