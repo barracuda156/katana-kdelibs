@@ -193,16 +193,6 @@ public:
      */
     QueryMatch match(const QString &id) const;
 
-    /**
-     * Run a match using the information from this context
-     *
-     * The context will also keep track of the number of times the match was
-     * launched to sort future matches according to user habits
-     *
-     * @param match the match to run
-     */
-    void run(const QueryMatch &match);
-
 Q_SIGNALS:
     void matchesChanged();
 

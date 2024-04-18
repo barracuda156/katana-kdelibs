@@ -139,14 +139,11 @@ class PLASMA_EXPORT AbstractRunner : public QObject
         void performMatch(Plasma::RunnerContext &context);
 
         /**
-         * Called whenever an exact or possible match associated with this
-         * runner is triggered.
+         * Called whenever a match associated with this runner is triggered.
          *
-         * @param context The context in which the match is triggered, i.e. for which
-         *                the match was created.
          * @param match The actual match to run/execute.
          */
-        virtual void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match);
+        virtual void run(const Plasma::QueryMatch &match);
 
         /**
          * The nominal speed of the runner.

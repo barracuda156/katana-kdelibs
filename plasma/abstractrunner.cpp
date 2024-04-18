@@ -204,9 +204,8 @@ void AbstractRunner::setIgnoredTypes(RunnerContext::Types types)
     d->blackListed = types;
 }
 
-void AbstractRunner::run(const Plasma::RunnerContext &search, const Plasma::QueryMatch &action)
+void AbstractRunner::run(const Plasma::QueryMatch &action)
 {
-    Q_UNUSED(search)
     Q_UNUSED(action)
 }
 

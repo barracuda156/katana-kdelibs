@@ -498,11 +498,6 @@ QueryMatch RunnerContext::match(const QString &id) const
     return QueryMatch(nullptr);
 }
 
-void RunnerContext::run(const QueryMatch &match)
-{
-    match.run(*this);
-}
-
 } // Plasma namespace
 
 #include "moc_runnercontext.cpp"

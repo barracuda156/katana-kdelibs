@@ -85,18 +85,6 @@ class PLASMA_EXPORT RunnerManager : public QObject
         QList<QueryMatch> matches() const;
 
         /**
-         * Runs a given match
-         * @param match the match to be executed
-         */
-        void run(const QueryMatch &match);
-
-        /**
-         * Runs a given match
-         * @param id the id of the match to run
-         */
-        void run(const QString &id);
-
-        /**
          * Retrieves the list of actions, if any, for a match
          */
         QList<QAction*> actionsForMatch(const QueryMatch &match);

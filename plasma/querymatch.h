@@ -93,11 +93,9 @@ class PLASMA_EXPORT QueryMatch
         /**
          * Requests this match to activae using the given context
          *
-         * @param context the context to use in conjunction with this run
-         *
          * @sa AbstractRunner::run
          */
-        void run(const RunnerContext &context) const;
+        void run() const;
 
         /**
          * Sets data to be used internally by the associated
