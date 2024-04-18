@@ -19,21 +19,17 @@
 
 #include "runnercontext.h"
 
-#include <cmath>
-
 #include <QMutex>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QSharedData>
 
-#include <kcompletion.h>
-#include <kconfiggroup.h>
-#include <kdebug.h>
-#include <kshell.h>
-#include <kstandarddirs.h>
-#include <kurl.h>
-#include <kprotocolinfo.h>
+#include "kshell.h"
+#include "kstandarddirs.h"
+#include "kurl.h"
+#include "kprotocolinfo.h"
+#include "kdebug.h"
 
 #include "abstractrunner.h"
 #include "querymatch.h"
@@ -231,7 +227,6 @@ class RunnerContextPrivate : public QSharedData
 
         QMutex lock;
         QList<QueryMatch> matches;
-        QMap<QString, const QueryMatch*> matchesById;
         QString term;
         RunnerContext::Type type;
         RunnerContext * q;
@@ -296,7 +291,6 @@ void RunnerContext::reset()
     // ref count was 1 (e.g. only the RunnerContext is using
     // the dptr) then we won't get a copy made
     if (!d->matches.isEmpty()) {
-        d->matchesById.clear();
         d->matches.clear();
         emit matchesChanged();
     }
@@ -348,15 +342,7 @@ bool RunnerContext::addMatches(const QList<QueryMatch> &matches)
     }
 
     LOCK_FOR_WRITE(d)
-    foreach (const QueryMatch &match, matches) {
-        d->matches.append(match);
-#ifndef NDEBUG
-        if (d->matchesById.contains(match.id())) {
-            kDebug() << "Duplicate match id " << match.id() << "from" << match.runner()->name();
-        }
-#endif
-        d->matchesById.insert(match.id(), &d->matches.at(d->matches.size() - 1));
-    }
+    d->matches.append(matches);
     UNLOCK(d);
     // kDebug()<< "add matches";
     // A copied searchContext may share the d pointer,
@@ -375,9 +361,7 @@ bool RunnerContext::addMatch(const QueryMatch &match)
     }
 
     LOCK_FOR_WRITE(d)
-
     d->matches.append(match);
-    d->matchesById.insert(match.id(), &d->matches.at(d->matches.size() - 1));
     UNLOCK(d);
     //kDebug()<< "added match" << match->text();
     emit d->q->matchesChanged();
