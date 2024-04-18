@@ -292,7 +292,6 @@ void RunnerContext::reset()
     // the dptr) then we won't get a copy made
     if (!d->matches.isEmpty()) {
         d->matches.clear();
-        emit matchesChanged();
     }
 
     d->term.clear();
@@ -303,11 +302,9 @@ void RunnerContext::reset()
 void RunnerContext::setQuery(const QString &term)
 {
     reset();
-
     if (term.isEmpty()) {
         return;
     }
-
     d->term = term;
     d->determineType();
 }
