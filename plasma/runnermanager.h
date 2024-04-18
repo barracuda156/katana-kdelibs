@@ -127,12 +127,6 @@ class PLASMA_EXPORT RunnerManager : public QObject
         QMimeData* mimeDataForMatch(const QueryMatch &match) const;
 
         /**
-         * @return mime data of the specified match
-         * @since 4.5
-         */
-        QMimeData* mimeDataForMatch(const QString &id) const;
-
-        /**
          * Returns a list of all known Runner implementations
          *
          * @param parentApp the application to filter applets on. Uses the

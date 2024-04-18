@@ -22,12 +22,9 @@
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
-#include <QtCore/qshareddata.h>
+#include <QtCore/QExplicitlySharedDataPointer>
 
 #include <plasma/plasma_export.h>
-
-class KCompletion;
-class KConfigGroup;
 
 namespace Plasma
 {
@@ -77,9 +74,7 @@ public:
     ~RunnerContext();
 
     /**
-     * Resets the search term for this object.
-     * This removes all current matches in the process and
-     * turns off single runner query mode.
+     * Resets the search term for this object. This removes all current matches in the process.
      */
     void reset();
 
@@ -141,56 +136,11 @@ public:
     bool addMatch(const QueryMatch &match);
 
     /**
-     * Removes a match from the existing list of matches.
-     *
-     * If you are going to be removing multiple matches, use removeMatches instead.
-     *
-     * @param matchId the id of match to remove
-     *
-     * @return true if the match was removed, false otherwise.
-     * @since 4.4
-     */
-    bool removeMatch(const QString &matchId);
-
-    /**
-     * Removes lists of matches from the existing list of matches.
-     *
-     * This method is thread safe and causes the matchesChanged() signal to be emitted.
-     *
-     * @param matchIdList the list of matches id to remove
-     *
-     * @return true if at least one match was removed, false otherwise.
-     * @since 4.4
-     */
-    bool removeMatches(const QStringList &matchIdList);
-
-    /**
-     * Removes lists of matches from a given AbstractRunner
-     *
-     * This method is thread safe and causes the matchesChanged() signal to be emitted.
-     *
-     * @param runner the AbstractRunner from which to remove matches
-     *
-     * @return true if at least one match was removed, false otherwise.
-     * @since 4.10
-     */
-    bool removeMatches(AbstractRunner *runner);
-
-    /**
      * Retrieves all available matches for the current search term.
      *
      * @return a list of matches
      */
     QList<QueryMatch> matches() const;
-
-    /**
-     * Retrieves a match by id.
-     *
-     * @param id the id of the match to return
-     * @return the match associated with this id, or an invalid QueryMatch object
-     *         if the id does not eixst
-     */
-    QueryMatch match(const QString &id) const;
 
 Q_SIGNALS:
     void matchesChanged();

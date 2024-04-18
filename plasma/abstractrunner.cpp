@@ -133,7 +133,7 @@ void AbstractRunner::clearActions()
     d->actions.clear();
 }
 
-QMimeData* AbstractRunner::mimeDataForMatch(const QueryMatch *match)
+QMimeData* AbstractRunner::mimeDataForMatch(const QueryMatch &match)
 {
     Q_UNUSED(match)
     return nullptr;

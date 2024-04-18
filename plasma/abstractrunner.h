@@ -242,6 +242,12 @@ class PLASMA_EXPORT AbstractRunner : public QObject
         void setPriority(Priority newPriority);
 
         /**
+         * Reimplement this method if you want your runner to support drag and drop.
+         * @since 4.5
+         */
+        virtual QMimeData* mimeDataForMatch(const Plasma::QueryMatch &match);
+
+        /**
          * A given match can have more than action that can be performed on it.
          * For example, a song match returned by a music player runner can be queued,
          * added to the playlist, or played.
@@ -323,13 +329,6 @@ class PLASMA_EXPORT AbstractRunner : public QObject
          * By default, it calls reloadConfiguration()
          */
         void init();
-
-        /**
-         * Reimplement this slot if you want your runner
-         * to support serialization and drag and drop
-         * @since 4.5
-         */
-        QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
 
     private:
         AbstractRunnerPrivate *const d;

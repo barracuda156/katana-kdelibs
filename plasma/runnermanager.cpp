@@ -277,22 +277,11 @@ QList<QAction*> RunnerManager::actionsForMatch(const QueryMatch &match)
     return QList<QAction*>();
 }
 
-QMimeData* RunnerManager::mimeDataForMatch(const QString &id) const
-{
-    return mimeDataForMatch(d->context.match(id));
-}
-
 QMimeData* RunnerManager::mimeDataForMatch(const QueryMatch &match) const
 {
     AbstractRunner *runner = match.runner();
-    QMimeData *mimeData;
-    if (runner && QMetaObject::invokeMethod(
-            runner,
-            "mimeDataForMatch", Qt::DirectConnection,
-            Q_RETURN_ARG(QMimeData*, mimeData),
-            Q_ARG(const Plasma::QueryMatch *, &match)
-    )) {
-        return mimeData;
+    if (runner) {
+        return runner->mimeDataForMatch(match);
     }
 
     return nullptr;
