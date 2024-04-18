@@ -127,19 +127,18 @@ public:
      *
      * @return true if matches were added, false if matches were e.g. outdated
      */
-    bool addMatches(const QString &term, const QList<QueryMatch> &matches);
+    bool addMatches(const QList<QueryMatch> &matches);
 
     /**
      * Appends a match to the existing list of matches.
      *
      * If you are going to be adding multiple matches, use addMatches instead.
      *
-     * @param term the search term that this match was generated for.
      * @param match the match to add
      *
      * @return true if the match was added, false otherwise.
      */
-    bool addMatch(const QString &term, const QueryMatch &match);
+    bool addMatch(const QueryMatch &match);
 
     /**
      * Removes a match from the existing list of matches.

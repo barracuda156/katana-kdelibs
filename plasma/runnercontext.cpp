@@ -340,10 +340,8 @@ bool RunnerContext::isValid() const
     return valid;
 }
 
-bool RunnerContext::addMatches(const QString &term, const QList<QueryMatch> &matches)
+bool RunnerContext::addMatches(const QList<QueryMatch> &matches)
 {
-    Q_UNUSED(term)
-
     if (matches.isEmpty() || !isValid()) {
         // bail out if the query is empty or the qptr is dirty
         return false;
@@ -369,10 +367,8 @@ bool RunnerContext::addMatches(const QString &term, const QList<QueryMatch> &mat
     return true;
 }
 
-bool RunnerContext::addMatch(const QString &term, const QueryMatch &match)
+bool RunnerContext::addMatch(const QueryMatch &match)
 {
-    Q_UNUSED(term)
-
     if (!isValid()) {
         // bail out if the qptr is dirty
         return false;
