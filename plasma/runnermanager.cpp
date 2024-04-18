@@ -188,7 +188,9 @@ RunnerManager::~RunnerManager()
 void RunnerManager::setAllowedRunners(const QStringList &runners)
 {
     d->allowedRunners = runners;
-    d->loadRunners();
+    if (!d->runners.isEmpty()) {
+        d->loadRunners();
+    }
 }
 
 QStringList RunnerManager::allowedRunners() const
