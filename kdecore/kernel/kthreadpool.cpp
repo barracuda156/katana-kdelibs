@@ -72,6 +72,7 @@ void KThreadPoolPrivate::_k_slotFinished()
             kDebug() << "thread finished" << thread;
             iter.remove();
             activethreadcount.deref();
+            thread->deleteLater();
         }
     }
     if (!queuedthreads.isEmpty()) {
@@ -129,6 +130,7 @@ void KThreadPool::waitForDone(const int timeout)
                 kDebug() << "thread finished" << thread;
                 iter.remove();
                 d->activethreadcount.deref();
+                thread->deleteLater();
             }
         }
     }
@@ -140,6 +142,7 @@ void KThreadPool::waitForDone(const int timeout)
             kWarning() << "terminating" << thread;
             thread->terminate();
             thread->wait(s_terminatetimeout);
+            thread->deleteLater();
         }
     }
 }
