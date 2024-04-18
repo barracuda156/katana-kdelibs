@@ -301,8 +301,8 @@ QString RunnerManager::query() const
 
 void RunnerManager::reset()
 {
-    d->threadPool->waitForDone();
     d->context.reset();
+    d->threadPool->waitForDone();
 }
 
 } // Plasma namespace

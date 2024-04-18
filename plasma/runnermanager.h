@@ -120,10 +120,9 @@ public:
     /**
      * Returns a list of all known Runner implementations
      *
-     * @param parentApp the application to filter applets on. Uses the X-KDE-ParentApp entry
-     *                  (if any) in the plugin info. The default value of QString() will result
-     *                  in a list containing only applets not specifically registered to an
-     *                  application.
+     * @param parentApp the application to filter applets on. Uses the X-KDE-ParentApp entry (if
+     *                  any) in the plugin info. The default value of QString() will result in a
+     *                  list containing only applets not specifically registered to an application.
      * @return list of AbstractRunners
      * @since 4.6
      **/
@@ -131,8 +130,8 @@ public:
 
 public Q_SLOTS:
     /**
-     * Launch a query, this will create threads and return inmediately. When matches are found,
-     * if any, matchesChanged signal is emitted.
+     * Launch a query, this will create threads and return inmediately. When matches are found, if
+     * any, matchesChanged signal is emitted.
      *
      * @param term the term we want to find matches for
      */
@@ -146,8 +145,8 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     /**
-     * Emitted each time a new match is added to the list. The signal may
-     * not be emitted if not matches are found.
+     * Emitted each time a new match is added to the list. The signal may not be emitted if not
+     * matches are found.
      */
     void matchesChanged(const QList<Plasma::QueryMatch> &matches);
 
