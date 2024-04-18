@@ -47,16 +47,14 @@ public:
     RunnerManagerPrivate(RunnerManager *parent)
         : q(parent),
         threadPool(nullptr),
-        prepped(false),
-        allRunnersPrepped(false),
-        teardownRequested(false)
+        finishedTimer(nullptr)
     {
         threadPool = new KThreadPool(q);
+        finishedTimer = new QTimer(q);
+        finishedTimer->setInterval(500);
 
-        matchChangeTimer.setSingleShot(true);
-
-        QObject::connect(&matchChangeTimer, SIGNAL(timeout()), q, SLOT(matchesChanged()));
-        QObject::connect(&context, SIGNAL(matchesChanged()), q, SLOT(scheduleMatchesChanged()));
+        QObject::connect(finishedTimer, SIGNAL(timeout()), q, SLOT(_k_checkFinished()));
+        QObject::connect(&context, SIGNAL(matchesChanged()), q, SLOT(_k_matchesChanged()));
     }
 
     ~RunnerManagerPrivate()
@@ -66,21 +64,25 @@ public:
         delete threadPool;
     }
 
-    void scheduleMatchesChanged()
-    {
-        matchChangeTimer.start(100);
-    }
-
-    void matchesChanged()
+    void _k_matchesChanged()
     {
         emit q->matchesChanged(context.matches());
+    }
+
+    void _k_checkFinished()
+    {
+        // kDebug() << threadPool->activeThreadCount();
+        if (threadPool->activeThreadCount() <= 0) {
+            finishedTimer->stop();
+            emit q->queryFinished();
+        }
     }
 
     void loadRunners()
     {
         KPluginInfo::List offers = RunnerManager::listRunnerInfo();
 
-        QSet<AbstractRunner *> deadRunners;
+        QSet<AbstractRunner*> deadRunners;
         QMutableListIterator<KPluginInfo> it(offers);
         while (it.hasNext()) {
             const KPluginInfo& description = it.next();
@@ -92,7 +94,6 @@ public:
             }
 
             const QString runnerName = description.pluginName();
-
             const bool loaded = runners.contains(runnerName);
             const bool selected = allowedRunners.contains(runnerName);
 
@@ -118,10 +119,10 @@ public:
         kDebug() << "All runners loaded, total:" << runners.count();
     }
 
-    AbstractRunner *loadInstalledRunner(const KService::Ptr service)
+    AbstractRunner* loadInstalledRunner(const KService::Ptr service)
     {
         if (!service) {
-            return 0;
+            return nullptr;
         }
 
         QVariantList args;
@@ -133,36 +134,9 @@ public:
         } else {
             kDebug() << "================= loading runner:" << service->name() << "=================";
             QMetaObject::invokeMethod(runner, "init");
-            if (prepped) {
-                emit runner->prepare();
-            }
         }
 
         return runner;
-    }
-
-    void checkTearDown()
-    {
-        //kDebug() << prepped << teardownRequested << threadPool->activeThreadCount();
-
-        if (!prepped || !teardownRequested) {
-            return;
-        }
-
-        if (threadPool->activeThreadCount() <= 0) {
-            if (allRunnersPrepped) {
-                foreach (AbstractRunner *runner, runners) {
-                    emit runner->teardown();
-                }
-
-                allRunnersPrepped = false;
-            }
-
-            emit q->queryFinished();
-
-            prepped = false;
-            teardownRequested = false;
-        }
     }
 
     static QThread::Priority threadPriority(const AbstractRunner::Priority priority)
@@ -189,14 +163,11 @@ public:
     }
 
     RunnerManager *q;
-    RunnerContext context;
-    QTimer matchChangeTimer;
-    QHash<QString, AbstractRunner*> runners;
     KThreadPool *threadPool;
+    QTimer *finishedTimer;
     QStringList allowedRunners;
-    bool prepped;
-    bool allRunnersPrepped;
-    bool teardownRequested;
+    QHash<QString, AbstractRunner*> runners;
+    RunnerContext context;
 };
 
 /*****************************************************
@@ -205,7 +176,7 @@ public:
 *****************************************************/
 RunnerManager::RunnerManager(QObject *parent)
     : QObject(parent),
-      d(new RunnerManagerPrivate(this))
+    d(new RunnerManagerPrivate(this))
 {
 }
 
@@ -227,7 +198,7 @@ QStringList RunnerManager::allowedRunners() const
 
 void RunnerManager::loadRunner(const KService::Ptr service)
 {
-    KPluginInfo description(service);
+    const KPluginInfo description(service);
     const QString runnerName = description.pluginName();
     if (!runnerName.isEmpty() && !d->runners.contains(runnerName)) {
         AbstractRunner *runner = d->loadInstalledRunner(service);
@@ -248,14 +219,6 @@ AbstractRunner* RunnerManager::runner(const QString &name) const
 QList<AbstractRunner*> RunnerManager::runners() const
 {
     return d->runners.values();
-}
-
-QString RunnerManager::runnerName(const QString &id) const
-{
-    if (runner(id)) {
-        return runner(id)->name();
-    }
-    return QString();
 }
 
 RunnerContext* RunnerManager::searchContext() const
@@ -283,7 +246,6 @@ QMimeData* RunnerManager::mimeDataForMatch(const QueryMatch &match) const
     if (runner) {
         return runner->mimeDataForMatch(match);
     }
-
     return nullptr;
 }
 
@@ -300,46 +262,13 @@ KPluginInfo::List RunnerManager::listRunnerInfo(const QString &parentApp)
     return KPluginInfo::fromServices(offers);
 }
 
-void RunnerManager::setupMatchSession()
-{
-    d->teardownRequested = false;
-
-    if (d->prepped) {
-        return;
-    }
-
-    d->prepped = true;
-    foreach (AbstractRunner *runner, d->runners) {
-#ifdef MEASURE_PREPTIME
-        QTime t;
-        t.start();
-#endif
-        emit runner->prepare();
-#ifdef MEASURE_PREPTIME
-        kDebug() << t.elapsed() << runner->name();
-#endif
-    }
-
-    d->allRunnersPrepped = true;
-}
-
-void RunnerManager::matchSessionComplete()
-{
-    if (!d->prepped) {
-        return;
-    }
-
-    d->teardownRequested = true;
-    d->checkTearDown();
-}
-
 void RunnerManager::launchQuery(const QString &untrimmedTerm)
 {
-    setupMatchSession();
+    reset();
+
     QString term = untrimmedTerm.trimmed();
 
     if (term.isEmpty()) {
-        reset();
         return;
     }
 
@@ -352,7 +281,6 @@ void RunnerManager::launchQuery(const QString &untrimmedTerm)
         d->loadRunners();
     }
 
-    reset();
     // kDebug() << "runners searching for" << term;
     d->context.setQuery(term);
 
@@ -362,6 +290,8 @@ void RunnerManager::launchQuery(const QString &untrimmedTerm)
             d->threadPool->start(job, RunnerManagerPrivate::threadPriority(runner->priority()));
         }
     }
+
+    d->finishedTimer->start();
 }
 
 QString RunnerManager::query() const
@@ -371,8 +301,7 @@ QString RunnerManager::query() const
 
 void RunnerManager::reset()
 {
-    d->threadPool->waitForDone(3000);
-
+    d->threadPool->waitForDone();
     d->context.reset();
 }
 

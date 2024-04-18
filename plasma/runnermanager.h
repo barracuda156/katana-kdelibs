@@ -57,15 +57,7 @@ class PLASMA_EXPORT RunnerManager : public QObject
          * @param name the name of the runner
          * @return Pointer to the runner
          */
-        AbstractRunner *runner(const QString &name) const;
-
-        /**
-         * Returns the translated name of a runner
-         * @param id the id of the runner
-         *
-         * @since 4.4
-         */
-        QString runnerName(const QString &id) const;
+        AbstractRunner* runner(const QString &name) const;
 
         /**
          * @return the list of all currently loaded runners
@@ -141,23 +133,6 @@ class PLASMA_EXPORT RunnerManager : public QObject
 
     public Q_SLOTS:
         /**
-         * Call this method when the runners should be prepared for a query session.
-         * Call matchSessionComplete when the query session is finished for the time
-         * being.
-         * @since 4.4
-         * @see matchSessionComplete
-         */
-        void setupMatchSession();
-
-        /**
-         * Call this method when the query session is finished for the time
-         * being.
-         * @since 4.4
-         * @see prepareForMatchSession
-         */
-        void matchSessionComplete();
-
-        /**
          * Launch a query, this will create threads and return inmediately.
          * When the information will be available can be known using the
          * matchesChanged signal.
@@ -184,8 +159,8 @@ class PLASMA_EXPORT RunnerManager : public QObject
         void queryFinished();
 
     private:
-        Q_PRIVATE_SLOT(d, void scheduleMatchesChanged())
-        Q_PRIVATE_SLOT(d, void matchesChanged())
+        Q_PRIVATE_SLOT(d, void _k_checkFinished())
+        Q_PRIVATE_SLOT(d, void _k_matchesChanged())
 
         RunnerManagerPrivate * const d;
 
