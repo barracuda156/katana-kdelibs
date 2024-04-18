@@ -21,7 +21,6 @@
 #include "kdebug.h"
 
 #include <QMutex>
-#include <QAtomicInt>
 #include <QCoreApplication>
 #include <QElapsedTimer>
 
@@ -40,7 +39,7 @@ public:
     QMutex mutex;
     KThreadPool* parent;
     int maxthreads;
-    QAtomicInt activethreadcount;
+    int activethreadcount;
     QList<QThread*> activethreads;
     QList<QThread*> queuedthreads;
 };
@@ -55,7 +54,7 @@ KThreadPoolPrivate::KThreadPoolPrivate(KThreadPool *_parent)
 
 void KThreadPoolPrivate::appendThread(QThread *thread)
 {
-    activethreadcount.ref();
+    activethreadcount++;
     activethreads.append(thread);
     parent->connect(
         thread, SIGNAL(finished()),
@@ -72,7 +71,8 @@ void KThreadPoolPrivate::_k_slotFinished()
         if (thread->isFinished()) {
             kDebug() << "thread finished" << thread;
             iter.remove();
-            activethreadcount.deref();
+            activethreadcount--;
+            Q_ASSERT(activethreadcount >= 0);
             thread->deleteLater();
         }
     }
@@ -130,7 +130,8 @@ void KThreadPool::waitForDone(const int timeout)
             if (thread->isFinished()) {
                 kDebug() << "thread finished" << thread;
                 iter.remove();
-                d->activethreadcount.deref();
+                d->activethreadcount--;
+                Q_ASSERT(d->activethreadcount >= 0);
                 thread->deleteLater();
             }
         }
