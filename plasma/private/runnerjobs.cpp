@@ -39,7 +39,7 @@ void FindMatchesJob::run()
 {
     // kDebug() << "Running match for " << m_runner->objectName();
     if (m_context.isValid()) {
-        m_runner->performMatch(m_context);
+        m_runner->match(m_context);
     }
 }
 

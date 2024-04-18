@@ -31,7 +31,7 @@ class AbstractRunnerPrivate
 {
 public:
     AbstractRunnerPrivate(AbstractRunner *r);
-    ~AbstractRunnerPrivate();
+
     void init(const KService::Ptr service);
 
     AbstractRunner::Priority priority;
@@ -39,7 +39,6 @@ public:
     RunnerContext::Types blackListed;
     KPluginInfo runnerDescription;
     AbstractRunner *runner;
-    int fastRuns;
     QHash<QString, QAction*> actions;
     QList<RunnerSyntax> syntaxes;
 };

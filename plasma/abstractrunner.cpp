@@ -40,14 +40,14 @@ namespace Plasma
 
 AbstractRunner::AbstractRunner(const KService::Ptr service, QObject *parent)
     : QObject(parent),
-      d(new AbstractRunnerPrivate(this))
+    d(new AbstractRunnerPrivate(this))
 {
     d->init(service);
 }
 
 AbstractRunner::AbstractRunner(QObject *parent, const QVariantList &args)
     : QObject(parent),
-      d(new AbstractRunnerPrivate(this))
+    d(new AbstractRunnerPrivate(this))
 {
     if (args.count() > 0) {
         KService::Ptr service = KService::serviceByStorageId(args[0].toString());
@@ -90,41 +90,6 @@ void AbstractRunner::setSyntaxes(const QList<RunnerSyntax> &syntaxes)
 QList<RunnerSyntax> AbstractRunner::syntaxes() const
 {
     return d->syntaxes;
-}
-
-void AbstractRunner::performMatch(Plasma::RunnerContext &localContext)
-{
-    static const int reasonableRunTime = 1500;
-    static const int fastEnoughTime = 250;
-
-    QElapsedTimer time;
-    time.restart();
-
-    // The local copy is already obtained in the job
-    match(localContext);
-
-    // automatically rate limit runners that become slooow
-    const qint64 runtime = time.elapsed();
-    bool slowed = speed() == SlowSpeed;
-
-    if (!slowed && runtime > reasonableRunTime) {
-        // we punish runners that return too slowly, even if they don't bring
-        // back matches
-        kDebug() << id() << "runner is too slow, putting it on the back burner.";
-        d->fastRuns = 0;
-        setSpeed(SlowSpeed);
-    }
-
-    if (slowed && runtime < fastEnoughTime && localContext.query().size() > 2) {
-        ++d->fastRuns;
-
-        if (d->fastRuns > 2) {
-            // we reward slowed runners who bring back matches fast enough
-            // 3 times in a row
-            kDebug() << id() << "runner is faster than we thought, kicking it up a notch";
-            setSpeed(NormalSpeed);
-        }
-    }
 }
 
 QList<QAction*> AbstractRunner::actionsForMatch(const Plasma::QueryMatch &match)
@@ -255,12 +220,7 @@ AbstractRunnerPrivate::AbstractRunnerPrivate(AbstractRunner *r)
     : priority(AbstractRunner::NormalPriority),
     speed(AbstractRunner::NormalSpeed),
     blackListed(0),
-    runner(r),
-    fastRuns(0)
-{
-}
-
-AbstractRunnerPrivate::~AbstractRunnerPrivate()
+    runner(r)
 {
 }
 

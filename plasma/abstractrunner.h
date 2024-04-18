@@ -82,7 +82,7 @@ class PLASMA_EXPORT AbstractRunner : public QObject
         /**
          * This is the main query method. It should trigger creation of
          * QueryMatch instances through RunnerContext::addMatch and
-         * RunnerContext::addMatches. It is called internally by performMatch().
+         * RunnerContext::addMatches.
          *
          * If the runner can run precisely the requested term (RunnerContext::query()),
          * it should create an exact match by setting the type to RunnerContext::ExactMatch.
@@ -130,13 +130,6 @@ class PLASMA_EXPORT AbstractRunner : public QObject
          * @sa run(), RunnerContext::addMatch, RunnerContext::addMatches, QueryMatch
          */
         virtual void match(Plasma::RunnerContext &context);
-
-        /**
-         * Triggers a call to match. This will call match() internally.
-         *
-         * @param context the search context used in executing this match.
-         */
-        void performMatch(Plasma::RunnerContext &context);
 
         /**
          * Called whenever a match associated with this runner is triggered.
