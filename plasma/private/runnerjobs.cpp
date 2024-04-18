@@ -19,7 +19,6 @@
 
 #include "runnerjobs_p.h"
 #include "runnermanager.h"
-#include "plasma/querymatch.h"
 #include "kdebug.h"
 
 namespace Plasma {

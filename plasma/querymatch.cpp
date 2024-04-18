@@ -26,8 +26,6 @@
 #include <QVariant>
 #include <QSharedPointer>
 
-#include <mutex>
-
 #include "kdebug.h"
 #include "abstractrunner.h"
 
@@ -50,7 +48,6 @@ class QueryMatchPrivate : public QSharedData
         QueryMatchPrivate(const QueryMatchPrivate &other)
             : QSharedData(other)
         {
-            std::lock_guard<std::recursive_mutex> lock(other.mutex);
             runner = other.runner;
             relevance = other.relevance;
             selAction = other.selAction;
@@ -63,7 +60,6 @@ class QueryMatchPrivate : public QSharedData
             data = other.data;
         }
 
-        mutable std::recursive_mutex mutex;
         QWeakPointer<AbstractRunner> runner;
         QString id;
         QString text;
@@ -121,21 +117,17 @@ AbstractRunner* QueryMatch::runner() const
 
 void QueryMatch::setText(const QString &text)
 {
-    std::lock_guard<std::recursive_mutex> locker(d->mutex);
     d->text = text;
 }
 
 void QueryMatch::setSubtext(const QString &subtext)
 {
-    std::lock_guard<std::recursive_mutex> locker(d->mutex);
     d->subtext = subtext;
 }
 
 void QueryMatch::setData(const QVariant & data)
 {
-    std::lock_guard<std::recursive_mutex> locker(d->mutex);
     d->data = data;
-
     if (d->id.isEmpty() || d->idSetByData) {
         const QString id = data.toString();
         if (!id.isEmpty()) {
@@ -147,21 +139,17 @@ void QueryMatch::setData(const QVariant & data)
 
 void QueryMatch::setId(const QString &id)
 {
-    std::lock_guard<std::recursive_mutex> locker(d->mutex);
     if (d->runner) {
         d->id = d->runner.data()->id();
     }
-
     if (!id.isEmpty()) {
         d->id.append('_').append(id);
     }
-
     d->idSetByData = false;
 }
 
 void QueryMatch::setIcon(const QIcon &icon)
 {
-    std::lock_guard<std::recursive_mutex> locker(d->mutex);
     d->icon = icon;
 }
 
@@ -240,7 +228,7 @@ bool QueryMatch::operator!=(const QueryMatch &other) const
 
 void QueryMatch::run() const
 {
-    //kDebug() << "we run the term" << context->query() << "whose type is" << context->mimetype();
+    // kDebug() << "we run the term" << context->query() << "whose type is" << context->mimetype();
     if (d->runner) {
         d->runner.data()->run(*this);
     }

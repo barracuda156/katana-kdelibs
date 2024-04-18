@@ -100,7 +100,7 @@ void AbstractRunner::performMatch(Plasma::RunnerContext &localContext)
     QElapsedTimer time;
     time.restart();
 
-    //The local copy is already obtained in the job
+    // The local copy is already obtained in the job
     match(localContext);
 
     // automatically rate limit runners that become slooow
@@ -168,10 +168,10 @@ void AbstractRunner::clearActions()
     d->actions.clear();
 }
 
-QMimeData * AbstractRunner::mimeDataForMatch(const QueryMatch *match)
+QMimeData* AbstractRunner::mimeDataForMatch(const QueryMatch *match)
 {
     Q_UNUSED(match)
-    return 0;
+    return nullptr;
 }
 
 AbstractRunner::Speed AbstractRunner::speed() const
@@ -253,10 +253,10 @@ void AbstractRunner::init()
 
 AbstractRunnerPrivate::AbstractRunnerPrivate(AbstractRunner *r)
     : priority(AbstractRunner::NormalPriority),
-      speed(AbstractRunner::NormalSpeed),
-      blackListed(0),
-      runner(r),
-      fastRuns(0)
+    speed(AbstractRunner::NormalSpeed),
+    blackListed(0),
+    runner(r),
+    fastRuns(0)
 {
 }
 
