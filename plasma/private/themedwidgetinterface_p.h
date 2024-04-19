@@ -32,7 +32,9 @@ class PaletteHelper : public QObject
 {
     Q_OBJECT
 public:
-    static PaletteHelper *self();
+    PaletteHelper();
+
+    static PaletteHelper* self();
 
 public Q_SLOTS:
     void generatePalettes();
@@ -43,10 +45,6 @@ Q_SIGNALS:
 public:
     QPalette palette;
     QPalette buttonPalette;
-
-private:
-    PaletteHelper();
-    static PaletteHelper *s_paletteHelper;
 };
 
 

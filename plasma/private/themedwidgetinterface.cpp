@@ -24,7 +24,7 @@
 namespace Plasma
 {
 
-PaletteHelper *PaletteHelper::s_paletteHelper = 0;
+K_GLOBAL_STATIC(PaletteHelper, paletteHelper);
 
 PaletteHelper::PaletteHelper()
     : QObject()
@@ -36,11 +36,7 @@ PaletteHelper::PaletteHelper()
 
 PaletteHelper *PaletteHelper::self()
 {
-    if (!s_paletteHelper) {
-        s_paletteHelper = new PaletteHelper;
-    }
-
-    return s_paletteHelper;
+    return paletteHelper;
 }
 
 void PaletteHelper::generatePalettes()
