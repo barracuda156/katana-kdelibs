@@ -40,10 +40,7 @@ class TextBrowserPrivate;
 class PLASMA_EXPORT TextBrowser : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QTextBrowser *nativeWidget READ nativeWidget)
 
 public:
     explicit TextBrowser(QGraphicsWidget *parent = 0);

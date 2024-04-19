@@ -39,10 +39,7 @@ class GroupBoxPrivate;
 class PLASMA_EXPORT GroupBox : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QGroupBox *nativeWidget READ nativeWidget)
 
 public:
     explicit GroupBox(QGraphicsWidget *parent = 0);

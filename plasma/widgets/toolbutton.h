@@ -39,8 +39,6 @@ class ToolButtonPrivate;
 class PLASMA_EXPORT ToolButton : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
     Q_PROPERTY(QString image READ image WRITE setImage)

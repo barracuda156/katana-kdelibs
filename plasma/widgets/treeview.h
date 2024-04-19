@@ -40,10 +40,7 @@ class TreeViewPrivate;
 class PLASMA_EXPORT TreeView : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
     Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel)
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
-    Q_PROPERTY(QTreeView *nativeWidget READ nativeWidget)
 
 public:
     explicit TreeView(QGraphicsWidget *parent = 0);

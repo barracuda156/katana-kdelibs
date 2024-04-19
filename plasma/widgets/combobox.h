@@ -39,10 +39,7 @@ class ComboBoxPrivate;
 class PLASMA_EXPORT ComboBox : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text NOTIFY textChanged)
-    Q_PROPERTY(KComboBox *nativeWidget READ nativeWidget WRITE setNativeWidget)
     Q_PROPERTY(int count READ count)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
 

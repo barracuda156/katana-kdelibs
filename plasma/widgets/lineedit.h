@@ -39,12 +39,9 @@ class LineEditPrivate;
 class PLASMA_EXPORT LineEdit : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(bool clearButtonShown READ isClearButtonShown WRITE setClearButtonShown)
     Q_PROPERTY(QString clickMessage READ clickMessage WRITE setClickMessage)
-    Q_PROPERTY(KLineEdit *nativeWidget READ nativeWidget WRITE setNativeWidget)
 
 public:
     explicit LineEdit(QGraphicsWidget *parent = 0);

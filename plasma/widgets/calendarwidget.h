@@ -39,10 +39,7 @@ class CalendarWidgetPrivate;
 class PLASMA_EXPORT CalendarWidget : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
     Q_PROPERTY(QDate selectedDate READ selectedDate WRITE setSelectedDate)
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
-    Q_PROPERTY(KCalendarWidget *nativeWidget READ nativeWidget)
 
 public:
     explicit CalendarWidget(QGraphicsWidget *parent = 0);

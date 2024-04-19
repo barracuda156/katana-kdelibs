@@ -39,11 +39,8 @@ class CheckBoxPrivate;
 class PLASMA_EXPORT CheckBox : public QGraphicsProxyWidget
 {
     Q_OBJECT
-
-    Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(QString image READ image WRITE setImage)
-    Q_PROPERTY(QCheckBox *nativeWidget READ nativeWidget)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
 
 public:

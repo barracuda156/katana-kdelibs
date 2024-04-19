@@ -36,39 +36,39 @@ Q_DECLARE_METATYPE(Plasma::Svg*)
 
 namespace Plasma
 {
+
 class PLASMA_EXPORT SvgWidget : public QGraphicsWidget
 {
     Q_OBJECT
-
     Q_PROPERTY(Plasma::Svg *svg READ svg WRITE setSvg)
     Q_PROPERTY(QString elementID READ elementID WRITE setElementID)
 
-    public:
-        explicit SvgWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-        explicit SvgWidget(Svg *svg, const QString & elementID = QString(),
-                           QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-        virtual ~SvgWidget();
+public:
+    explicit SvgWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    explicit SvgWidget(Svg *svg, const QString & elementID = QString(),
+                       QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    virtual ~SvgWidget();
 
-        void setSvg(Svg *svg);
-        Svg *svg() const;
+    void setSvg(Svg *svg);
+    Svg *svg() const;
 
-        void setElementID(const QString &elementID);
-        QString elementID() const;
+    void setElementID(const QString &elementID);
+    QString elementID() const;
 
-        void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
 
-    Q_SIGNALS:
-        void clicked(Qt::MouseButton);
+Q_SIGNALS:
+    void clicked(Qt::MouseButton);
 
-    protected:
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-        QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint) const;
-        void mousePressEvent(QGraphicsSceneMouseEvent * event);
+protected:
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint) const;
+    void mousePressEvent(QGraphicsSceneMouseEvent * event);
 
-    private:
-        Q_PRIVATE_SLOT(d, void svgChanged())
+private:
+    Q_PRIVATE_SLOT(d, void svgChanged())
 
-        SvgWidgetPrivate * const d;
+    SvgWidgetPrivate * const d;
 };
 
 } // Plasma namespace

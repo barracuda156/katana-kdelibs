@@ -37,22 +37,21 @@ class SeparatorPrivate;
 class PLASMA_EXPORT Separator : public QGraphicsWidget
 {
     Q_OBJECT
-
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
 
-    public:
-        explicit Separator(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-        virtual ~Separator();
+public:
+    explicit Separator(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    virtual ~Separator();
 
-        void setOrientation(Qt::Orientation orientation);
-        Qt::Orientation orientation();
+    void setOrientation(Qt::Orientation orientation);
+    Qt::Orientation orientation();
 
-    protected:
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-        QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint) const;
+protected:
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint) const;
 
-    private:
-        SeparatorPrivate * const d;
+private:
+    SeparatorPrivate * const d;
 };
 
 } // Plasma namespace
