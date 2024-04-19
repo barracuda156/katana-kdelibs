@@ -22,12 +22,13 @@
 #include "kglobal.h"
 #include "klocale.h"
 #include "kdialog.h"
+#include "khbox.h"
 
-#include <QtGui/QLabel>
-#include <QtGui/QPushButton>
-#include <QtGui/QLayout>
-#include <QtGui/QFontDatabase>
-#include <QtGui/QFontDialog>
+#include <QLabel>
+#include <QPushButton>
+#include <QLayout>
+#include <QFontDatabase>
+#include <QFontDialog>
 
 #include <cmath>
 
@@ -96,6 +97,7 @@ public:
     KFontRequester *q;
     bool m_onlyFixed;
     QString m_sampleText, m_title;
+    KHBox *m_sampleBox;
     QLabel *m_sampleLabel;
     QPushButton *m_button;
     QFont m_selFont;
@@ -110,13 +112,16 @@ KFontRequester::KFontRequester(QWidget *parent, bool onlyFixed)
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setMargin(0);
 
-    d->m_sampleLabel = new QLabel(this);
+    d->m_sampleBox = new KHBox(this);
+    d->m_sampleBox->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    d->m_sampleLabel = new QLabel(d->m_sampleBox);
+    const int margin = KDialog::marginHint();
+    d->m_sampleLabel->setContentsMargins(margin, 0, margin, 0);
     d->m_button = new QPushButton(i18n("Choose..."), this);
 
-    d->m_sampleLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     setFocusProxy(d->m_button);
 
-    layout->addWidget(d->m_sampleLabel, 1);
+    layout->addWidget(d->m_sampleBox, 1);
     layout->addWidget(d->m_button);
 
     connect(d->m_button, SIGNAL(clicked()), SLOT(_k_buttonClicked()));
