@@ -215,60 +215,31 @@ QPixmap transition(const QPixmap &from, const QPixmap &to, qreal amount)
     targetRect.moveCenter(toRect.center());
     startRect.moveCenter(toRect.center());
 
-    //paint to in the center of from, skipping setAlphaF()
+    // paint to in the center of from, skipping setAlphaF()
     QColor color(0, 0, 0, amount);
 
-    // If the native paint engine supports Porter/Duff compositing and CompositionMode_Plus
-    QPaintEngine *paintEngine = from.paintEngine();
-    if (paintEngine && 
-        paintEngine->hasFeature(QPaintEngine::PorterDuff) &&
-        paintEngine->hasFeature(QPaintEngine::BlendModes)) {
-        QPixmap startPixmap(pixmapSize);
-        startPixmap.fill(Qt::transparent);
+    QPixmap startPixmap(pixmapSize);
+    startPixmap.fill(Qt::transparent);
 
-        QPixmap targetPixmap(pixmapSize);
-        targetPixmap.fill(Qt::transparent);
+    QPixmap targetPixmap(pixmapSize);
+    targetPixmap.fill(Qt::transparent);
 
-        QPainter p;
-        p.begin(&targetPixmap);
-        p.drawPixmap(targetRect, to);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-        p.fillRect(targetRect, color);
-        p.end();
+    QPainter p;
+    p.begin(&targetPixmap);
+    p.drawPixmap(targetRect, to);
+    p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    p.fillRect(targetRect, color);
+    p.end();
 
-        p.begin(&startPixmap);
-        p.drawPixmap(startRect, from);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-        p.fillRect(startRect, color);
-        p.setCompositionMode(QPainter::CompositionMode_Plus);
-        p.drawPixmap(targetRect, targetPixmap);
-        p.end();
+    p.begin(&startPixmap);
+    p.drawPixmap(startRect, from);
+    p.setCompositionMode(QPainter::CompositionMode_DestinationOut);
+    p.fillRect(startRect, color);
+    p.setCompositionMode(QPainter::CompositionMode_Plus);
+    p.drawPixmap(targetRect, targetPixmap);
+    p.end();
 
-        return startPixmap;
-    } else {
-        // Fall back to using QRasterPaintEngine to do the transition.
-        QImage under(pixmapSize, QImage::Format_ARGB32_Premultiplied);
-        under.fill(Qt::transparent);
-        QImage over(pixmapSize, QImage::Format_ARGB32_Premultiplied);
-        over.fill(Qt::transparent);
-
-        QPainter p;
-        p.begin(&over);
-        p.drawPixmap(targetRect, to);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-        p.fillRect(over.rect(), color);
-        p.end();
-
-        p.begin(&under);
-        p.drawPixmap(startRect, from);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-        p.fillRect(startRect, color);
-        p.setCompositionMode(QPainter::CompositionMode_Plus);
-        p.drawImage(toRect.topLeft(), over);
-        p.end();
-
-        return QPixmap::fromImage(under);
-    }
+    return startPixmap;
 }
 
 } // PaintUtils namespace
