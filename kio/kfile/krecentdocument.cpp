@@ -68,18 +68,9 @@ QStringList KRecentDocument::recentDocuments()
         d.mkdir(recentDocumentDirectory());
     }
 
-    const QStringList list = d.entryList();
     QStringList fullList;
-
-    foreach (const QString &it, list) {
-        QString pathDesktop;
-        if (it.startsWith(":")) {
-            // FIXME: Remove when Qt will be fixed
-            // http://bugreports.qt.nokia.com/browse/QTBUG-11223
-            pathDesktop = KRecentDocument::recentDocumentDirectory() + it;
-        } else {
-           pathDesktop = d.absoluteFilePath(it);
-        }
+    foreach (const QString &it, d.entryList()) {
+        const QString pathDesktop = d.absoluteFilePath(it);
         KDesktopFile tmpDesktopFile(pathDesktop);
         KUrl urlDesktopFile(tmpDesktopFile.desktopGroup().readPathEntry("URL", QString()));
         if (urlDesktopFile.isLocalFile() && !QFile::exists(urlDesktopFile.toLocalFile())) {
@@ -167,9 +158,8 @@ void KRecentDocument::add(const KUrl &url, const QString &desktopEntryName)
 
 void KRecentDocument::clear()
 {
-    const QStringList list = recentDocuments();
     QDir dir;
-    foreach(const QString &it, list) {
+    foreach(const QString &it, recentDocuments()) {
         kDebug(s_krecentdocumentarea) << "clearing" << it;
         dir.remove(it);
     }
