@@ -155,7 +155,7 @@ int KThreadPool::maxThreadCount() const
     return d->maxthreads;
 }
 
-void KThreadPool::setMaxThreadCount(int maxthreads)
+void KThreadPool::setMaxThreadCount(const int maxthreads)
 {
     if (Q_UNLIKELY(maxthreads < 1)) {
         kWarning() << "invalid max threads count" << maxthreads;
