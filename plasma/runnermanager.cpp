@@ -251,6 +251,13 @@ QMimeData* RunnerManager::mimeDataForMatch(const QueryMatch &match) const
     return nullptr;
 }
 
+void RunnerManager::reloadConfiguration()
+{
+    foreach (Plasma::AbstractRunner *runner, d->runners) {
+        runner->reloadConfiguration();
+    }
+}
+
 KPluginInfo::List RunnerManager::listRunnerInfo(const QString &parentApp)
 {
     QString constraint;

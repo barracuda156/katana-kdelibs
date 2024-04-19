@@ -118,6 +118,11 @@ public:
     QMimeData* mimeDataForMatch(const QueryMatch &match) const;
 
     /**
+     * Causes a reload of the configuration of all loaded runners
+     */
+    void reloadConfiguration();
+
+    /**
      * Returns a list of all known Runner implementations
      *
      * @param parentApp the application to filter applets on. Uses the X-KDE-ParentApp entry (if
