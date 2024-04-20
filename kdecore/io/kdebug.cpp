@@ -21,7 +21,6 @@
 #include "kglobal.h"
 #include "kconfig.h"
 #include "kconfiggroup.h"
-#include "kmessage.h"
 #include "kstandarddirs.h"
 #include "kcomponentdata.h"
 #include "kurl.h"
@@ -41,10 +40,9 @@
 
 enum KDebugType {
     TypeFile = 0,
-    TypeMessageBox = 1,
-    TypeShell = 2,
-    TypeSyslog = 3,
-    TypeOff = 4
+    TypeShell = 1,
+    TypeSyslog = 2,
+    TypeOff = 3
 };
 
 static const QString s_kdebugfilepath = QString::fromLatin1("kdebug.log");
@@ -160,64 +158,6 @@ private:
     bool m_abortfatal;
     QByteArray m_header;
     QString m_filepath;
-};
-
-class KDebugMessageBoxDevice: public KDebugNullDevice
-{
-    Q_OBJECT
-public:
-    KDebugMessageBoxDevice()
-        : m_type(QtDebugMsg),
-        m_abortfatal(true)
-        { }
-
-    void setType(const QtMsgType type)
-        { m_type = type; }
-    void setAbortFatal(const bool abortfatal)
-        { m_abortfatal = abortfatal; }
-    void setHeader(const QByteArray &header)
-        { m_header = header; }
-
-protected:
-    qint64 writeData(const char* data, qint64 len) final
-        {
-            const QString text = QString::fromLatin1("%1: %2").arg(
-                QString::fromLocal8Bit(m_header.constData(), m_header.size()),
-                QString::fromLocal8Bit(data, len)
-            );
-            switch (m_type) {
-                case QtDebugMsg: {
-                    KMessage::message(KMessage::Information, text);
-                    break;
-                }
-                case QtWarningMsg: {
-                    KMessage::message(KMessage::Warning, text);
-                    break;
-                }
-                case QtCriticalMsg: {
-                    KMessage::message(KMessage::Error, text);
-                    break;
-                }
-                case QtFatalMsg: {
-                    KMessage::message(KMessage::Fatal, text);
-                    if (m_abortfatal) {
-                        // can't show message box and abort immediately (QDialog::exec() depends on
-                        // events processing and there may not be any events to process at that
-                        // point), note that depending on the KMessage handler and the alarm()
-                        // behaviour (man 2 alarm) a lot of bad things can happen meanwhile
-                        ::alarm(10);
-                    }
-                    break;
-                }
-            }
-            return len;
-        }
-
-private:
-    Q_DISABLE_COPY(KDebugMessageBoxDevice);
-    QtMsgType m_type;
-    bool m_abortfatal;
-    QByteArray m_header;
 };
 
 class KDebugShellDevice: public KDebugNullDevice
@@ -535,18 +475,6 @@ QIODevice* KDebugConfig::areaDevice(const QtMsgType type, const char* const func
             kdebugdevice->setAbortFatal(areaabort);
             kdebugdevice->setHeader(kDebugHeader(KDebugConfig::areaName(area), funcinfo, areaoutput));
             kdebugdevice->setFilepath(areafilename);
-            return kdebugdevice;
-        }
-        case KDebugType::TypeMessageBox: {
-            QIODevice* qiodevice = m_areadevices.value(areakey, nullptr);
-            if (!qiodevice) {
-                qiodevice = new KDebugMessageBoxDevice();
-                m_areadevices.insert(areakey, qiodevice);
-            }
-            KDebugMessageBoxDevice* kdebugdevice = qobject_cast<KDebugMessageBoxDevice*>(qiodevice);
-            kdebugdevice->setType(type);
-            kdebugdevice->setAbortFatal(areaabort);
-            kdebugdevice->setHeader(kDebugHeader(KDebugConfig::areaName(area), funcinfo, areaoutput));
             return kdebugdevice;
         }
         case KDebugType::TypeShell: {

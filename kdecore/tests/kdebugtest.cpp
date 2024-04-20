@@ -86,14 +86,12 @@ void KDebugTest::output_data()
     QTest::addColumn<bool>("areafancy");
     QTest::newRow("file") << 0 << false;
     QTest::newRow("file (fancy)") << 0 << true;
-    QTest::newRow("messagebox") << 1 << false;
-    QTest::newRow("messagebox") << 1 << true;
-    QTest::newRow("shell") << 2 << false;
-    QTest::newRow("shell (fancy)") << 2 << true;
-    QTest::newRow("syslog") << 3 << false;
-    QTest::newRow("syslog (fancy)") << 3 << true;
-    QTest::newRow("off") << 4 << false;
-    QTest::newRow("off (fancy)") << 4 << true;
+    QTest::newRow("shell") << 1 << false;
+    QTest::newRow("shell (fancy)") << 1 << true;
+    QTest::newRow("syslog") << 2 << false;
+    QTest::newRow("syslog (fancy)") << 2 << true;
+    QTest::newRow("off") << 3 << false;
+    QTest::newRow("off (fancy)") << 3 << true;
 }
 
 void KDebugTest::output()

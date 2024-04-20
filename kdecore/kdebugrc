@@ -1,29 +1,24 @@
-# This files includes the default behavior for some specific debug areas
-# This allows to leave the kDebug* calls in the code, but still have them
-# disabled for most users.
+# This files includes the default behavior for some specific debug areas.
 #
-# This file will be installed as $KDEDIR/share/config/kdebugrc
+# There are four levels of output: Info, Warn, Error and Fatal corresponding to
+# kDebug(), kWarning(), kError(), kFatal()
 #
-# There are four levels of output: Info, Warn, Error and Fatal
-# corresponding to kDebug(), kWarning(), kError(), kFatal()
-#
-# For every of them you can define a target by *Output=n
-# using the following numbers:
+# For every of them you can define a target by *Output=n using the following
+# numbers:
 #
 #   0 = file
-#   1 = message box
-#   2 = shell (stderr)
-#   3 = syslog
-#   4 = off
+#   1 = shell (stderr)
+#   2 = syslog
+#   3 = off
 #
-# For file output you can give a filename by *Filename=<file>
-# otherwise kdebug.log in the current directory is used.
+# For file output you can give a filename by *Filename=<file> otherwise
+# kdebug.log in the current directory is used.
 #
 # example:
 #
-# For the debug area 100 you want output of debug messages
-# to a file /var/log/dbg.log and error messages as message boxes.
-# Additionally the program should abort on fatal errors.
+# For the debug area 100 you want output of debug messages to a file
+# /var/log/dbg.log and error messages to the system log. Additionally the
+# program should abort on fatal errors.
 #
 # [100]
 # InfoOutput=0
@@ -34,31 +29,31 @@
 
 # kcrash warning, error and fatal to syslog
 [1410]
-InfoOutput=4
-WarnOutput=3
-ErrorOutput=3
-FatalOutput=3
+InfoOutput=3
+WarnOutput=2
+ErrorOutput=2
+FatalOutput=2
 
 # KHTTP warning, error and fatal to syslog
 [7050]
-InfoOutput=4
-WarnOutput=3
-ErrorOutput=3
-FatalOutput=3
+InfoOutput=3
+WarnOutput=2
+ErrorOutput=2
+FatalOutput=2
 
 # kpasswdstore warning, error and fatal to syslog
 [51004]
-InfoOutput=4
-WarnOutput=3
-ErrorOutput=3
-FatalOutput=3
+InfoOutput=3
+WarnOutput=2
+ErrorOutput=2
+FatalOutput=2
 
 # kpowermanager warning, error and fatal to syslog
 [51005]
-InfoOutput=4
-WarnOutput=3
-ErrorOutput=3
-FatalOutput=3
+InfoOutput=3
+WarnOutput=2
+ErrorOutput=2
+FatalOutput=2
 
 # kdnssd warning, error and fatal to syslog
 [51006]
