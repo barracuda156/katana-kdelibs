@@ -43,10 +43,6 @@ KuitSemantics::KuitSemantics(const QString &lang)
     format.plain = catalog.translate("@warning/plain", "WARNING: %1");
     format.rich = catalog.translate("@warning/rich", "<b>Warning</b>: %1");
     m_formats.append(format);
-    format.tag = QString::fromLatin1("command");
-    format.plain = catalog.translate("@command/plain", "%1");
-    format.rich = catalog.translate("@command/rich", "<tt>%1</tt>");
-    m_formats.append(format);
     // special cases
     format.tag = QString::fromLatin1(KUIT_NUMARGS);
     format.plain = QString();
