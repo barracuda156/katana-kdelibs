@@ -82,90 +82,95 @@ KConfig* KMessageBox_againConfig = 0;
 static QIcon themedMessageBoxIcon(QMessageBox::Icon icon)
 {
     QString icon_name;
-
     switch (icon) {
-    case QMessageBox::NoIcon:
-        return QIcon();
-        break;
-    case QMessageBox::Information:
-        icon_name = "dialog-information";
-        break;
-    case QMessageBox::Warning:
-        icon_name = "dialog-warning";
-        break;
-    case QMessageBox::Critical:
-        icon_name = "dialog-error";
-        break;
-    default:
-        break;
+        case QMessageBox::NoIcon: {
+            return QIcon();
+        }
+        case QMessageBox::Information: {
+            icon_name = "dialog-information";
+            break;
+        }
+        case QMessageBox::Warning: {
+            icon_name = "dialog-warning";
+            break;
+        }
+        case QMessageBox::Critical: {
+            icon_name = "dialog-error";
+            break;
+        }
+        default: {
+            break;
+        }
     }
-
-   QIcon ret = KIconLoader::global()->loadIcon(icon_name, KIconLoader::NoGroup, KIconLoader::SizeHuge, KIconLoader::DefaultState, QStringList(), 0, true);
-
-   if (ret.isNull()) {
-       return QMessageBox::standardIcon(icon);
-   } else {
-       return ret;
-   }
+    QIcon ret = KIconLoader::global()->loadIcon(
+        icon_name, KIconLoader::NoGroup, KIconLoader::SizeHuge, KIconLoader::DefaultState, QStringList(), 0, true
+    );
+    if (ret.isNull()) {
+        return QMessageBox::standardIcon(icon);
+    }
+    return ret;
 }
 
-static void sendNotification( QString message,
-                              const QStringList& strlist,
-                              QMessageBox::Icon icon,
-                              WId parent_id )
+// create the message for KNotify
+static void sendNotification(QString message, const QStringList &strlist, QMessageBox::Icon icon,
+                             WId parent_id)
 {
-    // create the message for KNotify
-    QString messageType;
-    switch (icon) {
-    case QMessageBox::Warning:
-        messageType = "kde/messageWarning";
-        break;
-    case QMessageBox::Critical:
-        messageType = "kde/messageCritical";
-        break;
-    case QMessageBox::Question:
-        messageType = "kde/messageQuestion";
-        break;
-    default:
-        messageType = "kde/messageInformation";
-        break;
-    }
-
-    if ( !strlist.isEmpty() ) {
-        for ( QStringList::ConstIterator it = strlist.begin(); it != strlist.end(); ++it ) {
-            message += '\n' + *it;
+    if (!strlist.isEmpty() ) {
+        foreach (const QString &it, strlist) {
+            message += '\n' + it;
         }
     }
 
-    if ( !message.isEmpty() ) {
+    if (!message.isEmpty()) {
+        QString messageType;
+        switch (icon) {
+            case QMessageBox::Warning: {
+                messageType = QLatin1String("kde/messageWarning");
+                break;
+            }
+            case QMessageBox::Critical: {
+                messageType = QLatin1String("kde/messageCritical");
+                break;
+            }
+            case QMessageBox::Question: {
+                messageType = QLatin1String("kde/messageQuestion");
+                break;
+            }
+            default: {
+                messageType = QLatin1String("kde/messageInformation");
+                break;
+            }
+        }
+
         KNotification::event(
-            messageType, QString(), message, QString(), QWidget::find( parent_id )
+            messageType, QString(), message, QString(), QWidget::find(parent_id)
         );
     }
 }
 
-static void applyOptions( KDialog* dialog, KMessageBox::Options options )
+static void applyOptions(KDialog* dialog, KMessageBox::Options options)
 {
-    if ( options & KMessageBox::WindowModal ) {
-        dialog->setWindowModality( Qt::WindowModal );
+    if (options & KMessageBox::WindowModal) {
+        dialog->setWindowModality(Qt::WindowModal);
     }
-    dialog->setModal( true );
+    dialog->setModal(true);
 }
 
-int KMessageBox::createKMessageBox(KDialog *dialog, QMessageBox::Icon icon,
-                             const QString &text, const QStringList &strlist,
-                             const QString &ask, bool *checkboxReturn,
-                             Options options, const QString &details)
+int KMessageBox::createKMessageBox(KDialog *dialog, QMessageBox::Icon icon, const QString &text,
+                                   const QStringList &strlist, const QString &ask,
+                                   bool *checkboxReturn, Options options, const QString &details)
 {
-    return createKMessageBox(dialog, themedMessageBoxIcon(icon), text, strlist,
-                      ask, checkboxReturn, options, details, icon);
+    return createKMessageBox(
+        dialog, themedMessageBoxIcon(icon), text, strlist,
+        ask, checkboxReturn, options, details, icon
+    );
 }
 
 
-int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon,
-                             const QString &text, const QStringList &strlist,
-                             const QString &ask, bool *checkboxReturn, Options options,
-                             const QString &details, QMessageBox::Icon notifyType)
+int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QString &text,
+                                   const QStringList &strlist, const QString &ask,
+                                   bool *checkboxReturn, Options options, const QString &details,
+                                   QMessageBox::Icon notifyType)
 {
     QWidget *mainWidget = new QWidget(dialog);
     QVBoxLayout *mainLayout = new QVBoxLayout(mainWidget);
