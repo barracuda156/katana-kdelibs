@@ -238,12 +238,11 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         scrollPal.setColor(QPalette::Window, Qt::transparent);
         messageScrollArea->viewport()->setPalette(scrollPal);
         hLayout->addWidget(messageScrollArea,5);
-    }
-    else
+    } else {
         hLayout->addWidget(messageLabel,5);
+    }
 
-
-    const bool usingListWidget=!strlist.isEmpty();
+    const bool usingListWidget = !strlist.isEmpty();
     if (usingListWidget) {
         // enable automatic wrapping since the listwidget has already a good initial width
         messageLabel->setWordWrap(true);
@@ -368,8 +367,10 @@ int KMessageBox::questionYesNo(QWidget *parent, const QString &text,
                            const QString &dontAskAgainName,
                            Options options)
 {
-    return questionYesNoList(parent, text, QStringList(), caption,
-                            buttonYes, buttonNo, dontAskAgainName, options);
+    return questionYesNoList(
+        parent, text, QStringList(), caption,
+        buttonYes, buttonNo, dontAskAgainName, options
+    );
 }
 
 int KMessageBox::questionYesNoWId(WId parent_id, const QString &text,
