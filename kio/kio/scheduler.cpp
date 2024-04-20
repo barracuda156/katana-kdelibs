@@ -560,21 +560,17 @@ public:
     bool m_ignoreConfigReparse;
 
     SessionData sessionData;
-    QMap<QObject *,WId> m_windowList;
 
     void doJob(SimpleJob *job);
     void setJobPriority(SimpleJob *job, int priority);
     void cancelJob(SimpleJob *job);
     void jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave);
-    void registerWindow(QWidget *wid);
 
     void setupSlave(KIO::SlaveInterface *slave, const KUrl &url, const QString &protocol, bool newSlave);
 
     void slotSlaveDied(KIO::SlaveInterface *slave);
 
     void slotReparseSlaveConfiguration(const QString &, const QDBusMessage&);
-
-    void slotUnregisterWindow(QObject *);
 
     ProtoQueue *protoQ(const QString& protocol, const QString& host)
     {
@@ -659,16 +655,6 @@ void Scheduler::cancelJob(SimpleJob *job)
 void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
 {
     schedulerPrivate->jobFinished(job, slave);
-}
-
-void Scheduler::registerWindow(QWidget *wid)
-{
-    schedulerPrivate->registerWindow(wid);
-}
-
-void Scheduler::unregisterWindow(QObject *wid)
-{
-    schedulerPrivate->slotUnregisterWindow(wid);
 }
 
 void Scheduler::emitReparseSlaveConfiguration()
@@ -814,66 +800,6 @@ void SchedulerPrivate::slotSlaveDied(KIO::SlaveInterface *slave)
        pq->removeSlave(slave);
     }
     slave->deref(); // Delete slave
-}
-
-/*
-  Returns the top most window associated with widget.
-
-  Unlike QWidget::window(), this function does its best to find and return the
-  main application window associated with the given widget.
-
-  If widget itself is a dialog or its parent is a dialog, and that dialog has a
-  parent widget then this function will iterate through all those widgets to
-  find the top most window, which most of the time is the main window of the
-  application. By contrast, QWidget::window() would simply return the first
-  file dialog it encountered since it is the "next ancestor widget that has (or
-  could have) a window-system frame".
-*/
-static QWidget* topLevelWindow(QWidget* widget)
-{
-    QWidget* w = widget;
-    while (w && w->parentWidget()) {
-        w = w->parentWidget();
-    }
-    return (w ? w->window() : 0);
-}
-
-void SchedulerPrivate::registerWindow(QWidget *wid)
-{
-   if (!wid)
-      return;
-
-   QWidget* window = topLevelWindow(wid);
-   QObject *obj = static_cast<QObject *>(window);
-
-   if (!m_windowList.contains(obj))
-   {
-      // We must store the window Id because by the time
-      // the destroyed signal is emitted we can no longer
-      // access QWidget::winId() (already destructed)
-      WId windowId = window->winId();
-      m_windowList.insert(obj, windowId);
-      q->connect(window, SIGNAL(destroyed(QObject*)),
-                 SLOT(slotUnregisterWindow(QObject*)));
-      QDBusInterface("org.kde.kded", "/kded", "org.kde.kded").
-          call(QDBus::NoBlock, "registerWindowId", qlonglong(windowId));
-   }
-}
-
-void SchedulerPrivate::slotUnregisterWindow(QObject *obj)
-{
-   if (!obj)
-      return;
-
-   QMap<QObject *, WId>::Iterator it = m_windowList.find(obj);
-   if (it == m_windowList.end())
-      return;
-   WId windowId = it.value();
-   q->disconnect(it.key(), SIGNAL(destroyed(QObject*)),
-                 q, SLOT(slotUnregisterWindow(QObject*)));
-   m_windowList.erase( it );
-   QDBusInterface("org.kde.kded", "/kded", "org.kde.kded").
-       call(QDBus::NoBlock, "unregisterWindowId", qlonglong(windowId));
 }
 
 #include "moc_scheduler.cpp"

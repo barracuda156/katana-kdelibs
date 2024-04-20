@@ -21,24 +21,16 @@
 */
 
 #include "jobuidelegate.h"
-
-#include <kdebug.h>
-#include <kjob.h>
-#include <klocale.h>
-#include <kmessagebox.h>
-#include <ksharedconfig.h>
-#include <kmessage.h>
+#include "kio/job.h"
+#include "kjob.h"
+#include "klocale.h"
+#include "kmessagebox.h"
+#include "ksharedconfig.h"
+#include "kmessage.h"
+#include "kdebug.h"
 
 #include <QPointer>
 #include <QWidget>
-
-#include "kio/scheduler.h"
-
-void KIO::JobUiDelegate::setWindow(QWidget *window)
-{
-    KDialogJobUiDelegate::setWindow(window);
-    KIO::Scheduler::registerWindow(window);
-}
 
 KIO::RenameDialog_Result KIO::JobUiDelegate::askFileRename(KJob * job,
                                                            const QString & caption,

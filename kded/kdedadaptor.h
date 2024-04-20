@@ -35,9 +35,6 @@ public Q_SLOTS:
    bool loadModule(const QString &obj);
    QStringList loadedModules();
    bool unloadModule(const QString &obj);
-   //bool isWindowRegistered(qlonglong windowId) const;
-   void registerWindowId(qlonglong windowId, const QDBusMessage&);
-   void unregisterWindowId(qlonglong windowId, const QDBusMessage&);
    void reconfigure();
    void loadSecondPhase();
    void quit();
@@ -58,4 +55,4 @@ public Q_SLOTS:
    void setModuleAutoloading(const QString &module, bool autoload);
 };
 
-#endif
+#endif // KDED_KDEDADAPTOR_H

@@ -42,13 +42,6 @@ class KIO_EXPORT JobUiDelegate : public KDialogJobUiDelegate
 
 public:
     /**
-     * Associate this job with a window given by @p window.
-     * @param window the window to associate to
-     * @see window()
-     */
-    virtual void setWindow(QWidget *window);
-
-    /**
      * \relates KIO::RenameDialog
      * Construct a modal, parent-less "rename" dialog, and return
      * a result code, as well as the new dest. Much easier to use than the

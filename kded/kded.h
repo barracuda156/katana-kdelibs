@@ -20,21 +20,17 @@
 #ifndef KDED_H
 #define KDED_H
 
-#include <QtCore/QObject>
-#include <QtCore/QString>
-#include <QtCore/QTimer>
-#include <QtCore/QHash>
-#include <QtCore/QSet>
-#include <QtDBus/QDBusMessage>
-#include <QtDBus/QDBusAbstractAdaptor>
-#include <QtDBus/QDBusServiceWatcher>
+#include <QObject>
+#include <QString>
+#include <QTimer>
+#include <QHash>
+#include <QDBusMessage>
+#include <QDBusAbstractAdaptor>
 
 #include <ksycoca.h>
 #include <ksycocatype.h>
 #include <kdedmodule.h>
 #include <kservice.h>
-
-#include <QDBusServiceWatcher>
 
 class KDirWatch;
 
@@ -55,20 +51,7 @@ public:
    KDEDModule *loadModule(const KService::Ptr& service, bool onDemand);
    QStringList loadedModules();
    bool unloadModule(const QString &obj);
-   //bool isWindowRegistered(qlonglong windowId) const;
-   /**
-    * Applications can register/unregister their windows with kded modules.
-    */
-   //@{
-   /**
-    * Register a window with KDED
-    */
-   void registerWindowId(qlonglong windowId, const QString &sender);
-   /**
-    * Unregister a window previously registered with KDED
-    */
-   void unregisterWindowId(qlonglong windowId, const QString &sender);
-   //@}
+
    void loadSecondPhase();
 
    //@{
@@ -143,11 +126,6 @@ public Q_SLOTS:
    void updateResourceList();
 
    /**
-    * An application unregistered itself from DBus
-    */
-   void slotApplicationRemoved(const QString&);
-
-   /**
     * A KDEDModule is about to get destroyed.
     */
    void slotKDEDModuleRemoved(KDEDModule *);
@@ -190,11 +168,6 @@ private:
    QHash<QString,KDEDModule *> m_modules;
     //QHash<QString,QLibrary *> m_libs;
    QHash<QString,QObject *> m_dontLoad;
-
-   //window id tracking, with a QDBusServiceWatcher to remove them as needed
-   QDBusServiceWatcher *m_serviceWatcher;
-   QHash<QString,QList<qlonglong> > m_windowIdList;
-   QSet<long> m_globalWindowIdList;
 
    QStringList m_allResourceDirs;
 

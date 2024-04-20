@@ -49,18 +49,9 @@ bool KdedAdaptor::unloadModule(const QString &module)
    return Kded::self()->unloadModule(module);
 }
 
-void KdedAdaptor::registerWindowId(qlonglong windowId, const QDBusMessage &msg)
-{
-   Kded::self()->registerWindowId(windowId, msg.service());
-}
-
 void KdedAdaptor::setModuleAutoloading(const QString &module, bool autoload)
 {
-        return Kded::self()->setModuleAutoloading(module, autoload);
-}
-void KdedAdaptor::unregisterWindowId(qlonglong windowId, const QDBusMessage &msg)
-{
-   Kded::self()->unregisterWindowId(windowId, msg.service());
+    return Kded::self()->setModuleAutoloading(module, autoload);
 }
 
 QStringList KdedAdaptor::loadedModules()

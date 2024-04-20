@@ -88,16 +88,9 @@ Kded::Kded(QObject *parent)
     : QObject(parent),
     m_pDirWatch(nullptr),
     m_pTimer(nullptr),
-    m_hTimer(nullptr),
-    m_serviceWatcher(nullptr)
+    m_hTimer(nullptr)
 {
     _self = this;
-
-    m_serviceWatcher = new QDBusServiceWatcher(this);
-    m_serviceWatcher->setConnection(QDBusConnection::sessionBus());
-    m_serviceWatcher->setWatchMode(QDBusServiceWatcher::WatchForUnregistration);
-    connect(m_serviceWatcher, SIGNAL(serviceUnregistered(QString)),
-            this, SLOT(slotApplicationRemoved(QString)));
 
     new KBuildsycocaAdaptor(this);
     new KdedAdaptor(this);
@@ -442,24 +435,6 @@ void Kded::slotKDEDModuleRemoved(KDEDModule *module)
     // }
 }
 
-void Kded::slotApplicationRemoved(const QString &name)
-{
-#if 0 // see kdedmodule.cpp (KDED_OBJECTS)
-    foreach (KDEDModule* module, m_modules) {
-        module->removeAll(appId);
-    }
-#endif
-    m_serviceWatcher->removeWatchedService(name);
-    const QList<qlonglong> windowIds = m_windowIdList.value(name);
-    foreach(const qlonglong windowId, windowIds) {
-        m_globalWindowIdList.remove(windowId);
-        foreach(KDEDModule* module, m_modules) {
-            emit module->windowUnregistered(windowId);
-        }
-    }
-    m_windowIdList.remove(name);
-}
-
 void Kded::updateDirWatch()
 {
     if (!bCheckSycoca) {
@@ -524,52 +499,8 @@ void Kded::checkHostname()
     m_hostname = newHostname;
 }
 
-#if 0
-bool Kded::isWindowRegistered(long windowId) const
-{
-    return m_globalWindowIdList.contains(windowId);
-}
-#endif
-
-void Kded::registerWindowId(qlonglong windowId, const QString &sender)
-{
-    if (!m_windowIdList.contains(sender)) {
-        m_serviceWatcher->addWatchedService(sender);
-    }
-
-    m_globalWindowIdList.insert(windowId);
-    QList<qlonglong> windowIds = m_windowIdList.value(sender);
-    windowIds.append(windowId);
-    m_windowIdList.insert(sender, windowIds);
-
-    foreach (KDEDModule* module, m_modules) {
-        // kDebug() << module->moduleName();
-        emit module->windowRegistered(windowId);
-    }
-}
-
-void Kded::unregisterWindowId(qlonglong windowId, const QString &sender)
-{
-    m_globalWindowIdList.remove(windowId);
-    QList<qlonglong> windowIds = m_windowIdList.value(sender);
-    if (!windowIds.isEmpty()) {
-        windowIds.removeAll(windowId);
-        if (windowIds.isEmpty()) {
-            m_serviceWatcher->removeWatchedService(sender);
-            m_windowIdList.remove(sender);
-        } else {
-            m_windowIdList.insert(sender, windowIds);
-        }
-    }
-
-    foreach (KDEDModule* module, m_modules) {
-        // kDebug() << module->moduleName();
-        emit module->windowUnregistered(windowId);
-    }
-}
-
 KBuildsycocaAdaptor::KBuildsycocaAdaptor(QObject *parent)
-   : QDBusAbstractAdaptor(parent)
+    : QDBusAbstractAdaptor(parent)
 {
 }
 

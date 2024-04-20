@@ -120,20 +120,6 @@ namespace KIO {
          */
         static void jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave);
 
-        /**
-         * Register the mainwindow @p wid with the KIO subsystem
-         * Do not call this, it is called automatically from
-         * void KIO::Job::setWindow(QWidget*).
-         * @param wid the window to register
-         */
-        static void registerWindow(QWidget *wid);
-
-        /**
-         * @internal
-         * Unregisters the window registered by registerWindow().
-         */
-        static void unregisterWindow(QObject *wid);
-
         static void emitReparseSlaveConfiguration();
 
         static Scheduler *self();
@@ -151,8 +137,6 @@ namespace KIO {
 
         // connected to D-Bus signal:
         Q_PRIVATE_SLOT(d_func(), void slotReparseSlaveConfiguration(const QString &, const QDBusMessage&))
-
-        Q_PRIVATE_SLOT(d_func(), void slotUnregisterWindow(QObject *))
     private:
         friend class SchedulerPrivate;
         SchedulerPrivate *d_func();
