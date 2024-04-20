@@ -59,7 +59,8 @@ void KThreadPoolPrivate::appendThread(QThread *thread)
     activethreads.append(thread);
     parent->connect(
         thread, SIGNAL(finished()),
-        parent, SLOT(_k_slotFinished())
+        parent, SLOT(_k_slotFinished()),
+        Qt::QueuedConnection
     );
 }
 
@@ -77,13 +78,13 @@ void KThreadPoolPrivate::_k_slotFinished()
             thread->deleteLater();
         }
     }
-    if (!queuedthreads.isEmpty()) {
+    while (activethreadcount < maxthreads && !queuedthreads.isEmpty()) {
         QThread* thread = queuedthreads.takeFirst();
         kDebug() << "starting thread from queue" << thread;
         appendThread(thread);
-        locker.unlock();
         thread->start();
     }
+    kDebug() << "currently" << activethreadcount << "active threads";
 }
 
 
@@ -108,7 +109,6 @@ void KThreadPool::start(QThread *thread, const QThread::Priority priority)
     } else {
         kDebug() << "starting thread" << thread;
         d->appendThread(thread);
-        locker.unlock();
         thread->start(priority);
     }
 }
@@ -120,7 +120,7 @@ void KThreadPool::waitForDone(const int timeout)
     QElapsedTimer elapsedtimer;
     elapsedtimer.start();
     QMutableListIterator<QThread*> iter(d->activethreads);
-    kDebug() << "currently" << d->activethreads << "active threads";
+    kDebug() << "currently" << d->activethreadcount << "active threads";
     while ((timeout < 1 || elapsedtimer.elapsed() < timeout) && d->activethreadcount > 0) {
         iter.toFront();
         while (iter.hasNext()) {
