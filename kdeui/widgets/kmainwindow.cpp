@@ -78,45 +78,24 @@ static KStatusBar *internalStatusBar(KMainWindow *mw)
     return KGlobal::findDirectChild<KStatusBar *>(mw);
 }
 
-/**
- * Listens to resize events from QDockWidgets. The KMainWindow
- * settings are set as dirty, as soon as at least one resize
- * event occurred. The listener is attached to the dock widgets
- * by dock->installEventFilter(dockResizeListener) inside
- * KMainWindow::event().
- */
-class DockResizeListener : public QObject
-{
-public:
-    DockResizeListener(KMainWindow *win);
-    virtual ~DockResizeListener();
-    virtual bool eventFilter(QObject *watched, QEvent *event);
-
-private:
-    KMainWindow *m_win;
-};
-
 DockResizeListener::DockResizeListener(KMainWindow *win) :
     QObject(win),
     m_win(win)
 {
 }
 
-DockResizeListener::~DockResizeListener()
-{
-}
-
 bool DockResizeListener::eventFilter(QObject *watched, QEvent *event)
 {
-    switch( event->type() ) {
-    case QEvent::Resize:
-    case QEvent::Move:
-    case QEvent::Hide:
-        m_win->k_ptr->setSettingsDirty(true);
-        break;
-
-    default:
-        break;
+    switch (event->type()) {
+        case QEvent::Resize:
+        case QEvent::Move:
+        case QEvent::Hide: {
+            m_win->k_ptr->setSettingsDirty(true);
+            break;
+        }
+        default: {
+            break;
+        }
     }
 
     return QObject::eventFilter(watched, event);
@@ -128,9 +107,7 @@ public:
     KMWSessionManager()
     {
     }
-    ~KMWSessionManager()
-    {
-    }
+
     bool dummyInit() { return true; }
     bool saveState( QSessionManager& )
     {
@@ -448,7 +425,7 @@ void KMainWindow::parseGeometry(bool parsewidth)
 KMainWindow::~KMainWindow()
 {
     sMemberList->removeAll( this );
-    delete static_cast<QObject *>(k_ptr->dockResizeListener);  //so we don't get anymore events after k_ptr is destroyed
+    delete k_ptr->dockResizeListener.data();  // to not get events after k_ptr is destroyed
     delete k_ptr;
     KGlobal::deref();
 }
@@ -924,24 +901,25 @@ void KMainWindow::saveAutoSaveSettings()
 {
     K_D(KMainWindow);
     Q_ASSERT( d->autoSaveSettings );
-    //kDebug(200) << "KMainWindow::saveAutoSaveSettings -> saving settings";
+    // kDebug(200) << "KMainWindow::saveAutoSaveSettings -> saving settings";
     saveMainWindowSettings(d->autoSaveGroup);
     d->autoSaveGroup.sync();
     d->settingsDirty = false;
 }
 
-bool KMainWindow::event( QEvent* ev )
+bool KMainWindow::event(QEvent *ev)
 {
     K_D(KMainWindow);
-    switch( ev->type() ) {
-    case QEvent::Resize:
-        d->setSizeDirty();
-        break;
-    case QEvent::Polish:
-        d->polish(this);
-        break;
-    case QEvent::ChildPolished:
-        {
+    switch (ev->type()) {
+        case QEvent::Resize: {
+            d->setSizeDirty();
+            break;
+        }
+        case QEvent::Polish: {
+            d->polish(this);
+            break;
+        }
+        case QEvent::ChildPolished: {
             QChildEvent *event = static_cast<QChildEvent*>(ev);
             QDockWidget *dock = qobject_cast<QDockWidget*>(event->child());
             KToolBar *toolbar = qobject_cast<KToolBar*>(event->child());
@@ -966,10 +944,9 @@ bool KMainWindow::event( QEvent* ev )
                 // hence install an event filter instead
                 menubar->installEventFilter(k_ptr->dockResizeListener);
             }
+            break;
         }
-        break;
-    case QEvent::ChildRemoved:
-        {
+        case QEvent::ChildRemoved: {
             QChildEvent *event = static_cast<QChildEvent*>(ev);
             QDockWidget *dock = qobject_cast<QDockWidget*>(event->child());
             KToolBar *toolbar = qobject_cast<KToolBar*>(event->child());
@@ -987,12 +964,13 @@ bool KMainWindow::event( QEvent* ev )
             } else if (menubar) {
                 menubar->removeEventFilter(k_ptr->dockResizeListener);
             }
+            break;
         }
-        break;
-    default:
-        break;
+        default: {
+            break;
+        }
     }
-    return QMainWindow::event( ev );
+    return QMainWindow::event(ev);
 }
 
 bool KMainWindow::hasMenuBar()

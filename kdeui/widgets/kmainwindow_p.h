@@ -30,29 +30,46 @@
 #define KMAINWINDOW_P_H
 
 #include <kconfiggroup.h>
-#include <qpointer.h>
+#include <QPointer>
+#include <QObject>
+#include <QTimer>
 
 #define K_D(Class) Class##Private * const d = k_func()
 
-#include <QObject>
-#include <QTimer>
 class KHelpMenu;
+
+/**
+ * Listens to resize events from QDockWidgets. The KMainWindow settings are set as dirty as soon as
+ * at least one resize event occurred. The listener is attached to the dock widgets installing
+ * event filter inside KMainWindow::event().
+ */
+class DockResizeListener : public QObject
+{
+public:
+    DockResizeListener(KMainWindow *win);
+
+    bool eventFilter(QObject *watched, QEvent *event) final;
+
+private:
+    KMainWindow *m_win;
+};
+
 
 class KMainWindowPrivate
 {
 public:
-    bool autoSaveSettings:1;
-    bool settingsDirty:1;
-    bool autoSaveWindowSize:1;
-    bool care_about_geometry:1;
-    bool sizeApplied:1;
+    bool autoSaveSettings;
+    bool settingsDirty;
+    bool autoSaveWindowSize;
+    bool care_about_geometry;
+    bool sizeApplied;
     KConfigGroup autoSaveGroup;
     QTimer *settingsTimer;
     QTimer *sizeTimer;
     QRect defaultWindowSize;
     KHelpMenu *helpMenu;
     KMainWindow *q;
-    QPointer<QObject> dockResizeListener;
+    QPointer<DockResizeListener> dockResizeListener;
     QString dbusName;
     bool letDirtySettings;
 
