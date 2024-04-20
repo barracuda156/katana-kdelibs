@@ -104,9 +104,19 @@ void KRecentDocument::add(const KUrl &url, const QString &desktopEntryName)
     }
 
     const QString path = recentDocumentDirectory();
-    const QString fileName = url.fileName();
+    QString fileName = url.fileName();
+    if (!url.isLocalFile() && fileName.isEmpty()) {
+        // remote URL may not include a filename. maight be just a protocol and host
+        fileName = url.host();
+    }
+    if (fileName.isEmpty()) {
+        // if the filename is empty then there is a problem
+        kWarning(s_krecentdocumentarea) << "empty name" << url << "for" << desktopEntryName;
+        return;
+    }
+
     // don't create a file called ".desktop", it will lead to an empty name in kio_recentdocuments
-    const QString dStr = path + (fileName.isEmpty() ? QString("unnamed") : fileName);
+    const QString dStr = path + fileName;
 
     QString ddesktop = dStr + QLatin1String(".desktop");
 
@@ -152,7 +162,7 @@ void KRecentDocument::add(const KUrl &url, const QString &desktopEntryName)
     conf.writePathEntry("URL", openStr );
     // If you change the line below, change the test in the above loop
     conf.writeEntry("X-KDE-LastOpenedWith", desktopEntryName);
-    conf.writeEntry("Name", url.fileName());
+    conf.writeEntry("Name", fileName);
     conf.writeEntry("Icon", KMimeType::iconNameForUrl(url));
 }
 
