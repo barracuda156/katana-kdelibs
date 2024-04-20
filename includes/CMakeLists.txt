@@ -156,10 +156,7 @@ install(
     KMacroExpanderBase
     KMainWindow
     KMenu
-    KMessage
     KMessageBox
-    KMessageBoxMessageHandler
-    KMessageHandler
     KMessageWidget
     KMimeType
     KMimeTypeChooser
@@ -184,7 +181,6 @@ install(
     KPageWidgetItem
     KPageWidgetModel
     KPassivePopup
-    KPassivePopupMessageHandler
     KPasswordDialog
     KPixmap
     KPixmapWidget

@@ -33,9 +33,9 @@
 #include "kmacroexpander.h"
 #include "klocale.h"
 #include "kstandarddirs.h"
-#include "kmessage.h"
 #include "kservice.h"
 #include "kconfiggroup.h"
+#include "kmessagebox.h"
 #include "kmimetypetrader.h"
 #include "kurl.h"
 
@@ -206,8 +206,8 @@ void KToolInvocation::invokeMailer(const QString &to, const QString &cc,
     // TODO this should check if cmd has a .desktop file, and use data from it, together
     // with sending more ASN data
     if (kdeinitExec(cmd, cmdTokens, &error, startup_id) != 0) {
-        KMessage::message(
-            KMessage::Error,
+        KMessageBox::queuedMessageBox(
+            nullptr, KMessageBox::Error,
             i18n("Could not launch the mail client:\n\n%1", error),
             i18n("Could not launch Mail Client")
         );
@@ -227,11 +227,12 @@ void KToolInvocation::invokeBrowser(const QString &url, const QByteArray& startu
         QString error;
         const int err = startServiceByDesktopPath(htmlApp->entryPath(), url, &error, startup_id);
         if (err != 0) {
-            KMessage::message(
-                KMessage::Error,
+            KMessageBox::queuedMessageBox(
+                nullptr, KMessageBox::Error,
                 // TODO: i18n("Could not launch %1:\n\n%2", htmlApp->exec(), error),
                 i18n("Could not launch the browser:\n\n%1", error),
-                i18n("Could not launch Browser"));
+                i18n("Could not launch Browser")
+            );
         }
         return;
     }
@@ -242,8 +243,8 @@ void KToolInvocation::invokeBrowser(const QString &url, const QByteArray& startu
     }
 
     if (kdeinitExec(exe, args, &error, startup_id) != 0) {
-        KMessage::message(
-            KMessage::Error,
+        KMessageBox::queuedMessageBox(
+            nullptr, KMessageBox::Error,
             // TODO: i18n("Could not launch %1:\n\n%2", exe, error),
             i18n("Could not launch the browser:\n\n%1", error),
             i18n("Could not launch Browser")
@@ -281,8 +282,10 @@ void KToolInvocation::invokeTerminal(const QString &command,
     QString error;
     if (self()->startServiceInternal("kdeinit_exec_with_workdir",
                                      cmd, cmdTokens, &error, startup_id, workdir)) {
-      KMessage::message(KMessage::Error,
-                      i18n("Could not launch the terminal client:\n\n%1", error),
-                      i18n("Could not launch Terminal Client"));
+        KMessageBox::queuedMessageBox(
+            nullptr, KMessageBox::Error,
+            i18n("Could not launch the terminal client:\n\n%1", error),
+            i18n("Could not launch Terminal Client")
+        );
     }
 }

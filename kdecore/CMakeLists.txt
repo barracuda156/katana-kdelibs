@@ -54,7 +54,6 @@ set(kdecore_LIB_SRCS
     io/kdebug.cpp
     io/kdirwatch.cpp
     io/kfilesystemtype_p.cpp
-    io/kmessage.cpp
     io/kmountpoint.cpp
     io/kprocess.cpp
     io/ksavefile.cpp
@@ -200,7 +199,6 @@ install(
     date/ktimezone.h
     io/kdebug.h
     io/kdirwatch.h
-    io/kmessage.h
     io/kprocess.h
     io/klockfile.h
     io/kmountpoint.h

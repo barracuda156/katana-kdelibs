@@ -23,7 +23,6 @@
 #include <ksharedconfig.h>
 #include <kconfiggroup.h>
 #include <kdeversion.h> // KDE_MAKE_VERSION
-#include <kmessage.h>
 #include <klocale.h>
 #include <kstandarddirs.h>
 #include <ksycoca.h>
@@ -619,39 +618,19 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
     return rules;
 }
 
-static void errorMissingMimeTypes(const QStringList &types)
-{
-    KMessage::message(
-        KMessage::Error,
-        i18np(
-            "Could not find mime type %2",
-            "Could not find mime types:\n%2“", types.count(),
-            types.join(QLatin1String("\n"))
-        )
-    );
-}
-
 void KMimeTypeRepository::checkEssentialMimeTypes()
 {
-    if (m_mimeTypesChecked) { // already done
+    if (m_mimeTypesChecked) {
+        // already done
         return;
     }
-    m_mimeTypesChecked = true; // must be done before building mimetypes
+    // must be done before building mimetypes
+    m_mimeTypesChecked = true;
 
-    // No Mime-Types installed ?
-    // Lets do some rescue here.
+    // no shared-mime-info installed ?
     if (!checkMimeTypes()) {
-        // Note that this messagebox is queued, so it will only be shown once getting back to the event loop
-
-        // No mimetypes installed? Are you setting XDG_DATA_DIRS without including /usr/share in it?
-        KMessage::message(
-            KMessage::Error,
-            i18n(
-                "No mime types installed. "
-                "Check that shared-mime-info is installed, and that XDG_DATA_DIRS is not set, or includes /usr/share."
-            )
-        );
-        return; // no point in going any further
+        kError() << "could not find shared-mime-info";
+        return;
     }
 
     QStringList missingMimeTypes;
@@ -681,7 +660,7 @@ void KMimeTypeRepository::checkEssentialMimeTypes()
     }
 
     if (!missingMimeTypes.isEmpty()) {
-        errorMissingMimeTypes(missingMimeTypes);
+        kError() << "could not find mime types" << missingMimeTypes;
     }
 }
 
@@ -693,7 +672,7 @@ KMimeType::Ptr KMimeTypeRepository::defaultMimeTypePtr()
         if (mime) {
             m_defaultMimeType = mime;
         } else {
-            errorMissingMimeTypes(QStringList(KMimeType::defaultMimeType()));
+            kError() << "could not find default mime type" << KMimeType::defaultMimeType();
         }
     }
     return m_defaultMimeType;

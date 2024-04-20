@@ -81,7 +81,6 @@ set(kdeui_LIB_SRCS
     dialogs/kinputdialog.cpp
     dialogs/klinkdialog.cpp
     dialogs/kmessagebox.cpp
-    dialogs/kmessageboxmessagehandler.cpp
     dialogs/kaboutapplicationdialog.cpp
     dialogs/kaboutapplicationpersonmodel_p.cpp
     dialogs/kaboutapplicationpersonlistdelegate_p.cpp
@@ -168,7 +167,6 @@ set(kdeui_LIB_SRCS
     util/kselectionowner.cpp
     util/knumvalidator.cpp
     util/kpassivepopup.cpp
-    util/kpassivepopupmessagehandler.cpp
     util/kstandardguiitem.cpp
     util/kxerrorhandler.cpp
     util/kxmessages.cpp
@@ -357,7 +355,6 @@ install(
     dialogs/kedittoolbar.h
     dialogs/kinputdialog.h
     dialogs/kmessagebox.h
-    dialogs/kmessageboxmessagehandler.h
     dialogs/knewpassworddialog.h
     dialogs/kpassworddialog.h
     dialogs/kprogressdialog.h
@@ -427,7 +424,6 @@ install(
     util/kselectionowner.h
     util/knumvalidator.h
     util/kpassivepopup.h
-    util/kpassivepopupmessagehandler.h
     util/kstandardguiitem.h
     util/kxerrorhandler.h
     util/kxmessages.h

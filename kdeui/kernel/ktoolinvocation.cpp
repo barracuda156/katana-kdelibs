@@ -24,7 +24,6 @@
 #include "kstandarddirs.h"
 #include "kcomponentdata.h"
 #include "kurl.h"
-#include "kmessage.h"
 #include "kservice.h"
 #include "klocale.h"
 #include "kglobalsettings.h"

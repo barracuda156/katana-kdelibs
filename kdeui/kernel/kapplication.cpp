@@ -51,8 +51,6 @@
 #include "kstandarddirs.h"
 #include "kstandardshortcut.h"
 #include "kurl.h"
-#include "kmessage.h"
-#include "kmessageboxmessagehandler.h"
 #include "kwindowsystem.h"
 #include "kde_file.h"
 #include "kstartupinfo.h"
@@ -419,8 +417,6 @@ void KApplicationPrivate::init()
     KGlobalSettings::self()->activate(
         KGlobalSettings::ApplySettings | KGlobalSettings::ListenForChanges
     );
-
-    KMessage::setMessageHandler( new KMessageBoxMessageHandler(0) );
 
     KCheckAccelerators::initiateIfNeeded(q);
   }
