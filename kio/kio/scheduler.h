@@ -24,7 +24,6 @@
 
 #include "kio/job.h"
 #include "kio/jobclasses.h"
-#include <QtGui/qwindowdefs.h>
 
 namespace KIO {
 
