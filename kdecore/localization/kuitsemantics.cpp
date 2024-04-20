@@ -51,10 +51,6 @@ KuitSemantics::KuitSemantics(const QString &lang)
     format.plain = catalog.translate("@command/plain", "%1");
     format.rich = catalog.translate("@command/rich", "<tt>%1</tt>");
     m_formats.append(format);
-    format.tag = QString::fromLatin1("resource");
-    format.plain = catalog.translate("@resource/plain", "“%1”");
-    format.rich = catalog.translate("@resource/rich", "“%1”");
-    m_formats.append(format);
     format.tag = QString::fromLatin1("message");
     format.plain = catalog.translate("@message/plain", "/%1/");
     format.rich = catalog.translate("@message/rich", "<i>%1</i>");

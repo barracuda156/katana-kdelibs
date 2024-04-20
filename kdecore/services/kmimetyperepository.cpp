@@ -624,9 +624,9 @@ static void errorMissingMimeTypes(const QStringList &types)
     KMessage::message(
         KMessage::Error,
         i18np(
-            "Could not find mime type <resource>%2</resource>",
-            "Could not find mime types:\n<resource>%2</resource>", types.count(),
-            types.join(QLatin1String("</resource>\n<resource>"))
+            "Could not find mime type %2",
+            "Could not find mime types:\n%2“", types.count(),
+            types.join(QLatin1String("\n"))
         )
     );
 }
