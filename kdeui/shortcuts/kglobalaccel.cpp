@@ -151,16 +151,16 @@ KGlobalAccelPrivate::~KGlobalAccelPrivate()
         QList<KGlobalAccelStruct> shortcuts = filter->shortcuts;
         kDebug() << "releasing shortcuts" << shortcuts.size();
         foreach (const KGlobalAccelStruct &shortcut, shortcuts) {
-            remove(shortcut.action, KGlobalAccelPrivate::SetInactive);
+            remove(shortcut.action);
         }
         delete filter;
     }
 
 }
 
-void KGlobalAccelPrivate::updateGlobalShortcut(KAction *action, uint flags)
+void KGlobalAccelPrivate::updateGlobalShortcut(KAction *action)
 {
-    if (!remove(action, KGlobalAccelPrivate::SetInactive)) {
+    if (!remove(action)) {
         return;
     }
     doRegister(action);
@@ -185,9 +185,8 @@ void KGlobalAccelPrivate::doRegister(KAction *action)
     }
 }
 
-bool KGlobalAccelPrivate::remove(KAction *action, Removal r)
+bool KGlobalAccelPrivate::remove(KAction *action)
 {
-    Q_UNUSED(r);
     foreach (const KGlobalAccelStruct &shortcut, filter->shortcuts) {
         if (shortcut.action == action) {
             if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
@@ -247,7 +246,7 @@ void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq)
 {
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
         if (shortcut.action->globalShortcut().conflictsWith(seq)) {
-            d->remove(shortcut.action, KGlobalAccelPrivate::SetInactive);
+            d->remove(shortcut.action);
             break;
         }
     }

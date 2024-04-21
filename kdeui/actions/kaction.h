@@ -33,8 +33,6 @@
 
 class KIcon;
 
-//TODO Reduce the word count. This is not very focused and takes too long to read.
-//Keep in mind that QAction also has documentation that we don't need to repeat here.
 /**
  * @short Class to encapsulate user-driven action or event
  * @extends QAction
@@ -230,19 +228,6 @@ public:
     Q_DECLARE_FLAGS(ShortcutTypes, ShortcutType)
 
     /**
-     * An enum about global shortcut setter semantics
-     */
-    //This enum will be ORed with ShortcutType in calls to KGlobalAccel, so it must not contain
-    //any value equal to a value in ShortcutType.
-    enum GlobalShortcutLoading {
-        /// Look up the action in global settings (using its main component's name and text())
-        /// and set the shortcut as saved there.
-        /// @see setGlobalShortcut()
-        Autoloading = 0x0,
-        /// Prevent autoloading of saved global shortcut for action
-        NoAutoloading = 0x4
-    };
-    /**
      * Constructs an action.
      */
     explicit KAction(QObject *parent);
@@ -385,30 +370,13 @@ public:
      * \note KActionCollection::insert(name, action) will set action's objectName to name so you often
      * don't have to set an objectName explicitly.
      *
-     * When an action, identified by main component name and objectName(), is assigned
-     * a global shortcut for the first time on a KDE installation the assignment will
-     * be saved. The shortcut will then be restored every time setGlobalShortcut() is
-     * called with @p loading == Autoloading.
-     *
-     * If you actually want to change the global shortcut you have to set
-     * @p loading to NoAutoloading. The new shortcut will be automatically saved again.
-     *
-     * \param shortcut global shortcut(s) to assign. Will be ignored unless \p loading is set to NoAutoloading or this is the first time ever you call this method (see above).
+     * \param shortcut global shortcut(s) to assign.
      * \param type the type of shortcut to be set, whether the active shortcut, the default shortcut,
      *             or both (the default).
-     * \param loading if Autoloading, assign the global shortcut this action has previously had if any.
-     *                   That way user preferences and changes made to avoid clashes will be conserved.
-     *                if NoAutoloading the given shortcut will be assigned without looking up old values.
-     *                   You should only do this if the user wants to change the shortcut or if you have
-     *                   another very good reason. Key combinations that clash with other shortcuts will be
-     *                   dropped.
-     *
-     * \note the default shortcut will never be influenced by autoloading - it will be set as given.
      * \sa globalShortcut()
      */
     void setGlobalShortcut(const KShortcut &shortcut, ShortcutTypes type =
-                           ShortcutTypes(ActiveShortcut | DefaultShortcut),
-                           GlobalShortcutLoading loading = Autoloading);
+                           ShortcutTypes(ActiveShortcut | DefaultShortcut));
 
     /**
      * Returns true if this action is permitted to have a global shortcut.

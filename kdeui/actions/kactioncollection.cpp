@@ -393,9 +393,9 @@ void KActionCollection::importGlobalShortcuts(KConfigGroup *config)
         if (kaction->isShortcutConfigurable()) {
             const QString entry = config->readEntry(actionName, QString());
             if (!entry.isEmpty()) {
-                kaction->setGlobalShortcut(KShortcut(entry), KAction::ActiveShortcut, KAction::NoAutoloading);
+                kaction->setGlobalShortcut(KShortcut(entry), KAction::ActiveShortcut);
             } else {
-                kaction->setGlobalShortcut(kaction->shortcut(KAction::DefaultShortcut), KAction::ActiveShortcut, KAction::NoAutoloading);
+                kaction->setGlobalShortcut(kaction->shortcut(KAction::DefaultShortcut), KAction::ActiveShortcut);
             }
         }
     }

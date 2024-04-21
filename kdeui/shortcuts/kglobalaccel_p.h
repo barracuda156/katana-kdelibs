@@ -30,17 +30,12 @@ class KGlobalAccelFilter;
 class KGlobalAccelPrivate
 {
 public:
-    enum Removal {
-        SetInactive = 0,    ///< Forget the action in this class and mark it as not present in the KDED module
-        UnRegister          ///< Remove any trace of the action in this class and in the KDED module
-    };
-
     KGlobalAccelPrivate(KGlobalAccel *_q);
     ~KGlobalAccelPrivate();
 
-    void updateGlobalShortcut(KAction *action, uint flags);
+    void updateGlobalShortcut(KAction *action);
     void doRegister(KAction *action);
-    bool remove(KAction *action, Removal r);
+    bool remove(KAction *action);
 
     KGlobalAccel* q;
     KGlobalAccelFilter* filter;

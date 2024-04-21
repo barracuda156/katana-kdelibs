@@ -204,7 +204,7 @@ void KShortcutsEditorItem::setKeySequence(uint column, const QKeySequence &seq)
 
     //avoid also setting the default shortcut - what we are setting here is custom by definition
     if (column == GlobalPrimary || column == GlobalAlternate) {
-        m_action->setGlobalShortcut(ks, KAction::ActiveShortcut, KAction::NoAutoloading);
+        m_action->setGlobalShortcut(ks, KAction::ActiveShortcut);
     } else {
         m_action->setShortcut(ks, KAction::ActiveShortcut);
     }
@@ -270,7 +270,7 @@ void KShortcutsEditorItem::undo()
     }
 
     if (m_oldGlobalShortcut) {
-        m_action->setGlobalShortcut(*m_oldGlobalShortcut, KAction::ActiveShortcut, KAction::NoAutoloading);
+        m_action->setGlobalShortcut(*m_oldGlobalShortcut, KAction::ActiveShortcut);
     }
 
     updateModified();

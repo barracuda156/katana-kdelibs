@@ -281,15 +281,6 @@ void Applet::restore(KConfigGroup &group)
                  << d->activationAction->globalShortcut().primary();
 */
     }
-
-    // local shortcut, if any
-    //TODO: implement; the shortcut will need to be registered with the containment
-/*
-    shortcutText = shortcutConfig.readEntryUntranslated("local", QString());
-    if (!shortcutText.isEmpty()) {
-        //TODO: implement; the shortcut
-    }
-*/
 }
 
 void AppletPrivate::setFocus()
@@ -1453,8 +1444,8 @@ void Applet::setGlobalShortcut(const KShortcut &shortcut)
     //kDebug() << "before" << shortcut.primary() << d->activationAction->globalShortcut().primary();
     d->activationAction->setGlobalShortcut(
         shortcut,
-        KAction::ShortcutTypes(KAction::ActiveShortcut | KAction::DefaultShortcut),
-        KAction::NoAutoloading);
+        KAction::ShortcutTypes(KAction::ActiveShortcut | KAction::DefaultShortcut)
+    );
     d->globalShortcutChanged();
 }
 
