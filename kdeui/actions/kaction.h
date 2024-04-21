@@ -440,7 +440,6 @@ public:
     bool event(QEvent *event);
 
 Q_SIGNALS:
-
     /**
      * Emitted when the action is triggered. Also provides the state of the
      * keyboard modifiers and mouse buttons at the time.
@@ -454,7 +453,7 @@ Q_SIGNALS:
     void globalShortcutChanged(const QKeySequence&);
 
 private:
-    friend class KGlobalAccelPrivate; // Needs access to the component
+    friend class KGlobalAccel; // Needs access to the component
     friend class KActionCollectionPrivate; // Needs access to the component
     friend class KShortcutsEditorDelegate; // Needs access to the component
     Q_PRIVATE_SLOT(d, void slotTriggered())

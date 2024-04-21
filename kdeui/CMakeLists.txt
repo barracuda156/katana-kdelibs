@@ -150,8 +150,6 @@ set(kdeui_LIB_SRCS
     shortcuts/kshortcutschemeshelper.cpp
     shortcuts/kstandardshortcut.cpp
     shortcuts/kglobalaccel.cpp
-    shortcuts/kglobalshortcutinfo.cpp
-    shortcuts/kglobalshortcutinfo_dbus.cpp
     shortcuts/kacceleratormanager.cpp
     shortcuts/kcheckaccelerators.cpp
     spell/kspeller.cpp
@@ -241,16 +239,6 @@ if (X11_Xkb_FOUND AND X11_Xkbfile_FOUND)
         ${X11_Xkbfile_LIB}
     )
 endif()
-
-set(kglobalaccel_xml shortcuts/org.kde.KGlobalAccel.xml)
-set_source_files_properties(${kglobalaccel_xml} PROPERTIES INCLUDE "kglobalshortcutinfo_p.h")
-qt4_add_dbus_interface(kdeui_LIB_SRCS ${kglobalaccel_xml} kglobalaccel_interface )
-install(FILES ${kglobalaccel_xml} DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR})
-
-set(kglobalaccel_component_xml shortcuts/org.kde.kglobalaccel.Component.xml)
-set_source_files_properties(${kglobalaccel_component_xml} PROPERTIES INCLUDE "kglobalshortcutinfo_p.h")
-qt4_add_dbus_interface(kdeui_LIB_SRCS ${kglobalaccel_component_xml} kglobalaccel_component_interface )
-install(FILES ${kglobalaccel_component_xml} DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR})
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/kapplication.cpp
@@ -407,8 +395,6 @@ install(
     shortcuts/kshortcut.h
     shortcuts/kstandardshortcut.h
     shortcuts/kglobalaccel.h
-    shortcuts/kglobalshortcutinfo.h
-    shortcuts/kglobalshortcutinfo_p.h
     shortcuts/kacceleratormanager.h
     spell/kspeller.h
     spell/kspellhighlighter.h

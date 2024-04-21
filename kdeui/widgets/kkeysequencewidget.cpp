@@ -121,8 +121,8 @@ public:
                 clashingKeys += i18n(
                     "Shortcut '%1' in Application %2 for action %3\n",
                     seq.toString(),
-                    info.componentFriendlyName(),
-                    info.friendlyName()
+                    info.componentFriendlyName,
+                    info.friendlyName
                 );
             }
         }
@@ -315,11 +315,12 @@ bool KKeySequenceWidgetPrivate::conflictWithGlobalShortcuts(const QKeySequence &
 
     // Global shortcuts are on key+modifier shortcuts. They can clash with
     // each of the keys of a multi key shortcut.
+    KGlobalAccel* kglobalaccel = KGlobalAccel::self();
     QHash<QKeySequence, QList<KGlobalShortcutInfo> > others;
-    for (int i=0; i<keySequence.count(); ++i) {
+    for (int i=0; i < keySequence.count(); ++i) {
         QKeySequence tmp(keySequence[i]);
-        if (!KGlobalAccel::isGlobalShortcutAvailable(tmp, componentName)) {
-            others.insert(tmp, KGlobalAccel::getGlobalShortcutsByKey(tmp));
+        if (!kglobalaccel->isGlobalShortcutAvailable(tmp, componentName)) {
+            others.insert(tmp, kglobalaccel->getGlobalShortcutsByKey(tmp));
         }
     }
 
@@ -334,7 +335,7 @@ bool KKeySequenceWidgetPrivate::conflictWithGlobalShortcuts(const QKeySequence &
     // most likely the first action that is done in the slot
     // listening to keySequenceChanged().
     for (int i = 0; i < keySequence.count(); ++i) {
-        KGlobalAccel::stealShortcutSystemwide(keySequence[i]);
+        kglobalaccel->stealShortcutSystemwide(keySequence[i]);
     }
     return false;
 }
@@ -384,7 +385,7 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
             if (kaction->shortcut().conflictsWith(keySequence)) {
                 // A conflict with a KAction. If that action is configurable
                 // ask the user what to do. If not reject this keySequence.
-                if(kaction->isShortcutConfigurable ()) {
+                if (kaction->isShortcutConfigurable ()) {
                     conflictingActions.append(kaction);
                 } else {
                     wontStealShortcut(kaction, keySequence);

@@ -23,441 +23,259 @@
 #include "kglobalaccel.h"
 #include "kglobalaccel_p.h"
 
-#include <memory>
-
-#include <QtDBus/QDBusInterface>
-#include <QtDBus/QDBusMetaType>
-#ifdef Q_WS_X11
-#include <QtGui/qx11info_x11.h>
-#include <netwm_def.h>
-#endif
-
-#include <kdebug.h>
-#include <ktoolinvocation.h>
-#include <kaboutdata.h>
-#include <kcomponentdata.h>
-#include "kaction.h"
+#include "kapplication.h"
+#include "klocale.h"
+#include "kaboutdata.h"
 #include "kaction_p.h"
 #include "kmessagebox.h"
-#include "kshortcut.h"
+#include "kkeyserver.h"
+#include "kxerrorhandler.h"
+#include "kdebug.h"
 
-org::kde::kglobalaccel::Component *KGlobalAccelPrivate::getComponent(const QString &componentUnique, bool remember)
+K_GLOBAL_STATIC(KGlobalAccel, kGlobalAccel)
+
+struct KGlobalAccelStruct
 {
-    // Check if we already have this component
-    if (components.contains(componentUnique)) {
-        return components[componentUnique];
+    KAction* action;
+    uint keyModX;
+    int keyCodeX;
+    
+    bool operator==(const KGlobalAccelStruct &other) const
+    { return (action == other.action && keyModX == other.keyModX && keyCodeX == other.keyCodeX); }
+};
+
+extern "C" {
+    static int XGrabErrorHandler(Display *, XErrorEvent *e) {
+        if (e->error_code != BadAccess) {
+            kWarning() << "grabKey: got X error " << e->type << " instead of BadAccess";
+        }
+        return 1;
+    }
+}
+
+static bool kGrabKey(const int keyQt, uint &keyModX, int &keyCodeX)
+{
+    if (keyQt == 0) {
+        kDebug() << "null keyQt";
+        return false;
     }
 
-    // Get the path for our component. We have to do that because
-    // componentUnique is probably not a valid dbus object path
-    QDBusReply<QDBusObjectPath> reply = iface.getComponent(componentUnique);
-    if (!reply.isValid()) {
+    Display* display = QX11Info::display();
+    const Qt::HANDLE approotwindow = QX11Info::appRootWindow();
+    if (!display || !approotwindow) {
+        kWarning() << "null display or application root window";
+        return false;
+    }
 
-        if (reply.error().name() == "org.kde.kglobalaccel.NoSuchComponent") {
-            // No problem. The component doesn't exists. That's normal
-            return nullptr;
+    uint keySymX = 0;
+    if (!KKeyServer::keyQtToModX(keyQt, &keyModX)) {
+        kWarning() << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 modifier";
+        return false;
+    }
+    if (!KKeyServer::keyQtToSymX(keyQt, (int *)&keySymX) ) {
+        kWarning() << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 keycode";
+        return false;
+    }
+
+    keyCodeX = XKeysymToKeycode(display, keySymX);
+    if (!keyCodeX) {
+        kWarning() << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") was resolved to x11 keycode 0";
+        return false;
+    }
+
+    KXErrorHandler handler(XGrabErrorHandler);
+    XGrabKey(
+        display, keyCodeX, keyModX & KKeyServer::accelModMaskX(),
+        approotwindow, True, GrabModeAsync, GrabModeAsync
+    );
+    return !handler.error(true);
+}
+
+static bool kUngrabKey(const uint keyModX, const int keyCodeX)
+{
+    Display* display = QX11Info::display();
+    const Qt::HANDLE approotwindow = QX11Info::appRootWindow();
+    if (!display || !approotwindow) {
+        kWarning() << "null display or application root window";
+        return false;
+    }
+    KXErrorHandler handler(XGrabErrorHandler);
+    XUngrabKey(display, keyCodeX, keyModX & KKeyServer::accelModMaskX(), approotwindow);
+    return !handler.error(true);
+}
+
+class KGlobalAccelFilter : public QWidget
+{
+public:
+    QList<KGlobalAccelStruct> shortcuts; 
+
+protected:
+    bool x11Event(XEvent *xevent) final;
+};
+
+bool KGlobalAccelFilter::x11Event(XEvent *xevent)
+{
+    if (xevent->type == KeyPress) {
+        foreach (const KGlobalAccelStruct &shortcut, shortcuts) {
+            if (xevent->xkey.state == shortcut.keyModX && xevent->xkey.keycode == shortcut.keyCodeX) {
+                kDebug() << "triggering action" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+                shortcut.action->trigger();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+KGlobalAccelPrivate::KGlobalAccelPrivate(KGlobalAccel *_q)
+     : q(_q),
+     filter(nullptr)
+{
+    if (kapp) {
+        filter = new KGlobalAccelFilter();
+        kapp->installX11EventFilter(filter);
+        kDebug() << "KGlobalAccelFilter is installed";
+    } else {
+        kWarning() << "no KApplication instance, KGlobalAccel will not work";
+    }
+}
+
+KGlobalAccelPrivate::~KGlobalAccelPrivate()
+{
+    if (filter) {
+        if (kapp) {
+            kDebug() << "removing KGlobalAccelFilter";
+            kapp->removeX11EventFilter(filter);
         }
 
-        // An unknown error.
-        kError() << "Failed to get dbus path for component " << componentUnique << reply.error();
-        return nullptr;
+        QList<KGlobalAccelStruct> shortcuts = filter->shortcuts;
+        kDebug() << "releasing shortcuts" << shortcuts.size();
+        foreach (const KGlobalAccelStruct &shortcut, shortcuts) {
+            remove(shortcut.action, KGlobalAccelPrivate::SetInactive);
+        }
+        delete filter;
     }
 
-    // Now get the component
-    org::kde::kglobalaccel::Component *component = new org::kde::kglobalaccel::Component(
-        "org.kde.kglobalaccel",
-        reply.value().path(),
-        QDBusConnection::sessionBus(),
-        q);
-
-    // No component no cleaning
-    if (!component->isValid()) {
-        kDebug() << "Failed to get component" << componentUnique << QDBusConnection::sessionBus().lastError();
-        return nullptr;
-    }
-
-    if (remember) {
-        // Connect to the signals we are interested in.
-        q->connect(component, SIGNAL(globalShortcutPressed(QString,QString,qlonglong)),
-                SLOT(_k_invokeAction(QString,QString,qlonglong)));
-
-        components[componentUnique] = component;
-    }
-
-    return component;
 }
 
-
-
-KGlobalAccelPrivate::KGlobalAccelPrivate(KGlobalAccel *q)
-     :  iface("org.kde.kglobalaccel", "/kglobalaccel", QDBusConnection::sessionBus()),
-        q(q)
+void KGlobalAccelPrivate::updateGlobalShortcut(KAction *action, uint flags)
 {
-    QDBusServiceWatcher *watcher = new QDBusServiceWatcher(iface.service(),
-                                                           QDBusConnection::sessionBus(),
-                                                           QDBusServiceWatcher::WatchForOwnerChange,
-                                                           q);
-    q->connect(watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-                     q, SLOT(_k_serviceOwnerChanged(QString,QString,QString)));
+    if (!remove(action, KGlobalAccelPrivate::SetInactive)) {
+        return;
+    }
+    doRegister(action);
 }
 
-
-void KGlobalAccelPrivate::readComponentData(const KComponentData &componentData)
+void KGlobalAccelPrivate::doRegister(KAction *action)
 {
-    Q_ASSERT(!componentData.componentName().isEmpty());
-
-    mainComponent = componentData;
-    if (componentData.aboutData()->programName().isEmpty()) {
-        kDebug(125) << componentData.componentName() << " has empty programName()";
+    foreach (const QKeySequence &keysequnece, action->globalShortcut().toList()) {
+        uint keyModX = 0;
+        int keyCodeX = 0;
+        if (kGrabKey(keysequnece, keyModX, keyCodeX)) {
+            KGlobalAccelStruct shortcut;
+            shortcut.action = action;
+            shortcut.keyModX = keyModX;
+            shortcut.keyCodeX = keyCodeX;
+            filter->shortcuts.append(shortcut);
+            kDebug() << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+            break;
+        } else {
+            kWarning() << "could not grab shortcut" << keysequnece << action;
+        }
     }
+}
+
+bool KGlobalAccelPrivate::remove(KAction *action, Removal r)
+{
+    Q_UNUSED(r);
+    foreach (const KGlobalAccelStruct &shortcut, filter->shortcuts) {
+        if (shortcut.action == action) {
+            if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
+                kDebug() << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+                filter->shortcuts.removeOne(shortcut);
+                return true;
+            }
+            kWarning() << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+            return false;
+        }
+    }
+    return true;
 }
 
 
 KGlobalAccel::KGlobalAccel()
     : d(new KGlobalAccelPrivate(this))
 {
-    qDBusRegisterMetaType<QList<int> >();
-    qDBusRegisterMetaType<QList<QStringList> >();
-    qDBusRegisterMetaType<KGlobalShortcutInfo>();
-    qDBusRegisterMetaType<QList<KGlobalShortcutInfo> >();
-
-    connect(&d->iface, SIGNAL(yourShortcutGotChanged(QStringList,QList<int>)),
-            SLOT(_k_shortcutGotChanged(QStringList,QList<int>)));
-
-    if (KGlobal::hasMainComponent()) {
-        d->readComponentData( KGlobal::mainComponent() );
-    }
-
 }
-
 
 KGlobalAccel::~KGlobalAccel()
 {
     delete d;
 }
 
-
-void KGlobalAccel::activateGlobalShortcutContext(
-        const QString &contextUnique,
-        const QString &contextFriendly,
-        const KComponentData &component)
+KGlobalAccel* KGlobalAccel::self()
 {
-    Q_UNUSED(contextFriendly);
-    // TODO: provide contextFriendly
-    self()->d->iface.activateGlobalShortcutContext(component.aboutData()->programName(), contextUnique);
-}
-
-
-// static
-bool KGlobalAccel::cleanComponent(const QString &componentUnique)
-{
-    org::kde::kglobalaccel::Component* component = self()->getComponent(componentUnique);
-    if (!component) return false;
-
-    return component->cleanUp();
-}
-
-
-// static
-bool KGlobalAccel::isComponentActive(const QString &componentUnique)
-{
-    org::kde::kglobalaccel::Component* component = self()->getComponent(componentUnique);
-    if (!component) return false;
-
-    return component->isActive();
-}
-
-org::kde::kglobalaccel::Component *KGlobalAccel::getComponent(const QString &componentUnique)
-{
-    return d->getComponent(componentUnique);
-}
-
-KGlobalAccel *KGlobalAccel::self()
-{
-    K_GLOBAL_STATIC(KGlobalAccel, s_instance)
-    return s_instance;
-}
-
-
-void KGlobalAccelPrivate::doRegister(KAction *action)
-{
-    if (!action || action->objectName().isEmpty()) {
-        return;
-    }
-
-    const bool isRegistered = actions.contains(action);
-    if (isRegistered) {
-        return;
-    }
-
-    QStringList actionId = makeActionId(action);
-
-    nameToAction.insertMulti(actionId.at(KGlobalAccel::ActionUnique), action);
-    actions.insert(action);
-    iface.doRegister(actionId);
-}
-
-
-void KGlobalAccelPrivate::remove(KAction *action, Removal removal)
-{
-    if (!action  || action->objectName().isEmpty()) {
-        return;
-    }
-
-    const bool isRegistered = actions.contains(action);
-    if (!isRegistered) {
-        return;
-    }
-
-    QStringList actionId = makeActionId(action);
-
-    nameToAction.remove(actionId.at(KGlobalAccel::ActionUnique), action);
-    actions.remove(action);
-
-    if (removal == UnRegister) {
-        // Complete removal of the shortcut is requested
-        // (forgetGlobalShortcut)
-        iface.unregister(actionId.at(KGlobalAccel::ComponentUnique), actionId.at(KGlobalAccel::ActionUnique));
-    } else {
-        // If the action is a configurationAction wen only remove it from our
-        // internal registry. That happened above.
-        if (!action->property("isConfigurationAction").toBool()) {
-            // If it's a session shortcut unregister it.
-            if (action->objectName().startsWith(QLatin1String("_k_session:"))) {
-                iface.unregister(actionId.at(KGlobalAccel::ComponentUnique), actionId.at(KGlobalAccel::ActionUnique));
-            } else {
-                iface.setInactive(actionId);
-            }
-        }
-    }
-}
-
-
-void KGlobalAccelPrivate::updateGlobalShortcut(KAction *action, uint flags)
-{
-    // No action or no objectname -> Do nothing
-    // KAction::setGlobalShortcut informs the user
-    if (!action || action->objectName().isEmpty()) {
-        return;
-    }
-
-    QStringList actionId = makeActionId(action);
-    const KShortcut activeShortcut = action->globalShortcut();
-    const KShortcut defaultShortcut = action->globalShortcut(KAction::DefaultShortcut);
-
-    uint setterFlags = 0;
-    if (flags & KAction::NoAutoloading) {
-        setterFlags |= NoAutoloading;
-    }
-
-    if (flags & KAction::ActiveShortcut) {
-        bool isConfigurationAction = action->property("isConfigurationAction").toBool();
-        uint activeSetterFlags = setterFlags;
-
-        // setPresent tells kglobalaccel that the shortcut is active
-        if (!isConfigurationAction) {
-            activeSetterFlags |= SetPresent;
-        }
-
-        // Sets the shortcut, returns the active/real keys
-        const QList<int> result = iface.setShortcut(
-                actionId,
-                intListFromShortcut(activeShortcut),
-                activeSetterFlags);
-
-        // Make sure we get informed about changes in the component by kglobalaccel
-        getComponent(componentUniqueForAction(action), true);
-
-        // Create a shortcut from the result
-        const KShortcut scResult(shortcutFromIntList(result));
-
-        if (isConfigurationAction && (flags & KAction::NoAutoloading)) {
-            // If this is a configuration action and we have set the shortcut,
-            // inform the real owner of the change.
-            // Note that setForeignShortcut will cause a signal to be sent to applications
-            // even if it did not "see" that the shortcut has changed. This is Good because
-            // at the time of comparison (now) the action *already has* the new shortcut.
-            // We called setShortcut(), remember?
-            // Also note that we will see our own signal so we may not need to call
-            // setActiveGlobalShortcutNoEnable - _k_shortcutGotChanged() does it.
-            // In practice it's probably better to get the change propagated here without
-            // DBus delay as we do below.
-            iface.setForeignShortcut(actionId, result);
-        }
-        if (scResult != activeShortcut) {
-            // If kglobalaccel returned a shortcut that differs from the one we
-            // sent, use that one. There must have been clashes or some other problem.
-            action->d->setActiveGlobalShortcutNoEnable(scResult);
-        }
-    }
-
-    if (flags & KAction::DefaultShortcut) {
-        iface.setShortcut(actionId, intListFromShortcut(defaultShortcut),
-                          setterFlags | IsDefault);
-    }
-}
-
-
-QStringList KGlobalAccelPrivate::makeActionId(const KAction *action)
-{
-    QStringList ret(componentUniqueForAction(action));  // Component Unique Id ( see actionIdFields )
-    Q_ASSERT(!ret.at(KGlobalAccel::ComponentUnique).isEmpty());
-    Q_ASSERT(!action->objectName().isEmpty());
-    ret.append(action->objectName());                   // Action Unique Name
-    ret.append(componentFriendlyForAction(action));     // Component Friendly name
-    const QString actionText = KGlobal::locale()->removeAcceleratorMarker(action->text());
-    ret.append(actionText);                             // Action Friendly Name
-    return ret;
-}
-
-
-QList<int> KGlobalAccelPrivate::intListFromShortcut(const KShortcut &cut)
-{
-    QList<int> ret;
-    ret.append(cut.primary()[0]);
-    ret.append(cut.alternate()[0]);
-    while (!ret.isEmpty() && ret.last() == 0)
-        ret.removeLast();
-    return ret;
-}
-
-
-KShortcut KGlobalAccelPrivate::shortcutFromIntList(const QList<int> &list)
-{
-    KShortcut ret;
-    if (list.count() > 0)
-        ret.setPrimary(list[0]);
-    if (list.count() > 1)
-        ret.setAlternate(list[1]);
-    return ret;
-}
-
-
-QString KGlobalAccelPrivate::componentUniqueForAction(const KAction *action)
-{
-    Q_ASSERT(action->d->componentData.isValid());
-    return action->d->componentData.componentName();
-}
-
-
-QString KGlobalAccelPrivate::componentFriendlyForAction(const KAction *action)
-{
-    Q_ASSERT(action->d->componentData.isValid());
-    return action->d->componentData.aboutData()->programName();
-}
-
-void KGlobalAccelPrivate::_k_invokeAction(
-        const QString &componentUnique,
-        const QString &actionUnique,
-        qlonglong timestamp)
-{
-    KAction *action = 0;
-    QList<KAction *> candidates = nameToAction.values(actionUnique);
-    foreach (KAction *const a, candidates) {
-        if (componentUniqueForAction(a) == componentUnique) {
-            action = a;
-        }
-    }
-
-    // We do not trigger if
-    // - there is no action
-    // - the action is not enabled
-    // - the action is an configuration action
-    if (!action || !action->isEnabled() || action->property("isConfigurationAction").toBool()) {
-        return;
-    }
-
-#ifdef Q_WS_X11
-    // Update this application's X timestamp if needed.
-    // TODO The 100%-correct solution should probably be handling this action
-    // in the proper place in relation to the X events queue in order to avoid
-    // the possibility of wrong ordering of user events.
-    if( NET::timestampCompare(timestamp, QX11Info::appTime()) > 0)
-        QX11Info::setAppTime(timestamp);
-    if( NET::timestampCompare(timestamp, QX11Info::appUserTime()) > 0)
-        QX11Info::setAppUserTime(timestamp);
-#else
-    Q_UNUSED(timestamp);
-#endif
-
-    action->trigger();
-}
-
-
-void KGlobalAccelPrivate::_k_shortcutGotChanged(const QStringList &actionId,
-                                                const QList<int> &keys)
-{
-    KAction *action = nameToAction.value(actionId.at(KGlobalAccel::ActionUnique));
-    if (!action)
-        return;
-
-    action->d->setActiveGlobalShortcutNoEnable(shortcutFromIntList(keys));
-}
-
-void KGlobalAccelPrivate::_k_serviceOwnerChanged(const QString &name, const QString &oldOwner,
-                                                 const QString &newOwner)
-{
-    Q_UNUSED(oldOwner);
-    if (name == QLatin1String("org.kde.kglobalaccel") && !newOwner.isEmpty()) {
-        // kglobalaccel was restarted
-        kDebug(125) << "detected kglobalaccel restarting, re-registering all shortcut keys";
-        reRegisterAll();
-    }
-}
-
-void KGlobalAccelPrivate::reRegisterAll()
-{
-    //We clear all our data, assume that all data on the other side is clear too,
-    //and register each action as if it just was allowed to have global shortcuts.
-    //If the kded side still has the data it doesn't matter because of the
-    //autoloading mechanism. The worst case I can imagine is that an action's
-    //shortcut was changed but the kded side died before it got the message so
-    //autoloading will now assign an old shortcut to the action. Particularly
-    //picky apps might assert or misbehave.
-    QSet<KAction *> allActions = actions;
-    nameToAction.clear();
-    actions.clear();
-    foreach(KAction *const action, allActions) {
-        doRegister(action);
-        updateGlobalShortcut(action, KAction::Autoloading | KAction::ActiveShortcut);
-    }
+    return kGlobalAccel;
 }
 
 QList<KGlobalShortcutInfo> KGlobalAccel::getGlobalShortcutsByKey(const QKeySequence &seq)
 {
-    return self()->d->iface.getGlobalShortcutsByKey(seq[0]);
+    QList<KGlobalShortcutInfo> result;
+    foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+        if (shortcut.action->globalShortcut().contains(seq)) {
+            KGlobalShortcutInfo globalshortcutinfo;
+            globalshortcutinfo.componentFriendlyName = shortcut.action->d->componentData.aboutData()->programName();
+            globalshortcutinfo.friendlyName = KGlobal::locale()->removeAcceleratorMarker(shortcut.action->text());
+            globalshortcutinfo.contextFriendlyName = shortcut.action->objectName();
+            result.append(globalshortcutinfo);
+        }
+    }
+    return result;
 }
 
 bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QString &comp)
 {
-    return self()->d->iface.isGlobalShortcutAvailable(seq[0], comp);
+    foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+        if (shortcut.action->globalShortcut().conflictsWith(seq)) {
+            return false;
+        }
+    }
+    return true;
 }
 
-//static
-bool KGlobalAccel::promptStealShortcutSystemwide(
-        QWidget *parent,
-        const QList<KGlobalShortcutInfo> &shortcuts,
-        const QKeySequence &seq)
+void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq)
+{
+    foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+        if (shortcut.action->globalShortcut().conflictsWith(seq)) {
+            d->remove(shortcut.action, KGlobalAccelPrivate::SetInactive);
+            break;
+        }
+    }
+}
+
+bool KGlobalAccel::promptStealShortcutSystemwide(QWidget *parent,
+                                                 const QList<KGlobalShortcutInfo> &shortcuts,
+                                                 const QKeySequence &seq)
 {
     if (shortcuts.isEmpty()) {
         // Usage error. Just say no
         return false;
     }
 
-    QString component = shortcuts[0].componentFriendlyName();
+    QString component = shortcuts[0].componentFriendlyName;
 
     QString message;
-    if (shortcuts.size()==1) {
+    if (shortcuts.size() ==1) {
         message = i18n("The '%1' key combination is registered by application %2 for action %3:",
                 seq.toString(),
                 component,
-                shortcuts[0].friendlyName());
+                shortcuts[0].friendlyName);
     } else {
         QString actionList;
         Q_FOREACH(const KGlobalShortcutInfo &info, shortcuts) {
             actionList += i18n("In context '%1' for action '%2'\n",
-                    info.contextFriendlyName(),
-                    info.friendlyName());
+                    info.contextFriendlyName,
+                    info.friendlyName);
         }
         message = i18n("The '%1' key combination is registered by application %2.\n%3",
                            seq.toString(),
@@ -467,25 +285,9 @@ bool KGlobalAccel::promptStealShortcutSystemwide(
 
     QString title = i18n("Conflict With Registered Global Shortcut");
 
-    return KMessageBox::warningContinueCancel(parent, message, title, KGuiItem(i18n("Reassign")))
-           == KMessageBox::Continue;
-}
-
-
-//static
-void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq)
-{
-    //get the shortcut, remove seq, and set the new shortcut
-    const QStringList actionId = self()->d->iface.action(seq[0]);
-    if (actionId.size() < 4) // not a global shortcut
-        return;
-    QList<int> sc = self()->d->iface.shortcut(actionId);
-
-    for (int i = 0; i < sc.count(); i++)
-        if (sc[i] == seq[0])
-            sc[i] = 0;
-
-    self()->d->iface.setForeignShortcut(actionId, sc);
+    return KMessageBox::warningContinueCancel(
+        parent, message, title, KGuiItem(i18n("Reassign"))
+    ) == KMessageBox::Continue;
 }
 
 #include "moc_kglobalaccel.cpp"
