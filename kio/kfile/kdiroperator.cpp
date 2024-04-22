@@ -1729,7 +1729,7 @@ void KDirOperator::setupActions()
 
     KAction* reloadAction = d->actionCollection->addAction(KStandardAction::Redisplay, "reload", this, SLOT(rereadDir()));
     reloadAction->setText(i18n("Reload"));
-    reloadAction->setShortcuts(KStandardShortcut::shortcut(KStandardShortcut::Reload));
+    reloadAction->setShortcut(KStandardShortcut::shortcut(KStandardShortcut::Reload));
 
     KAction* mkdirAction = new KAction(i18n("New Folder..."), this);
     d->actionCollection->addAction("mkdir", mkdirAction);
@@ -1739,13 +1739,13 @@ void KDirOperator::setupActions()
     KAction* trash = new KAction(i18n("Move to Trash"), this);
     d->actionCollection->addAction("trash", trash);
     trash->setIcon(KIcon("user-trash"));
-    trash->setShortcuts(KShortcut(Qt::Key_Delete));
+    trash->setShortcut(KShortcut(Qt::Key_Delete));
     connect(trash, SIGNAL(triggered(bool)), SLOT(trashSelected()));
 
     KAction* action = new KAction(i18n("Delete"), this);
     d->actionCollection->addAction("delete", action);
     action->setIcon(KIcon("edit-delete"));
-    action->setShortcuts(KShortcut(Qt::SHIFT + Qt::Key_Delete));
+    action->setShortcut(KShortcut(Qt::SHIFT + Qt::Key_Delete));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(deleteSelected()));
 
     // the sort menu actions

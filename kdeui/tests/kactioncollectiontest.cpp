@@ -227,7 +227,7 @@ void tst_KActionCollection::testSetShortcuts()
     action->setShortcut(QKeySequence(Qt::ALT+Qt::Key_Plus));
     KShortcut shortcut = KShortcut(action->shortcuts());
     shortcut.setAlternate( QKeySequence( Qt::CTRL+Qt::Key_Plus ) );
-    action->setShortcuts( shortcut );
+    action->setShortcut( shortcut );
     QCOMPARE(action->shortcut().toString(), QString("Alt++; Ctrl++"));
 
     // Simpler way:

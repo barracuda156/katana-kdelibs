@@ -136,8 +136,8 @@ KShortcut KAction::shortcut(ShortcutTypes type) const
             property("defaultAlternateShortcut").value<QKeySequence>()
         );
     }
-    const QList<QKeySequence> cuts = shortcuts();
-    return KShortcut(cuts.value(0), cuts.value(1));
+    const QKeySequence cut = QAction::shortcut();
+    return KShortcut(cut[0], cut[1]);
 }
 
 void KAction::setShortcut(const KShortcut &shortcut, ShortcutTypes type)
@@ -148,7 +148,7 @@ void KAction::setShortcut(const KShortcut &shortcut, ShortcutTypes type)
         setProperty("defaultAlternateShortcut", shortcut.alternate());
     }
     if (type & ActiveShortcut) {
-        QAction::setShortcuts(shortcut);
+        QAction::setShortcut(QKeySequence(shortcut.primary(), shortcut.alternate()));
     }
 }
 
@@ -161,11 +161,6 @@ void KAction::setShortcut(const QKeySequence &keySeq, ShortcutTypes type)
     if (type & KAction::ActiveShortcut) {
         QAction::setShortcut(keySeq);
     }
-}
-
-void KAction::setShortcuts(const QList<QKeySequence> &shortcuts, ShortcutTypes type)
-{
-    setShortcut(KShortcut(shortcuts), type);
 }
 
 const KShortcut& KAction::globalShortcut(ShortcutTypes type) const
