@@ -27,13 +27,11 @@
 
 #include <kdeui_export.h>
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class KActionCollection;
-class KConfig;
 class KConfigBase;
 class KConfigGroup;
-class KGlobalAccel;
 class KShortcutsEditorPrivate;
 
 // KShortcutsEditor expects that the list of existing shortcuts is already
@@ -63,9 +61,9 @@ class KDEUI_EXPORT KShortcutsEditor : public QWidget
 public:
     enum ActionType {
         /// Actions which are triggered by any keypress in a widget
-        LocalAction       = 0,
+        LocalAction       = 1,
         /// Actions which are triggered by any keypress in the windowing system
-        GlobalAction      = 1,
+        GlobalAction      = 2,
         /// All actions
         AllActions        = (LocalAction | GlobalAction)
     };
@@ -104,7 +102,7 @@ public:
      * @param allowLetterShortcuts set to LetterShortcutsDisallowed if unmodified alphanumeric
      *  keys ('A', '1', etc.) are not permissible shortcuts.
      */
-    explicit KShortcutsEditor(QWidget* parent, ActionTypes actionTypes = AllActions,
+    explicit KShortcutsEditor(QWidget *parent, ActionTypes actionTypes = AllActions,
                               LetterShortcuts allowLetterShortcuts = LetterShortcutsAllowed);
 
     /// Destructor
@@ -152,11 +150,6 @@ public:
     void commit();
 
     /**
-     * Removes all configured shortcuts.
-     */
-    void clearConfiguration();
-
-    /**
      * Write the current settings to the \p config object.
      *
      * This does not initialize the \p config object. It adds the
@@ -170,7 +163,7 @@ public:
      *               applications config object
      *
      */
-    void writeConfiguration(KConfigGroup* config = 0 ) const;
+    void writeConfiguration(KConfigGroup* config = nullptr) const;
 
     /**
      * Export the current setting to configuration @p config.

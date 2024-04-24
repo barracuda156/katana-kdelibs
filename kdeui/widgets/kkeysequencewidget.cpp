@@ -685,7 +685,7 @@ bool KKeySequenceButton::event(QEvent* e)
 void KKeySequenceButton::keyPressEvent(QKeyEvent *e)
 {
     int keyQt = e->key();
-    if (keyQt == -1) {
+    if (keyQt <= 0) {
         // Qt sometimes returns garbage keycodes, I observed -1, if it doesn't know a key.
         // We cannot do anything useful with those (several keys have -1, indistinguishable)
         // and QKeySequence.toString() will also yield a garbage string.
@@ -771,7 +771,7 @@ void KKeySequenceButton::keyPressEvent(QKeyEvent *e)
 
 void KKeySequenceButton::keyReleaseEvent(QKeyEvent *e)
 {
-    if (e->key() == -1) {
+    if (e->key() <= 0) {
         // ignore garbage, see keyPressEvent()
         return;
     }

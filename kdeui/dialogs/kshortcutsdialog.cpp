@@ -77,8 +77,10 @@ public:
 };
 
 
-KShortcutsDialog::KShortcutsDialog( KShortcutsEditor::ActionTypes types, KShortcutsEditor::LetterShortcuts allowLetterShortcuts, QWidget *parent )
-: KDialog( parent ), d(new KShortcutsDialogPrivate(this))
+KShortcutsDialog::KShortcutsDialog(KShortcutsEditor::ActionTypes types,
+                                   KShortcutsEditor::LetterShortcuts allowLetterShortcuts, QWidget *parent)
+    : KDialog(parent),
+    d(new KShortcutsDialogPrivate(this))
 {
     setCaption(i18n("Configure Shortcuts"));
     setButtons(Reset|Ok|Cancel);
@@ -135,7 +137,8 @@ QSize KShortcutsDialog::sizeHint() const
     return QSize(600, 480);
 }
 
-int KShortcutsDialog::configure(KActionCollection *collection, KShortcutsEditor::LetterShortcuts allowLetterShortcuts,
+int KShortcutsDialog::configure(KActionCollection *collection,
+                                KShortcutsEditor::LetterShortcuts allowLetterShortcuts,
                                 QWidget *parent, bool saveSettings)
 {
     kDebug(125) << "KShortcutsDialog::configureKeys( KActionCollection*, " << saveSettings << " )";
