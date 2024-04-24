@@ -158,15 +158,15 @@ KGlobalAccelPrivate::~KGlobalAccelPrivate()
 
 }
 
-void KGlobalAccelPrivate::updateGlobalShortcut(KAction *action)
+bool KGlobalAccelPrivate::updateGlobalShortcut(KAction *action)
 {
     if (!remove(action)) {
-        return;
+        return false;
     }
-    doRegister(action);
+    return doRegister(action);
 }
 
-void KGlobalAccelPrivate::doRegister(KAction *action)
+bool KGlobalAccelPrivate::doRegister(KAction *action)
 {
     const QKeySequence keysequence = action->globalShortcut();
     for (int i = 0; i < keysequence.count(); i++) {
@@ -179,11 +179,12 @@ void KGlobalAccelPrivate::doRegister(KAction *action)
             shortcut.keyCodeX = keyCodeX;
             filter->shortcuts.append(shortcut);
             kDebug() << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
-            break;
+            return true;
         } else {
             kWarning() << "could not grab shortcut" << keysequence[i] << action;
         }
     }
+    return false;
 }
 
 bool KGlobalAccelPrivate::remove(KAction *action)

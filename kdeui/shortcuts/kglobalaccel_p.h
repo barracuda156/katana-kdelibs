@@ -33,8 +33,8 @@ public:
     KGlobalAccelPrivate(KGlobalAccel *_q);
     ~KGlobalAccelPrivate();
 
-    void updateGlobalShortcut(KAction *action);
-    void doRegister(KAction *action);
+    bool updateGlobalShortcut(KAction *action);
+    bool doRegister(KAction *action);
     bool remove(KAction *action);
 
     KGlobalAccel* q;

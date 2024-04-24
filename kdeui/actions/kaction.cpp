@@ -183,6 +183,7 @@ void KAction::setGlobalShortcut(const QKeySequence &shortcut, ShortcutTypes type
     if (changed || d->neverSetGlobalShortcut) {
         KGlobalAccel::self()->d->updateGlobalShortcut(this);
         d->neverSetGlobalShortcut = false;
+        emit globalShortcutChanged(d->globalShortcut);
     }
 }
 
@@ -200,6 +201,7 @@ void KAction::forgetGlobalShortcut()
         d->globalShortcutEnabled = false;
         d->neverSetGlobalShortcut = true; //it's a fresh start :)
         KGlobalAccel::self()->d->remove(this);
+        emit globalShortcutChanged(d->globalShortcut);
     }
 }
 
