@@ -62,16 +62,12 @@ class KDEUI_EXPORT KShortcutsEditor : public QWidget
     Q_OBJECT
 public:
     enum ActionType {
-        /// Actions which are triggered by any keypress in a widget which has the action added to it
-        WidgetAction      = Qt::WidgetShortcut      /*0*/,
-        /// Actions which are triggered by any keypress in a window which has the action added to it or its child widget(s)
-        WindowAction      = Qt::WindowShortcut      /*1*/,
-        /// Actions which are triggered by any keypress in the application
-        ApplicationAction = Qt::ApplicationShortcut /*2*/,
+        /// Actions which are triggered by any keypress in a widget
+        LocalAction       = 0,
         /// Actions which are triggered by any keypress in the windowing system
-        GlobalAction      = 4,
+        GlobalAction      = 1,
         /// All actions
-        AllActions        = 0xffffffff
+        AllActions        = (LocalAction | GlobalAction)
     };
     Q_DECLARE_FLAGS(ActionTypes, ActionType)
 

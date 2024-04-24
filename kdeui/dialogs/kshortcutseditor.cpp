@@ -107,7 +107,9 @@ void KShortcutsEditor::importConfiguration(KConfigBase *config)
 void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
 {
     Q_ASSERT(config);
-    if (!config) return;
+    if (!config) {
+        return;
+    }
 
     if (d->actionTypes & KShortcutsEditor::GlobalAction) {
         KConfigGroup group(config, "Global Shortcuts");
