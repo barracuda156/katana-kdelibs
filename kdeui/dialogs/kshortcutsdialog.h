@@ -99,10 +99,9 @@ public:
     QList<KActionCollection*> actionCollections() const;
 
     /**
-     * Run the dialog and call writeSettings() on the action collections
-     * that were added if @p bSaveSettings is true.
+     * Run the dialog, changes are saved if the dialog is not canceled.
      */
-    bool configure(bool saveSettings = true);
+    bool configure();
 
     /** @see QWidget::sizeHint() */
     virtual QSize sizeHint() const;
@@ -115,14 +114,12 @@ public:
      * @param allowLetterShortcuts set to KShortcutsEditor::LetterShortcutsDisallowed if unmodified alphanumeric
      *  keys ('A', '1', etc.) are not permissible shortcuts.
      * @param parent the parent widget to attach to
-     * @param bSaveSettings if true, the settings will also be saved back
-     * by calling writeSettings() on the action collections that were added.
      *
      * @return Accept if the dialog was closed with OK, Reject otherwise.
      */
     static int configure(KActionCollection *collection,
                          KShortcutsEditor::LetterShortcuts allowLetterShortcuts = KShortcutsEditor::LetterShortcutsAllowed,
-                         QWidget *parent = nullptr, bool bSaveSettings = true);
+                         QWidget *parent = nullptr);
 
 Q_SIGNALS:
     /**
@@ -132,7 +129,6 @@ Q_SIGNALS:
 
 private:
     Q_PRIVATE_SLOT(d, void save())
-    Q_PRIVATE_SLOT(d, void undoChanges())
 
     class KShortcutsDialogPrivate;
     friend class KShortcutsDialogPrivate;

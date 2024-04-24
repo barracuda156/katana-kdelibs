@@ -23,19 +23,18 @@
 #include <kdeui_export.h>
 #include <kcomponentdata.h>
 
-#include <QtCore/QObject>
-
+#include <QObject>
 #include <QAction>
-class KXMLGUIFactoryPrivate;
-class KXMLGUIClient;
-class KXMLGUIBuilder;
-class KComponentData;
-
 #include <QDomAttr>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDomNode>
 #include <QDomNamedNodeMap>
+
+class KXMLGUIFactoryPrivate;
+class KXMLGUIClient;
+class KXMLGUIBuilder;
+class KComponentData;
 
 namespace KXMLGUI
 {
@@ -192,10 +191,8 @@ class KDEUI_EXPORT KXMLGUIFactory : public QObject
    *
    * @param bAllowLetterShortcuts Set to false if unmodified alphanumeric
    *      keys ('A', '1', etc.) are not permissible shortcuts.
-   * @param bSaveSettings if true, the settings will also be saved back to
-   *      the *uirc file which they were intially read from.
    */
-  int configureShortcuts(bool bAllowLetterShortcuts = true, bool bSaveSettings = true);
+  int configureShortcuts(bool bAllowLetterShortcuts = true);
 
   void changeShortcutScheme(const QString &scheme);
 

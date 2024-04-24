@@ -61,14 +61,9 @@ public:
 
     QList<KActionCollection*> m_collections;
 
-    void undoChanges()
-    {
-        m_keyChooser->undoChanges();
-    }
-
     void save()
     {
-        m_keyChooser->save();
+        m_keyChooser->exportConfiguration();
         emit q->saved();
     }
 
@@ -83,14 +78,14 @@ KShortcutsDialog::KShortcutsDialog(KShortcutsEditor::ActionTypes types,
     d(new KShortcutsDialogPrivate(this))
 {
     setCaption(i18n("Configure Shortcuts"));
-    setButtons(Reset|Ok|Cancel);
+    setButtons(KDialog::Reset | KDialog::Ok| KDialog::Cancel);
     setModal(true);
     d->m_keyChooser = new KShortcutsEditor(this, types, allowLetterShortcuts);
     setMainWidget( d->m_keyChooser );
     setButtonText(Reset,i18n("Reset to Defaults"));
 
     connect(this, SIGNAL(resetClicked()), d->m_keyChooser, SLOT(allDefault()));
-    connect(this, SIGNAL(cancelClicked()), SLOT(undoChanges()));
+    connect(this, SIGNAL(okClicked()), this, SLOT(save()));
 
     KConfigGroup group(KGlobal::config(), "KShortcutsDialog Settings");
     resize(group.readEntry( "Dialog Size", sizeHint()));
@@ -116,20 +111,14 @@ QList<KActionCollection*> KShortcutsDialog::actionCollections() const
     return d->m_collections;
 }
 
-//FIXME should there be a setSaveSettings method?
-bool KShortcutsDialog::configure(bool saveSettings)
+bool KShortcutsDialog::configure()
 {
-    disconnect(this, SIGNAL(okClicked()), this, SLOT(save()));
-    if (saveSettings) {
-        connect(this, SIGNAL(okClicked()), this, SLOT(save()));
-    }
     if (isModal()) {
         int retcode = exec();
         return retcode;
-    } else {
-        show();
-        return false;
     }
+    show();
+    return false;
 }
 
 QSize KShortcutsDialog::sizeHint() const
@@ -139,12 +128,12 @@ QSize KShortcutsDialog::sizeHint() const
 
 int KShortcutsDialog::configure(KActionCollection *collection,
                                 KShortcutsEditor::LetterShortcuts allowLetterShortcuts,
-                                QWidget *parent, bool saveSettings)
+                                QWidget *parent)
 {
-    kDebug(125) << "KShortcutsDialog::configureKeys( KActionCollection*, " << saveSettings << " )";
+    kDebug(125) << "KShortcutsDialog::configure()" << collection;
     KShortcutsDialog dlg(KShortcutsEditor::AllActions, allowLetterShortcuts, parent);
     dlg.d->m_keyChooser->addCollection(collection);
-    return dlg.configure(saveSettings);
+    return dlg.configure();
 }
 
 #include "moc_kshortcutsdialog.cpp"

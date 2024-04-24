@@ -726,7 +726,7 @@ void KXMLGUIFactoryPrivate::applyShortcutScheme(KXMLGUIClient *client, const QLi
     }
 }
 
-int KXMLGUIFactory::configureShortcuts(bool letterCutsOk , bool bSaveSettings )
+int KXMLGUIFactory::configureShortcuts(bool letterCutsOk )
 {
     KShortcutsDialog dlg(KShortcutsEditor::AllActions,
                          letterCutsOk ? KShortcutsEditor::LetterShortcutsAllowed : KShortcutsEditor::LetterShortcutsDisallowed,
@@ -736,7 +736,7 @@ int KXMLGUIFactory::configureShortcuts(bool letterCutsOk , bool bSaveSettings )
             dlg.addCollection(client->actionCollection());
         }
     }
-    return dlg.configure(bSaveSettings);
+    return dlg.configure();
 }
 
 // Find or create

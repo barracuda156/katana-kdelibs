@@ -28,6 +28,7 @@
 #include "kkeysequencewidget.h"
 #include "kaboutdata.h"
 #include "kconfiggroup.h"
+#include "kglobal.h"
 #include "klocale.h"
 #include "kdebug.h"
 
@@ -181,9 +182,8 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
 
 void KShortcutsEditor::importConfiguration(KConfigBase *config)
 {
-    Q_ASSERT(config);
     if (!config) {
-        return;
+        config = KGlobal::config().data();
     }
 
     if (d->actionTypes & KShortcutsEditor::LocalAction) {
@@ -202,9 +202,8 @@ void KShortcutsEditor::importConfiguration(KConfigBase *config)
 
 void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
 {
-    Q_ASSERT(config);
     if (!config) {
-        return;
+        config = KGlobal::config().data();
     }
 
     if (d->actionTypes & KShortcutsEditor::LocalAction) {
@@ -220,30 +219,6 @@ void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
         }
     }
 }
-
-void KShortcutsEditor::writeConfiguration(KConfigGroup *config) const
-{
-    foreach (KActionCollection* collection, d->actionCollections) {
-        collection->writeSettings(config);
-    }
-}
-
-void KShortcutsEditor::commit()
-{
-    // TODO: implement
-}
-
-void KShortcutsEditor::save()
-{
-    writeConfiguration();
-    commit();
-}
-
-void KShortcutsEditor::undoChanges()
-{
-    // TODO: implement
-}
-
 
 void KShortcutsEditor::allDefault()
 {

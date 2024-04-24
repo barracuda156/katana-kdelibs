@@ -110,46 +110,6 @@ public:
     void addCollection(KActionCollection *, const QString &title = QString());
 
     /**
-     * Undo all change made since the last commit().
-     */
-    void undoChanges();
-
-    /**
-     * Save the changes.
-     *
-     * Before saving the changes are committed. This saves the actions to disk.
-     * Any KActionCollection objects with the xmlFile() value set will be
-     * written to an XML file.  All other will be written to the application's
-     * rc file.
-     */
-    void save();
-
-    /**
-     * Commit the changes without saving.
-     *
-     * This commits the changes without saving.
-     *
-     * @since 4.2
-     */
-    void commit();
-
-    /**
-     * Write the current settings to the \p config object.
-     *
-     * This does not initialize the \p config object. It adds the
-     * configuration.
-     *
-     * @note this will not save the global configuration! globalaccel holds
-     * that part of the configuration.
-     * @see writeGlobalConfig()
-     *
-     * @param config Config object to save to or, or null to use the
-     *               applications config object
-     *
-     */
-    void writeConfiguration(KConfigGroup* config = nullptr) const;
-
-    /**
      * Export the current setting to configuration @p config.
      *
      * This initializes the configuration object. This will export the global
@@ -157,7 +117,7 @@ public:
      *
      * @param config Config object
      */
-    void exportConfiguration(KConfigBase *config) const;
+    void exportConfiguration(KConfigBase *config = nullptr) const;
 
     /**
      * Import the settings from configuration @p config.
@@ -167,7 +127,7 @@ public:
      *
      * @param config Config object
      */
-    void importConfiguration(KConfigBase *config);
+    void importConfiguration(KConfigBase *config = nullptr);
 
 Q_SIGNALS:
     /**
