@@ -76,6 +76,7 @@ bool KAction::event(QEvent *event)
                 ),
                 i18n("Ambiguous shortcut detected")
             );
+            se->accept();
             return true;
         }
     }
