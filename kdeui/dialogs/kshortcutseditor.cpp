@@ -34,6 +34,8 @@
 #include "klocale.h"
 #include "kdebug.h"
 
+Q_DECLARE_METATYPE(QAction*)
+
 class KShortcutsEditorPrivate
 {
 public:
@@ -51,6 +53,7 @@ public:
     QHBoxLayout* layout;
     QTreeWidget* treewidget;
     QList<KActionCollection*> actioncollections;
+    QList<KKeySequenceWidget*> keysequencewidgets;
 };
 
 KShortcutsEditorPrivate::KShortcutsEditorPrivate()
@@ -132,6 +135,7 @@ void KShortcutsEditor::clearCollections()
 {
     d->actioncollections.clear();
     d->treewidget->clear();
+    d->keysequencewidgets.clear();
 }
 
 void KShortcutsEditor::addCollection(KActionCollection *collection, const QString &title)
@@ -194,11 +198,14 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
                 localkswidget->setComponentName(kaction->d->componentData.componentName());
             }
             localkswidget->setKeySequence(action->shortcut());
+            localkswidget->setProperty("_k_action", QVariant::fromValue(action));
+            localkswidget->setProperty("_k_global", false);
             connect(
                 localkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
                 this, SLOT(_k_slotKeySequenceChanged())
             );
             d->treewidget->setItemWidget(actionitem, 1, localkswidget);
+            d->keysequencewidgets.append(localkswidget);
         }
         if (d->actiontypes & KShortcutsEditor::GlobalAction) {
             if (kaction) {
@@ -213,11 +220,14 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
                     globalkswidget->setComponentName(kaction->d->componentData.componentName());
                 }
                 globalkswidget->setKeySequence(kaction->globalShortcut());
+                globalkswidget->setProperty("_k_action", QVariant::fromValue(action));
+                globalkswidget->setProperty("_k_global", true);
                 connect(
                     globalkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
                     this, SLOT(_k_slotKeySequenceChanged())
                 );
                 d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
+                d->keysequencewidgets.append(globalkswidget);
             } else {
                 kWarning() << "action is not KAction" << action;
             }
@@ -267,12 +277,45 @@ void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
         }
     }
 
+    foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+        QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
+        Q_ASSERT(action != nullptr);
+        const bool global = kswidget->property("_k_global").toBool();
+        if (global) {
+            KAction* kaction = qobject_cast<KAction*>(action);
+            kaction->setGlobalShortcut(kswidget->keySequence());
+        } else {
+            action->setShortcut(kswidget->keySequence());
+        }
+    }
+
     d->modified = false;
 }
 
 void KShortcutsEditor::allDefault()
 {
-    // TODO: implement
+    foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+        QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
+        Q_ASSERT(action != nullptr);
+        const bool global = kswidget->property("_k_global").toBool();
+        if (global) {
+            KAction* kaction = qobject_cast<KAction*>(action);
+            const QKeySequence ks = kaction->globalShortcut(KAction::DefaultShortcut);
+            kaction->setGlobalShortcut(ks);
+            kswidget->setKeySequence(ks);
+        } else {
+            KAction* kaction = qobject_cast<KAction*>(action);
+            if (!kaction) {
+                kWarning() << "cannot restore the default for action that is not KAction" << action;
+                continue;
+            }
+            const QKeySequence ks = kaction->shortcut(KAction::DefaultShortcut);
+            kaction->setShortcut(ks);
+            kswidget->setKeySequence(ks);
+        }
+    }
+    // NOTE: signal will be emitted by KKeySequenceWidget if keysequneces change from a call to
+    // KKeySequenceWidget::setKeySequence()
 }
 
 #include "moc_kshortcutseditor.cpp"
