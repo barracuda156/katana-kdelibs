@@ -1,16 +1,10 @@
-/* This file is part of the KDE libraries Copyright (C) 1998 Mark Donohoe <donohoe@kde.org>
-    Copyright (C) 1997 Nicolas Hadacek <hadacek@kde.org>
-    Copyright (C) 1998 Matthias Ettrich <ettrich@kde.org>
-    Copyright (C) 2001 Ellis Whitehead <ellis@kde.org>
-    Copyright (C) 2006 Hamish Rodda <rodda@kde.org>
-    Copyright (C) 2007 Roberto Raggi <roberto@kdevelop.org>
-    Copyright (C) 2007 Andreas Hartmetz <ahartmetz@gmail.com>
-    Copyright (C) 2008 Michael Jansen <kde@michael-jansen.biz>
+/*
+    This file is part of the KDE libraries
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    License version 2, as published by the Free Software Foundation.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -32,6 +26,7 @@
 #include "kaction.h"
 #include "kactioncollection.h"
 #include "kkeysequencewidget.h"
+#include "kaboutdata.h"
 #include "kconfiggroup.h"
 #include "klocale.h"
 #include "kdebug.h"
@@ -132,13 +127,30 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
 
     QString text = title;
     if (text.isEmpty()) {
+        const KAboutData* aboutdata = collection->componentData().aboutData();
+        if (aboutdata) {
+            text = aboutdata->programName();
+        }
+    }
+    if (text.isEmpty()) {
         text = collection->objectName();
     }
     if (text.isEmpty()) {
         text = QString::number(quintptr(collection));
     }
-    QTreeWidgetItem* topitem = new QTreeWidgetItem();
-    topitem->setText(0, text);
+
+    QTreeWidgetItem* topitem = nullptr;
+    for (int i = 0; i < d->treewidget->topLevelItemCount(); i++) {
+        QTreeWidgetItem* treeitem = d->treewidget->topLevelItem(i);
+        if (treeitem->text(0) == text) {
+            topitem = treeitem;
+            break;
+        }
+    }
+    if (!topitem) {
+        topitem = new QTreeWidgetItem();
+        topitem->setText(0, text);
+    }
     int rowcounter = 0;
     foreach (QAction *action, collection->actions()) {
         QTreeWidgetItem* actionitem = new QTreeWidgetItem(topitem);
@@ -164,6 +176,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         rowcounter++;
     }
     d->treewidget->addTopLevelItem(topitem);
+    topitem->setExpanded(true);
 }
 
 void KShortcutsEditor::importConfiguration(KConfigBase *config)
