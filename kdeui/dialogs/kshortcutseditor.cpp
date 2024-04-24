@@ -25,6 +25,7 @@
 
 #include "kaction.h"
 #include "kaction_p.h"
+#include "kiconloader.h"
 #include "kactioncollection.h"
 #include "kkeysequencewidget.h"
 #include "kaboutdata.h"
@@ -140,31 +141,41 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     }
     d->actioncollections.append(collection);
 
-    QString text = title;
-    if (text.isEmpty()) {
-        const KAboutData* aboutdata = collection->componentData().aboutData();
+    const KAboutData* aboutdata = collection->componentData().aboutData();
+    QString collectionname = title;
+    QString collectionicon;
+    if (collectionname.isEmpty()) {
         if (aboutdata) {
-            text = aboutdata->programName();
+            collectionname = aboutdata->programName();
         }
     }
-    if (text.isEmpty()) {
-        text = collection->objectName();
+    if (collectionname.isEmpty()) {
+        collectionname = collection->objectName();
     }
-    if (text.isEmpty()) {
-        text = QString::number(quintptr(collection));
+    if (collectionname.isEmpty()) {
+        collectionname = QString::number(quintptr(collection));
+    }
+    if (aboutdata) {
+        collectionicon = aboutdata->programIconName();
+    }
+    if (collectionicon.isEmpty() || KIconLoader::global()->iconPath(collectionicon, KIconLoader::Small, true).isEmpty()) {
+        // for now assume it is a plugin collection, those usually have invalid program icon
+        // (e.g. "katesearch") which why it is checked above
+        collectionicon = QLatin1String("preferences-plugin");
     }
 
     QTreeWidgetItem* topitem = nullptr;
     for (int i = 0; i < d->treewidget->topLevelItemCount(); i++) {
         QTreeWidgetItem* treeitem = d->treewidget->topLevelItem(i);
-        if (treeitem->text(0) == text) {
+        if (treeitem->text(0) == collectionname) {
             topitem = treeitem;
             break;
         }
     }
     if (!topitem) {
         topitem = new QTreeWidgetItem();
-        topitem->setText(0, text);
+        topitem->setText(0, collectionname);
+        topitem->setIcon(0, KIcon(collectionicon));
     }
     int rowcounter = 0;
     foreach (QAction *action, collection->actions()) {
