@@ -36,6 +36,14 @@
 
 Q_DECLARE_METATYPE(QAction*)
 
+static QTreeWidgetItem* kMakeActionItem(QTreeWidgetItem *parent, QAction *action)
+{
+    QTreeWidgetItem* actionitem = new QTreeWidgetItem(parent);
+    actionitem->setIcon(0, action->icon());
+    actionitem->setText(0, action->iconText());
+    return actionitem;
+}
+
 class KShortcutsEditorPrivate
 {
 public:
@@ -84,14 +92,13 @@ void KShortcutsEditorPrivate::init(KShortcutsEditor *_parent,
         << i18n("Local")
         << i18n("Global");
     treewidget->setHeaderLabels(treeheaders);
-    treewidget->setRootIsDecorated(true);
+    treewidget->setRootIsDecorated(false);
     QHeaderView* treeheader = treewidget->header();
     treeheader->setMovable(false);
     treeheader->setStretchLastSection(false);
     treeheader->setResizeMode(0, QHeaderView::Stretch);
     treeheader->setResizeMode(1, QHeaderView::Stretch);
     treeheader->setResizeMode(2, QHeaderView::Stretch);
-    // TODO: section visibility should be updated on items change too, rows too
     treeheader->setSectionHidden(1, !(actiontypes & KShortcutsEditor::LocalAction));
     treeheader->setSectionHidden(2, !(actiontypes & KShortcutsEditor::GlobalAction));
 
@@ -154,6 +161,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             collectionname = aboutdata->programName();
         }
     }
+    // TODO: maybe use the global component aboutdata instead?
     if (collectionname.isEmpty()) {
         collectionname = collection->objectName();
     }
@@ -178,71 +186,100 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         }
     }
     if (!topitem) {
-        topitem = new QTreeWidgetItem();
+        topitem = new QTreeWidgetItem(d->treewidget);
         topitem->setText(0, collectionname);
         topitem->setIcon(0, KIcon(collectionicon));
     }
     int rowcounter = 0;
+    const bool addlocal = (d->actiontypes & KShortcutsEditor::LocalAction);
+    const bool addglobal = (d->actiontypes & KShortcutsEditor::GlobalAction);
     foreach (QAction *action, collection->actions()) {
-        QTreeWidgetItem* actionitem = new QTreeWidgetItem(topitem);
-        actionitem->setIcon(0, action->icon());
-        actionitem->setText(0, action->iconText());
         const KAction* kaction = qobject_cast<KAction*>(action);
-        if (d->actiontypes & KShortcutsEditor::LocalAction) {
-            if (kaction && !kaction->isShortcutConfigurable()) {
-                kDebug() << "local shortcut of action is not configurable" << kaction;
-            } else {
-                KKeySequenceWidget* localkswidget = new KKeySequenceWidget(d->treewidget);
-                localkswidget->setModifierlessAllowed(d->allowlettershortcuts);
-                localkswidget->setCheckForConflictsAgainst(
-                    KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::StandardShortcuts
-                );
-                localkswidget->setCheckActionCollections(d->actioncollections);
-                if (kaction) {
-                    localkswidget->setComponentName(kaction->d->componentData.componentName());
-                }
-                localkswidget->setKeySequence(action->shortcut());
-                localkswidget->setProperty("_k_action", QVariant::fromValue(action));
-                localkswidget->setProperty("_k_global", false);
-                connect(
-                    localkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
-                    this, SLOT(_k_slotKeySequenceChanged())
-                );
-                d->treewidget->setItemWidget(actionitem, 1, localkswidget);
-                d->keysequencewidgets.append(localkswidget);
+
+        QTreeWidgetItem* actionitem = nullptr;
+
+        if (addlocal && kaction && !kaction->isShortcutConfigurable()) {
+            qDebug() << "local shortcut of action is not configurable" << kaction;
+        } else if (addlocal) {
+            if (!actionitem) {
+                actionitem = kMakeActionItem(topitem, action);
             }
-        }
-        if (d->actiontypes & KShortcutsEditor::GlobalAction) {
-            if (kaction && !kaction->isGlobalShortcutEnabled()) {
-                kDebug() << "global shortcut of action is not enabled" << action;
-            } else if (kaction) {
-                KKeySequenceWidget* globalkswidget = new KKeySequenceWidget(d->treewidget);
-                globalkswidget->setModifierlessAllowed(d->allowlettershortcuts);
-                globalkswidget->setCheckForConflictsAgainst(
-                    KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::GlobalShortcuts
-                    | KKeySequenceWidget::StandardShortcuts
-                );
-                globalkswidget->setCheckActionCollections(d->actioncollections);
-                if (kaction) {
-                    globalkswidget->setComponentName(kaction->d->componentData.componentName());
-                }
-                globalkswidget->setKeySequence(kaction->globalShortcut());
-                globalkswidget->setProperty("_k_action", QVariant::fromValue(action));
-                globalkswidget->setProperty("_k_global", true);
-                connect(
-                    globalkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
-                    this, SLOT(_k_slotKeySequenceChanged())
-                );
-                d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
-                d->keysequencewidgets.append(globalkswidget);
-            } else {
-                kWarning() << "action is not KAction" << action;
+
+            KKeySequenceWidget* localkswidget = new KKeySequenceWidget(d->treewidget);
+            localkswidget->setModifierlessAllowed(d->allowlettershortcuts);
+            localkswidget->setCheckForConflictsAgainst(
+                KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::StandardShortcuts
+            );
+            localkswidget->setCheckActionCollections(d->actioncollections);
+            if (kaction) {
+                localkswidget->setComponentName(kaction->d->componentData.componentName());
             }
+            localkswidget->setKeySequence(action->shortcut());
+            localkswidget->setProperty("_k_action", QVariant::fromValue(action));
+            localkswidget->setProperty("_k_global", false);
+            connect(
+                localkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
+                this, SLOT(_k_slotKeySequenceChanged())
+            );
+            d->treewidget->setItemWidget(actionitem, 1, localkswidget);
+            d->keysequencewidgets.append(localkswidget);
         }
-        rowcounter++;
+
+        if (addglobal && !kaction) {
+            kWarning() << "action is not KAction" << action;
+        } else if (addglobal && kaction && !kaction->isGlobalShortcutEnabled()) {
+            kDebug() << "global shortcut of action is not enabled" << kaction;
+        } else if (addglobal) {
+            if (!actionitem) {
+                actionitem = kMakeActionItem(topitem, action);
+            }
+
+            KKeySequenceWidget* globalkswidget = new KKeySequenceWidget(d->treewidget);
+            globalkswidget->setModifierlessAllowed(d->allowlettershortcuts);
+            globalkswidget->setCheckForConflictsAgainst(
+                KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::GlobalShortcuts
+                | KKeySequenceWidget::StandardShortcuts
+            );
+            globalkswidget->setCheckActionCollections(d->actioncollections);
+            globalkswidget->setComponentName(kaction->d->componentData.componentName());
+            globalkswidget->setKeySequence(kaction->globalShortcut());
+            globalkswidget->setProperty("_k_action", QVariant::fromValue(action));
+            globalkswidget->setProperty("_k_global", true);
+            connect(
+                globalkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
+                this, SLOT(_k_slotKeySequenceChanged())
+            );
+            d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
+            d->keysequencewidgets.append(globalkswidget);
+        }
+
+        if (actionitem) {
+            rowcounter++;
+        }
     }
+    topitem->sortChildren(0, Qt::AscendingOrder);
     d->treewidget->addTopLevelItem(topitem);
     topitem->setExpanded(true);
+
+    // TODO: disable collapsing via mouse
+    // force exapnsion if there is only one top-level item
+    d->treewidget->setRootIsDecorated(d->treewidget->topLevelItemCount() > 1);
+    // count the local and global actions, disable sections based on the count and action types
+    int localcount = 0;
+    int globalcount = 0;
+    foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+        QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
+        Q_ASSERT(action != nullptr);
+        const bool global = kswidget->property("_k_global").toBool();
+        if (global) {
+            globalcount++;
+        } else {
+            localcount++;
+        }
+    }
+    QHeaderView* treeheader = d->treewidget->header();
+    treeheader->setSectionHidden(1, !addlocal || localcount < 1);
+    treeheader->setSectionHidden(2, !addglobal || globalcount < 1);
 }
 
 void KShortcutsEditor::importConfiguration(KConfigBase *config)
