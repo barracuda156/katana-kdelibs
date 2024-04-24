@@ -69,12 +69,12 @@ public:
      * @param collection the KActionCollection to configure
      * @param parent parent widget
      * @param actionTypes types of actions to display in this widget.
-     * @param allowLetterShortcuts set to LetterShortcutsDisallowed if unmodified alphanumeric
+     * @param letterShortcuts set to LetterShortcutsDisallowed if unmodified alphanumeric
      *  keys ('A', '1', etc.) are not permissible shortcuts.
      */
     KShortcutsEditor(KActionCollection *collection, QWidget *parent,
                      ActionTypes actionTypes = AllActions,
-                     LetterShortcuts allowLetterShortcuts = LetterShortcutsAllowed);
+                     LetterShortcuts letterShortcuts = LetterShortcutsAllowed);
 
     /**
      * \overload
@@ -83,11 +83,11 @@ public:
      *
      * @param parent parent widget
      * @param actionTypes types of actions to display in this widget.
-     * @param allowLetterShortcuts set to LetterShortcutsDisallowed if unmodified alphanumeric
+     * @param letterShortcuts set to LetterShortcutsDisallowed if unmodified alphanumeric
      *  keys ('A', '1', etc.) are not permissible shortcuts.
      */
     explicit KShortcutsEditor(QWidget *parent, ActionTypes actionTypes = AllActions,
-                              LetterShortcuts allowLetterShortcuts = LetterShortcutsAllowed);
+                              LetterShortcuts letterShortcuts = LetterShortcutsAllowed);
 
     /// Destructor
     virtual ~KShortcutsEditor();
@@ -142,10 +142,12 @@ public Q_SLOTS:
     void allDefault();
 
 private:
+    Q_PRIVATE_SLOT(d, void _k_slotKeySequenceChanged())
+
     friend class KShortcutsDialog;
     friend class KShortcutsEditorPrivate;
-    KShortcutsEditorPrivate *const d;
     Q_DISABLE_COPY(KShortcutsEditor)
+    KShortcutsEditorPrivate *const d;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(KShortcutsEditor::ActionTypes)

@@ -388,10 +388,10 @@ Q_SIGNALS:
 private:
     friend class KGlobalAccel; // Needs access to the component
     friend class KActionCollectionPrivate; // Needs access to the component
+    friend class KShortcutsEditor; // Needs access to the component
     Q_PRIVATE_SLOT(d, void slotTriggered())
     class KActionPrivate* const d;
     friend class KActionPrivate;
-    friend class KGlobalShortcutTest;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(KAction::ShortcutTypes)

@@ -24,6 +24,7 @@
 #include <QTreeWidget>
 
 #include "kaction.h"
+#include "kaction_p.h"
 #include "kactioncollection.h"
 #include "kkeysequencewidget.h"
 #include "kaboutdata.h"
@@ -37,30 +38,37 @@ class KShortcutsEditorPrivate
 public:
     KShortcutsEditorPrivate();
 
-    void init(KShortcutsEditor *parent, const KShortcutsEditor::ActionTypes actionType,
-              const KShortcutsEditor::LetterShortcuts allowLetterShortcuts);
+    void init(KShortcutsEditor *parent, const KShortcutsEditor::ActionTypes actionTypes,
+              const KShortcutsEditor::LetterShortcuts letterShortcuts);
+
+    void _k_slotKeySequenceChanged();
 
     KShortcutsEditor* parent;
-    KShortcutsEditor::ActionTypes actionTypes;
-    bool allowLetterShortcuts;
+    KShortcutsEditor::ActionTypes actiontypes;
+    bool allowlettershortcuts;
+    bool modified;
     QHBoxLayout* layout;
     QTreeWidget* treewidget;
-    QList<KActionCollection*> actionCollections;
+    QList<KActionCollection*> actioncollections;
 };
 
 KShortcutsEditorPrivate::KShortcutsEditorPrivate()
-    : layout(nullptr),
+    : parent(nullptr),
+    actiontypes(KShortcutsEditor::AllActions),
+    allowlettershortcuts(true),
+    modified(false),
+    layout(nullptr),
     treewidget(nullptr)
 {
 }
 
 void KShortcutsEditorPrivate::init(KShortcutsEditor *_parent,
-                                   const KShortcutsEditor::ActionTypes actionType,
-                                   const KShortcutsEditor::LetterShortcuts _allowLetterShortcuts)
+                                   const KShortcutsEditor::ActionTypes _actiontypes,
+                                   const KShortcutsEditor::LetterShortcuts _lettershortcuts)
 {
     parent = _parent;
-    actionTypes = actionType;
-    allowLetterShortcuts = (_allowLetterShortcuts == KShortcutsEditor::LetterShortcutsAllowed);
+    actiontypes = _actiontypes;
+    allowlettershortcuts = (_lettershortcuts == KShortcutsEditor::LetterShortcutsAllowed);
 
     layout = new QHBoxLayout(parent);
     parent->setLayout(layout);
@@ -79,27 +87,34 @@ void KShortcutsEditorPrivate::init(KShortcutsEditor *_parent,
     treeheader->setResizeMode(0, QHeaderView::Stretch);
     treeheader->setResizeMode(1, QHeaderView::Stretch);
     treeheader->setResizeMode(2, QHeaderView::Stretch);
-    treeheader->setSectionHidden(1, !(actionType & KShortcutsEditor::LocalAction));
-    treeheader->setSectionHidden(2, !(actionType & KShortcutsEditor::GlobalAction));
+    treeheader->setSectionHidden(1, !(actiontypes & KShortcutsEditor::LocalAction));
+    treeheader->setSectionHidden(2, !(actiontypes & KShortcutsEditor::GlobalAction));
 
     layout->addWidget(treewidget);
 }
 
+void KShortcutsEditorPrivate::_k_slotKeySequenceChanged()
+{
+    modified = true;
+    emit parent->keyChange();
+}
+
+
 KShortcutsEditor::KShortcutsEditor(KActionCollection *collection, QWidget *parent,
-                                   ActionTypes actionType, LetterShortcuts allowLetterShortcuts)
+                                   ActionTypes actionTypes, LetterShortcuts allowLetterShortcuts)
     : QWidget(parent),
     d(new KShortcutsEditorPrivate())
 {
-    d->init(this, actionType, allowLetterShortcuts);
+    d->init(this, actionTypes, allowLetterShortcuts);
     addCollection(collection);
 }
 
-KShortcutsEditor::KShortcutsEditor(QWidget *parent, ActionTypes actionType,
+KShortcutsEditor::KShortcutsEditor(QWidget *parent, ActionTypes actionTypes,
                                    LetterShortcuts allowLetterShortcuts)
     : QWidget(parent),
     d(new KShortcutsEditorPrivate())
 {
-    d->init(this, actionType, allowLetterShortcuts);
+    d->init(this, actionTypes, allowLetterShortcuts);
 }
 
 KShortcutsEditor::~KShortcutsEditor()
@@ -109,13 +124,12 @@ KShortcutsEditor::~KShortcutsEditor()
 
 bool KShortcutsEditor::isModified() const
 {
-    // TODO: implement
-    return false;
+    return d->modified;
 }
 
 void KShortcutsEditor::clearCollections()
 {
-    d->actionCollections.clear();
+    d->actioncollections.clear();
     d->treewidget->clear();
 }
 
@@ -124,7 +138,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     if (collection->isEmpty()) {
         return;
     }
-    d->actionCollections.append(collection);
+    d->actioncollections.append(collection);
 
     QString text = title;
     if (text.isEmpty()) {
@@ -157,27 +171,41 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         QTreeWidgetItem* actionitem = new QTreeWidgetItem(topitem);
         actionitem->setIcon(0, action->icon());
         actionitem->setText(0, action->iconText());
-        if (d->actionTypes & KShortcutsEditor::LocalAction) {
+        const KAction* kaction = qobject_cast<KAction*>(action);
+        if (d->actiontypes & KShortcutsEditor::LocalAction) {
             KKeySequenceWidget* localkswidget = new KKeySequenceWidget(d->treewidget);
-            localkswidget->setModifierlessAllowed(d->allowLetterShortcuts);
+            localkswidget->setModifierlessAllowed(d->allowlettershortcuts);
             localkswidget->setCheckForConflictsAgainst(
                 KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::StandardShortcuts
             );
-            localkswidget->setCheckActionCollections(d->actionCollections);
+            localkswidget->setCheckActionCollections(d->actioncollections);
+            if (kaction) {
+                localkswidget->setComponentName(kaction->d->componentData.componentName());
+            }
             localkswidget->setKeySequence(action->shortcut());
+            connect(
+                localkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
+                this, SLOT(_k_slotKeySequenceChanged())
+            );
             d->treewidget->setItemWidget(actionitem, 1, localkswidget);
         }
-        if (d->actionTypes & KShortcutsEditor::GlobalAction) {
-            KAction* kaction = qobject_cast<KAction*>(action);
+        if (d->actiontypes & KShortcutsEditor::GlobalAction) {
             if (kaction) {
                 KKeySequenceWidget* globalkswidget = new KKeySequenceWidget(d->treewidget);
-                globalkswidget->setModifierlessAllowed(d->allowLetterShortcuts);
+                globalkswidget->setModifierlessAllowed(d->allowlettershortcuts);
                 globalkswidget->setCheckForConflictsAgainst(
                     KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::GlobalShortcuts
                     | KKeySequenceWidget::StandardShortcuts
                 );
-                globalkswidget->setCheckActionCollections(d->actionCollections);
+                globalkswidget->setCheckActionCollections(d->actioncollections);
+                if (kaction) {
+                    globalkswidget->setComponentName(kaction->d->componentData.componentName());
+                }
                 globalkswidget->setKeySequence(kaction->globalShortcut());
+                connect(
+                    globalkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
+                    this, SLOT(_k_slotKeySequenceChanged())
+                );
                 d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
             } else {
                 kWarning() << "action is not KAction" << action;
@@ -195,15 +223,15 @@ void KShortcutsEditor::importConfiguration(KConfigBase *config)
         config = KGlobal::config().data();
     }
 
-    if (d->actionTypes & KShortcutsEditor::LocalAction) {
+    if (d->actiontypes & KShortcutsEditor::LocalAction) {
         KConfigGroup group(config, "Shortcuts");
-        foreach (KActionCollection* collection, d->actionCollections) {
+        foreach (KActionCollection* collection, d->actioncollections) {
             collection->readSettings(&group);
         }
     }
-    if (d->actionTypes & KShortcutsEditor::GlobalAction) {
+    if (d->actiontypes & KShortcutsEditor::GlobalAction) {
         KConfigGroup group(config, "Global Shortcuts");
-        foreach (KActionCollection* collection, d->actionCollections) {
+        foreach (KActionCollection* collection, d->actioncollections) {
             collection->importGlobalShortcuts(&group);
         }
     }
@@ -215,18 +243,20 @@ void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
         config = KGlobal::config().data();
     }
 
-    if (d->actionTypes & KShortcutsEditor::LocalAction) {
+    if (d->actiontypes & KShortcutsEditor::LocalAction) {
         KConfigGroup group(config, "Shortcuts");
-        foreach (KActionCollection* collection, d->actionCollections) {
+        foreach (KActionCollection* collection, d->actioncollections) {
             collection->writeSettings(&group, true);
         }
     }
-    if (d->actionTypes & KShortcutsEditor::GlobalAction) {
+    if (d->actiontypes & KShortcutsEditor::GlobalAction) {
         KConfigGroup group(config, "Global Shortcuts");
-        foreach (KActionCollection* collection, d->actionCollections) {
+        foreach (KActionCollection* collection, d->actioncollections) {
             collection->exportGlobalShortcuts(&group, true);
         }
     }
+
+    d->modified = false;
 }
 
 void KShortcutsEditor::allDefault()
