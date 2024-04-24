@@ -88,11 +88,7 @@ set(kdeui_LIB_SRCS
     dialogs/knewpassworddialog.cpp
     dialogs/kpassworddialog.cpp
     dialogs/kprogressdialog.cpp
-    dialogs/kshortcuteditwidget.cpp
-    dialogs/kshortcutseditordelegate.cpp
-    dialogs/kshortcutseditoritem.cpp
     dialogs/kshortcutseditor.cpp
-    dialogs/kshortcutschemeseditor.cpp
     dialogs/kshortcutsdialog.cpp
     dialogs/ksplashscreen.cpp
     dialogs/kswitchlanguagedialog_p.cpp
@@ -146,8 +142,6 @@ set(kdeui_LIB_SRCS
     paged/kpageview_p.cpp
     paged/kpagewidget.cpp
     paged/kpagewidgetmodel.cpp
-    shortcuts/kshortcut.cpp
-    shortcuts/kshortcutschemeshelper.cpp
     shortcuts/kstandardshortcut.cpp
     shortcuts/kglobalaccel.cpp
     shortcuts/kacceleratormanager.cpp
@@ -202,7 +196,6 @@ set(kdeui_LIB_SRCS
     widgets/kratingwidget.cpp
     widgets/krestrictedline.cpp
     widgets/kseparator.cpp
-    widgets/kshortcutwidget.cpp
     widgets/ksqueezedtextlabel.cpp
     widgets/kstatusbar.cpp
     widgets/ktabbar.cpp
@@ -392,7 +385,6 @@ install(
     paged/kpageview.h
     paged/kpagewidget.h
     paged/kpagewidgetmodel.h
-    shortcuts/kshortcut.h
     shortcuts/kstandardshortcut.h
     shortcuts/kglobalaccel.h
     shortcuts/kacceleratormanager.h
@@ -451,7 +443,6 @@ install(
     widgets/ktitlewidget.h
     widgets/ktabbar.h
     widgets/ktabwidget.h
-    widgets/kshortcutwidget.h
     widgets/kstatusbar.h
     widgets/ktoolbar.h
     widgets/kurllabel.h

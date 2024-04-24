@@ -183,7 +183,7 @@ KGlobalSettings::Completion KCompletionBase::completionMode() const
     return d->m_delegate ? d->m_delegate->completionMode() : d->m_iCompletionMode;
 }
 
-bool KCompletionBase::setKeyBinding( KeyBindingType item, const KShortcut& cut )
+bool KCompletionBase::setKeyBinding( KeyBindingType item, const QKeySequence& cut )
 {
     if ( d->m_delegate )
         return d->m_delegate->setKeyBinding( item, cut );
@@ -198,7 +198,7 @@ bool KCompletionBase::setKeyBinding( KeyBindingType item, const KShortcut& cut )
     return true;
 }
 
-KShortcut KCompletionBase::getKeyBinding( KeyBindingType item ) const
+QKeySequence KCompletionBase::getKeyBinding( KeyBindingType item ) const
 {
     return d->m_delegate ? d->m_delegate->getKeyBinding( item ) : d->m_keyMap[ item ];
 }
@@ -211,10 +211,10 @@ void KCompletionBase::useGlobalKeyBindings()
     }
     
     d->m_keyMap.clear();
-    d->m_keyMap.insert( TextCompletion, KShortcut() );
-    d->m_keyMap.insert( PrevCompletionMatch, KShortcut() );
-    d->m_keyMap.insert( NextCompletionMatch, KShortcut() );
-    d->m_keyMap.insert( SubstringCompletion, KShortcut() );
+    d->m_keyMap.insert( TextCompletion, QKeySequence() );
+    d->m_keyMap.insert( PrevCompletionMatch, QKeySequence() );
+    d->m_keyMap.insert( NextCompletionMatch, QKeySequence() );
+    d->m_keyMap.insert( SubstringCompletion, QKeySequence() );
 }
 
 KCompletion* KCompletionBase::compObj() const

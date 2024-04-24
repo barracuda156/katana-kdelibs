@@ -22,8 +22,13 @@
 #include "kxmlguifactory_p.h"
 #include "kxmlguiclient.h"
 #include "kxmlguibuilder.h"
-
-#include <assert.h>
+#include "kcomponentdata.h"
+#include "kglobal.h"
+#include "kstandarddirs.h"
+#include "kaction.h"
+#include "kshortcutsdialog.h"
+#include "kactioncollection.h"
+#include "kdebug.h"
 
 #include <QtCore/QDir>
 #include <QtXml/qdom.h>
@@ -34,15 +39,7 @@
 #include <QtCore/QVariant>
 #include <QTextCodec>
 
-#include <kdebug.h>
-#include <kcomponentdata.h>
-#include <kglobal.h>
-#include <kshortcut.h>
-#include <kstandarddirs.h>
-
-#include "kaction.h"
-#include "kshortcutsdialog.h"
-#include "kactioncollection.h"
+#include <assert.h>
 
 using namespace KXMLGUI;
 
@@ -345,8 +342,8 @@ void KXMLGUIFactoryPrivate::saveDefaultActionProperties(const QList<QAction *>& 
 
         if (KAction* kaction = qobject_cast<KAction*>(action)) {
             // Check if the default shortcut is set
-            KShortcut defaultShortcut = kaction->shortcut(KAction::DefaultShortcut);
-            KShortcut activeShortcut  = kaction->shortcut(KAction::ActiveShortcut);
+            QKeySequence defaultShortcut = kaction->shortcut(KAction::DefaultShortcut);
+            QKeySequence activeShortcut  = kaction->shortcut(KAction::ActiveShortcut);
             //kDebug() << kaction->objectName() << "default=" << defaultShortcut.toString() << "active=" << activeShortcut.toString();
 
             // Check if we have an empty default shortcut and an non empty
@@ -365,7 +362,7 @@ void KXMLGUIFactoryPrivate::saveDefaultActionProperties(const QList<QAction *>& 
             // A QAction used with KXMLGUI? Set our property and ignore it.
             if ( !action->isSeparator() )
                 kError() << "Attempt to use QAction" << action->objectName() << "with KXMLGUIFactory!";
-            action->setProperty("_k_DefaultShortcut", KShortcut());
+            action->setProperty("_k_DefaultShortcut", QKeySequence());
         }
 
     }
@@ -626,19 +623,19 @@ void KXMLGUIFactoryPrivate::configureAction( QAction *action, const QDomAttr &at
         propertyValue = QVariant( attribute.value().toInt() );
     } else if ( propertyType == QVariant::UInt ) {
         propertyValue = QVariant( attribute.value().toUInt() );
-    } else if ( propertyType == QVariant::UserType && action->property( attrName.toLatin1() ).userType() == qMetaTypeId<KShortcut>() ) {
+    } else if ( propertyType == QVariant::KeySequence) {
         // Setting the shortcut by property also sets the default shortcut (which is incorrect), so we have to do it directly
         if (KAction* ka = qobject_cast<KAction*>(action)) {
             if (attrName=="globalShortcut") {
-                ka->setGlobalShortcut(KShortcut(attribute.value()), KAction::ActiveShortcut);
+                ka->setGlobalShortcut(QKeySequence(attribute.value()), KAction::ActiveShortcut);
             } else {
-                ka->setShortcut(KShortcut(attribute.value()), KAction::ActiveShortcut);
+                ka->setShortcut(QKeySequence(attribute.value()), KAction::ActiveShortcut);
             }
             if (shortcutOption & KXMLGUIFactoryPrivate::SetDefaultShortcut)
-                ka->setShortcut(KShortcut(attribute.value()), KAction::DefaultShortcut);
+                ka->setShortcut(QKeySequence(attribute.value()), KAction::DefaultShortcut);
             return;
         }
-        propertyValue = KShortcut( attribute.value() );
+        propertyValue = QKeySequence( attribute.value() );
     } else {
         propertyValue = QVariant( attribute.value() );
     }
@@ -684,13 +681,13 @@ void KXMLGUIFactoryPrivate::applyShortcutScheme(KXMLGUIClient *client, const QLi
     if (schemeName != "Default") {
         foreach (QAction *action, actions) {
             if (KAction *kaction = qobject_cast<KAction*>(action)) {
-                kaction->setShortcut(KShortcut(), KAction::ActiveShortcut);
+                kaction->setShortcut(QKeySequence(), KAction::ActiveShortcut);
                 // We clear the default shortcut as well because the shortcut scheme will set its own defaults
-                kaction->setShortcut(KShortcut(), KAction::DefaultShortcut);
+                kaction->setShortcut(QKeySequence(), KAction::DefaultShortcut);
                 continue;
             }
             if (action) {
-                action->setProperty("shortcut", KShortcut());
+                action->setProperty("shortcut", QKeySequence());
             }
         }
     } else {
@@ -699,7 +696,7 @@ void KXMLGUIFactoryPrivate::applyShortcutScheme(KXMLGUIClient *client, const QLi
             if (KAction *kaction = qobject_cast<KAction*>(action)) {
                 QVariant savedDefaultShortcut = kaction->property("_k_DefaultShortcut");
                 if (savedDefaultShortcut.isValid()) {
-                    KShortcut shortcut = savedDefaultShortcut.value<KShortcut>();
+                    QKeySequence shortcut = savedDefaultShortcut.value<QKeySequence>();
                     //kDebug() << "scheme said" << shortcut.toString() << "for action" << kaction->objectName();
                     kaction->setShortcut(shortcut, KAction::ActiveShortcut);
                     kaction->setShortcut(shortcut, KAction::DefaultShortcut);
@@ -707,7 +704,7 @@ void KXMLGUIFactoryPrivate::applyShortcutScheme(KXMLGUIClient *client, const QLi
                 }
             }
             if (action) {
-                action->setProperty("shortcut", KShortcut());
+                action->setProperty("shortcut", QKeySequence());
             }
         }
     }

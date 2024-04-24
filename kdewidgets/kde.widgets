@@ -188,12 +188,6 @@ WhatsThis=A widget to edit a list of shortcuts.
 IncludeFile=kshortcutseditor.h
 Group=Input (KDE)
 
-[KShortcutWidget]
-ToolTip=Shortcut picker widget. (KDE)
-WhatsThis=A widget to pick a KShortcut.
-IncludeFile=kshortcutwidget.h
-Group=Buttons (KDE)
-
 [KSqueezedTextLabel]
 ToolTip=A QLabel that squeezes its text (KDE)
 WhatsThis=If the text is too long to fit into the label it is divided into remaining left and right parts which are separated by three dots

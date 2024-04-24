@@ -51,12 +51,6 @@ KActionPrivate::KActionPrivate(KAction *q_ptr)
     q->setProperty("isShortcutConfigurable", true);
 }
 
-void KActionPrivate::setActiveGlobalShortcutNoEnable(const KShortcut &cut)
-{
-    globalShortcut = cut;
-    emit q->globalShortcutChanged(cut.primary());
-}
-
 void KActionPrivate::slotTriggered()
 {
     emit q->triggered(QApplication::mouseButtons(), QApplication::keyboardModifiers());
@@ -128,43 +122,27 @@ void KAction::setShortcutConfigurable(bool b)
     setProperty("isShortcutConfigurable", b);
 }
 
-KShortcut KAction::shortcut(ShortcutTypes type) const
+QKeySequence KAction::shortcut(ShortcutTypes type) const
 {
     Q_ASSERT(type);
     if (type == DefaultShortcut) {
-        return KShortcut(
-            property("defaultPrimaryShortcut").value<QKeySequence>(),
-            property("defaultAlternateShortcut").value<QKeySequence>()
-        );
+        return d->defaultShortcut;
     }
-    const QKeySequence cut = QAction::shortcut();
-    return KShortcut(cut[0], cut[1]);
-}
-
-void KAction::setShortcut(const KShortcut &shortcut, ShortcutTypes type)
-{
-    Q_ASSERT(type);
-    if (type & KAction::DefaultShortcut) {
-        setProperty("defaultPrimaryShortcut", shortcut.primary());
-        setProperty("defaultAlternateShortcut", shortcut.alternate());
-    }
-    if (type & ActiveShortcut) {
-        QAction::setShortcut(QKeySequence(shortcut.primary(), shortcut.alternate()));
-    }
+    return QAction::shortcut();
 }
 
 void KAction::setShortcut(const QKeySequence &keySeq, ShortcutTypes type)
 {
     Q_ASSERT(type);
     if (type & KAction::DefaultShortcut) {
-        setProperty("defaultPrimaryShortcut", keySeq);
+        d->defaultShortcut = keySeq;
     }
     if (type & KAction::ActiveShortcut) {
         QAction::setShortcut(keySeq);
     }
 }
 
-const KShortcut& KAction::globalShortcut(ShortcutTypes type) const
+const QKeySequence& KAction::globalShortcut(ShortcutTypes type) const
 {
     Q_ASSERT(type);
     if (type == KAction::DefaultShortcut) {
@@ -173,7 +151,7 @@ const KShortcut& KAction::globalShortcut(ShortcutTypes type) const
     return d->globalShortcut;
 }
 
-void KAction::setGlobalShortcut(const KShortcut &shortcut, ShortcutTypes type)
+void KAction::setGlobalShortcut(const QKeySequence &shortcut, ShortcutTypes type)
 {
     Q_ASSERT(type);
     bool changed = false;
@@ -216,8 +194,8 @@ bool KAction::isGlobalShortcutEnabled() const
 
 void KAction::forgetGlobalShortcut()
 {
-    d->globalShortcut = KShortcut();
-    d->defaultGlobalShortcut = KShortcut();
+    d->globalShortcut = QKeySequence();
+    d->defaultGlobalShortcut = QKeySequence();
     if (d->globalShortcutEnabled) {
         d->globalShortcutEnabled = false;
         d->neverSetGlobalShortcut = true; //it's a fresh start :)

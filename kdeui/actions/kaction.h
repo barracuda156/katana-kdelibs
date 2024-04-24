@@ -27,9 +27,9 @@
 #define KACTION_H
 
 #include <kdeui_export.h>
-#include <kshortcut.h>
 
-#include <QtGui/QWidgetAction>
+#include <QWidgetAction>
+#include <QKeySequence>
 
 class KIcon;
 
@@ -207,10 +207,8 @@ class KIcon;
 class KDEUI_EXPORT KAction : public QWidgetAction
 {
     Q_OBJECT
-
-    Q_PROPERTY(KShortcut shortcut READ shortcut WRITE setShortcut)
     Q_PROPERTY(bool shortcutConfigurable READ isShortcutConfigurable WRITE setShortcutConfigurable)
-    Q_PROPERTY(KShortcut globalShortcut READ globalShortcut WRITE setGlobalShortcut)
+    Q_PROPERTY(QKeySequence globalShortcut READ globalShortcut WRITE setGlobalShortcut)
     Q_PROPERTY(bool globalShortcutEnabled READ isGlobalShortcutEnabled)
     Q_FLAGS(ShortcutType)
 
@@ -281,24 +279,10 @@ public:
      * \param types the type of shortcut to return. Should both be specified, only the
      *             active shortcut will be returned. Defaults to the active shortcut, if one exists.
      */
-    KShortcut shortcut(ShortcutTypes types = ActiveShortcut) const;
+    QKeySequence shortcut(ShortcutTypes types = ActiveShortcut) const;
 
     /**
-     * Set the shortcut for this action.
-     *
-     * This is preferred over QAction::setShortcut(), as it allows for multiple shortcuts
-     * per action.
-     *
-     * \param shortcut shortcut(s) to use for this action in its specified shortcutContext()
-     * \param type type of shortcut to be set: active shortcut,
-     *  default shortcut, or both (the default).
-     */
-    void setShortcut(const KShortcut &shortcut, ShortcutTypes type = ShortcutTypes(ActiveShortcut | DefaultShortcut));
-
-    /**
-     * \overload void setShortcut(const KShortcut& shortcut)
-     *
-     * Set the primary shortcut only for this action.
+     * Set the shortcut only for this action.
      *
      * This function is there to explicitly override QAction::setShortcut(const QKeySequence&).
      * QAction::setShortcut() will bypass everything in KAction and may lead to unexpected behavior.
@@ -334,7 +318,7 @@ public:
      * \sa KGlobalAccel
      * \sa setGlobalShortcut()
      */
-    const KShortcut& globalShortcut(ShortcutTypes type = ActiveShortcut) const;
+    const QKeySequence& globalShortcut(ShortcutTypes type = ActiveShortcut) const;
 
     /**
      * Assign a global shortcut for this action. Global shortcuts
@@ -356,7 +340,7 @@ public:
      *             or both (the default).
      * \sa globalShortcut()
      */
-    void setGlobalShortcut(const KShortcut &shortcut, ShortcutTypes type =
+    void setGlobalShortcut(const QKeySequence &shortcut, ShortcutTypes type =
                            ShortcutTypes(ActiveShortcut | DefaultShortcut));
 
     /**
@@ -404,7 +388,6 @@ Q_SIGNALS:
 private:
     friend class KGlobalAccel; // Needs access to the component
     friend class KActionCollectionPrivate; // Needs access to the component
-    friend class KShortcutsEditorDelegate; // Needs access to the component
     Q_PRIVATE_SLOT(d, void slotTriggered())
     class KActionPrivate* const d;
     friend class KActionPrivate;

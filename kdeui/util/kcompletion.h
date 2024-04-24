@@ -23,12 +23,12 @@
 #include <kdeui_export.h>
 #include <kglobalsettings.h>
 #include <ksortablelist.h>
-#include <kshortcut.h>
 
-#include <QtCore/QMap>
-#include <QtCore/QObject>
-#include <QtCore/QStringList>
-#include <QtCore/QPointer>
+#include <QMap>
+#include <QObject>
+#include <QStringList>
+#include <QPointer>
+#include <QKeySequence>
 
 class KCompTreeNode;
 class KCompletionPrivate;
@@ -670,7 +670,7 @@ public:
 
 
     // Map for the key binding types mentioned above.
-    typedef QMap<KeyBindingType, KShortcut> KeyBindingMap;
+    typedef QMap<KeyBindingType, QKeySequence> KeyBindingMap;
 
     /**
      * Default constructor.
@@ -852,7 +852,7 @@ public:
      * @return true if key-binding can successfully be set.
      * @see getKeyBinding
      */
-    bool setKeyBinding( KeyBindingType item , const KShortcut& key );
+    bool setKeyBinding( KeyBindingType item , const QKeySequence& key );
 
     /**
      * Returns the key-binding used for the specified item.
@@ -866,7 +866,7 @@ public:
      * @return the key-binding used for the feature given by @p item.
      * @see setKeyBinding
      */
-    KShortcut getKeyBinding( KeyBindingType item ) const;
+    QKeySequence getKeyBinding( KeyBindingType item ) const;
 
     /**
      * Sets this object to use global values for key-bindings.

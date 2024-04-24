@@ -130,7 +130,6 @@ Q_SIGNALS:
     void saved();
 
 private:
-    Q_PRIVATE_SLOT(d, void changeShortcutScheme(const QString &))
     Q_PRIVATE_SLOT(d, void save())
     Q_PRIVATE_SLOT(d, void undoChanges())
 

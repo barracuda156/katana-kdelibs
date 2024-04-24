@@ -393,7 +393,7 @@ void KActionCollection::importGlobalShortcuts(KConfigGroup *config)
         if (kaction->isShortcutConfigurable()) {
             const QString entry = config->readEntry(actionName, QString());
             if (!entry.isEmpty()) {
-                kaction->setGlobalShortcut(KShortcut(entry), KAction::ActiveShortcut);
+                kaction->setGlobalShortcut(QKeySequence(entry), KAction::ActiveShortcut);
             } else {
                 kaction->setGlobalShortcut(kaction->shortcut(KAction::DefaultShortcut), KAction::ActiveShortcut);
             }
@@ -424,7 +424,7 @@ void KActionCollection::readSettings(KConfigGroup *config)
             const QString actionName = it.key();
             const QString entry = config->readEntry(actionName, QString());
             if (!entry.isEmpty()) {
-                kaction->setShortcut(KShortcut(entry), KAction::ActiveShortcut);
+                kaction->setShortcut(QKeySequence(entry), KAction::ActiveShortcut);
             } else {
                 kaction->setShortcut(kaction->shortcut(KAction::DefaultShortcut));
             }

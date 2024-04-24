@@ -220,46 +220,46 @@ bool KTextEdit::Private::handleShortcut(const QKeyEvent *event)
 {
     const int key = (event->key() | event->modifiers());
 
-    if (KStandardShortcut::copy().contains(key)) {
+    if (KStandardShortcut::copy().matches(key) != QKeySequence::NoMatch) {
         parent->copy();
         return true;
-    } else if (KStandardShortcut::paste().contains(key)) {
+    } else if (KStandardShortcut::paste().matches(key) != QKeySequence::NoMatch) {
         parent->paste();
         return true;
-    } else if (KStandardShortcut::cut().contains(key)) {
+    } else if (KStandardShortcut::cut().matches(key) != QKeySequence::NoMatch) {
         parent->cut();
         return true;
-    } else if (KStandardShortcut::undo().contains(key)) {
+    } else if (KStandardShortcut::undo().matches(key) != QKeySequence::NoMatch) {
         if (!parent->isReadOnly()) {
             parent->undo();
         }
         return true;
-    } else if (KStandardShortcut::redo().contains(key)) {
+    } else if (KStandardShortcut::redo().matches(key) != QKeySequence::NoMatch) {
         if (!parent->isReadOnly()) {
             parent->redo();
         }
         return true;
-    } else if (KStandardShortcut::deleteWordBack().contains(key)) {
+    } else if (KStandardShortcut::deleteWordBack().matches(key) != QKeySequence::NoMatch) {
         if (!parent->isReadOnly()) {
             parent->deleteWordBack();
         }
         return true;
-    } else if ( KStandardShortcut::deleteWordForward().contains(key)) {
+    } else if ( KStandardShortcut::deleteWordForward().matches(key) != QKeySequence::NoMatch) {
         if (!parent->isReadOnly()) {
             parent->deleteWordForward();
         }
         return true;
-    } else if ( KStandardShortcut::backwardWord().contains(key)) {
+    } else if ( KStandardShortcut::backwardWord().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         cursor.movePosition(QTextCursor::PreviousWord);
         parent->setTextCursor(cursor);
         return true;
-    } else if (KStandardShortcut::forwardWord().contains(key)) {
+    } else if (KStandardShortcut::forwardWord().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         cursor.movePosition(QTextCursor::NextWord);
         parent->setTextCursor(cursor);
         return true;
-    } else if ( KStandardShortcut::next().contains(key)) {
+    } else if ( KStandardShortcut::next().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         bool moved = false;
         qreal lastY = parent->cursorRect(cursor).bottom();
@@ -277,7 +277,7 @@ bool KTextEdit::Private::handleShortcut(const QKeyEvent *event)
         }
         parent->setTextCursor(cursor);
         return true;
-    } else if (KStandardShortcut::prior().contains(key)) {
+    } else if (KStandardShortcut::prior().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         bool moved = false;
         qreal lastY = parent->cursorRect(cursor).bottom();
@@ -295,38 +295,38 @@ bool KTextEdit::Private::handleShortcut(const QKeyEvent *event)
         }
         parent->setTextCursor(cursor);
         return true;
-    } else if ( KStandardShortcut::begin().contains(key)) {
+    } else if (KStandardShortcut::begin().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         cursor.movePosition(QTextCursor::Start);
         parent->setTextCursor(cursor);
         return true;
-    } else if (KStandardShortcut::end().contains(key)) {
+    } else if (KStandardShortcut::end().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         cursor.movePosition(QTextCursor::End);
         parent->setTextCursor(cursor);
         return true;
-    } else if (KStandardShortcut::beginningOfLine().contains(key)) {
+    } else if (KStandardShortcut::beginningOfLine().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         cursor.movePosition(QTextCursor::StartOfLine);
         parent->setTextCursor(cursor);
         return true;
-    } else if (KStandardShortcut::endOfLine().contains(key)) {
+    } else if (KStandardShortcut::endOfLine().matches(key) != QKeySequence::NoMatch) {
         QTextCursor cursor = parent->textCursor();
         cursor.movePosition(QTextCursor::EndOfLine);
         parent->setTextCursor(cursor);
         return true;
-    } else if (findReplaceEnabled && KStandardShortcut::find().contains(key)) {
+    } else if (findReplaceEnabled && KStandardShortcut::find().matches(key) != QKeySequence::NoMatch) {
         parent->slotFind();
         return true;
-    } else if (findReplaceEnabled && KStandardShortcut::findNext().contains(key)) {
+    } else if (findReplaceEnabled && KStandardShortcut::findNext().matches(key) != QKeySequence::NoMatch) {
         parent->slotFindNext();
         return true;
-    } else if (findReplaceEnabled && KStandardShortcut::replace().contains(key)) {
+    } else if (findReplaceEnabled && KStandardShortcut::replace().matches(key) != QKeySequence::NoMatch) {
         if (!parent->isReadOnly()) {
             parent->slotReplace();
         }
         return true;
-    } else if (KStandardShortcut::pasteSelection().contains(key)) {
+    } else if (KStandardShortcut::pasteSelection().matches(key) != QKeySequence::NoMatch) {
         QString text = QApplication::clipboard()->text(QClipboard::Selection);
         if (!text.isEmpty()) {
             // TODO: check if this is html? (MiB)
@@ -791,45 +791,45 @@ void KTextEdit::showTabAction(bool show)
 
 bool KTextEdit::Private::overrideShortcut(const QKeyEvent *event)
 {
-    const int key = (event->key() | event->modifiers());
+    const QKeySequence key = QKeySequence(event->key() | event->modifiers());
 
-    if (KStandardShortcut::copy().contains(key)) {
+    if (KStandardShortcut::copy().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::paste().contains(key)) {
+    } else if (KStandardShortcut::paste().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::cut().contains(key)) {
+    } else if (KStandardShortcut::cut().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::undo().contains(key)) {
+    } else if (KStandardShortcut::undo().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::redo().contains(key)) {
+    } else if (KStandardShortcut::redo().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if ( KStandardShortcut::deleteWordBack().contains(key) ) {
+    } else if ( KStandardShortcut::deleteWordBack().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::deleteWordForward().contains(key)) {
+    } else if (KStandardShortcut::deleteWordForward().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::backwardWord().contains(key)) {
+    } else if (KStandardShortcut::backwardWord().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::forwardWord().contains(key)) {
+    } else if (KStandardShortcut::forwardWord().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::next().contains(key)) {
+    } else if (KStandardShortcut::next().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::prior().contains(key)) {
+    } else if (KStandardShortcut::prior().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::begin().contains(key)) {
+    } else if (KStandardShortcut::begin().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::end().contains(key)) {
+    } else if (KStandardShortcut::end().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::beginningOfLine().contains(key)) {
+    } else if (KStandardShortcut::beginningOfLine().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::endOfLine().contains(key)) {
+    } else if (KStandardShortcut::endOfLine().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (KStandardShortcut::pasteSelection().contains(key) ) {
+    } else if (KStandardShortcut::pasteSelection().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (findReplaceEnabled && KStandardShortcut::find().contains(key)) {
+    } else if (findReplaceEnabled && KStandardShortcut::find().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (findReplaceEnabled && KStandardShortcut::findNext().contains(key)) {
+    } else if (findReplaceEnabled && KStandardShortcut::findNext().matches(key) != QKeySequence::NoMatch) {
         return true;
-    } else if (findReplaceEnabled && KStandardShortcut::replace().contains(key)) {
+    } else if (findReplaceEnabled && KStandardShortcut::replace().matches(key) != QKeySequence::NoMatch) {
         return true;
     } else if (event->matches(QKeySequence::SelectAll)) { // currently missing in QTextEdit
         return true;

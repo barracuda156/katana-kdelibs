@@ -42,7 +42,6 @@ KDEUI_UNIT_TESTS(
     kcombobox_unittest
     kdialog_unittest
     kreplacetest
-    kshortcuttest
     kstandardshortcuttest
     kuniqueapptest
     kstartupinfo_unittest

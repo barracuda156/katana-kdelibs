@@ -691,12 +691,12 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
 {
     const int key = e->key() | e->modifiers();
 
-    if ( KStandardShortcut::copy().contains( key ) )
+    if ( KStandardShortcut::copy().matches( key ) != QKeySequence::NoMatch )
     {
         copy();
         return;
     }
-    else if ( KStandardShortcut::paste().contains( key ) )
+    else if ( KStandardShortcut::paste().matches( key ) != QKeySequence::NoMatch )
     {
       // TODO:
       // we should restore the original text (not autocompleted), otherwise the paste
@@ -705,7 +705,7 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
           paste();
         return;
     }
-    else if ( KStandardShortcut::pasteSelection().contains( key ) )
+    else if ( KStandardShortcut::pasteSelection().matches( key ) != QKeySequence::NoMatch )
     {
         QString text = QApplication::clipboard()->text( QClipboard::Selection);
         insert( text );
@@ -713,25 +713,25 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
         return;
     }
 
-    else if ( KStandardShortcut::cut().contains( key ) )
+    else if ( KStandardShortcut::cut().matches( key ) != QKeySequence::NoMatch )
     {
         if( !isReadOnly() )
            cut();
         return;
     }
-    else if ( KStandardShortcut::undo().contains( key ) )
+    else if ( KStandardShortcut::undo().matches( key ) != QKeySequence::NoMatch )
     {
         if( !isReadOnly() )
           undo();
         return;
     }
-    else if ( KStandardShortcut::redo().contains( key ) )
+    else if ( KStandardShortcut::redo().matches( key ) != QKeySequence::NoMatch )
     {
         if( !isReadOnly() )
            redo();
         return;
     }
-    else if ( KStandardShortcut::deleteWordBack().contains( key ) )
+    else if ( KStandardShortcut::deleteWordBack().matches( key ) != QKeySequence::NoMatch )
     {
         cursorWordBackward(true);
         if ( hasSelectedText() )
@@ -740,7 +740,7 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
         e->accept();
         return;
     }
-    else if ( KStandardShortcut::deleteWordForward().contains( key ) )
+    else if ( KStandardShortcut::deleteWordForward().matches( key ) != QKeySequence::NoMatch )
     {
         // Workaround for QT bug where
         cursorWordForward(true);
@@ -750,25 +750,25 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
         e->accept();
         return;
     }
-    else if ( KStandardShortcut::backwardWord().contains( key ) )
+    else if ( KStandardShortcut::backwardWord().matches( key ) != QKeySequence::NoMatch )
     {
       cursorWordBackward(false);
       e->accept();
       return;
     }
-    else if ( KStandardShortcut::forwardWord().contains( key ) )
+    else if ( KStandardShortcut::forwardWord().matches( key ) != QKeySequence::NoMatch )
     {
       cursorWordForward(false);
       e->accept();
       return;
     }
-    else if ( KStandardShortcut::beginningOfLine().contains( key ) )
+    else if ( KStandardShortcut::beginningOfLine().matches( key ) != QKeySequence::NoMatch )
     {
       home(false);
       e->accept();
       return;
     }
-    else if ( KStandardShortcut::endOfLine().contains( key ) )
+    else if ( KStandardShortcut::endOfLine().matches( key ) != QKeySequence::NoMatch )
     {
       end(false);
       e->accept();
@@ -999,13 +999,13 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
         else if ( mode == KGlobalSettings::CompletionShell )
         {
             // Handles completion.
-            KShortcut cut;
+            QKeySequence cut;
             if ( keys[TextCompletion].isEmpty() )
                 cut = KStandardShortcut::shortcut(KStandardShortcut::TextCompletion);
             else
                 cut = keys[TextCompletion];
 
-            if ( cut.contains( key ) )
+            if ( cut.matches( key ) != QKeySequence::NoMatch )
             {
                 // Emit completion if the completion mode is CompletionShell
                 // and the cursor is at the end of the string.
@@ -1025,13 +1025,13 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
         if ( mode != KGlobalSettings::CompletionNone )
         {
             // Handles previous match
-            KShortcut cut;
+            QKeySequence cut;
             if ( keys[PrevCompletionMatch].isEmpty() )
                 cut = KStandardShortcut::shortcut(KStandardShortcut::PrevCompletion);
             else
                 cut = keys[PrevCompletionMatch];
 
-            if ( cut.contains( key ) )
+            if ( cut.matches( key ) != QKeySequence::NoMatch )
             {
                 if ( emitSignals() )
                     emit textRotation( KCompletionBase::PrevCompletionMatch );
@@ -1046,7 +1046,7 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
             else
                 cut = keys[NextCompletionMatch];
 
-            if ( cut.contains( key ) )
+            if ( cut.matches( key ) != QKeySequence::NoMatch )
             {
                 if ( emitSignals() )
                     emit textRotation( KCompletionBase::NextCompletionMatch );
@@ -1059,13 +1059,13 @@ void KLineEdit::keyPressEvent( QKeyEvent *e )
         // substring completion
         if ( compObj() )
         {
-            KShortcut cut;
+            QKeySequence cut;
             if ( keys[SubstringCompletion].isEmpty() )
                 cut = KStandardShortcut::shortcut(KStandardShortcut::SubstringCompletion);
             else
                 cut = keys[SubstringCompletion];
 
-            if ( cut.contains( key ) )
+            if ( cut.matches( key ) != QKeySequence::NoMatch )
             {
                 if ( emitSignals() )
                     emit substringCompletion( text() );
@@ -1452,7 +1452,7 @@ void KLineEdit::userCancelled(const QString & cancelText)
 
 bool KLineEditPrivate::overrideShortcut(const QKeyEvent* e)
 {
-    KShortcut scKey;
+    QKeySequence scKey;
 
     const int key = e->key() | e->modifiers();
     const KLineEdit::KeyBindingMap keys = q->getKeyBindings();
@@ -1462,7 +1462,7 @@ bool KLineEditPrivate::overrideShortcut(const QKeyEvent* e)
     else
         scKey = keys[KLineEdit::TextCompletion];
 
-    if (scKey.contains( key ))
+    if (scKey.matches( key ) != QKeySequence::NoMatch)
         return true;
 
     if (keys[KLineEdit::NextCompletionMatch].isEmpty())
@@ -1470,7 +1470,7 @@ bool KLineEditPrivate::overrideShortcut(const QKeyEvent* e)
     else
         scKey = keys[KLineEdit::NextCompletionMatch];
 
-    if (scKey.contains( key ))
+    if (scKey.matches( key ) != QKeySequence::NoMatch)
         return true;
 
     if (keys[KLineEdit::PrevCompletionMatch].isEmpty())
@@ -1478,31 +1478,31 @@ bool KLineEditPrivate::overrideShortcut(const QKeyEvent* e)
     else
         scKey = keys[KLineEdit::PrevCompletionMatch];
 
-    if (scKey.contains( key ))
+    if (scKey.matches( key ) != QKeySequence::NoMatch)
         return true;
 
     // Override all the text manupilation accelerators...
-    if ( KStandardShortcut::copy().contains( key ) )
+    if (KStandardShortcut::copy().matches( key ) != QKeySequence::NoMatch)
         return true;
-    else if ( KStandardShortcut::paste().contains( key ) )
+    else if (KStandardShortcut::paste().matches( key ) != QKeySequence::NoMatch)
         return true;
-    else if ( KStandardShortcut::cut().contains( key ) )
+    else if (KStandardShortcut::cut().matches( key ) != QKeySequence::NoMatch)
         return true;
-    else if ( KStandardShortcut::undo().contains( key ) )
+    else if (KStandardShortcut::undo().matches( key ) != QKeySequence::NoMatch)
         return true;
-    else if ( KStandardShortcut::redo().contains( key ) )
+    else if (KStandardShortcut::redo().matches(key) != QKeySequence::NoMatch)
         return true;
-    else if (KStandardShortcut::deleteWordBack().contains( key ))
+    else if (KStandardShortcut::deleteWordBack().matches(key) != QKeySequence::NoMatch)
         return true;
-    else if (KStandardShortcut::deleteWordForward().contains( key ))
+    else if (KStandardShortcut::deleteWordForward().matches(key) != QKeySequence::NoMatch)
         return true;
-    else if (KStandardShortcut::forwardWord().contains( key ))
+    else if (KStandardShortcut::forwardWord().matches(key) != QKeySequence::NoMatch)
         return true;
-    else if (KStandardShortcut::backwardWord().contains( key ))
+    else if (KStandardShortcut::backwardWord().matches(key) != QKeySequence::NoMatch)
         return true;
-    else if (KStandardShortcut::beginningOfLine().contains( key ))
+    else if (KStandardShortcut::beginningOfLine().matches(key) != QKeySequence::NoMatch)
         return true;
-    else if (KStandardShortcut::endOfLine().contains( key ))
+    else if (KStandardShortcut::endOfLine().matches(key) != QKeySequence::NoMatch)
         return true;
 
     // Shortcut overrides for shortcuts that QLineEdit handles

@@ -777,7 +777,7 @@ void CoronaPrivate::init()
     lockAction->setAutoRepeat(true);
     lockAction->setIcon(KIcon("object-locked"));
     lockAction->setData(AbstractToolBox::ControlTool);
-    lockAction->setShortcut(KShortcut(Qt::ALT + Qt::Key_L));
+    lockAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_L));
     lockAction->setShortcutContext(Qt::ApplicationShortcut);
 
     // FIXME this doesn't really belong here. desktop KCM maybe?
@@ -789,7 +789,7 @@ void CoronaPrivate::init()
     action->setIcon(KIcon("configure-shortcuts"));
     action->setAutoRepeat(false);
     action->setData(AbstractToolBox::ConfigureTool);
-    // action->setShortcut(KShortcut(Qt::CTRL + Qt::Key_H));
+    // action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
     action->setShortcutContext(Qt::ApplicationShortcut);
 
     // fake containment/applet actions

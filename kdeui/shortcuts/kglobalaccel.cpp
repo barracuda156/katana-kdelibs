@@ -168,10 +168,11 @@ void KGlobalAccelPrivate::updateGlobalShortcut(KAction *action)
 
 void KGlobalAccelPrivate::doRegister(KAction *action)
 {
-    foreach (const QKeySequence &keysequnece, action->globalShortcut().toList()) {
+    const QKeySequence keysequence = action->globalShortcut();
+    for (int i = 0; i < keysequence.count(); i++) {
         uint keyModX = 0;
         int keyCodeX = 0;
-        if (kGrabKey(keysequnece, keyModX, keyCodeX)) {
+        if (kGrabKey(keysequence[i], keyModX, keyCodeX)) {
             KGlobalAccelStruct shortcut;
             shortcut.action = action;
             shortcut.keyModX = keyModX;
@@ -180,7 +181,7 @@ void KGlobalAccelPrivate::doRegister(KAction *action)
             kDebug() << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
             break;
         } else {
-            kWarning() << "could not grab shortcut" << keysequnece << action;
+            kWarning() << "could not grab shortcut" << keysequence[i] << action;
         }
     }
 }
@@ -221,7 +222,7 @@ QList<KGlobalShortcutInfo> KGlobalAccel::getGlobalShortcutsByKey(const QKeySeque
 {
     QList<KGlobalShortcutInfo> result;
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
-        if (shortcut.action->globalShortcut().contains(seq)) {
+        if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
             KGlobalShortcutInfo globalshortcutinfo;
             globalshortcutinfo.componentFriendlyName = shortcut.action->d->componentData.aboutData()->programName();
             globalshortcutinfo.friendlyName = KGlobal::locale()->removeAcceleratorMarker(shortcut.action->text());
@@ -235,7 +236,7 @@ QList<KGlobalShortcutInfo> KGlobalAccel::getGlobalShortcutsByKey(const QKeySeque
 bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QString &comp)
 {
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
-        if (shortcut.action->globalShortcut().conflictsWith(seq)) {
+        if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
             return false;
         }
     }
@@ -245,7 +246,7 @@ bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QStr
 void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq)
 {
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
-        if (shortcut.action->globalShortcut().conflictsWith(seq)) {
+        if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
             d->remove(shortcut.action);
             break;
         }

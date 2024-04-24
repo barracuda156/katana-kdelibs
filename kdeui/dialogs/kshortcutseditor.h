@@ -34,7 +34,6 @@ class KConfig;
 class KConfigBase;
 class KConfigGroup;
 class KGlobalAccel;
-class KShortcut;
 class KShortcutsEditorPrivate;
 
 // KShortcutsEditor expects that the list of existing shortcuts is already
@@ -191,7 +190,7 @@ public:
      * Import the settings from configuration @p config.
      *
      * This will remove all current setting before importing. All shortcuts
-     * are set to KShortcut() prior to importing from @p config!
+     * are set to QKeySequence() prior to importing from @p config!
      *
      * @param config Config object
      */
@@ -205,22 +204,9 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     /**
-     * Resize columns to width required
-     */
-    void resizeColumns();
-
-    /**
      * Set all shortcuts to their default values (bindings).
      **/
     void allDefault();
-
-    /**
-     * Opens a printing dialog to print all the shortcuts
-     */
-    void printShortcuts() const;
-
-private:
-    Q_PRIVATE_SLOT(d, void capturedShortcut(QVariant, const QModelIndex &))
 
 private:
     friend class KShortcutsDialog;

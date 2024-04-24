@@ -46,8 +46,7 @@ QAction* KUndoStack::createRedoAction(KActionCollection* actionCollection, const
 
     action->setIcon(KIcon("edit-redo"));
     action->setIconText(i18n("Redo"));
-    const KShortcut redocut = KStandardShortcut::redo();
-    action->setShortcut(QKeySequence(redocut.primary(), redocut.alternate()));
+    action->setShortcut(KStandardShortcut::redo());
 
     actionCollection->addAction(action->objectName(), action);
 
@@ -66,8 +65,7 @@ QAction* KUndoStack::createUndoAction(KActionCollection* actionCollection, const
 
     action->setIcon(KIcon("edit-undo"));
     action->setIconText(i18n("Undo"));
-    const KShortcut undocut = KStandardShortcut::undo();
-    action->setShortcut(QKeySequence(undocut.primary(), undocut.alternate()));
+    action->setShortcut(KStandardShortcut::undo());
 
     actionCollection->addAction(action->objectName(), action);
 

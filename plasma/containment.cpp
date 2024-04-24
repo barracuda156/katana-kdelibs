@@ -212,7 +212,7 @@ void ContainmentPrivate::addDefaultActions(KActionCollection *actions, Containme
 
     //adjust applet actions
     KAction *appAction = qobject_cast<KAction*>(actions->action("remove"));
-    appAction->setShortcut(KShortcut(Qt::ALT + Qt::Key_R));
+    appAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_R));
     if (c && c->d->isPanelContainment()) {
         appAction->setText(i18n("Remove this Panel"));
     }
@@ -222,19 +222,19 @@ void ContainmentPrivate::addDefaultActions(KActionCollection *actions, Containme
     appletBrowserAction->setAutoRepeat(false);
     appletBrowserAction->setText(i18n("Add Widgets..."));
     appletBrowserAction->setIcon(KIcon("list-add"));
-    appletBrowserAction->setShortcut(KShortcut(Qt::ALT + Qt::Key_A));
+    appletBrowserAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_A));
     appletBrowserAction->setData(AbstractToolBox::AddTool);
 
     KAction *action = actions->addAction("next applet");
     action->setText(i18n("Next Widget"));
     //no icon
-    action->setShortcut(KShortcut(Qt::ALT + Qt::Key_N));
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_N));
     action->setData(AbstractToolBox::ControlTool);
 
     action = actions->addAction("previous applet");
     action->setText(i18n("Previous Widget"));
     //no icon
-    action->setShortcut(KShortcut(Qt::ALT + Qt::Key_P));
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_P));
     action->setData(AbstractToolBox::ControlTool);
 }
 

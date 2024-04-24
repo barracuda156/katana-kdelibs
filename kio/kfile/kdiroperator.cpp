@@ -1739,13 +1739,13 @@ void KDirOperator::setupActions()
     KAction* trash = new KAction(i18n("Move to Trash"), this);
     d->actionCollection->addAction("trash", trash);
     trash->setIcon(KIcon("user-trash"));
-    trash->setShortcut(KShortcut(Qt::Key_Delete));
+    trash->setShortcut(QKeySequence(Qt::Key_Delete));
     connect(trash, SIGNAL(triggered(bool)), SLOT(trashSelected()));
 
     KAction* action = new KAction(i18n("Delete"), this);
     d->actionCollection->addAction("delete", action);
     action->setIcon(KIcon("edit-delete"));
-    action->setShortcut(KShortcut(Qt::SHIFT + Qt::Key_Delete));
+    action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Delete));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(deleteSelected()));
 
     // the sort menu actions
@@ -1836,7 +1836,7 @@ void KDirOperator::setupActions()
     action = new KAction(i18n("Properties"), this);
     d->actionCollection->addAction("properties", action);
     action->setIcon(KIcon("document-properties"));
-    action->setShortcut(KShortcut(Qt::ALT + Qt::Key_Return));
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Return));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(_k_slotProperties()));
 
     // the view menu actions

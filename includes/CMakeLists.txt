@@ -220,10 +220,8 @@ install(
     KSharedConfig
     KSharedPtr
     KShell
-    KShortcut
     KShortcutsDialog
     KShortcutsEditor
-    KShortcutWidget
     KSortableItem
     KSortableList
     KSplashScreen

@@ -26,7 +26,6 @@
 */
 
 #include "kshortcutsdialog.h"
-#include "kshortcutsdialog_p.h"
 
 #include "kdebug.h"
 #include "klocale.h"
@@ -56,49 +55,11 @@ class KShortcutsDialog::KShortcutsDialogPrivate
 public:
 
     KShortcutsDialogPrivate(KShortcutsDialog *q)
-        : q(q), m_keyChooser(0), m_schemeEditor(0)
+        : q(q), m_keyChooser(0)
     {
     }
 
     QList<KActionCollection*> m_collections;
-
-    void changeShortcutScheme(const QString &scheme)
-    {
-        if (m_keyChooser->isModified() && KMessageBox::questionYesNo(q,
-                i18n("The current shortcut scheme is modified. Save before switching to the new one?")) == KMessageBox::Yes) {
-            m_keyChooser->save();
-        } else {
-            m_keyChooser->undoChanges();
-        }
-
-        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        m_keyChooser->clearCollections();
-
-        foreach (KActionCollection *collection, m_collections) {
-            // passing an empty stream forces the clients to reread the XML
-            KXMLGUIClient *client = const_cast<KXMLGUIClient *>(collection->parentGUIClient());
-            if (client) {
-                client->setXMLGUIBuildDocument(QDomDocument());
-            }
-        }
-
-        //get xmlguifactory
-        if (!m_collections.isEmpty()) {
-            const KXMLGUIClient *client = m_collections.first()->parentGUIClient();
-            if (client) {
-                KXMLGUIFactory *factory = client->factory();
-                if (factory) {
-                    factory->changeShortcutScheme(scheme);
-                }
-            }
-        }
-
-        foreach (KActionCollection *collection, m_collections) {
-            m_keyChooser->addCollection(collection);
-        }
-
-        QApplication::restoreOverrideCursor();
-     }
 
     void undoChanges()
     {
@@ -112,8 +73,7 @@ public:
     }
 
     KShortcutsDialog *q;
-    KShortcutsEditor* m_keyChooser; // ### move
-    KShortcutSchemesEditor* m_schemeEditor;
+    KShortcutsEditor* m_keyChooser;
 };
 
 
@@ -121,23 +81,13 @@ KShortcutsDialog::KShortcutsDialog( KShortcutsEditor::ActionTypes types, KShortc
 : KDialog( parent ), d(new KShortcutsDialogPrivate(this))
 {
     setCaption(i18n("Configure Shortcuts"));
-    setButtons(Details|Reset|Ok|Cancel|KDialog::User1);
-    setButtonText(KDialog::User1, i18n("Print"));
-    setButtonIcon(KDialog::User1, KIcon("document-print"));
+    setButtons(Reset|Ok|Cancel);
     setModal(true);
     d->m_keyChooser = new KShortcutsEditor(this, types, allowLetterShortcuts);
     setMainWidget( d->m_keyChooser );
     setButtonText(Reset,i18n("Reset to Defaults"));
 
-    d->m_schemeEditor = new KShortcutSchemesEditor(this);
-    connect(
-        d->m_schemeEditor, SIGNAL(shortcutsSchemeChanged(QString)),
-        this, SLOT(changeShortcutScheme(QString))
-    );
-    setDetailsWidget(d->m_schemeEditor);
-
     connect(this, SIGNAL(resetClicked()), d->m_keyChooser, SLOT(allDefault()));
-    connect(this, SIGNAL(user1Clicked()), d->m_keyChooser, SLOT(printShortcuts()));
     connect(this, SIGNAL(cancelClicked()), SLOT(undoChanges()));
 
     KConfigGroup group(KGlobal::config(), "KShortcutsDialog Settings");
@@ -195,4 +145,3 @@ int KShortcutsDialog::configure(KActionCollection *collection, KShortcutsEditor:
 }
 
 #include "moc_kshortcutsdialog.cpp"
-#include "moc_kshortcutsdialog_p.cpp"

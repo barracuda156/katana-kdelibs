@@ -73,31 +73,3 @@ void KStandardShortcutTest::testRemoveShortcut()
     QVERIFY( cutShortCut.primary() == QKeySequence(Qt::SHIFT + Qt::Key_Delete) );
     QVERIFY( cutShortCut.alternate().isEmpty() );
 }
-
-void KStandardShortcutTest::testKShortcut()
-{
-    KShortcut null;
-    QVERIFY( null.isEmpty() );
-
-    KShortcut zero( 0 );
-    QVERIFY( zero.isEmpty() );
-    QVERIFY( zero.primary().isEmpty() );
-    QVERIFY( zero.alternate().isEmpty() );
-
-    KShortcut quit( "Ctrl+X, Ctrl+C; Z, Z" ); // quit in emacs vs. quit in vi :)
-    QCOMPARE( quit.primary().toString(), QString::fromLatin1("Ctrl+X, Ctrl+C") );
-    QCOMPARE( quit.alternate().toString(), QString::fromLatin1("Z, Z") );
-    QCOMPARE( quit.primary(), QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C) );
-    QVERIFY( quit != null );
-    QVERIFY( !( quit == null ) );
-
-    QVERIFY( !quit.contains( Qt::CTRL+Qt::Key_X ) );
-    QVERIFY( !quit.contains( Qt::CTRL+Qt::Key_Z ) );
-    QVERIFY( !quit.contains( Qt::CTRL+Qt::Key_C ) );
-    QKeySequence seq( Qt::CTRL+Qt::Key_X, Qt::CTRL+Qt::Key_C );
-    QVERIFY( quit.contains( seq ) );
-    QVERIFY( !null.contains( seq ) );
-
-    quit.setAlternate( seq );
-    QCOMPARE( quit.primary().toString(), quit.alternate().toString() );
-}

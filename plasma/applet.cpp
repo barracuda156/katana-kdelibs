@@ -82,7 +82,6 @@
 #include <kstandarddirs.h>
 #include <kservice.h>
 #include <kservicetypetrader.h>
-#include <kshortcut.h>
 #include <kwindowsystem.h>
 #include <kpushbutton.h>
 #include <krandom.h>
@@ -274,7 +273,7 @@ void Applet::restore(KConfigGroup &group)
     KConfigGroup shortcutConfig(&group, "Shortcuts");
     QString shortcutText = shortcutConfig.readEntryUntranslated("global", QString());
     if (!shortcutText.isEmpty()) {
-        setGlobalShortcut(KShortcut(shortcutText));
+        setGlobalShortcut(QKeySequence(shortcutText));
 /*
         kDebug() << "got global shortcut for" << name() << "of" << QKeySequence(shortcutText);
         kDebug() << "set to" << d->activationAction->objectName()
@@ -1423,7 +1422,7 @@ Containment *Applet::containment() const
     return c;
 }
 
-void Applet::setGlobalShortcut(const KShortcut &shortcut)
+void Applet::setGlobalShortcut(const QKeySequence &shortcut)
 {
     if (!d->activationAction) {
         d->activationAction = new KAction(this);
@@ -1441,7 +1440,7 @@ void Applet::setGlobalShortcut(const KShortcut &shortcut)
         return;
     }
 
-    //kDebug() << "before" << shortcut.primary() << d->activationAction->globalShortcut().primary();
+    //kDebug() << "before" << shortcut << d->activationAction->globalShortcut();
     d->activationAction->setGlobalShortcut(
         shortcut,
         KAction::ShortcutTypes(KAction::ActiveShortcut | KAction::DefaultShortcut)
@@ -1461,13 +1460,13 @@ void AppletPrivate::globalShortcutChanged()
     //kDebug() << "after" << shortcut.primary() << d->activationAction->globalShortcut().primary();
 }
 
-KShortcut Applet::globalShortcut() const
+QKeySequence Applet::globalShortcut() const
 {
     if (d->activationAction) {
         return d->activationAction->globalShortcut();
     }
 
-    return KShortcut();
+    return QKeySequence();
 }
 
 bool Applet::isPopupShowing() const
@@ -1567,21 +1566,21 @@ KActionCollection* AppletPrivate::defaultActions(QObject *parent)
     configAction->setAutoRepeat(false);
     configAction->setText(i18n("Widget Settings"));
     configAction->setIcon(KIcon("configure"));
-    configAction->setShortcut(KShortcut(Qt::ALT + Qt::Key_S));
+    configAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S));
     configAction->setData(AbstractToolBox::ConfigureTool);
 
     KAction *closeApplet = actions->addAction("remove");
     closeApplet->setAutoRepeat(false);
     closeApplet->setText(i18n("Remove this Widget"));
     closeApplet->setIcon(KIcon("edit-delete"));
-    closeApplet->setShortcut(KShortcut(Qt::ALT + Qt::Key_R));
+    closeApplet->setShortcut(QKeySequence(Qt::ALT + Qt::Key_R));
     closeApplet->setData(AbstractToolBox::DestructiveTool);
 
     KAction *runAssociatedApplication = actions->addAction("run associated application");
     runAssociatedApplication->setAutoRepeat(false);
     runAssociatedApplication->setText(i18n("Run the Associated Application"));
     runAssociatedApplication->setIcon(KIcon("system-run"));
-    runAssociatedApplication->setShortcut(KShortcut(Qt::ALT + Qt::Key_T));
+    runAssociatedApplication->setShortcut(QKeySequence(Qt::ALT + Qt::Key_T));
     runAssociatedApplication->setVisible(false);
     runAssociatedApplication->setEnabled(false);
     runAssociatedApplication->setData(AbstractToolBox::ControlTool);
@@ -1811,7 +1810,7 @@ void AppletPrivate::addGlobalShortcutsPage(KConfigDialog *dialog)
         QObject::connect(shortcutEditor.data(), SIGNAL(keySequenceChanged(QKeySequence)), dialog, SLOT(settingsModified()));
     }
 
-    shortcutEditor.data()->setKeySequence(q->globalShortcut().primary());
+    shortcutEditor.data()->setKeySequence(q->globalShortcut());
     layout->addWidget(shortcutEditor.data());
     layout->addStretch();
     dialog->addPage(page, i18n("Keyboard Shortcut"), "preferences-desktop-keyboard");
@@ -1824,8 +1823,8 @@ void AppletPrivate::configDialogFinished()
 {
     if (shortcutEditor) {
         QKeySequence sequence = shortcutEditor.data()->keySequence();
-        if (sequence != q->globalShortcut().primary()) {
-            q->setGlobalShortcut(KShortcut(sequence));
+        if (sequence != q->globalShortcut()) {
+            q->setGlobalShortcut(sequence);
             emit q->configNeedsSaving();
         }
     }

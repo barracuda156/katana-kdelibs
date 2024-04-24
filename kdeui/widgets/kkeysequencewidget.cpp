@@ -25,7 +25,6 @@
 #include "kicon.h"
 #include "klocale.h"
 #include "kmessagebox.h"
-#include "kshortcut.h"
 #include "kaction.h"
 #include "kactioncollection.h"
 #include "kkeyserver.h"
@@ -382,7 +381,7 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
     foreach(QAction * qaction , allActions ) {
         KAction *kaction = qobject_cast<KAction*>(qaction);
         if (kaction) {
-            if (kaction->shortcut().conflictsWith(keySequence)) {
+            if (kaction->shortcut().matches(keySequence) != QKeySequence::NoMatch) {
                 // A conflict with a KAction. If that action is configurable
                 // ask the user what to do. If not reject this keySequence.
                 if (kaction->isShortcutConfigurable ()) {
@@ -638,7 +637,7 @@ void KKeySequenceWidget::applyStealShortcut()
 
     Q_FOREACH (KAction *stealAction, d->stealActions) {
         // Stealing a shortcut means setting it to an empty one.
-        stealAction->setShortcut(KShortcut(), KAction::ActiveShortcut);
+        stealAction->setShortcut(QKeySequence(), KAction::ActiveShortcut);
 
         // The following code will find the action we are about to
         // steal from and save it's actioncollection.

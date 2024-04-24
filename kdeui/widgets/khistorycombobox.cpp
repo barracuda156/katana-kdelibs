@@ -341,9 +341,9 @@ void KHistoryComboBox::keyPressEvent( QKeyEvent *e )
 {
     int event_key = e->key() | e->modifiers();
 
-    if ( KStandardShortcut::rotateUp().contains(event_key) )
+    if ( KStandardShortcut::rotateUp().matches(event_key) != QKeySequence::NoMatch )
         rotateUp();
-    else if ( KStandardShortcut::rotateDown().contains(event_key) )
+    else if ( KStandardShortcut::rotateDown().matches(event_key) != QKeySequence::NoMatch)
         rotateDown();
     else
         KComboBox::keyPressEvent( e );

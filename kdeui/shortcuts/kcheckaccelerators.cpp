@@ -19,9 +19,15 @@
     Boston, MA 02110-1301, USA.
  */
 
+#include "config.h"
 #include "kcheckaccelerators.h"
-
-#include <config.h>
+#include "kconfig.h"
+#include "kglobal.h"
+#include "kcomponentdata.h"
+#include "klocale.h"
+#include "kacceleratormanager.h"
+#include "kconfiggroup.h"
+#include "kdebug.h"
 
 #include <QApplication>
 #include <QCheckBox>
@@ -40,25 +46,15 @@
 #include <QProcess>
 #include <QTextBrowser>
 
-#include <kconfig.h>
-#include <kdebug.h>
-#include <kglobal.h>
-#include <kcomponentdata.h>
-#include <klocale.h>
-#include <kshortcut.h>
-
-#include "kacceleratormanager.h"
-#include <kconfiggroup.h>
-
 void KCheckAccelerators::initiateIfNeeded(QObject* parent)
 {
     KConfigGroup cg( KGlobal::config(), "Development" );
     QString sKey = cg.readEntry( "CheckAccelerators" ).trimmed();
     int key=0;
     if( !sKey.isEmpty() ) {
-      KShortcut cuts( sKey );
+      QKeySequence cuts( sKey );
       if( !cuts.isEmpty() )
-        key = cuts.primary()[0];
+        key = cuts[0];
     }
     bool autoCheck = cg.readEntry( "AutoCheckAccelerators", true );
     bool copyWidgetText = cg.readEntry( "CopyWidgetText", false );

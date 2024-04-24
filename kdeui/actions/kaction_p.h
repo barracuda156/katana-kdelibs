@@ -20,8 +20,8 @@
 #define KACTION_P_H
 
 #include "kglobalaccel.h"
-#include <kcomponentdata.h>
-#include <kicon.h>
+#include "kcomponentdata.h"
+#include "kicon.h"
 
 class KAction;
 
@@ -32,8 +32,6 @@ public:
 
     void slotTriggered();
 
-    void setActiveGlobalShortcutNoEnable(const KShortcut &cut);
-
     void maybeSetComponentData(const KComponentData &kcd)
     {
         if (neverSetGlobalShortcut) {
@@ -42,12 +40,13 @@ public:
     }
 
     KComponentData componentData; // this is **way** more lightweight than it looks
-    KShortcut globalShortcut;
-    KShortcut defaultGlobalShortcut;
+    QKeySequence defaultShortcut;
+    QKeySequence globalShortcut;
+    QKeySequence defaultGlobalShortcut;
 
     bool globalShortcutEnabled;
     bool neverSetGlobalShortcut;
     KAction *q;
 };
 
-#endif
+#endif // KACTION_P_H

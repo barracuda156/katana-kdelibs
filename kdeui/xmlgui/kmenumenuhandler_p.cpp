@@ -25,19 +25,17 @@
 #include "kmenu.h"
 #include "kaction.h"
 #include "kactioncollection.h"
-#include <kdialog.h>
-#include <kshortcutwidget.h>
-#include <klocale.h>
-#include <kdebug.h>
-
+#include "kdialog.h"
+#include "kkeysequencewidget.h"
+#include "klocale.h"
+#include "kapplication.h"
+#include "kmainwindow.h"
+#include "ktoolbar.h"
+#include "kselectaction.h"
+#include "kdebug.h"
 
 #include <QWidget>
 #include <QtXml/qdom.h>
-#include <kapplication.h>
-#include <kmainwindow.h>
-#include <ktoolbar.h>
-#include <kselectaction.h>
-
 
 namespace KDEPrivate {
 
@@ -99,8 +97,8 @@ void KMenuMenuHandler::slotSetShortcut()
         return;
 
     KDialog dialog(m_builder->widget());
-    KShortcutWidget swidget(&dialog);
-    swidget.setShortcut(action->shortcut());
+    KKeySequenceWidget swidget(&dialog);
+    swidget.setKeySequence(action->shortcut());
     dialog.setMainWidget(&swidget);
     KActionCollection* parentCollection = 0;
     if(dynamic_cast<KXMLGUIClient*>(m_builder))
@@ -116,7 +114,7 @@ void KMenuMenuHandler::slotSetShortcut()
 
     if(dialog.exec())
     {
-        action->setShortcut(swidget.shortcut(), KAction::ActiveShortcut);
+        action->setShortcut(swidget.keySequence(), KAction::ActiveShortcut);
         swidget.applyStealShortcut();
         if(parentCollection)
             parentCollection->writeSettings();

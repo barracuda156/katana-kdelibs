@@ -44,7 +44,7 @@
 
 namespace KStandardAction
 {
-AutomaticAction::AutomaticAction(const KIcon &icon, const QString &text, const KShortcut &shortcut, const char *slot,
+AutomaticAction::AutomaticAction(const KIcon &icon, const QString &text, const QKeySequence &shortcut, const char *slot,
                                  QObject *parent)
     : KAction(parent)
 {
@@ -190,7 +190,7 @@ KAction *create(StandardAction id, const QObject *recvr, const char *slot, QObje
     }
     pAction->setIcon(icon);
 
-    KShortcut cut = KStandardShortcut::shortcut(pInfo->idAccel);
+    QKeySequence cut = KStandardShortcut::shortcut(pInfo->idAccel);
     if (!cut.isEmpty())
         pAction->setShortcut(cut);
 

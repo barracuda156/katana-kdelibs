@@ -218,12 +218,12 @@ void KColorButton::keyPressEvent( QKeyEvent *e )
 {
   int key = e->key() | e->modifiers();
 
-  if ( KStandardShortcut::copy().contains( key ) ) {
+  if ( KStandardShortcut::copy().matches( key ) != QKeySequence::NoMatch ) {
     QMimeData *mime=new QMimeData;
     KColorMimeData::populateMimeData(mime,color());
     QApplication::clipboard()->setMimeData( mime, QClipboard::Clipboard );
   }
-  else if ( KStandardShortcut::paste().contains( key ) ) {
+  else if ( KStandardShortcut::paste().matches( key ) != QKeySequence::NoMatch ) {
     QColor color=KColorMimeData::fromMimeData( QApplication::clipboard()->mimeData( QClipboard::Clipboard ));
     setColor( color );
   }
