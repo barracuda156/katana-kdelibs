@@ -159,16 +159,25 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         actionitem->setText(0, action->iconText());
         if (d->actionTypes & KShortcutsEditor::LocalAction) {
             KKeySequenceWidget* localkswidget = new KKeySequenceWidget(d->treewidget);
-            localkswidget->setKeySequence(action->shortcut());
             localkswidget->setModifierlessAllowed(d->allowLetterShortcuts);
+            localkswidget->setCheckForConflictsAgainst(
+                KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::StandardShortcuts
+            );
+            localkswidget->setCheckActionCollections(d->actionCollections);
+            localkswidget->setKeySequence(action->shortcut());
             d->treewidget->setItemWidget(actionitem, 1, localkswidget);
         }
         if (d->actionTypes & KShortcutsEditor::GlobalAction) {
             KAction* kaction = qobject_cast<KAction*>(action);
             if (kaction) {
                 KKeySequenceWidget* globalkswidget = new KKeySequenceWidget(d->treewidget);
-                globalkswidget->setKeySequence(kaction->globalShortcut());
                 globalkswidget->setModifierlessAllowed(d->allowLetterShortcuts);
+                globalkswidget->setCheckForConflictsAgainst(
+                    KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::GlobalShortcuts
+                    | KKeySequenceWidget::StandardShortcuts
+                );
+                globalkswidget->setCheckActionCollections(d->actionCollections);
+                globalkswidget->setKeySequence(kaction->globalShortcut());
                 d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
             } else {
                 kWarning() << "action is not KAction" << action;
