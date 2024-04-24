@@ -117,7 +117,7 @@ void tst_KActionCollection::writeSettings()
 
     collection->writeSettings(&cfg);
 
-    QCOMPARE(cfg.readEntry("actionWithDifferentShortcut", QString()), KShortcut(actionWithDifferentShortcut->shortcuts()).toString());
+    QCOMPARE(cfg.readEntry("actionWithDifferentShortcut", QString()), KShortcut(actionWithDifferentShortcut->shortcut()).toString());
     QCOMPARE(cfg.readEntry("immutableAction", QString()), QString());
     QCOMPARE(cfg.readEntry("actionWithSameShortcut", QString()), QString());
     QCOMPARE(cfg.readEntry("actionToDelete", QString()), QString());
@@ -154,14 +154,14 @@ void tst_KActionCollection::readSettings()
     collection->addAction("empty", empty);
     empty->setShortcut(temporaryShortcut, KAction::ActiveShortcut);
     empty->setShortcut(defaultShortcut, KAction::DefaultShortcut);
-    QCOMPARE(KShortcut(empty->shortcuts()).toString(), temporaryShortcut.toString());
+    QCOMPARE(KShortcut(empty->shortcut()).toString(), temporaryShortcut.toString());
 
     collection->readSettings(&cfg);
 
-    QCOMPARE(KShortcut(normal->shortcuts()).toString(), defaultShortcut.toString());
-    QCOMPARE(KShortcut(empty->shortcuts()).toString(), defaultShortcut.toString());
+    QCOMPARE(KShortcut(normal->shortcut()).toString(), defaultShortcut.toString());
+    QCOMPARE(KShortcut(empty->shortcut()).toString(), defaultShortcut.toString());
 
-    QCOMPARE(KShortcut(immutable->shortcuts()).toString(), temporaryShortcut.toString());
+    QCOMPARE(KShortcut(immutable->shortcut()).toString(), temporaryShortcut.toString());
 
     qDeleteAll(collection->actions());
 }
@@ -225,7 +225,7 @@ void tst_KActionCollection::testSetShortcuts()
     KAction *action = new KAction(i18n("Next Unread &Folder"), this);
     collection->addAction("go_next_unread_folder", action);
     action->setShortcut(QKeySequence(Qt::ALT+Qt::Key_Plus));
-    KShortcut shortcut = KShortcut(action->shortcuts());
+    KShortcut shortcut = KShortcut(action->shortcut());
     shortcut.setAlternate( QKeySequence( Qt::CTRL+Qt::Key_Plus ) );
     action->setShortcut( shortcut );
     QCOMPARE(action->shortcut().toString(), QString("Alt++; Ctrl++"));

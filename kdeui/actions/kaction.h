@@ -278,13 +278,8 @@ public:
     /**
      * Get the shortcut for this action.
      *
-     * This is preferred over QAction::shortcut(), as it allows for multiple shortcuts
-     * per action. The first and second shortcut as reported by shortcuts() will be the
-     * primary and alternate shortcut of the shortcut returned.
-     *
      * \param types the type of shortcut to return. Should both be specified, only the
      *             active shortcut will be returned. Defaults to the active shortcut, if one exists.
-     * \sa shortcuts()
      */
     KShortcut shortcut(ShortcutTypes types = ActiveShortcut) const;
 
