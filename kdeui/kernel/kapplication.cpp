@@ -37,7 +37,6 @@
 #include <QtDBus/QDBusConnectionInterface>
 
 #include "kaboutdata.h"
-#include "kcheckaccelerators.h"
 #include "kcrash.h"
 #include "kconfig.h"
 #include "kcmdlineargs.h"
@@ -417,8 +416,6 @@ void KApplicationPrivate::init()
     KGlobalSettings::self()->activate(
         KGlobalSettings::ApplySettings | KGlobalSettings::ListenForChanges
     );
-
-    KCheckAccelerators::initiateIfNeeded(q);
   }
 
   // too late to restart if the application is about to quit (e.g. if QApplication::quit() was

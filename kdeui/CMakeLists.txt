@@ -145,7 +145,6 @@ set(kdeui_LIB_SRCS
     shortcuts/kstandardshortcut.cpp
     shortcuts/kglobalaccel.cpp
     shortcuts/kacceleratormanager.cpp
-    shortcuts/kcheckaccelerators.cpp
     spell/kspeller.cpp
     spell/kspellhighlighter.cpp
     spell/kspelldictionarycombobox.cpp

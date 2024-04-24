@@ -410,9 +410,8 @@ void KAcceleratorManagerPrivate::manageWidget(QWidget *w, Item *item)
 
 void KAcceleratorManagerPrivate::manageTabBar(QTabBar *bar, Item *item)
 {
-  // ignore QTabBar for QDockWidgets, because QDockWidget on its title change
-  // also updates its tabbar entry, so on the next run of KCheckAccelerators
-  // this looks like a conflict and triggers a new reset of the shortcuts -> endless loop
+  // ignore QTabBar for QDockWidgets because QDockWidget on its title change
+  // also updates its tabbar entry
   QWidget* parentWidget = bar->parentWidget();
   if( parentWidget )
   {
