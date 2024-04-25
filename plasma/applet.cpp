@@ -1810,6 +1810,7 @@ void AppletPrivate::addGlobalShortcutsPage(KConfigDialog *dialog)
         QObject::connect(shortcutEditor.data(), SIGNAL(keySequenceChanged(QKeySequence)), dialog, SLOT(settingsModified()));
     }
 
+    shortcutEditor.data()->setAssociatedAction(activationAction);
     shortcutEditor.data()->setKeySequence(q->globalShortcut());
     layout->addWidget(shortcutEditor.data());
     layout->addStretch();
@@ -1839,14 +1840,14 @@ void AppletPrivate::configDialogFinished()
 void AppletPrivate::updateShortcuts()
 {
     if (isContainment) {
-        //a horrible hack to avoid clobbering corona settings
-        //we pull them out, then read, then put them back
+        // a horrible hack to avoid clobbering corona settings - pull them out, then read, then
+        // put them back
         QList<QString> names;
         QList<QAction*> qactions;
         names << "add sibling containment" << "configure shortcuts" << "lock widgets";
         foreach (const QString &name, names) {
             QAction *a = actions->action(name);
-            actions->takeAction(a); //FIXME this is stupid, KActionCollection needs a takeAction(QString) method
+            actions->takeAction(a);
             qactions << a;
         }
 
