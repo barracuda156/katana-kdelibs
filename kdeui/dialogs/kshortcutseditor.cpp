@@ -220,6 +220,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             }
 
             KKeySequenceWidget* localkswidget = new KKeySequenceWidget(d->treewidget);
+            localkswidget->setAssociatedAction(action);
             localkswidget->setModifierlessAllowed(d->allowlettershortcuts);
             localkswidget->setCheckForConflictsAgainst(
                 KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::StandardShortcuts
@@ -248,6 +249,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             }
 
             KKeySequenceWidget* globalkswidget = new KKeySequenceWidget(d->treewidget);
+            globalkswidget->setAssociatedAction(action);
             globalkswidget->setModifierlessAllowed(d->allowlettershortcuts);
             globalkswidget->setCheckForConflictsAgainst(
                 KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::GlobalShortcuts

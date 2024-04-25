@@ -33,12 +33,9 @@ public:
     }
 
 protected:
-    /**
-    * Reimplemented for internal reasons.
-    */
-    virtual bool event(QEvent *event);
-    virtual void keyPressEvent(QKeyEvent *event);
-    virtual void keyReleaseEvent(QKeyEvent *event);
+    bool event(QEvent *event) final;
+    void keyPressEvent(QKeyEvent *event) final;
+    void keyReleaseEvent(QKeyEvent *event) final;
 
 private:
     KKeySequenceWidgetPrivate *const d;

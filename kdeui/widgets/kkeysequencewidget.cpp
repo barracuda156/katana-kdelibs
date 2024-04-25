@@ -169,9 +169,9 @@ public:
     KKeySequenceWidget::ShortcutTypes checkAgainstShortcutTypes;
 
     /**
-     * The list of action to check against for conflict shortcut
+     * The action to never consider when checking for conflict shortcut
      */
-    QList<QAction*> checkList; // deprecated
+    QAction* associatedAction;
 
     /**
      * The list of action collections to check against for conflict shortcut
@@ -197,9 +197,8 @@ KKeySequenceWidgetPrivate::KKeySequenceWidgetPrivate(KKeySequenceWidget *q)
     modifierKeys(0),
     isRecording(false),
     multiKeyShortcutsAllowed(true),
-    componentName(),
-    checkAgainstShortcutTypes(KKeySequenceWidget::LocalShortcuts & KKeySequenceWidget::GlobalShortcuts),
-    stealActions()
+    associatedAction(nullptr),
+    checkAgainstShortcutTypes(KKeySequenceWidget::LocalShortcuts & KKeySequenceWidget::GlobalShortcuts)
 {
 }
 
@@ -346,15 +345,11 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
         return false;
     }
 
-    // We have actions both in the deprecated checkList and the
-    // checkActionCollections list. Add all the actions to a single list to
-    // be able to process them in a single loop below.
-    // Note that this can't be done in setCheckActionCollections(), because we
-    // keep pointers to the action collections, and between the call to
-    // setCheckActionCollections() and this function some actions might already be
-    // removed from the collection again.
+    // Add all the actions to a single list to be able to process them in a single loop below.
+    // Note that this can't be done in setCheckActionCollections(), because pointers to the
+    // collections actions are kep, and between the call to setCheckActionCollections() and this function
+    // some actions might already be removed from the collection again.
     QList<QAction*> allActions;
-    allActions += checkList;
     foreach (KActionCollection* collection, checkActionCollections) {
         allActions += collection->actions();
     }
@@ -378,19 +373,16 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
     // 1/2/3 key shortcuts. I think you can imagine.
     QList<KAction*> conflictingActions;
 
-    //find conflicting shortcuts with existing actions
-    foreach (QAction * qaction , allActions) {
+    // find conflicting shortcuts with existing actions
+    foreach (QAction* qaction , allActions) {
+        if (qaction == associatedAction) {
+            // the action shall not conflict with itself
+            continue;
+        }
+
         KAction *kaction = qobject_cast<KAction*>(qaction);
         if (kaction) {
-            const QKeySequence kactionks = kaction->shortcut();
-            if (kactionks.matches(keySequence) != QKeySequence::NoMatch) {
-                if (kactionks == oldKeySequence) {
-                    // the action the shortcut of which is being changed
-                    // TODO: the KKeySequenceWidget has to be associated with a QAction* to ensure
-                    // that the action is never considered in conflicts matching
-                    continue;
-                }
-
+            if (kaction->shortcut().matches(keySequence) != QKeySequence::NoMatch) {
                 // A conflict with a KAction. If that action is configurable  ask the user what to
                 // do. If not reject this keySequence.
                 if (kaction->isShortcutConfigurable()) {
@@ -544,10 +536,6 @@ KKeySequenceWidget::KKeySequenceWidget(QWidget *parent)
     connect(d->keyButton, SIGNAL(clicked()), this, SLOT(captureKeySequence()));
     connect(d->clearButton, SIGNAL(clicked()), this, SLOT(clearKeySequence()));
     connect(&d->modifierlessTimeout, SIGNAL(timeout()), this, SLOT(doneRecording()));
-    // TODO: how to adopt style changes at runtime?
-    /*QFont modFont = d->clearButton->font();
-    modFont.setStyleHint(QFont::TypeWriter);
-    d->clearButton->setFont(modFont);*/
     d->updateShortcutDisplay();
 }
 
@@ -564,6 +552,16 @@ KKeySequenceWidget::ShortcutTypes KKeySequenceWidget::checkForConflictsAgainst()
 void KKeySequenceWidget::setComponentName(const QString &componentName)
 {
     d->componentName = componentName;
+}
+
+void KKeySequenceWidget::setAssociatedAction(QAction *action)
+{
+    d->associatedAction = action;
+}
+
+QAction* KKeySequenceWidget::associatedAction()
+{
+    return d->associatedAction;
 }
 
 bool KKeySequenceWidget::multiKeyShortcutsAllowed() const

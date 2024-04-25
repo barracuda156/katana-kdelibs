@@ -217,6 +217,19 @@ public:
      */
     void setComponentName(const QString &componentName);
 
+    /**
+     * Set action to never be consider when checking for conflicts
+     *
+     * @see associatedAction()
+     */
+    void setAssociatedAction(QAction *action);
+
+    /**
+     * Return the action to never be consider when checking for conflicts
+     *
+     * @see setAssociatedAction()
+     */
+    QAction* associatedAction();
 
 Q_SIGNALS:
     /**
