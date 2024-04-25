@@ -26,9 +26,6 @@
 #include "kdebug.h"
 
 #include <QKeySequence>
-#ifdef Q_WS_X11
-#include <qx11info_x11.h>
-#endif
 
 namespace KStandardShortcut
 {
@@ -76,13 +73,13 @@ struct KStandardShortcutInfo
 static KStandardShortcutInfo g_infoStandardShortcut[] =
 {
     // Group File,
-    {AccelNone, 0      , 0                   , 0       , 0      , 0           , QKeySequence(), false },
-    { Open    , "Open" , I18N_NOOP2_NOSTRIP("@action", "Open") , CTRL(O), 0           , QKeySequence(), false },
-    { New     , "New"  , I18N_NOOP2_NOSTRIP("@action", "New")  , CTRL(N), 0           , QKeySequence(), false },
-    { Close   , "Close", I18N_NOOP2_NOSTRIP("@action", "Close"), CTRL(W), CTRL(Escape), QKeySequence(), false },
-    { Save    , "Save" , I18N_NOOP2_NOSTRIP("@action", "Save") , CTRL(S), 0           , QKeySequence(), false },
-    { Print   , "Print", I18N_NOOP2_NOSTRIP("@action", "Print"), CTRL(P), 0           , QKeySequence(), false },
-    { Quit    , "Quit" , I18N_NOOP2_NOSTRIP("@action", "Quit") , CTRL(Q), 0           , QKeySequence(), false },
+    { AccelNone, 0      , 0                           , 0       , 0      , 0           , QKeySequence(), false },
+    { Open     , "Open" , I18N_NOOP2_NOSTRIP("@action", "Open") , CTRL(O), 0           , QKeySequence(), false },
+    { New      , "New"  , I18N_NOOP2_NOSTRIP("@action", "New")  , CTRL(N), 0           , QKeySequence(), false },
+    { Close    , "Close", I18N_NOOP2_NOSTRIP("@action", "Close"), CTRL(W), CTRL(Escape), QKeySequence(), false },
+    { Save     , "Save" , I18N_NOOP2_NOSTRIP("@action", "Save") , CTRL(S), 0           , QKeySequence(), false },
+    { Print    , "Print", I18N_NOOP2_NOSTRIP("@action", "Print"), CTRL(P), 0           , QKeySequence(), false },
+    { Quit     , "Quit" , I18N_NOOP2_NOSTRIP("@action", "Quit") , CTRL(Q), 0           , QKeySequence(), false },
 
     // Group Edit
     { Undo             , "Undo"             , I18N_NOOP2_NOSTRIP("@action", "Undo")                 , CTRL(Z)          , 0            , QKeySequence(), false },
@@ -208,13 +205,7 @@ static void initialize(StandardShortcut id)
 
     KConfigGroup cg(KGlobal::config(), "Shortcuts");
 
-#ifdef Q_WS_X11
-    // Code within this block breaks if we aren't running in GUI mode.
-    if(QX11Info::display() && cg.hasKey(info->name))
-#else
-    if(cg.hasKey(info->name))
-#endif
-    {
+    if(cg.hasKey(info->name)) {
         const QString s = cg.readEntry(info->name);
         info->cut = QKeySequence(s);
     } else {
@@ -229,8 +220,9 @@ void saveShortcut(StandardShortcut id, const QKeySequence &newShortcut)
     KStandardShortcutInfo *info = guardedStandardShortcutInfo(id);
     // If the action has no standard shortcut associated there is nothing to
     // save
-    if(info->id == AccelNone)
+    if (info->id == AccelNone) {
         return;
+    }
 
     KConfigGroup cg(KGlobal::config(), "Shortcuts");
 
