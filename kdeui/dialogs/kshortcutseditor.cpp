@@ -39,6 +39,7 @@ Q_DECLARE_METATYPE(QAction*)
 static QTreeWidgetItem* kMakeActionItem(QTreeWidgetItem *parent, QAction *action)
 {
     QTreeWidgetItem* actionitem = new QTreeWidgetItem(parent);
+    actionitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     actionitem->setIcon(0, action->icon());
     actionitem->setText(0, action->iconText());
     actionitem->setToolTip(0, action->toolTip());
@@ -87,6 +88,7 @@ void KShortcutsEditorPrivate::init(KShortcutsEditor *_parent,
     layout = new QHBoxLayout(parent);
     parent->setLayout(layout);
 
+    // TODO: edit() override
     treewidget = new QTreeWidget(parent);
     treewidget->setSelectionMode(QAbstractItemView::SingleSelection);
     treewidget->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -198,6 +200,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     }
     if (!topitem) {
         topitem = new QTreeWidgetItem(d->treewidget);
+        topitem->setFlags(Qt::ItemIsEnabled);
         topitem->setText(0, collectionname);
         topitem->setIcon(0, KIcon(collectionicon));
     }
