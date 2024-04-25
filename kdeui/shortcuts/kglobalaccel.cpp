@@ -141,10 +141,10 @@ KGlobalAccelFilter::KGlobalAccelFilter()
 
 bool KGlobalAccelFilter::x11Event(XEvent *xevent)
 {
-    if (m_block) {
-        return false;
-    }
     if (xevent->type == KeyPress) {
+        if (m_block) {
+            return false;
+        }
         foreach (const KGlobalAccelStruct &shortcut, shortcuts) {
             if (xevent->xkey.state == shortcut.keyModX && xevent->xkey.keycode == shortcut.keyCodeX) {
                 kDebug(s_kglobalaccelarea) << "triggering action" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;

@@ -25,7 +25,6 @@
 #include <QWidget>
 
 class KActionCollection;
-class KConfigBase;
 class KConfigGroup;
 class KShortcutsEditorPrivate;
 
@@ -117,7 +116,7 @@ public:
      *
      * @param config Config object
      */
-    void exportConfiguration(KConfigBase *config = nullptr) const;
+    void exportConfiguration(KConfigGroup *config = nullptr) const;
 
     /**
      * Import the settings from configuration @p config.
@@ -127,7 +126,7 @@ public:
      *
      * @param config Config object
      */
-    void importConfiguration(KConfigBase *config = nullptr);
+    void importConfiguration(KConfigGroup *config = nullptr);
 
 Q_SIGNALS:
     /**

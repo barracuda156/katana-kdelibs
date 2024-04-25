@@ -261,10 +261,7 @@ void KApplicationPrivate::_k_checkAppStartedSlot()
     // because it is not done anywhere else. unfortunately that magic also means any collections
     // created afterwards will need an explicit settings read
     foreach (KActionCollection* collection, KActionCollection::allCollections()) {
-        KConfigGroup group(KGlobal::config(), "Shortcuts");
-        collection->readSettings(&group);
-        group = KConfigGroup(KGlobal::config(), "Global Shortcuts");
-        collection->importGlobalShortcuts(&group);
+        collection->readSettings();
     }
 }
 

@@ -275,7 +275,7 @@ public Q_SLOTS:
     /**
      * Actually remove the shortcut that the user wanted to steal, from the
      * action that was using it. This only applies to actions provided to us
-     * by setCheckActionCollections() and setCheckActionList().
+     * by setCheckActionCollections().
      *
      * Global and Standard Shortcuts have to be stolen immediately when the
      * user gives his consent (technical reasons). That means those changes

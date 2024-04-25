@@ -297,24 +297,11 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     treeheader->setSectionHidden(2, !addglobal || globalcounter < 1);
 }
 
-void KShortcutsEditor::importConfiguration(KConfigBase *config)
+void KShortcutsEditor::importConfiguration(KConfigGroup *config)
 {
-    if (!config) {
-        config = KGlobal::config().data();
-    }
-
     const QList<KActionCollection*> actioncollections = d->actioncollections.keys();
-    if (d->actiontypes & KShortcutsEditor::LocalAction) {
-        KConfigGroup group(config, "Shortcuts");
-        foreach (KActionCollection* collection, actioncollections) {
-            collection->readSettings(&group);
-        }
-    }
-    if (d->actiontypes & KShortcutsEditor::GlobalAction) {
-        KConfigGroup group(config, "Global Shortcuts");
-        foreach (KActionCollection* collection, actioncollections) {
-            collection->importGlobalShortcuts(&group);
-        }
+    foreach (KActionCollection* collection, actioncollections) {
+        collection->readSettings(config);
     }
 
     // start all over, it is unknown what changed in the configuration
@@ -325,12 +312,8 @@ void KShortcutsEditor::importConfiguration(KConfigBase *config)
     }
 }
 
-void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
+void KShortcutsEditor::exportConfiguration(KConfigGroup *config) const
 {
-    if (!config) {
-        config = KGlobal::config().data();
-    }
-
     foreach (const KKeySequenceWidget *kswidget, d->keysequencewidgets) {
         QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
         Q_ASSERT(action != nullptr);
@@ -345,19 +328,9 @@ void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
     }
 
     const QList<KActionCollection*> actioncollections = d->actioncollections.keys();
-    if (d->actiontypes & KShortcutsEditor::LocalAction) {
-        KConfigGroup group(config, "Shortcuts");
-        foreach (KActionCollection* collection, actioncollections) {
-            collection->writeSettings(&group, true);
-        }
+    foreach (KActionCollection* collection, actioncollections) {
+        collection->writeSettings(config);
     }
-    if (d->actiontypes & KShortcutsEditor::GlobalAction) {
-        KConfigGroup group(config, "Global Shortcuts");
-        foreach (KActionCollection* collection, actioncollections) {
-            collection->exportGlobalShortcuts(&group, true);
-        }
-    }
-    config->sync();
 
     d->modified = false;
 }
