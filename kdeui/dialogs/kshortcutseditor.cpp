@@ -153,7 +153,12 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     }
     d->actioncollections.append(collection);
 
-    const KAboutData* aboutdata = collection->componentData().aboutData();
+    // all sorts of fallbacks to fill gaps
+    KComponentData componentdata = collection->componentData();
+    if (!componentdata.isValid()) {
+        componentdata = KGlobal::mainComponent();
+    }
+    const KAboutData* aboutdata = componentdata.aboutData();
     QString collectionname = title;
     QString collectionicon;
     if (collectionname.isEmpty()) {
@@ -161,7 +166,9 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             collectionname = aboutdata->programName();
         }
     }
-    // TODO: maybe use the global component aboutdata instead?
+    if (collectionname.isEmpty()) {
+        collectionname = componentdata.componentName();
+    }
     if (collectionname.isEmpty()) {
         collectionname = collection->objectName();
     }
@@ -173,7 +180,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     }
     if (collectionicon.isEmpty() || KIconLoader::global()->iconPath(collectionicon, KIconLoader::Small, true).isEmpty()) {
         // for now assume it is a plugin collection, those usually have invalid program icon
-        // (e.g. "katesearch") which why it is checked above
+        // (e.g. "katesearch") which is why it is checked above
         collectionicon = QLatin1String("preferences-plugin");
     }
 
