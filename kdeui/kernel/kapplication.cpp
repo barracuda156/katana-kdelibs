@@ -56,6 +56,7 @@
 #include "kcomponentdata.h"
 #include "kmainwindow.h"
 #include "kmenu.h"
+#include "kconfiggroup.h"
 #include "kactioncollection.h"
 
 #include <sys/types.h>
@@ -255,6 +256,16 @@ void KApplicationPrivate::_k_checkAppStartedSlot()
 #if defined Q_WS_X11
     KStartupInfo::handleAutoAppStartedSending();
 #endif
+
+    // at this point all collections should be set, now is the time to read ther configuration
+    // because it is not done anywhere else. unfortunately that magic also means any collections
+    // created afterwards will need an explicit settings read
+    foreach (KActionCollection* collection, KActionCollection::allCollections()) {
+        KConfigGroup group(KGlobal::config(), "Shortcuts");
+        collection->readSettings(&group);
+        group = KConfigGroup(KGlobal::config(), "Global Shortcuts");
+        collection->importGlobalShortcuts(&group);
+    }
 }
 
 /*

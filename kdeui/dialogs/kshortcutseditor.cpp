@@ -173,7 +173,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         collectionname = collection->objectName();
     }
     if (collectionname.isEmpty()) {
-        collectionname = QString::number(quintptr(collection));
+        collectionname = QString::number(quintptr(collection), 16);
     }
     if (aboutdata) {
         collectionicon = aboutdata->programIconName();
@@ -206,7 +206,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         QTreeWidgetItem* actionitem = nullptr;
 
         if (addlocal && kaction && !kaction->isShortcutConfigurable()) {
-            qDebug() << "local shortcut of action is not configurable" << kaction;
+            kDebug() << "local shortcut of action is not configurable" << kaction;
         } else if (addlocal) {
             if (!actionitem) {
                 actionitem = kMakeActionItem(topitem, action);
@@ -272,21 +272,21 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     // force exapnsion if there is only one top-level item
     d->treewidget->setRootIsDecorated(d->treewidget->topLevelItemCount() > 1);
     // count the local and global actions, disable sections based on the count and action types
-    int localcount = 0;
-    int globalcount = 0;
-    foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+    int localcounter = 0;
+    int globalcounter = 0;
+    foreach (const KKeySequenceWidget *kswidget, d->keysequencewidgets) {
         QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
         Q_ASSERT(action != nullptr);
         const bool global = kswidget->property("_k_global").toBool();
         if (global) {
-            globalcount++;
+            globalcounter++;
         } else {
-            localcount++;
+            localcounter++;
         }
     }
     QHeaderView* treeheader = d->treewidget->header();
-    treeheader->setSectionHidden(1, !addlocal || localcount < 1);
-    treeheader->setSectionHidden(2, !addglobal || globalcount < 1);
+    treeheader->setSectionHidden(1, !addlocal || localcounter < 1);
+    treeheader->setSectionHidden(2, !addglobal || globalcounter < 1);
 }
 
 void KShortcutsEditor::importConfiguration(KConfigBase *config)
@@ -317,7 +317,7 @@ void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
         config = KGlobal::config().data();
     }
 
-    foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+    foreach (const KKeySequenceWidget *kswidget, d->keysequencewidgets) {
         QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
         Q_ASSERT(action != nullptr);
         const bool global = kswidget->property("_k_global").toBool();
