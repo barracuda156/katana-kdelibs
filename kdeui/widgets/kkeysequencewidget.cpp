@@ -230,17 +230,15 @@ void KKeySequenceWidgetPrivate::init()
 
 QKeySequence KKeySequenceWidgetPrivate::appendToSequence(const QKeySequence &seq, int keyQt)
 {
-    switch (seq.count()) {
-        case 0: {
-            return QKeySequence(keyQt);
-        }
-        case 1: {
-            return QKeySequence(seq[0], keyQt);
-        }
-        default: {
-            return seq;
-        }
+    if (seq[0] == keyQt || seq[1] == keyQt) {
+        // no change in sequence (one of the sequences matches)
+        return seq;
+    } else if (seq[0] == 0) {
+        // no primary
+        return QKeySequence(keyQt, seq[1]);
     }
+    // whatever the alternative is it is replaced
+    return QKeySequence(seq[0], keyQt);
 }
 
 bool KKeySequenceWidgetPrivate::isOkWhenModifierless(int keyQt)
@@ -316,7 +314,7 @@ bool KKeySequenceWidgetPrivate::conflictWithGlobalShortcuts(const QKeySequence &
     // each of the keys of a multi key shortcut.
     KGlobalAccel* kglobalaccel = KGlobalAccel::self();
     QHash<QKeySequence, QList<KGlobalShortcutInfo> > others;
-    for (int i=0; i < keySequence.count(); ++i) {
+    for (int i = 0; i < keySequence.count(); ++i) {
         QKeySequence tmp(keySequence[i]);
         if (!kglobalaccel->isGlobalShortcutAvailable(tmp, componentName)) {
             others.insert(tmp, kglobalaccel->getGlobalShortcutsByKey(tmp));
@@ -354,7 +352,7 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
     // removed from the collection again.
     QList<QAction*> allActions;
     allActions += checkList;
-    foreach(KActionCollection* collection, checkActionCollections) {
+    foreach (KActionCollection* collection, checkActionCollections) {
         allActions += collection->actions();
     }
 
@@ -378,13 +376,21 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
     QList<KAction*> conflictingActions;
 
     //find conflicting shortcuts with existing actions
-    foreach(QAction * qaction , allActions ) {
+    foreach (QAction * qaction , allActions) {
         KAction *kaction = qobject_cast<KAction*>(qaction);
         if (kaction) {
-            if (kaction->shortcut().matches(keySequence) != QKeySequence::NoMatch) {
-                // A conflict with a KAction. If that action is configurable
-                // ask the user what to do. If not reject this keySequence.
-                if (kaction->isShortcutConfigurable ()) {
+            const QKeySequence kactionks = kaction->shortcut();
+            if (kactionks.matches(keySequence) != QKeySequence::NoMatch) {
+                if (kactionks == oldKeySequence) {
+                    // the action the shortcut of which is being changed
+                    // TODO: the KKeySequenceWidget has to be associated with a QAction* to ensure
+                    // that the action is never considered in conflicts matching
+                    continue;
+                }
+
+                // A conflict with a KAction. If that action is configurable  ask the user what to
+                // do. If not reject this keySequence.
+                if (kaction->isShortcutConfigurable()) {
                     conflictingActions.append(kaction);
                 } else {
                     wontStealShortcut(kaction, keySequence);
@@ -393,8 +399,9 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
             }
         } else {
             if (qaction->shortcut() == keySequence) {
-                // A conflict with a QAction. Don't know why :-( but we won't
-                // steal from that kind of actions.
+                // A conflict with a QAction, does not have a configurable option so changing its
+                // shortcut from here is a bad idea even tho its shortcut may be saved and restored
+                // from config somewhere
                 wontStealShortcut(qaction, keySequence);
                 return true;
             }
@@ -406,16 +413,15 @@ bool KKeySequenceWidgetPrivate::conflictWithLocalShortcuts(const QKeySequence &k
         return false;
     }
 
-    if(stealShortcuts(conflictingActions, keySequence)) {
+    if (stealShortcuts(conflictingActions, keySequence)) {
         stealActions = conflictingActions;
         // Announce that the user
         Q_FOREACH (KAction *stealAction, stealActions) {
             emit q->stealShortcut(keySequence, stealAction);
         }
         return false;
-    } else {
-        return true;
     }
+    return true;
 }
 
 bool KKeySequenceWidgetPrivate::conflictWithStandardShortcuts(const QKeySequence &keySequence)
@@ -707,13 +713,14 @@ void KKeySequenceButton::keyPressEvent(QKeyEvent *e)
     }
 
     // We get events even if recording isn't active.
-    if (!d->isRecording)
+    if (!d->isRecording) {
         return QPushButton::keyPressEvent(e);
+    }
 
     e->accept();
     d->modifierKeys = newModifiers;
 
-    switch(keyQt) {
+    switch (keyQt) {
         case Qt::Key_AltGr: {
             // or else its unicode salad
             return;
@@ -743,19 +750,13 @@ void KKeySequenceButton::keyPressEvent(QKeyEvent *e)
             if (keyQt) {
                 if ((keyQt == Qt::Key_Backtab) && (d->modifierKeys & Qt::SHIFT)) {
                     keyQt = Qt::Key_Tab | d->modifierKeys;
-                }
-                else if (KKeyServer::isShiftAsModifierAllowed(keyQt)) {
+                } else if (KKeyServer::isShiftAsModifierAllowed(keyQt)) {
                     keyQt |= d->modifierKeys;
-                }
-                else
-                    keyQt |= (d->modifierKeys & ~Qt::SHIFT);
-
-                if (d->nKey == 0) {
-                    d->keySequence = QKeySequence(keyQt);
                 } else {
-                    d->keySequence =
-                    KKeySequenceWidgetPrivate::appendToSequence(d->keySequence, keyQt);
+                    keyQt |= (d->modifierKeys & ~Qt::SHIFT);
                 }
+
+                d->keySequence = KKeySequenceWidgetPrivate::appendToSequence(d->oldKeySequence, keyQt);
 
                 d->nKey++;
                 if ((!d->multiKeyShortcutsAllowed) || (d->nKey >= 4)) {
