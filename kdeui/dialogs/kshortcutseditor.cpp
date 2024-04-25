@@ -60,7 +60,7 @@ public:
     bool modified;
     QHBoxLayout* layout;
     QTreeWidget* treewidget;
-    QList<KActionCollection*> actioncollections;
+    QMap<KActionCollection*,QString> actioncollections;
     QList<KKeySequenceWidget*> keysequencewidgets;
 };
 
@@ -151,7 +151,7 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     if (collection->isEmpty()) {
         return;
     }
-    d->actioncollections.append(collection);
+    d->actioncollections.insert(collection, title);
 
     // all sorts of fallbacks to fill gaps
     KComponentData componentdata = collection->componentData();
@@ -217,7 +217,6 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             localkswidget->setCheckForConflictsAgainst(
                 KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::StandardShortcuts
             );
-            localkswidget->setCheckActionCollections(d->actioncollections);
             if (kaction) {
                 localkswidget->setComponentName(kaction->d->componentData.componentName());
             }
@@ -247,7 +246,6 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
                 KKeySequenceWidget::LocalShortcuts | KKeySequenceWidget::GlobalShortcuts
                 | KKeySequenceWidget::StandardShortcuts
             );
-            globalkswidget->setCheckActionCollections(d->actioncollections);
             globalkswidget->setComponentName(kaction->d->componentData.componentName());
             globalkswidget->setKeySequence(kaction->globalShortcut());
             globalkswidget->setProperty("_k_action", QVariant::fromValue(action));
@@ -274,7 +272,8 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     // count the local and global actions, disable sections based on the count and action types
     int localcounter = 0;
     int globalcounter = 0;
-    foreach (const KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+    foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
+        kswidget->setCheckActionCollections(d->actioncollections.keys());
         QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
         Q_ASSERT(action != nullptr);
         const bool global = kswidget->property("_k_global").toBool();
@@ -295,20 +294,26 @@ void KShortcutsEditor::importConfiguration(KConfigBase *config)
         config = KGlobal::config().data();
     }
 
+    const QList<KActionCollection*> actioncollections = d->actioncollections.keys();
     if (d->actiontypes & KShortcutsEditor::LocalAction) {
         KConfigGroup group(config, "Shortcuts");
-        foreach (KActionCollection* collection, d->actioncollections) {
+        foreach (KActionCollection* collection, actioncollections) {
             collection->readSettings(&group);
         }
     }
     if (d->actiontypes & KShortcutsEditor::GlobalAction) {
         KConfigGroup group(config, "Global Shortcuts");
-        foreach (KActionCollection* collection, d->actioncollections) {
+        foreach (KActionCollection* collection, actioncollections) {
             collection->importGlobalShortcuts(&group);
         }
     }
 
-    // TODO: update keysequences
+    // start all over, it is unknown what changed in the configuration
+    const QMap<KActionCollection*,QString> actioncollectionsmap = d->actioncollections;
+    clearCollections();
+    foreach (KActionCollection* collection, actioncollections) {
+        addCollection(collection, actioncollectionsmap.value(collection));
+    }
 }
 
 void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
@@ -330,15 +335,16 @@ void KShortcutsEditor::exportConfiguration(KConfigBase *config) const
         }
     }
 
+    const QList<KActionCollection*> actioncollections = d->actioncollections.keys();
     if (d->actiontypes & KShortcutsEditor::LocalAction) {
         KConfigGroup group(config, "Shortcuts");
-        foreach (KActionCollection* collection, d->actioncollections) {
+        foreach (KActionCollection* collection, actioncollections) {
             collection->writeSettings(&group, true);
         }
     }
     if (d->actiontypes & KShortcutsEditor::GlobalAction) {
         KConfigGroup group(config, "Global Shortcuts");
-        foreach (KActionCollection* collection, d->actioncollections) {
+        foreach (KActionCollection* collection, actioncollections) {
             collection->exportGlobalShortcuts(&group, true);
         }
     }
