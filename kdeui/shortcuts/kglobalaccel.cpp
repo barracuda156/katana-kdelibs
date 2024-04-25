@@ -32,6 +32,10 @@
 #include "kxerrorhandler.h"
 #include "kdebug.h"
 
+// for reference:
+// https://tronche.com/gui/x/xlib/input/XGrabKey.html
+// https://tronche.com/gui/x/xlib/input/XUngrabKey.html
+
 // see kdebug.areas
 static const int s_kglobalaccelarea = 125;
 
