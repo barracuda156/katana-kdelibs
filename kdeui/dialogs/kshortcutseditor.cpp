@@ -318,10 +318,12 @@ void KShortcutsEditor::exportConfiguration(KConfigGroup *config) const
         QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
         Q_ASSERT(action != nullptr);
         const bool global = kswidget->property("_k_global").toBool();
+        KAction* kaction = qobject_cast<KAction*>(action);
         if (global) {
-            KAction* kaction = qobject_cast<KAction*>(action);
             Q_ASSERT(kaction != nullptr);
-            kaction->setGlobalShortcut(kswidget->keySequence());
+            kaction->setGlobalShortcut(kswidget->keySequence(), KAction::ActiveShortcut);
+        } else if (kaction) {
+            kaction->setShortcut(kswidget->keySequence(), KAction::ActiveShortcut);
         } else {
             action->setShortcut(kswidget->keySequence());
         }
@@ -329,7 +331,7 @@ void KShortcutsEditor::exportConfiguration(KConfigGroup *config) const
 
     const QList<KActionCollection*> actioncollections = d->actioncollections.keys();
     foreach (KActionCollection* collection, actioncollections) {
-        collection->writeSettings(config);
+        collection->writeSettings(config, true);
     }
 
     d->modified = false;
@@ -345,7 +347,7 @@ void KShortcutsEditor::allDefault()
         if (global) {
             Q_ASSERT(kaction != nullptr);
             const QKeySequence ks = kaction->globalShortcut(KAction::DefaultShortcut);
-            kaction->setGlobalShortcut(ks);
+            kaction->setGlobalShortcut(ks, KAction::ActiveShortcut);
             kswidget->setKeySequence(ks);
         } else {
             if (!kaction) {
@@ -353,7 +355,7 @@ void KShortcutsEditor::allDefault()
                 continue;
             }
             const QKeySequence ks = kaction->shortcut(KAction::DefaultShortcut);
-            kaction->setShortcut(ks);
+            kaction->setShortcut(ks, KAction::ActiveShortcut);
             kswidget->setKeySequence(ks);
         }
     }
