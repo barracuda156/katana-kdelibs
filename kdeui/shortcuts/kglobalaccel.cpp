@@ -199,14 +199,6 @@ KGlobalAccelPrivate::~KGlobalAccelPrivate()
 
 }
 
-bool KGlobalAccelPrivate::updateGlobalShortcut(KAction *action)
-{
-    if (!remove(action)) {
-        return false;
-    }
-    return doRegister(action);
-}
-
 bool KGlobalAccelPrivate::doRegister(KAction *action)
 {
     const QKeySequence keysequence = action->globalShortcut();

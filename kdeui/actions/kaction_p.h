@@ -34,9 +34,7 @@ public:
 
     void maybeSetComponentData(const KComponentData &kcd)
     {
-        if (neverSetGlobalShortcut) {
-            componentData = kcd;
-        }
+        componentData = kcd;
     }
 
     KComponentData componentData; // this is **way** more lightweight than it looks
@@ -45,7 +43,6 @@ public:
     QKeySequence defaultGlobalShortcut;
 
     bool globalShortcutEnabled;
-    bool neverSetGlobalShortcut;
     KAction *q;
 };
 

@@ -44,7 +44,6 @@
 KActionPrivate::KActionPrivate(KAction *q_ptr)
     : componentData(KGlobal::mainComponent()),
     globalShortcutEnabled(false),
-    neverSetGlobalShortcut(true),
     q(q_ptr)
 {
     QObject::connect(q, SIGNAL(triggered(bool)), q, SLOT(slotTriggered()));
@@ -154,35 +153,24 @@ const QKeySequence& KAction::globalShortcut(ShortcutTypes type) const
 void KAction::setGlobalShortcut(const QKeySequence &shortcut, ShortcutTypes type)
 {
     Q_ASSERT(type);
-    bool changed = false;
-
     if (!d->globalShortcutEnabled) {
-        changed = true;
         if (objectName().isEmpty() || objectName().startsWith(QLatin1String("unnamed-"))) {
             kWarning(129) << "Attempt to set global shortcut for action without objectName()."
                              " Read the setGlobalShortcut() documentation.";
             return;
         }
         d->globalShortcutEnabled = true;
-        KGlobalAccel::self()->d->doRegister(this);
     }
 
     if ((type & KAction::DefaultShortcut) && d->defaultGlobalShortcut != shortcut) {
         d->defaultGlobalShortcut = shortcut;
-        changed = true;
     }
 
     if ((type & KAction::ActiveShortcut) && d->globalShortcut != shortcut) {
         d->globalShortcut = shortcut;
-        changed = true;
-    }
-
-    // want to have updateGlobalShortcuts called on a new action in any case so that
-    // it will be registered properly. In the case of the first setShortcut() call getting an
-    // empty shortcut parameter this would not happen...
-    if (changed || d->neverSetGlobalShortcut) {
-        KGlobalAccel::self()->d->updateGlobalShortcut(this);
-        d->neverSetGlobalShortcut = false;
+        if (KGlobalAccel::self()->d->remove(this)) {
+            KGlobalAccel::self()->d->doRegister(this);
+        }
         emit globalShortcutChanged(d->globalShortcut);
     }
 }
@@ -199,7 +187,6 @@ void KAction::forgetGlobalShortcut()
     d->defaultGlobalShortcut = QKeySequence();
     if (d->globalShortcutEnabled) {
         d->globalShortcutEnabled = false;
-        d->neverSetGlobalShortcut = true; // it's a fresh start :)
         KGlobalAccel::self()->d->remove(this);
         emit globalShortcutChanged(d->globalShortcut);
     }
