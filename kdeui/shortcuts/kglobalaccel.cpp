@@ -232,18 +232,23 @@ bool KGlobalAccelPrivate::doRegister(KAction *action)
 
 bool KGlobalAccelPrivate::remove(KAction *action)
 {
-    foreach (const KGlobalAccelStruct &shortcut, filter->shortcuts) {
+    bool result = false;
+    bool found = false;
+    QMutableListIterator<KGlobalAccelStruct> iter(filter->shortcuts);
+    while (iter.hasNext()) {
+        const KGlobalAccelStruct shortcut = iter.next();
         if (shortcut.action == action) {
+            found = true;
             if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
                 kDebug(s_kglobalaccelarea) << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
-                filter->shortcuts.removeOne(shortcut);
-                return true;
+                iter.remove();
+                result = true;
+            } else {
+                kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
             }
-            kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
-            return false;
         }
     }
-    return true;
+    return (result || !found);
 }
 
 

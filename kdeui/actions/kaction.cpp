@@ -177,9 +177,9 @@ void KAction::setGlobalShortcut(const QKeySequence &shortcut, ShortcutTypes type
         changed = true;
     }
 
-    //We want to have updateGlobalShortcuts called on a new action in any case so that
-    //it will be registered properly. In the case of the first setShortcut() call getting an
-    //empty shortcut parameter this would not happen...
+    // want to have updateGlobalShortcuts called on a new action in any case so that
+    // it will be registered properly. In the case of the first setShortcut() call getting an
+    // empty shortcut parameter this would not happen...
     if (changed || d->neverSetGlobalShortcut) {
         KGlobalAccel::self()->d->updateGlobalShortcut(this);
         d->neverSetGlobalShortcut = false;
@@ -199,7 +199,7 @@ void KAction::forgetGlobalShortcut()
     d->defaultGlobalShortcut = QKeySequence();
     if (d->globalShortcutEnabled) {
         d->globalShortcutEnabled = false;
-        d->neverSetGlobalShortcut = true; //it's a fresh start :)
+        d->neverSetGlobalShortcut = true; // it's a fresh start :)
         KGlobalAccel::self()->d->remove(this);
         emit globalShortcutChanged(d->globalShortcut);
     }
