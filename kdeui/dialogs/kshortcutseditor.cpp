@@ -41,6 +41,8 @@ static QTreeWidgetItem* kMakeActionItem(QTreeWidgetItem *parent, QAction *action
     QTreeWidgetItem* actionitem = new QTreeWidgetItem(parent);
     actionitem->setIcon(0, action->icon());
     actionitem->setText(0, action->iconText());
+    actionitem->setToolTip(0, action->toolTip());
+    actionitem->setStatusTip(0, action->statusTip());
     return actionitem;
 }
 
@@ -86,6 +88,8 @@ void KShortcutsEditorPrivate::init(KShortcutsEditor *_parent,
     parent->setLayout(layout);
 
     treewidget = new QTreeWidget(parent);
+    treewidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    treewidget->setSelectionBehavior(QAbstractItemView::SelectItems);
     treewidget->setColumnCount(3);
     QStringList treeheaders = QStringList()
         << i18n("Collection")
