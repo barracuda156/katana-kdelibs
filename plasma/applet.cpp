@@ -1428,24 +1428,20 @@ void Applet::setGlobalShortcut(const QKeySequence &shortcut)
         d->activationAction = new KAction(this);
         d->activationAction->setText(i18n("Activate %1 Widget", name()));
         d->activationAction->setObjectName(QString("activate widget %1").arg(id())); // NO I18N
-        connect(d->activationAction, SIGNAL(triggered()), this, SIGNAL(activate()));
-        connect(d->activationAction, SIGNAL(globalShortcutChanged(QKeySequence)),
-                this, SLOT(globalShortcutChanged()));
+        d->activationAction->setGlobalShortcut(shortcut, KAction::ActiveShortcut | KAction::DefaultShortcut);
+        connect(
+            d->activationAction, SIGNAL(triggered()),
+            this, SIGNAL(activate())
+        );
+        connect(
+            d->activationAction, SIGNAL(globalShortcutChanged(QKeySequence)),
+            this, SLOT(globalShortcutChanged()));
 
         QList<QWidget *> widgets = d->actions->associatedWidgets();
         foreach (QWidget *w, widgets) {
             w->addAction(d->activationAction);
         }
-    } else if (d->activationAction->globalShortcut() == shortcut) {
-        return;
     }
-
-    //kDebug() << "before" << shortcut << d->activationAction->globalShortcut();
-    d->activationAction->setGlobalShortcut(
-        shortcut,
-        KAction::ShortcutTypes(KAction::ActiveShortcut | KAction::DefaultShortcut)
-    );
-    d->globalShortcutChanged();
 }
 
 void AppletPrivate::globalShortcutChanged()
@@ -1457,7 +1453,7 @@ void AppletPrivate::globalShortcutChanged()
     KConfigGroup shortcutConfig(mainConfigGroup(), "Shortcuts");
     shortcutConfig.writeEntry("global", activationAction->globalShortcut().toString());
     scheduleModificationNotification();
-    //kDebug() << "after" << shortcut.primary() << d->activationAction->globalShortcut().primary();
+    //kDebug() << "after" << shortcut << d->activationAction->globalShortcut();
 }
 
 QKeySequence Applet::globalShortcut() const
@@ -1465,7 +1461,6 @@ QKeySequence Applet::globalShortcut() const
     if (d->activationAction) {
         return d->activationAction->globalShortcut();
     }
-
     return QKeySequence();
 }
 
@@ -1823,9 +1818,12 @@ void AppletPrivate::addGlobalShortcutsPage(KConfigDialog *dialog)
 void AppletPrivate::configDialogFinished()
 {
     if (shortcutEditor) {
-        QKeySequence sequence = shortcutEditor.data()->keySequence();
-        if (sequence != q->globalShortcut()) {
-            q->setGlobalShortcut(sequence);
+        QKeySequence shortcut = shortcutEditor.data()->keySequence();
+        if (shortcut != q->globalShortcut()) {
+            // kDebug() << "before" << shortcut << q->globalShortcut();
+            if (activationAction) {
+                activationAction->setGlobalShortcut(shortcut, KAction::ActiveShortcut);
+            }
             emit q->configNeedsSaving();
         }
     }
@@ -2317,11 +2315,6 @@ AppletPrivate::AppletPrivate(KService::Ptr service, const KPluginInfo *info, int
 
 AppletPrivate::~AppletPrivate()
 {
-    if (activationAction && activationAction->isGlobalShortcutEnabled()) {
-        //kDebug() << "reseting global action for" << q->name() << activationAction->objectName();
-        activationAction->forgetGlobalShortcut();
-    }
-
     delete extender.data();
 
     delete mainConfig;
