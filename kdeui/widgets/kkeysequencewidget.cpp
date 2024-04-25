@@ -27,6 +27,7 @@
 #include "kmessagebox.h"
 #include "kaction.h"
 #include "kactioncollection.h"
+#include "kglobalsettings.h"
 #include "kkeyserver.h"
 #include "kdebug.h"
 
@@ -271,6 +272,7 @@ void KKeySequenceWidgetPrivate::startRecording()
     keySequence = QKeySequence();
     isRecording = true;
     keyButton->grabKeyboard();
+    KGlobalSettings::emitChange(KGlobalSettings::BlockShortcuts, 1);
 
     if (!QWidget::keyboardGrabber()) {
         kWarning() << "Failed to grab the keyboard! Most likely Katie's nograb option is active";
@@ -286,6 +288,7 @@ void KKeySequenceWidgetPrivate::doneRecording(bool validate)
     isRecording = false;
     keyButton->releaseKeyboard();
     keyButton->setDown(false);
+    KGlobalSettings::emitChange(KGlobalSettings::BlockShortcuts, 0);
     stealActions.clear();
 
     if (keySequence == oldKeySequence) {
@@ -671,17 +674,17 @@ void KKeySequenceWidget::applyStealShortcut()
 // prevent Katie from special casing Tab and Backtab
 bool KKeySequenceButton::event(QEvent* e)
 {
-    if (d->isRecording && e->type() == QEvent::KeyPress) {
-        keyPressEvent(static_cast<QKeyEvent *>(e));
-        return true;
-    }
-
     // The shortcut 'alt+c' ( or any other dialog local action shortcut )
     // ended the recording and triggered the action associated with the
     // action. In case of 'alt+c' ending the dialog.  It seems that those
     // ShortcutOverride events get sent even if grabKeyboard() is active.
     if (d->isRecording && e->type() == QEvent::ShortcutOverride) {
         e->accept();
+        return true;
+    }
+
+    if (d->isRecording && e->type() == QEvent::KeyPress) {
+        keyPressEvent(static_cast<QKeyEvent *>(e));
         return true;
     }
 

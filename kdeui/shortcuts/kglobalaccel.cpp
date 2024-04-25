@@ -32,6 +32,9 @@
 #include "kxerrorhandler.h"
 #include "kdebug.h"
 
+// see kdebug.areas
+static const int s_kglobalaccelarea = 125;
+
 K_GLOBAL_STATIC(KGlobalAccel, kGlobalAccel)
 
 struct KGlobalAccelStruct
@@ -47,7 +50,7 @@ struct KGlobalAccelStruct
 extern "C" {
     static int XGrabErrorHandler(Display *, XErrorEvent *e) {
         if (e->error_code != BadAccess) {
-            kWarning() << "grabKey: got X error " << e->type << " instead of BadAccess";
+            kWarning(s_kglobalaccelarea) << "grabKey: got X error " << e->type << " instead of BadAccess";
         }
         return 1;
     }
@@ -56,30 +59,30 @@ extern "C" {
 static bool kGrabKey(const int keyQt, uint &keyModX, int &keyCodeX)
 {
     if (keyQt == 0) {
-        kDebug() << "null keyQt";
+        kDebug(s_kglobalaccelarea) << "null keyQt";
         return false;
     }
 
     Display* display = QX11Info::display();
     const Qt::HANDLE approotwindow = QX11Info::appRootWindow();
     if (!display || !approotwindow) {
-        kWarning() << "null display or application root window";
+        kWarning(s_kglobalaccelarea) << "null display or application root window";
         return false;
     }
 
     uint keySymX = 0;
     if (!KKeyServer::keyQtToModX(keyQt, &keyModX)) {
-        kWarning() << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 modifier";
+        kWarning(s_kglobalaccelarea) << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 modifier";
         return false;
     }
     if (!KKeyServer::keyQtToSymX(keyQt, (int *)&keySymX) ) {
-        kWarning() << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 keycode";
+        kWarning(s_kglobalaccelarea) << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 keycode";
         return false;
     }
 
     keyCodeX = XKeysymToKeycode(display, keySymX);
     if (!keyCodeX) {
-        kWarning() << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") was resolved to x11 keycode 0";
+        kWarning(s_kglobalaccelarea) << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") was resolved to x11 keycode 0";
         return false;
     }
 
@@ -96,7 +99,7 @@ static bool kUngrabKey(const uint keyModX, const int keyCodeX)
     Display* display = QX11Info::display();
     const Qt::HANDLE approotwindow = QX11Info::appRootWindow();
     if (!display || !approotwindow) {
-        kWarning() << "null display or application root window";
+        kWarning(s_kglobalaccelarea) << "null display or application root window";
         return false;
     }
     KXErrorHandler handler(XGrabErrorHandler);
@@ -106,19 +109,41 @@ static bool kUngrabKey(const uint keyModX, const int keyCodeX)
 
 class KGlobalAccelFilter : public QWidget
 {
+    Q_OBJECT
 public:
+    KGlobalAccelFilter();
+
     QList<KGlobalAccelStruct> shortcuts; 
+
+private Q_SLOTS:
+    void slotBlockShortcuts(int data);
 
 protected:
     bool x11Event(XEvent *xevent) final;
+
+private:
+    int m_block;
 };
+
+KGlobalAccelFilter::KGlobalAccelFilter()
+    : QWidget(),
+    m_block(0)
+{
+    connect(
+        KGlobalSettings::self(), SIGNAL(blockShortcuts(int)),
+        this, SLOT(slotBlockShortcuts(int))
+    );
+}
 
 bool KGlobalAccelFilter::x11Event(XEvent *xevent)
 {
+    if (m_block) {
+        return false;
+    }
     if (xevent->type == KeyPress) {
         foreach (const KGlobalAccelStruct &shortcut, shortcuts) {
             if (xevent->xkey.state == shortcut.keyModX && xevent->xkey.keycode == shortcut.keyCodeX) {
-                kDebug() << "triggering action" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+                kDebug(s_kglobalaccelarea) << "triggering action" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
                 shortcut.action->trigger();
                 return true;
             }
@@ -127,6 +152,18 @@ bool KGlobalAccelFilter::x11Event(XEvent *xevent)
     return false;
 }
 
+void KGlobalAccelFilter::slotBlockShortcuts(int data)
+{
+    if (data) {
+        m_block++;
+        kDebug(s_kglobalaccelarea) << "shorcuts block request" << m_block;
+    } else if (m_block) {
+        m_block--;
+        kDebug(s_kglobalaccelarea) << "shorcuts unblock request" << m_block;
+    }
+}
+
+
 KGlobalAccelPrivate::KGlobalAccelPrivate(KGlobalAccel *_q)
      : q(_q),
      filter(nullptr)
@@ -134,9 +171,9 @@ KGlobalAccelPrivate::KGlobalAccelPrivate(KGlobalAccel *_q)
     if (kapp) {
         filter = new KGlobalAccelFilter();
         kapp->installX11EventFilter(filter);
-        kDebug() << "KGlobalAccelFilter is installed";
+        kDebug(s_kglobalaccelarea) << "KGlobalAccelFilter is installed";
     } else {
-        kWarning() << "no KApplication instance, KGlobalAccel will not work";
+        kWarning(s_kglobalaccelarea) << "no KApplication instance, KGlobalAccel will not work";
     }
 }
 
@@ -144,12 +181,12 @@ KGlobalAccelPrivate::~KGlobalAccelPrivate()
 {
     if (filter) {
         if (kapp) {
-            kDebug() << "removing KGlobalAccelFilter";
+            kDebug(s_kglobalaccelarea) << "removing KGlobalAccelFilter";
             kapp->removeX11EventFilter(filter);
         }
 
         QList<KGlobalAccelStruct> shortcuts = filter->shortcuts;
-        kDebug() << "releasing shortcuts" << shortcuts.size();
+        kDebug(s_kglobalaccelarea) << "releasing shortcuts" << shortcuts.size();
         foreach (const KGlobalAccelStruct &shortcut, shortcuts) {
             remove(shortcut.action);
         }
@@ -178,10 +215,10 @@ bool KGlobalAccelPrivate::doRegister(KAction *action)
             shortcut.keyModX = keyModX;
             shortcut.keyCodeX = keyCodeX;
             filter->shortcuts.append(shortcut);
-            kDebug() << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+            kDebug(s_kglobalaccelarea) << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
             return true;
         } else {
-            kWarning() << "could not grab shortcut" << keysequence[i] << action;
+            kWarning(s_kglobalaccelarea) << "could not grab shortcut" << keysequence[i] << action;
         }
     }
     return false;
@@ -192,11 +229,11 @@ bool KGlobalAccelPrivate::remove(KAction *action)
     foreach (const KGlobalAccelStruct &shortcut, filter->shortcuts) {
         if (shortcut.action == action) {
             if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
-                kDebug() << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+                kDebug(s_kglobalaccelarea) << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
                 filter->shortcuts.removeOne(shortcut);
                 return true;
             }
-            kWarning() << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+            kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
             return false;
         }
     }
@@ -293,4 +330,4 @@ bool KGlobalAccel::promptStealShortcutSystemwide(QWidget *parent,
 }
 
 #include "moc_kglobalaccel.cpp"
-
+#include "kglobalaccel.moc"
