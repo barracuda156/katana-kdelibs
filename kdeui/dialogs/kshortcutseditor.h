@@ -21,13 +21,12 @@
 #define KSHORTCUTSEDITOR_H
 
 #include <kdeui_export.h>
+#include <kconfiggroup.h>
+#include <kactioncollection.h>
 
 #include <QWidget>
 
-class KActionCollection;
-class KConfigGroup;
 class KShortcutsEditorPrivate;
-
 
 /**
  * @short Widget for configuration of KAccel and KGlobalAccel.
@@ -142,6 +141,7 @@ public Q_SLOTS:
 
 private:
     Q_PRIVATE_SLOT(d, void _k_slotKeySequenceChanged())
+    Q_PRIVATE_SLOT(d, void _k_slotStealShortcut())
 
     friend class KShortcutsDialog;
     friend class KShortcutsEditorPrivate;

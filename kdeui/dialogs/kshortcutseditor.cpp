@@ -56,6 +56,7 @@ public:
               const KShortcutsEditor::LetterShortcuts letterShortcuts);
 
     void _k_slotKeySequenceChanged();
+    void _k_slotStealShortcut();
 
     KShortcutsEditor* parent;
     KShortcutsEditor::ActionTypes actiontypes;
@@ -115,6 +116,35 @@ void KShortcutsEditorPrivate::_k_slotKeySequenceChanged()
 {
     modified = true;
     emit parent->keyChange();
+}
+
+void KShortcutsEditorPrivate::_k_slotStealShortcut()
+{
+    KKeySequenceWidget* senderkswidget = qobject_cast<KKeySequenceWidget*>(parent->sender());
+    Q_ASSERT(senderkswidget != nullptr);
+    // it is already asked for, not going to bail and revert at any point
+    senderkswidget->applyStealShortcut();
+    foreach (KKeySequenceWidget *kswidget, keysequencewidgets) {
+        if (kswidget == senderkswidget) {
+            // that is the thief
+            continue;
+        }
+        QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
+        Q_ASSERT(action != nullptr);
+        const bool global = kswidget->property("_k_global").toBool();
+        KAction* kaction = qobject_cast<KAction*>(action);
+        // block signals, the key sequence of the thief changed
+        kswidget->blockSignals(true);
+        if (global) {
+            Q_ASSERT(kaction != nullptr);
+            kswidget->setKeySequence(kaction->globalShortcut(KAction::ActiveShortcut));
+        } else if (kaction) {
+            kswidget->setKeySequence(kaction->shortcut(KAction::ActiveShortcut));
+        } else {
+            kswidget->setKeySequence(action->shortcut());
+        }
+        kswidget->blockSignals(false);
+    }
 }
 
 
@@ -235,6 +265,10 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
                 localkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
                 this, SLOT(_k_slotKeySequenceChanged())
             );
+            connect(
+                localkswidget, SIGNAL(stealShortcut(QKeySequence,KAction*)),
+                this, SLOT(_k_slotStealShortcut())
+            );
             d->treewidget->setItemWidget(actionitem, 1, localkswidget);
             d->keysequencewidgets.append(localkswidget);
         }
@@ -262,6 +296,10 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             connect(
                 globalkswidget, SIGNAL(keySequenceChanged(QKeySequence)),
                 this, SLOT(_k_slotKeySequenceChanged())
+            );
+            connect(
+                globalkswidget, SIGNAL(stealShortcut(QKeySequence,KAction*)),
+                this, SLOT(_k_slotStealShortcut())
             );
             d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
             d->keysequencewidgets.append(globalkswidget);
