@@ -58,6 +58,7 @@
 #include "kmenu.h"
 #include "kconfiggroup.h"
 #include "kactioncollection.h"
+#include "kdebugger.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -127,6 +128,7 @@ public:
       , session_save(false)
       , pSessionConfig(nullptr)
       , bSessionManagement(true)
+      , debugger(nullptr)
   {
   }
 
@@ -138,6 +140,7 @@ public:
       , session_save(false)
       , pSessionConfig(nullptr)
       , bSessionManagement(true)
+      , debugger(nullptr)
   {
   }
 
@@ -149,6 +152,7 @@ public:
       , session_save(false)
       , pSessionConfig(nullptr)
       , bSessionManagement(true)
+      , debugger(nullptr)
   {
   }
 
@@ -170,6 +174,8 @@ public:
   QString sessionKey;
   KConfig* pSessionConfig; //instance specific application config object
   bool bSessionManagement;
+
+  KDebugger* debugger;
 };
 
 static QList< QWeakPointer< QWidget > > *x11Filter = 0;
@@ -652,15 +658,24 @@ void KApplicationPrivate::parseCommandLine( )
     if (args->isSet("smkey")) {
         sessionKey = args->getOption("smkey");
     }
+
+    if (args->isSet("debugger")) {
+        debugger = new KDebugger();
+        debugger->show();
+    }
 }
 
 KApplication::~KApplication()
 {
-  delete d;
-  KApp = 0;
+    if (d->debugger) {
+        delete d->debugger;
+    }
+
+    delete d;
+    KApp = 0;
 
 #ifdef Q_WS_X11
-  mySmcConnection = 0;
+    mySmcConnection = 0;
 #endif
 }
 

@@ -279,6 +279,7 @@ KCmdLineArgsStatic::KCmdLineArgsStatic () {
 #endif
     kde_options.add("geometry <geometry>", ki18n("sets the client geometry of the main widget - see man X for the argument format (usually WidthxHeight+XPos+YPos)"));
     kde_options.add("smkey <sessionKey>"); // this option is obsolete and exists only to allow smooth upgrades from sessions
+    kde_options.add("debugger",            ki18n("Show debugger"));
 }
 
 KCmdLineArgsStatic::~KCmdLineArgsStatic ()

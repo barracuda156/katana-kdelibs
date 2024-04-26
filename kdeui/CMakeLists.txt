@@ -169,6 +169,7 @@ set(kdeui_LIB_SRCS
     util/kimageio.cpp
     util/kkeyserver_x11.cpp
     util/kkeyboardlayout.cpp
+    util/kdebugger.cpp
     widgets/kactionselector.cpp
     widgets/kdialogbuttonbox.cpp
     widgets/kbuttongroup.cpp
@@ -397,6 +398,7 @@ install(
     util/kguiitem.h
     util/kkeyserver.h
     util/kkeyboardlayout.h
+    util/kdebugger.h
     util/kselectionowner.h
     util/knumvalidator.h
     util/kpassivepopup.h
