@@ -274,8 +274,12 @@ void KDebuggerPrivate::slotItemSelectionChanged()
         propertynameitem->setFlags(Qt::ItemIsEnabled);
         propertieswidget->setItem(propertiesrowcount, 0, propertynameitem);
         QTableWidgetItem* propertyvalueitem = new QTableWidgetItem(metaproperty.read(m_object).toString());
-        // TODO: implement editing
-        propertyvalueitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable);
+        Qt::ItemFlags propertyvalueflags = (Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        if (metaproperty.isWritable()) {
+            // TODO: implement editing
+            propertyvalueflags |= Qt::ItemIsEditable;
+        }
+        propertyvalueitem->setFlags(propertyvalueflags);
         propertieswidget->setItem(propertiesrowcount, 1, propertyvalueitem);
         propertiesrowcount++;
     }
