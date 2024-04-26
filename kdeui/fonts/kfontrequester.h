@@ -46,7 +46,7 @@ class KDEUI_EXPORT KFontRequester : public QWidget
     Q_OBJECT
     Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(QString sampleText READ sampleText WRITE setSampleText)
-    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontSelected USER true)
+    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontSelected)
 
 public:
     /**

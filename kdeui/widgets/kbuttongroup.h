@@ -42,7 +42,7 @@ class KDEUI_EXPORT KButtonGroup : public QGroupBox
 {
     Q_OBJECT
 
-    Q_PROPERTY(int current READ selected WRITE setSelected NOTIFY changed USER true)
+    Q_PROPERTY(int current READ selected WRITE setSelected NOTIFY changed)
 
 public:
     /**

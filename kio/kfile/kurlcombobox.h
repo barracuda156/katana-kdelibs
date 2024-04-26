@@ -47,8 +47,8 @@
 class KIO_EXPORT KUrlComboBox : public KComboBox
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList urls READ urls WRITE setUrls DESIGNABLE true)
-    Q_PROPERTY(int maxItems READ maxItems WRITE setMaxItems DESIGNABLE true)
+    Q_PROPERTY(QStringList urls READ urls WRITE setUrls)
+    Q_PROPERTY(int maxItems READ maxItems WRITE setMaxItems)
 
 public:
     /**

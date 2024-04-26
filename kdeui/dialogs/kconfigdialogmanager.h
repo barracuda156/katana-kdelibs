@@ -49,7 +49,7 @@ class KConfigSkeletonItem;
  * New widgets can be added to the map using the static functions propertyMap() and
  * changedMap().  Note that you can't just add any class.  The class must have a 
  * matching Q_PROPERTY(...) macro defined, and a signal which emitted when the
- * property changed. Note: by default, the property which defined as "USER true" 
+ * property changed. Note: by default, the property which defined as "kcfg_property" 
  * is used.
  *
  * For example (note that KColorButton is already added and it doesn't need to
@@ -57,7 +57,7 @@ class KConfigSkeletonItem;
  *
  * kcolorbutton.h defines the following property:
  * \code
- * Q_PROPERTY( QColor color READ color WRITE setColor USER true )
+ * Q_PROPERTY( QColor color READ color WRITE setColor )
  * \endcode
  * and signal:
  * \code
@@ -70,8 +70,8 @@ class KConfigSkeletonItem;
  * KConfigDialogManager::changedMap()->insert("KColorButton", SIGNAL(changed(const QColor &)));
  * \endcode
  *
- * If you want to use a widget's property that is not the USER property,
- * you can define which property to use in the widget's kcfg_property:
+ * If you want to use a widget's property define which property to use in the widget's
+ * kcfg_property:
  * \code
  * KUrlRequester *myWidget = new KUrlRequester;
  * myWidget->setProperty("kcfg_property", QByteArray("text"));
@@ -208,18 +208,10 @@ protected:
    * widget that are known.
    * @return bool - If a widget was set to something other than its default.
    */
-  bool parseChildren(const QWidget *widget, bool trackChanges);
-
-  /**
-   * Finds the USER property name using Qt's MetaProperty system, and caches
-   * it in the property map (the cache could be retrieved by propertyMap() ).
-   */
-  QByteArray getUserProperty(const QWidget *widget) const;
 
     /**
      * Find the property to use for a widget by querying the kcfg_property
-     * property of the widget. Like a widget can use a property other than the
-     * USER property.
+     * property of the widget.
      * @since 4.3
      */
     QByteArray getCustomProperty(const QWidget *widget) const;

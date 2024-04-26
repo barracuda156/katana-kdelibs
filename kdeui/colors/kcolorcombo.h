@@ -44,7 +44,7 @@ class KColorComboPrivate;
 class KDEUI_EXPORT KColorCombo : public QComboBox
 {
     Q_OBJECT
-    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY activated USER true)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY activated)
 
 public:
     /**

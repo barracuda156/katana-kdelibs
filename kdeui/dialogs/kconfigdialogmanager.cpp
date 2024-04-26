@@ -398,35 +398,6 @@ void KConfigDialogManager::updateSettings()
     }
 }
 
-QByteArray KConfigDialogManager::getUserProperty(const QWidget *widget) const
-{
-  if (!s_propertyMap->contains(widget->metaObject()->className())) {
-    const QMetaObject *metaObject = widget->metaObject();
-    const QMetaProperty user = metaObject->userProperty();
-    if ( user.isValid() ) {
-        s_propertyMap->insert( widget->metaObject()->className(), user.name() );
-        //kDebug(s_kconfigdialogmanagerarea) << "class name: '" << widget->metaObject()->className()
-        //<< " 's USER property: " << metaProperty.name();
-    }
-    else {
-        return QByteArray(); //no USER property
-    }
-  }
-  const QComboBox *cb = qobject_cast<const QComboBox *>(widget);
-  if (cb) {
-    const char *qcomboUserPropertyName = cb->QComboBox::metaObject()->userProperty().name();
-    const int qcomboUserPropertyIndex = qcomboUserPropertyName ? cb->QComboBox::metaObject()->indexOfProperty(qcomboUserPropertyName) : -1;
-    const char *widgetUserPropertyName = widget->metaObject()->userProperty().name();
-    const int widgetUserPropertyIndex = widgetUserPropertyName ? cb->metaObject()->indexOfProperty(widgetUserPropertyName) : -1;
-
-    if (qcomboUserPropertyIndex == widgetUserPropertyIndex) {
-        return QByteArray(); // use the q/kcombobox special code
-    }
-  }
-
-  return s_propertyMap->value( widget->metaObject()->className() );
-}
-
 QByteArray KConfigDialogManager::getCustomProperty(const QWidget *widget) const
 {
     QVariant prop(widget->property("kcfg_property"));
@@ -452,11 +423,8 @@ void KConfigDialogManager::setProperty(QWidget *w, const QVariant &v)
     return;
   }*/
 
-    QByteArray userproperty = getCustomProperty(w);
-    if (userproperty.isEmpty()) {
-        userproperty = getUserProperty(w);
-    }
-    if (userproperty.isEmpty()) {
+    QByteArray customproperty = getCustomProperty(w);
+    if (customproperty.isEmpty()) {
         QComboBox *cb = qobject_cast<QComboBox *>(w);
         if (cb) {
             if (cb->isEditable()) {
@@ -472,12 +440,12 @@ void KConfigDialogManager::setProperty(QWidget *w, const QVariant &v)
             return;
         }
     }
-    if (userproperty.isEmpty()) {
+    if (customproperty.isEmpty()) {
         kWarning(s_kconfigdialogmanagerarea) << w->metaObject()->className() << " widget not handled!";
         return;
     }
 
-    w->setProperty(userproperty, v);
+    w->setProperty(customproperty, v);
 }
 
 QVariant KConfigDialogManager::property(QWidget *w) const
@@ -486,11 +454,8 @@ QVariant KConfigDialogManager::property(QWidget *w) const
   if (bg && bg->checkedButton())
     return QVariant(bg->id(bg->checkedButton()));*/
 
-    QByteArray userproperty = getCustomProperty(w);
-    if (userproperty.isEmpty()) {
-        userproperty = getUserProperty(w);
-    }
-    if (userproperty.isEmpty()) {
+    QByteArray customproperty = getCustomProperty(w);
+    if (customproperty.isEmpty()) {
         QComboBox *cb = qobject_cast<QComboBox *>(w);
         if (cb) {
             if (cb->isEditable()) {
@@ -500,12 +465,12 @@ QVariant KConfigDialogManager::property(QWidget *w) const
             }
         }
     }
-    if (userproperty.isEmpty()) {
+    if (customproperty.isEmpty()) {
         kWarning(s_kconfigdialogmanagerarea) << w->metaObject()->className() << " widget not handled!";
         return QVariant();
     }
 
-    return w->property(userproperty);
+    return w->property(customproperty);
 }
 
 bool KConfigDialogManager::hasChanged() const
