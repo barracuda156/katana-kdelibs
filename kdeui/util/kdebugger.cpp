@@ -47,6 +47,14 @@ static QString kObjectString(const QObject *object)
     return QString::number(quintptr(object), 16);
 }
 
+static void kSetPropertiesHeaders(QTableWidget *propertieswidget)
+{
+    const QStringList tableheaders = QStringList()
+        << i18n("Property")
+        << i18n("Value");
+    propertieswidget->setHorizontalHeaderLabels(tableheaders);
+}
+
 class KDebuggerPrivate : public QObject
 {
     Q_OBJECT
@@ -263,10 +271,7 @@ void KDebuggerPrivate::slotItemSelectionChanged()
     propertieswidget->clear();
     propertieswidget->blockSignals(true);
     // this has to be done after every clear
-    const QStringList tableheaders = QStringList()
-        << i18n("Property")
-        << i18n("Value");
-    propertieswidget->setHorizontalHeaderLabels(tableheaders);
+    kSetPropertiesHeaders(propertieswidget);
     int propertiesrowcount = 0;
     const QMetaObject* metaobject = m_object->metaObject();
     for (int i = 0; i < metaobject->propertyCount(); i++) {
@@ -325,6 +330,8 @@ KDebugger::KDebugger(QWidget *parent)
     d->mainlayout->addWidget(d->objectsrefreshbutton, 0, 1, 1, 1);
 
     d->objectswidget = new QTreeWidget(d->mainwidget);
+    QHeaderView* objectsheader = d->objectswidget->header();
+    objectsheader->setVisible(false);
     d->objectssearchline->addTreeWidget(d->objectswidget);
     d->mainlayout->addWidget(d->objectswidget, 1, 0, 1, 2);
 
@@ -339,6 +346,7 @@ KDebugger::KDebugger(QWidget *parent)
     d->propertieswidget->setSelectionMode(QAbstractItemView::SingleSelection);
     d->propertieswidget->setSelectionBehavior(QAbstractItemView::SelectItems);
     d->propertieswidget->setColumnCount(2);
+    kSetPropertiesHeaders(d->propertieswidget);
     QHeaderView* verticalheader = d->propertieswidget->verticalHeader();
     verticalheader->setVisible(false);
     QHeaderView* horizontalheader = d->propertieswidget->horizontalHeader();
