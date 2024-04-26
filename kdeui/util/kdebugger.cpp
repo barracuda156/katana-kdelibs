@@ -278,12 +278,10 @@ void KDebuggerPrivate::slotItemSelectionChanged()
         QTableWidgetItem* propertyvalueitem = new QTableWidgetItem(metaproperty.read(m_object).toString());
         Qt::ItemFlags propertyvalueflags = (Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         if (metaproperty.isWritable()) {
-            // TODO: implement editing
             propertyvalueflags |= Qt::ItemIsEditable;
         }
         propertyvalueitem->setFlags(propertyvalueflags);
-        propertyvalueitem->setData(Qt::UserRole, QVariant::fromValue(object));
-        propertyvalueitem->setData(Qt::UserRole + 1, i);
+        propertyvalueitem->setData(Qt::UserRole, i);
         propertieswidget->setItem(propertiesrowcount, 1, propertyvalueitem);
         propertiesrowcount++;
     }
@@ -294,14 +292,13 @@ void KDebuggerPrivate::slotItemSelectionChanged()
 
 void KDebuggerPrivate::slotItemChanged(QTableWidgetItem *propertyvalueitem)
 {
-    QObject* object = qvariant_cast<QObject*>(propertyvalueitem->data(Qt::UserRole));
-    if (!object) {
+    if (!m_object) {
         return;
     }
     const int propertyindex = propertyvalueitem->data(Qt::UserRole + 1).toInt();
     const QMetaObject* metaobject = m_object->metaObject();
     QMetaProperty metaproperty = metaobject->property(propertyindex);
-    metaproperty.write(object, propertyvalueitem->text());
+    metaproperty.write(m_object, propertyvalueitem->text());
 }
 
 
