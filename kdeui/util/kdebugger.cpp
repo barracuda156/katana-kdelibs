@@ -304,7 +304,7 @@ void KDebuggerPrivate::slotItemChanged(QTableWidgetItem *propertyvalueitem)
     if (!m_object) {
         return;
     }
-    const int propertyindex = propertyvalueitem->data(Qt::UserRole + 1).toInt();
+    const int propertyindex = propertyvalueitem->data(Qt::UserRole).toInt();
     const QMetaObject* metaobject = m_object->metaObject();
     QMetaProperty metaproperty = metaobject->property(propertyindex);
     metaproperty.write(m_object, propertyvalueitem->text());
