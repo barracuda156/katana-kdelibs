@@ -391,7 +391,7 @@ void KActionCollection::readSettings(KConfigGroup *config)
             if (!entry.isEmpty()) {
                 kaction->setShortcut(QKeySequence(entry), KAction::ActiveShortcut);
             } else {
-                kaction->setShortcut(kaction->shortcut(KAction::DefaultShortcut));
+                kaction->setShortcut(kaction->shortcut(KAction::DefaultShortcut), KAction::ActiveShortcut);
             }
         }
 
