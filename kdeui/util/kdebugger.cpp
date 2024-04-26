@@ -65,6 +65,7 @@ public:
 public Q_SLOTS:
     void slotUpdateObjects();
     void slotItemSelectionChanged();
+    void slotItemChanged(QTableWidgetItem *propertyvalueitem);
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) final;
@@ -260,6 +261,7 @@ void KDebuggerPrivate::slotItemSelectionChanged()
     m_object->installEventFilter(this);
 
     propertieswidget->clear();
+    propertieswidget->blockSignals(true);
     // this has to be done after every clear
     const QStringList tableheaders = QStringList()
         << i18n("Property")
@@ -280,11 +282,26 @@ void KDebuggerPrivate::slotItemSelectionChanged()
             propertyvalueflags |= Qt::ItemIsEditable;
         }
         propertyvalueitem->setFlags(propertyvalueflags);
+        propertyvalueitem->setData(Qt::UserRole, QVariant::fromValue(object));
+        propertyvalueitem->setData(Qt::UserRole + 1, i);
         propertieswidget->setItem(propertiesrowcount, 1, propertyvalueitem);
         propertiesrowcount++;
     }
     // TODO: dynamic properties
     // qDebug() << Q_FUNC_INFO << m_object->dynamicPropertyNames();
+    propertieswidget->blockSignals(false);
+}
+
+void KDebuggerPrivate::slotItemChanged(QTableWidgetItem *propertyvalueitem)
+{
+    QObject* object = qvariant_cast<QObject*>(propertyvalueitem->data(Qt::UserRole));
+    if (!object) {
+        return;
+    }
+    const int propertyindex = propertyvalueitem->data(Qt::UserRole + 1).toInt();
+    const QMetaObject* metaobject = m_object->metaObject();
+    QMetaProperty metaproperty = metaobject->property(propertyindex);
+    metaproperty.write(object, propertyvalueitem->text());
 }
 
 
@@ -342,6 +359,10 @@ KDebugger::KDebugger(QWidget *parent)
     connect(
         d->objectswidget, SIGNAL(itemSelectionChanged()),
         d, SLOT(slotItemSelectionChanged())
+    );
+    connect(
+        d->propertieswidget, SIGNAL(itemChanged(QTableWidgetItem*)),
+        d, SLOT(slotItemChanged(QTableWidgetItem*))
     );
 }
 
