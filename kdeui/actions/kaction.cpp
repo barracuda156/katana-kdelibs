@@ -43,11 +43,11 @@
 
 KActionPrivate::KActionPrivate(KAction *q_ptr)
     : componentData(KGlobal::mainComponent()),
+    isShortcutConfigurable(true),
     globalShortcutEnabled(false),
     q(q_ptr)
 {
     QObject::connect(q, SIGNAL(triggered(bool)), q, SLOT(slotTriggered()));
-    q->setProperty("isShortcutConfigurable", true);
 }
 
 void KActionPrivate::slotTriggered()
@@ -113,12 +113,12 @@ KAction::~KAction()
 
 bool KAction::isShortcutConfigurable() const
 {
-    return property("isShortcutConfigurable").toBool();
+    return d->isShortcutConfigurable;
 }
 
 void KAction::setShortcutConfigurable(bool b)
 {
-    setProperty("isShortcutConfigurable", b);
+    d->isShortcutConfigurable = b;
 }
 
 QKeySequence KAction::shortcut(ShortcutTypes type) const

@@ -42,6 +42,7 @@ public:
     QKeySequence globalShortcut;
     QKeySequence defaultGlobalShortcut;
 
+    bool isShortcutConfigurable;
     bool globalShortcutEnabled;
     KAction *q;
 };
