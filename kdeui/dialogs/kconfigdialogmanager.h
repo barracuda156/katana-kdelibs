@@ -208,6 +208,7 @@ protected:
    * widget that are known.
    * @return bool - If a widget was set to something other than its default.
    */
+    bool parseChildren(const QWidget *widget, bool trackChanges);
 
     /**
      * Find the property to use for a widget by querying the kcfg_property
