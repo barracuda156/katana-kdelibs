@@ -318,13 +318,6 @@ install(
 
 install(
     FILES
-    KAccelGen/Deref
-    KAccelGen/Deref_Key
-    DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/KDE/KAccelGen
-)
-
-install(
-    FILES
     KIO/AuthInfo
     KIO/ChmodJob
     KIO/Connection

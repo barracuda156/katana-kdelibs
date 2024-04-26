@@ -391,7 +391,6 @@ install(
     spell/kspellhighlighter.h
     spell/kspelldictionarycombobox.h
     spell/kspellconfigwidget.h
-    util/kaccelgen.h
     util/kcompletion.h
     util/kcrash.h
     util/kcursor.h
