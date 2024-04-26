@@ -40,6 +40,10 @@ static QString kObjectString(const QObject *object)
     if (!objectname.isEmpty()) {
         return objectname;
     }
+    const QString classname = object->metaObject()->className();
+    if (!classname.isEmpty()) {
+        return classname;
+    }
     return QString::number(quintptr(object), 16);
 }
 
