@@ -82,6 +82,7 @@ private:
     void addObject(QObject *object, QTreeWidgetItem *parentitem);
 
     QPointer<QObject> m_object;
+    QMap<QObject*,QPointer<QObject>> m_objects;
 };
 
 KDebuggerPrivate::KDebuggerPrivate(QObject *parent)
@@ -103,6 +104,7 @@ void KDebuggerPrivate::addObject(QObject *object, QTreeWidgetItem *parentitem)
     objectitem->setText(0, kObjectString(object));
     objectitem->setData(0, Qt::UserRole, QVariant::fromValue(object));
     objectitem->setExpanded(true);
+    m_objects.insert(object, object);
     foreach (QObject *childobject, object->children()) {
         addObject(childobject, objectitem);
     }
@@ -243,6 +245,7 @@ bool KDebuggerPrivate::eventFilter(QObject *object, QEvent *event)
 void KDebuggerPrivate::slotUpdateObjects()
 {
     objectswidget->clear();
+    m_objects.clear();
     addObject(qApp, objectswidget->invisibleRootItem());
     foreach (QWidget *widget, QApplication::allWidgets()) {
         addObject(widget, objectswidget->invisibleRootItem());
@@ -257,21 +260,22 @@ void KDebuggerPrivate::slotItemSelectionChanged()
     }
     QTreeWidgetItem* objectitem = selectedobjects.first();
     QObject* object = qvariant_cast<QObject*>(objectitem->data(0, Qt::UserRole));
-    if (!object) {
-        return;
-    }
     if (m_object) {
         m_object->removeEventFilter(this);
     }
-    m_object = object;
-    kDebug() << "watching" << m_object;
+    m_object = m_objects.value(object);
     eventsedit->clear();
-    m_object->installEventFilter(this);
-
     propertieswidget->clear();
-    propertieswidget->blockSignals(true);
+    propertieswidget->setRowCount(0);
     // this has to be done after every clear
     kSetPropertiesHeaders(propertieswidget);
+    if (!m_object) {
+        return;
+    }
+    kDebug() << "watching" << m_object;
+    m_object->installEventFilter(this);
+
+    propertieswidget->blockSignals(true);
     int propertiesrowcount = 0;
     const QMetaObject* metaobject = m_object->metaObject();
     for (int i = 0; i < metaobject->propertyCount(); i++) {
