@@ -687,7 +687,7 @@ void KXMLGUIFactoryPrivate::applyShortcutScheme(KXMLGUIClient *client, const QLi
                 continue;
             }
             if (action) {
-                action->setProperty("shortcut", QKeySequence());
+                action->setShortcut(QKeySequence());
             }
         }
     } else {
@@ -704,7 +704,7 @@ void KXMLGUIFactoryPrivate::applyShortcutScheme(KXMLGUIClient *client, const QLi
                 }
             }
             if (action) {
-                action->setProperty("shortcut", QKeySequence());
+                action->setShortcut(QKeySequence());
             }
         }
     }
