@@ -318,18 +318,8 @@ bool KKeySequenceWidgetPrivate::conflictWithGlobalShortcuts(const QKeySequence &
     QHash<QKeySequence, QList<KGlobalShortcutInfo> > others;
     for (int i = 0; i < keySequence.count(); ++i) {
         QKeySequence tmp(keySequence[i]);
-        if (!kglobalaccel->isGlobalShortcutAvailable(tmp, componentName)) {
+        if (!kglobalaccel->isGlobalShortcutAvailable(tmp, associatedAction)) {
             QList<KGlobalShortcutInfo> globalinfo = kglobalaccel->getGlobalShortcutsByKey(tmp);
-            if (associatedAction) {
-                const QString actionObjectName = associatedAction->objectName();
-                QMutableListIterator<KGlobalShortcutInfo> iter(globalinfo);
-                while (iter.hasNext()) {
-                    iter.next();
-                    if (iter.value().contextFriendlyName == actionObjectName) {
-                        iter.remove();
-                    }
-                }
-            }
             if (!globalinfo.isEmpty()) {
                 others.insert(tmp, globalinfo);
             }
@@ -346,7 +336,7 @@ bool KKeySequenceWidgetPrivate::conflictWithGlobalShortcuts(const QKeySequence &
     // error it just silently fails. So be nice because this is
     // most likely the first action that is done in the slot
     // listening to keySequenceChanged().
-    kglobalaccel->stealShortcutSystemwide(keySequence);
+    kglobalaccel->stealShortcutSystemwide(keySequence, associatedAction);
     return false;
 }
 

@@ -274,9 +274,12 @@ QList<KGlobalShortcutInfo> KGlobalAccel::getGlobalShortcutsByKey(const QKeySeque
     return result;
 }
 
-bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QString &comp)
+bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QAction *exception)
 {
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+        if (shortcut.action == exception) {
+            continue;
+        }
         if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
             return false;
         }
@@ -284,15 +287,17 @@ bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QStr
     return true;
 }
 
-void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq)
+void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq, const QAction *exception)
 {
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+        if (shortcut.action == exception) {
+            continue;
+        }
         if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
             // TODO: in case of partial match this can steal only the matching one
             kDebug(s_kglobalaccelarea) << "stealing shortcut" << seq << "from" << shortcut.action;
-            shortcut.action->setGlobalShortcut(QKeySequence());
+            shortcut.action->setGlobalShortcut(QKeySequence(), KAction::ActiveShortcut);
             d->remove(shortcut.action);
-            break;
         }
     }
 }

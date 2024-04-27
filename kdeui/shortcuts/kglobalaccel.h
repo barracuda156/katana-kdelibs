@@ -38,12 +38,12 @@ struct KGlobalShortcutInfo
 /**
  * @short Configurable global shortcut support
  *
- * KGlobalAccel allows you to have global accelerators that are independent of
- * the focused window.  Unlike regular shortcuts, the application's window does not need focus
- * for them to be activated.
+ * KGlobalAccel allows you to have global accelerators that are independent of the focused window.
+ * Unlike regular shortcuts, the application's window does not need focus for them to be activated.
  *
- * @see KKeyChooser
- * @see KKeyDialog
+ * @see KAction
+ * @see KKeySequenceWidget
+ * @see KShortcutsEditor
  */
 class KDEUI_EXPORT KGlobalAccel : public QObject
 {
@@ -62,39 +62,38 @@ public:
     static KGlobalAccel *self();
 
     /**
-     * Returns a list of global shortcuts registered for the shortcut @seq.
+     * Returns a list of global shortcuts registered for the shortcut @p seq.
      *
-     * If the list contains more that one entry it means the component
-     * that registered the shortcuts uses global shortcut contexts. All
-     * returned shortcuts belong to the same component.
+     * If the list contains more that one entry it means the component that registered the
+     * shortcuts uses global shortcut contexts. All returned shortcuts belong to the same
+     * component.
      *
      * @since 4.2
      */
     QList<KGlobalShortcutInfo> getGlobalShortcutsByKey(const QKeySequence &seq);
 
     /**
-     * Check if the shortcut @seq is available for the @p component. The
-     * component is only of interest if the current application uses global shortcut
-     * contexts. In that case a global shortcut by @p component in an inactive
-     * global shortcut contexts does not block the @p seq for us.
+     * Check if the shortcut @p seq is available, when checking for conflicts the action specified
+     * as @p exception is not considered.
      *
      * @since 4.2
      */
     bool isGlobalShortcutAvailable(const QKeySequence &seq,
-                                   const QString &component = QString());
+                                   const QAction *exception = nullptr);
 
     /**
-     * Take away the given shortcut from the named action it belongs to.
-     * This applies to all actions with global shortcuts in any KDE application.
+     * Take away the given shortcut from the named action it belongs to. This applies to all
+     * actions with global shortcuts in any KDE application except the @p exception if not null.
      *
      * @see promptStealShortcutSystemwide()
      */
-    void stealShortcutSystemwide(const QKeySequence &seq);
+    void stealShortcutSystemwide(const QKeySequence &seq,
+                                 const QAction *exception = nullptr);
 
     /**
-     * Show a messagebox to inform the user that a global shorcut is already occupied,
-     * and ask to take it away from its current action(s). This is GUI only, so nothing will
-     * be actually changed.
+     * Show a messagebox to inform the user that a global shorcut is already occupied and ask to
+     * take it away from its current action(s). This is GUI only, so nothing will be actually
+     * changed.
      *
      * @see stealShortcutSystemwide()
      *
