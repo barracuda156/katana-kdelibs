@@ -22,12 +22,15 @@
 #include "kpushbutton.h"
 #include "ktabwidget.h"
 #include "ktextedit.h"
+#include "kvbox.h"
+#include "ktimeedit.h"
 #include "klocale.h"
 #include "kdebug.h"
 
 #include <QApplication>
 #include <QGridLayout>
 #include <QTreeWidget>
+#include <QCheckBox>
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QMetaProperty>
@@ -536,6 +539,12 @@ public:
     KTabWidget* tabwidget;
     KTextEdit* eventsedit;
     QTableWidget* propertieswidget;
+    KVBox* fuzzbox;
+    QCheckBox* threadfuzzbox;
+    QCheckBox* propertyfuzzbox;
+    KTimeEdit* durationfuzzedit;
+    KPushButton* fuzzbutton;
+    KTextEdit* fuzzedit;
 
 public Q_SLOTS:
     void slotUpdateObjects();
@@ -561,7 +570,13 @@ KDebuggerPrivate::KDebuggerPrivate(QObject *parent)
     objectswidget(nullptr),
     tabwidget(nullptr),
     eventsedit(nullptr),
-    propertieswidget(nullptr)
+    propertieswidget(nullptr),
+    fuzzbox(nullptr),
+    threadfuzzbox(nullptr),
+    propertyfuzzbox(nullptr),
+    durationfuzzedit(nullptr),
+    fuzzbutton(nullptr),
+    fuzzedit(nullptr)
 {
 }
 
@@ -835,6 +850,22 @@ KDebugger::KDebugger(QWidget *parent)
     horizontalheader->setResizeMode(0, QHeaderView::Stretch);
     horizontalheader->setResizeMode(1, QHeaderView::Stretch);
     d->tabwidget->addTab(d->propertieswidget, KIcon("document-properties"), i18n("Properties"));
+
+    d->fuzzbox = new KVBox(d->tabwidget);
+    d->threadfuzzbox = new QCheckBox(d->fuzzbox);
+    d->threadfuzzbox->setText(i18n("Thread fuzz"));
+    d->threadfuzzbox->setChecked(true);
+    d->propertyfuzzbox = new QCheckBox(d->fuzzbox);
+    d->propertyfuzzbox->setText(i18n("Property fuzz"));
+    d->propertyfuzzbox->setChecked(true);
+    d->durationfuzzedit = new KTimeEdit(d->fuzzbox);
+    d->durationfuzzedit->setMinimumTime(QTime(0, 0, 1));
+    d->fuzzbutton = new KPushButton(d->fuzzbox);
+    d->fuzzbutton->setText(i18n("Start"));
+    d->fuzzbutton->setIcon(KIcon("system-run"));
+    d->fuzzedit = new KTextEdit(d->fuzzbox);
+    d->fuzzedit->setReadOnly(false);
+    d->tabwidget->addTab(d->fuzzbox, KIcon("debug-run"), i18n("Fuzz"));
 
     KConfigGroup kconfiggroup(KGlobal::config(), "Debugger");
     restoreDialogSize(kconfiggroup);
