@@ -289,6 +289,7 @@ void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq)
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
         if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
             // TODO: in case of partial match this can steal only the matching one
+            kDebug(s_kglobalaccelarea) << "stealing shortcut" << seq << "from" << shortcut.action;
             shortcut.action->setGlobalShortcut(QKeySequence());
             d->remove(shortcut.action);
             break;
