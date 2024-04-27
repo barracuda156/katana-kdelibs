@@ -24,6 +24,8 @@
 #include "ktextedit.h"
 #include "kvbox.h"
 #include "ktimeedit.h"
+#include "kthreadpool.h"
+#include "krandom.h"
 #include "klocale.h"
 #include "kdebug.h"
 
@@ -34,8 +36,19 @@
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QMetaProperty>
+#include <QElapsedTimer>
+#include <QTimer>
 
 Q_DECLARE_METATYPE(QObject*);
+
+// any event that does not require specialized event class for now and may not cause havoc while
+// testing the fuzzer
+static const QEvent::Type fuzzeventtypes[] =
+{
+    QEvent::Show,
+    QEvent::Hide
+};
+static const int fuzzeventtypessize = 2;
 
 static QString kObjectString(const QObject *object)
 {
@@ -525,6 +538,67 @@ static QString kEventString(const QEvent *event)
     return result;
 }
 
+class KDebuggerFuzzer : public QThread
+{
+    Q_OBJECT
+public:
+    KDebuggerFuzzer(QObject *parent,
+                    QObject *object, const qint64 duration,
+                    const bool fuzzevents, const bool fuzzproperties);
+
+Q_SIGNALS:
+    void message(const QString &message);
+
+protected:
+    void run() final;
+
+private:
+    QPointer<QObject> m_object;
+    const qint64 m_duration;
+    const bool m_fuzzevents;
+    const bool m_fuzzproperties;
+};
+
+KDebuggerFuzzer::KDebuggerFuzzer(QObject *parent,
+                                 QObject *object, const qint64 duration,
+                                 const bool fuzzevents, const bool fuzzproperties)
+    : QThread(parent),
+    m_object(object),
+    m_duration(duration),
+    m_fuzzevents(fuzzevents),
+    m_fuzzproperties(fuzzproperties)
+{
+}
+
+void KDebuggerFuzzer::run()
+{
+    QString fuzzmessage = QLatin1String("Fuzzing ");
+    fuzzmessage.append(kObjectString(m_object));
+    fuzzmessage.append(QLatin1String(" for "));
+    fuzzmessage.append(QString::number(m_duration));
+    fuzzmessage.append(QLatin1String("ms"));
+    emit message(fuzzmessage);
+    QElapsedTimer elapsedtimer;
+    elapsedtimer.restart();
+    while (m_object && elapsedtimer.elapsed() < m_duration) {
+        if (m_fuzzevents) {
+            // send a random event
+            QEvent fuzzevent(fuzzeventtypes[KRandom::randomMax(fuzzeventtypessize)]);
+            QString eventmessage = QLatin1String("Sending event - ");
+            eventmessage.append(kEventString(&fuzzevent));
+            emit message(eventmessage);
+            //QApplication::sendEvent(m_object, &fuzzevent);
+        }
+
+        // TODO: set a random property to random value
+
+        QThread::msleep(200);
+    }
+    fuzzmessage = QLatin1String("Done fuzzing ");
+    fuzzmessage.append(kObjectString(m_object));
+    emit message(fuzzmessage);
+}
+
 class KDebuggerPrivate : public QObject
 {
     Q_OBJECT
@@ -541,15 +615,20 @@ public:
     QTableWidget* propertieswidget;
     KVBox* fuzzbox;
     QCheckBox* threadfuzzbox;
+    QCheckBox* eventfuzzbox;
     QCheckBox* propertyfuzzbox;
     KTimeEdit* durationfuzzedit;
     KPushButton* fuzzbutton;
     KTextEdit* fuzzedit;
+    KThreadPool* fuzzpool;
 
 public Q_SLOTS:
     void slotUpdateObjects();
     void slotItemSelectionChanged();
     void slotItemChanged(QTableWidgetItem *propertyvalueitem);
+    void slotFuzzReleased();
+    void slotCheckFuzzState();
+    void slotMessage(const QString &message);
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) final;
@@ -559,6 +638,7 @@ private:
 
     QPointer<QObject> m_object;
     QMap<QObject*,QPointer<QObject>> m_objects;
+    QTimer* m_fuzzchecktimer;
 };
 
 KDebuggerPrivate::KDebuggerPrivate(QObject *parent)
@@ -573,11 +653,20 @@ KDebuggerPrivate::KDebuggerPrivate(QObject *parent)
     propertieswidget(nullptr),
     fuzzbox(nullptr),
     threadfuzzbox(nullptr),
+    eventfuzzbox(nullptr),
     propertyfuzzbox(nullptr),
     durationfuzzedit(nullptr),
     fuzzbutton(nullptr),
-    fuzzedit(nullptr)
+    fuzzedit(nullptr),
+    fuzzpool(nullptr),
+    m_fuzzchecktimer(nullptr)
 {
+    m_fuzzchecktimer = new QTimer(this);
+    m_fuzzchecktimer->setInterval(200);
+    connect(
+        m_fuzzchecktimer, SIGNAL(timeout()),
+        this, SLOT(slotCheckFuzzState())
+    );
 }
 
 void KDebuggerPrivate::addObject(QObject *object, QTreeWidgetItem *parentitem)
@@ -589,6 +678,32 @@ void KDebuggerPrivate::addObject(QObject *object, QTreeWidgetItem *parentitem)
     m_objects.insert(object, object);
     foreach (QObject *childobject, object->children()) {
         addObject(childobject, objectitem);
+    }
+}
+
+void KDebuggerPrivate::slotCheckFuzzState()
+{
+    if (fuzzpool->activeThreadCount() > 0) {
+        objectssearchline->setEnabled(false);
+        objectswidget->setEnabled(false);
+        propertieswidget->setEnabled(false);
+        threadfuzzbox->setEnabled(false);
+        eventfuzzbox->setEnabled(false);
+        propertyfuzzbox->setEnabled(false);
+        durationfuzzedit->setEnabled(false);
+        fuzzbutton->setText(i18n("Stop"));
+        fuzzbutton->setIcon(KIcon("process-stop"));
+    } else {
+        objectssearchline->setEnabled(true);
+        objectswidget->setEnabled(true);
+        propertieswidget->setEnabled(true);
+        threadfuzzbox->setEnabled(true);
+        eventfuzzbox->setEnabled(true);
+        propertyfuzzbox->setEnabled(true);
+        durationfuzzedit->setEnabled(true);
+        fuzzbutton->setText(i18n("Start"));
+        fuzzbutton->setIcon(KIcon("system-run"));
+        m_fuzzchecktimer->stop();
     }
 }
 
@@ -797,6 +912,38 @@ void KDebuggerPrivate::slotItemChanged(QTableWidgetItem *propertyvalueitem)
     metaproperty.write(m_object, propertyvalueitem->text());
 }
 
+void KDebuggerPrivate::slotFuzzReleased()
+{
+    if (threadfuzzbox->checkState() == Qt::Unchecked) {
+        fuzzpool->setMaxThreadCount(1);
+    } else {
+        fuzzpool->setMaxThreadCount(QThread::idealThreadCount());
+    }
+
+    fuzzedit->clear();
+    for (int i = 0; i < fuzzpool->maxThreadCount(); i++) {
+        const qint64 duration = (QTime(0, 0, 0).secsTo(durationfuzzedit->time()) * 1000);
+        const bool fuzzevents = (eventfuzzbox->checkState() != Qt::Unchecked);
+        const bool fuzzproperties = (propertyfuzzbox->checkState() != Qt::Unchecked);
+        KDebuggerFuzzer* fuzzer = new KDebuggerFuzzer(
+            fuzzpool,
+            m_object, duration, fuzzevents, fuzzproperties
+        );
+        connect(
+            fuzzer, SIGNAL(message(QString)),
+            this, SLOT(slotMessage(QString))
+        );
+        fuzzpool->start(fuzzer);
+    }
+
+    m_fuzzchecktimer->start();
+}
+
+void KDebuggerPrivate::slotMessage(const QString &message)
+{
+    fuzzedit->append(message);
+}
+
 
 KDebugger::KDebugger(QWidget *parent)
     : KDialog(parent),
@@ -855,6 +1002,9 @@ KDebugger::KDebugger(QWidget *parent)
     d->threadfuzzbox = new QCheckBox(d->fuzzbox);
     d->threadfuzzbox->setText(i18n("Thread fuzz"));
     d->threadfuzzbox->setChecked(true);
+    d->eventfuzzbox = new QCheckBox(d->fuzzbox);
+    d->eventfuzzbox->setText(i18n("Event fuzz"));
+    d->eventfuzzbox->setChecked(true);
     d->propertyfuzzbox = new QCheckBox(d->fuzzbox);
     d->propertyfuzzbox->setText(i18n("Property fuzz"));
     d->propertyfuzzbox->setChecked(true);
@@ -866,6 +1016,8 @@ KDebugger::KDebugger(QWidget *parent)
     d->fuzzedit = new KTextEdit(d->fuzzbox);
     d->fuzzedit->setReadOnly(false);
     d->tabwidget->addTab(d->fuzzbox, KIcon("debug-run"), i18n("Fuzz"));
+
+    d->fuzzpool = new KThreadPool(this);
 
     KConfigGroup kconfiggroup(KGlobal::config(), "Debugger");
     restoreDialogSize(kconfiggroup);
@@ -879,6 +1031,10 @@ KDebugger::KDebugger(QWidget *parent)
     connect(
         d->propertieswidget, SIGNAL(itemChanged(QTableWidgetItem*)),
         d, SLOT(slotItemChanged(QTableWidgetItem*))
+    );
+    connect(
+        d->fuzzbutton, SIGNAL(released()),
+        d, SLOT(slotFuzzReleased())
     );
 }
 
