@@ -47,6 +47,481 @@ static QString kObjectString(const QObject *object)
     return QString::number(quintptr(object), 16);
 }
 
+static QString kEventString(const QEvent *event)
+{
+    QString result;
+    switch (event->type()) {
+        case QEvent::Timer: {
+            result = QLatin1String("Timer");
+            break;
+        }
+        case QEvent::MouseButtonPress: {
+            result = QLatin1String("MouseButtonPress");
+            break;
+        }
+        case QEvent::MouseButtonRelease: {
+            result = QLatin1String("MouseButtonRelease");
+            break;
+        }
+        case QEvent::MouseButtonDblClick: {
+            result = QLatin1String("MouseButtonDblClick");
+            break;
+        }
+        case QEvent::MouseMove: {
+            result = QLatin1String("MouseMove");
+            break;
+        }
+        case QEvent::KeyPress: {
+            result = QLatin1String("KeyPress");
+            break;
+        }
+        case QEvent::KeyRelease: {
+            result = QLatin1String("KeyRelease");
+            break;
+        }
+        case QEvent::FocusIn: {
+            result = QLatin1String("FocusIn");
+            break;
+        }
+        case QEvent::FocusOut: {
+            result = QLatin1String("FocusOut");
+            break;
+        }
+        case QEvent::Enter: {
+            result = QLatin1String("Enter");
+            break;
+        }
+        case QEvent::Leave: {
+            result = QLatin1String("Leave");
+            break;
+        }
+        case QEvent::Paint: {
+            result = QLatin1String("Paint");
+            break;
+        }
+        case QEvent::Move: {
+            result = QLatin1String("Move");
+            break;
+        }
+        case QEvent::Resize: {
+            result = QLatin1String("Resize");
+            break;
+        }
+        case QEvent::Create: {
+            result = QLatin1String("Create");
+            break;
+        }
+        case QEvent::Destroy: {
+            result = QLatin1String("Destroy");
+            break;
+        }
+        case QEvent::Show: {
+            result = QLatin1String("Show");
+            break;
+        }
+        case QEvent::Hide: {
+            result = QLatin1String("Hide");
+            break;
+        }
+        case QEvent::Close: {
+            result = QLatin1String("Close");
+            break;
+        }
+        case QEvent::Quit: {
+            result = QLatin1String("Quit");
+            break;
+        }
+        case QEvent::ParentChange: {
+            result = QLatin1String("ParentChange");
+            break;
+        }
+        case QEvent::ParentAboutToChange: {
+            result = QLatin1String("ParentAboutToChange");
+            break;
+        }
+        case QEvent::ThreadChange: {
+            result = QLatin1String("ThreadChange");
+            break;
+        }
+        case QEvent::WindowActivate: {
+            result = QLatin1String("WindowActivate");
+            break;
+        }
+        case QEvent::WindowDeactivate: {
+            result = QLatin1String("WindowDeactivate");
+            break;
+        }
+        case QEvent::ShowToParent: {
+            result = QLatin1String("ShowToParent");
+            break;
+        }
+        case QEvent::HideToParent: {
+            result = QLatin1String("HideToParent");
+            break;
+        }
+        case QEvent::Wheel: {
+            result = QLatin1String("Wheel");
+            break;
+        }
+        case QEvent::WindowTitleChange: {
+            result = QLatin1String("WindowTitleChange");
+            break;
+        }
+        case QEvent::WindowIconChange: {
+            result = QLatin1String("WindowIconChange");
+            break;
+        }
+        case QEvent::ApplicationWindowIconChange: {
+            result = QLatin1String("ApplicationWindowIconChange");
+            break;
+        }
+        case QEvent::ApplicationFontChange: {
+            result = QLatin1String("ApplicationFontChange");
+            break;
+        }
+        case QEvent::ApplicationLayoutDirectionChange: {
+            result = QLatin1String("ApplicationLayoutDirectionChange");
+            break;
+        }
+        case QEvent::ApplicationPaletteChange: {
+            result = QLatin1String("ApplicationPaletteChange");
+            break;
+        }
+        case QEvent::PaletteChange: {
+            result = QLatin1String("PaletteChange");
+            break;
+        }
+        case QEvent::Clipboard: {
+            result = QLatin1String("Clipboard");
+            break;
+        }
+        case QEvent::MetaCall: {
+            result = QLatin1String("MetaCall");
+            break;
+        }
+        case QEvent::SockAct: {
+            result = QLatin1String("SockAct");
+            break;
+        }
+        case QEvent::DeferredDelete: {
+            result = QLatin1String("DeferredDelete");
+            break;
+        }
+        case QEvent::DragEnter: {
+            result = QLatin1String("DragEnter");
+            break;
+        }
+        case QEvent::DragMove: {
+            result = QLatin1String("DragMove");
+            break;
+        }
+        case QEvent::DragLeave: {
+            result = QLatin1String("DragLeave");
+            break;
+        }
+        case QEvent::Drop: {
+            result = QLatin1String("Drop");
+            break;
+        }
+        case QEvent::ChildAdded: {
+            result = QLatin1String("ChildAdded");
+            break;
+        }
+        case QEvent::ChildPolished: {
+            result = QLatin1String("ChildPolished");
+            break;
+        }
+        case QEvent::ChildRemoved: {
+            result = QLatin1String("ChildRemoved");
+            break;
+        }
+        case QEvent::ShowWindowRequest: {
+            result = QLatin1String("ShowWindowRequest");
+            break;
+        }
+        case QEvent::PolishRequest: {
+            result = QLatin1String("PolishRequest");
+            break;
+        }
+        case QEvent::Polish: {
+            result = QLatin1String("Polish");
+            break;
+        }
+        case QEvent::LayoutRequest: {
+            result = QLatin1String("LayoutRequest");
+            break;
+        }
+        case QEvent::UpdateRequest: {
+            result = QLatin1String("UpdateRequest");
+            break;
+        }
+        case QEvent::UpdateLater: {
+            result = QLatin1String("UpdateLater");
+            break;
+        }
+        case QEvent::ContextMenu: {
+            result = QLatin1String("ContextMenu");
+            break;
+        }
+        case QEvent::LocaleChange: {
+            result = QLatin1String("LocaleChange");
+            break;
+        }
+        case QEvent::LanguageChange: {
+            result = QLatin1String("LanguageChange");
+            break;
+        }
+        case QEvent::LayoutDirectionChange: {
+            result = QLatin1String("LayoutDirectionChange");
+            break;
+        }
+        case QEvent::Style: {
+            result = QLatin1String("Style");
+            break;
+        }
+        case QEvent::FontChange: {
+            result = QLatin1String("FontChange");
+            break;
+        }
+        case QEvent::EnabledChange: {
+            result = QLatin1String("EnabledChange");
+            break;
+        }
+        case QEvent::ActivationChange: {
+            result = QLatin1String("ActivationChange");
+            break;
+        }
+        case QEvent::StyleChange: {
+            result = QLatin1String("StyleChange");
+            break;
+        }
+        case QEvent::IconTextChange: {
+            result = QLatin1String("IconTextChange");
+            break;
+        }
+        case QEvent::ModifiedChange: {
+            result = QLatin1String("ModifiedChange");
+            break;
+        }
+        case QEvent::MouseTrackingChange: {
+            result = QLatin1String("MouseTrackingChange");
+            break;
+        }
+        case QEvent::WindowBlocked: {
+            result = QLatin1String("WindowBlocked");
+            break;
+        }
+        case QEvent::WindowUnblocked: {
+            result = QLatin1String("WindowUnblocked");
+            break;
+        }
+        case QEvent::WindowStateChange: {
+            result = QLatin1String("WindowStateChange");
+            break;
+        }
+        case QEvent::ToolTip: {
+            result = QLatin1String("ToolTip");
+            break;
+        }
+        case QEvent::WhatsThis: {
+            result = QLatin1String("WhatsThis");
+            break;
+        }
+        case QEvent::StatusTip: {
+            result = QLatin1String("StatusTip");
+            break;
+        }
+        case QEvent::ActionChanged: {
+            result = QLatin1String("ActionChanged");
+            break;
+        }
+        case QEvent::ActionAdded: {
+            result = QLatin1String("ActionAdded");
+            break;
+        }
+        case QEvent::ActionRemoved: {
+            result = QLatin1String("ActionRemoved");
+            break;
+        }
+        case QEvent::Shortcut: {
+            result = QLatin1String("Shortcut");
+            break;
+        }
+        case QEvent::ShortcutOverride: {
+            result = QLatin1String("ShortcutOverride");
+            break;
+        }
+        case QEvent::WhatsThisClicked: {
+            result = QLatin1String("WhatsThisClicked");
+            break;
+        }
+        case QEvent::ApplicationActivate: {
+            result = QLatin1String("ApplicationActivate");
+            break;
+        }
+        case QEvent::ApplicationDeactivate: {
+            result = QLatin1String("ApplicationDeactivate");
+            break;
+        }
+        case QEvent::QueryWhatsThis: {
+            result = QLatin1String("QueryWhatsThis");
+            break;
+        }
+        case QEvent::EnterWhatsThisMode: {
+            result = QLatin1String("EnterWhatsThisMode");
+            break;
+        }
+        case QEvent::LeaveWhatsThisMode: {
+            result = QLatin1String("LeaveWhatsThisMode");
+            break;
+        }
+        case QEvent::ZOrderChange: {
+            result = QLatin1String("ZOrderChange");
+            break;
+        }
+        case QEvent::HoverEnter: {
+            result = QLatin1String("HoverEnter");
+            break;
+        }
+        case QEvent::HoverLeave: {
+            result = QLatin1String("HoverLeave");
+            break;
+        }
+        case QEvent::HoverMove: {
+            result = QLatin1String("HoverMove");
+            break;
+        }
+        case QEvent::AcceptDropsChange: {
+            result = QLatin1String("AcceptDropsChange");
+            break;
+        }
+        case QEvent::GraphicsSceneMouseMove: {
+            result = QLatin1String("GraphicsSceneMouseMove");
+            break;
+        }
+        case QEvent::GraphicsSceneMousePress: {
+            result = QLatin1String("GraphicsSceneMousePress");
+            break;
+        }
+        case QEvent::GraphicsSceneMouseRelease: {
+            result = QLatin1String("GraphicsSceneMouseRelease");
+            break;
+        }
+        case QEvent::GraphicsSceneMouseDoubleClick: {
+            result = QLatin1String("GraphicsSceneMouseDoubleClick");
+            break;
+        }
+        case QEvent::GraphicsSceneContextMenu: {
+            result = QLatin1String("GraphicsSceneContextMenu");
+            break;
+        }
+        case QEvent::GraphicsSceneHoverEnter: {
+            result = QLatin1String("GraphicsSceneHoverEnter");
+            break;
+        }
+        case QEvent::GraphicsSceneHoverMove: {
+            result = QLatin1String("GraphicsSceneHoverMove");
+            break;
+        }
+        case QEvent::GraphicsSceneHoverLeave: {
+            result = QLatin1String("GraphicsSceneHoverLeave");
+            break;
+        }
+        case QEvent::GraphicsSceneLeave: {
+            result = QLatin1String("GraphicsSceneLeave");
+            break;
+        }
+        case QEvent::GraphicsSceneHelp: {
+            result = QLatin1String("GraphicsSceneHelp");
+            break;
+        }
+        case QEvent::GraphicsSceneDragEnter: {
+            result = QLatin1String("GraphicsSceneDragEnter");
+            break;
+        }
+        case QEvent::GraphicsSceneDragMove: {
+            result = QLatin1String("GraphicsSceneDragMove");
+            break;
+        }
+        case QEvent::GraphicsSceneDragLeave: {
+            result = QLatin1String("GraphicsSceneDragLeave");
+            break;
+        }
+        case QEvent::GraphicsSceneDrop: {
+            result = QLatin1String("GraphicsSceneDrop");
+            break;
+        }
+        case QEvent::GraphicsSceneWheel: {
+            result = QLatin1String("GraphicsSceneWheel");
+            break;
+        }
+        case QEvent::KeyboardLayoutChange: {
+            result = QLatin1String("KeyboardLayoutChange");
+            break;
+        }
+        case QEvent::DynamicPropertyChange: {
+            result = QLatin1String("DynamicPropertyChange");
+            break;
+        }
+        case QEvent::ContentsRectChange: {
+            result = QLatin1String("ContentsRectChange");
+            break;
+        }
+        case QEvent::GraphicsSceneResize: {
+            result = QLatin1String("GraphicsSceneResize");
+            break;
+        }
+        case QEvent::GraphicsSceneMove: {
+            result = QLatin1String("GraphicsSceneMove");
+            break;
+        }
+        case QEvent::CursorChange: {
+            result = QLatin1String("CursorChange");
+            break;
+        }
+        case QEvent::ToolTipChange: {
+            result = QLatin1String("ToolTipChange");
+            break;
+        }
+        case QEvent::GrabMouse: {
+            result = QLatin1String("GrabMouse");
+            break;
+        }
+        case QEvent::UngrabMouse: {
+            result = QLatin1String("UngrabMouse");
+            break;
+        }
+        case QEvent::GrabKeyboard: {
+            result = QLatin1String("GrabKeyboard");
+            break;
+        }
+        case QEvent::UngrabKeyboard: {
+            result = QLatin1String("UngrabKeyboard");
+            break;
+        }
+        case QEvent::RequestSoftwareInputPanel: {
+            result = QLatin1String("RequestSoftwareInputPanel");
+            break;
+        }
+        case QEvent::CloseSoftwareInputPanel: {
+            result = QLatin1String("CloseSoftwareInputPanel");
+            break;
+        }
+        case QEvent::WinIdChange: {
+            result = QLatin1String("WinIdChange");
+            break;
+        }
+        default: {
+            result = QLatin1String("Unknown");
+            break;
+        }
+    }
+    result.append(QLatin1String(" ("));
+    result.append(QString::number(event->type()));
+    result.append(QLatin1String(")"));
+    return result;
+}
+
 class KDebuggerPrivate : public QObject
 {
     Q_OBJECT
@@ -223,7 +698,7 @@ bool KDebuggerPrivate::eventFilter(QObject *object, QEvent *event)
         case QEvent::WinIdChange: {
             QString eventline = kObjectString(object);
             eventline.append(QLatin1String(" - "));
-            eventline.append(QString::number(event->type()));
+            eventline.append(kEventString(event));
             eventsedit->append(eventline);
             break;
         }
