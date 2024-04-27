@@ -252,6 +252,9 @@ void KDebuggerPrivate::slotItemSelectionChanged()
 {
     QList<QTreeWidgetItem*> selectedobjects = objectswidget->selectedItems();
     if (selectedobjects.isEmpty()) {
+        eventsedit->clear();
+        propertieswidget->clearContents();
+        propertieswidget->setRowCount(0);
         return;
     }
     QTreeWidgetItem* objectitem = selectedobjects.first();
