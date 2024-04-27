@@ -246,10 +246,14 @@ void KDebuggerPrivate::slotUpdateObjects()
 {
     objectswidget->clear();
     m_objects.clear();
+    objectswidget->setEnabled(false);
+    propertieswidget->setEnabled(false);
     addObject(qApp, objectswidget->invisibleRootItem());
     foreach (QWidget *widget, QApplication::allWidgets()) {
         addObject(widget, objectswidget->invisibleRootItem());
     }
+    objectswidget->setEnabled(true);
+    propertieswidget->setEnabled(true);
 }
 
 void KDebuggerPrivate::slotItemSelectionChanged()
@@ -349,6 +353,7 @@ KDebugger::KDebugger(QWidget *parent)
     d->propertieswidget = new QTableWidget(d->tabwidget);
     d->propertieswidget->setSelectionMode(QAbstractItemView::SingleSelection);
     d->propertieswidget->setSelectionBehavior(QAbstractItemView::SelectItems);
+    d->propertieswidget->setRowCount(0);
     d->propertieswidget->setColumnCount(2);
     kSetPropertiesHeaders(d->propertieswidget);
     QHeaderView* verticalheader = d->propertieswidget->verticalHeader();
