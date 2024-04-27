@@ -37,6 +37,7 @@
 #include <QHeaderView>
 #include <QMetaProperty>
 #include <QElapsedTimer>
+#include <QMutex>
 #include <QTimer>
 
 Q_DECLARE_METATYPE(QObject*);
@@ -587,7 +588,7 @@ void KDebuggerFuzzer::run()
             QString eventmessage = QLatin1String("Sending event - ");
             eventmessage.append(kEventString(&fuzzevent));
             emit message(eventmessage);
-            //QApplication::sendEvent(m_object, &fuzzevent);
+            QApplication::sendEvent(m_object.data(), &fuzzevent);
         }
 
         // TODO: set a random property to random value
@@ -638,6 +639,7 @@ private:
 
     QPointer<QObject> m_object;
     QMap<QObject*,QPointer<QObject>> m_objects;
+    QMutex m_eventsmutex;
     QTimer* m_fuzzchecktimer;
 };
 
@@ -684,15 +686,18 @@ void KDebuggerPrivate::addObject(QObject *object, QTreeWidgetItem *parentitem)
 void KDebuggerPrivate::slotCheckFuzzState()
 {
     if (fuzzpool->activeThreadCount() > 0) {
-        objectssearchline->setEnabled(false);
-        objectswidget->setEnabled(false);
-        propertieswidget->setEnabled(false);
-        threadfuzzbox->setEnabled(false);
-        eventfuzzbox->setEnabled(false);
-        propertyfuzzbox->setEnabled(false);
-        durationfuzzedit->setEnabled(false);
-        fuzzbutton->setText(i18n("Stop"));
-        fuzzbutton->setIcon(KIcon("process-stop"));
+        if (!m_fuzzchecktimer->isActive()) {
+            m_fuzzchecktimer->start();
+            objectssearchline->setEnabled(false);
+            objectswidget->setEnabled(false);
+            propertieswidget->setEnabled(false);
+            threadfuzzbox->setEnabled(false);
+            eventfuzzbox->setEnabled(false);
+            propertyfuzzbox->setEnabled(false);
+            durationfuzzedit->setEnabled(false);
+            fuzzbutton->setText(i18n("Stop"));
+            fuzzbutton->setIcon(KIcon("process-stop"));
+        }
     } else {
         objectssearchline->setEnabled(true);
         objectswidget->setEnabled(true);
@@ -829,6 +834,7 @@ bool KDebuggerPrivate::eventFilter(QObject *object, QEvent *event)
             QString eventline = kObjectString(object);
             eventline.append(QLatin1String(" - "));
             eventline.append(kEventString(event));
+            QMutexLocker locker(&m_eventsmutex);
             eventsedit->append(eventline);
             break;
         }
@@ -936,7 +942,7 @@ void KDebuggerPrivate::slotFuzzReleased()
         fuzzpool->start(fuzzer);
     }
 
-    m_fuzzchecktimer->start();
+    slotCheckFuzzState();
 }
 
 void KDebuggerPrivate::slotMessage(const QString &message)
