@@ -1439,6 +1439,13 @@ void AppletPrivate::globalShortcutChanged()
         return;
     }
 
+    if (shortcutEditor) {
+        // update the key sequence widget, the key sequence changes when it is stolen too
+        shortcutEditor.data()->blockSignals(true);
+        shortcutEditor.data()->setKeySequence(activationAction->globalShortcut());
+        shortcutEditor.data()->blockSignals(false);
+    }
+
     KConfigGroup shortcutConfig(mainConfigGroup(), "Shortcuts");
     shortcutConfig.writeEntry("global", activationAction->globalShortcut().toString());
     scheduleModificationNotification();
