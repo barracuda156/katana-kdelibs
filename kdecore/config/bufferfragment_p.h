@@ -185,7 +185,7 @@ private:
 
 uint qHash(const KConfigIniBackend::BufferFragment& fragment)
 {
-    return qChecksum(fragment.constData(), fragment.length());
+    return qHash(fragment.constData(), fragment.length());
 }
 
 #endif
