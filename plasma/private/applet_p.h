@@ -125,6 +125,7 @@ public:
     void updateShortcuts();
     void globalShortcutChanged();
     void propagateConfigChanged();
+    void createActivationAction();
 
     static KActionCollection* defaultActions(QObject *parent);
     static QStringList knownCategories();

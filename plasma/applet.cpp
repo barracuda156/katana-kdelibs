@@ -272,13 +272,16 @@ void Applet::restore(KConfigGroup &group)
 
     KConfigGroup shortcutConfig(&group, "Shortcuts");
     QString shortcutText = shortcutConfig.readEntryUntranslated("global", QString());
-    if (!shortcutText.isEmpty()) {
-        setGlobalShortcut(QKeySequence(shortcutText));
 /*
         kDebug() << "got global shortcut for" << name() << "of" << QKeySequence(shortcutText);
         kDebug() << "set to" << d->activationAction->objectName()
                  << d->activationAction->globalShortcut().primary();
 */
+    if (!shortcutText.isEmpty()) {
+        d->createActivationAction();
+        d->activationAction->blockSignals(true);
+        d->activationAction->setGlobalShortcut(QKeySequence(shortcutText), KAction::ActiveShortcut);
+        d->activationAction->blockSignals(false);
     }
 }
 
@@ -1425,22 +1428,8 @@ Containment *Applet::containment() const
 void Applet::setGlobalShortcut(const QKeySequence &shortcut)
 {
     if (!d->activationAction) {
-        d->activationAction = new KAction(this);
-        d->activationAction->setText(i18n("Activate %1 Widget", name()));
-        d->activationAction->setObjectName(QString("activate widget %1").arg(id())); // NO I18N
+        d->createActivationAction();
         d->activationAction->setGlobalShortcut(shortcut, KAction::ActiveShortcut | KAction::DefaultShortcut);
-        connect(
-            d->activationAction, SIGNAL(triggered()),
-            this, SIGNAL(activate())
-        );
-        connect(
-            d->activationAction, SIGNAL(globalShortcutChanged(QKeySequence)),
-            this, SLOT(globalShortcutChanged()));
-
-        QList<QWidget *> widgets = d->actions->associatedWidgets();
-        foreach (QWidget *w, widgets) {
-            w->addAction(d->activationAction);
-        }
     }
 }
 
@@ -1805,8 +1794,11 @@ void AppletPrivate::addGlobalShortcutsPage(KConfigDialog *dialog)
         QObject::connect(shortcutEditor.data(), SIGNAL(keySequenceChanged(QKeySequence)), dialog, SLOT(settingsModified()));
     }
 
+    createActivationAction();
     shortcutEditor.data()->setAssociatedAction(activationAction);
+    shortcutEditor.data()->blockSignals(true);
     shortcutEditor.data()->setKeySequence(q->globalShortcut());
+    shortcutEditor.data()->blockSignals(false);
     layout->addWidget(shortcutEditor.data());
     layout->addStretch();
     dialog->addPage(page, i18n("Keyboard Shortcut"), "preferences-desktop-keyboard");
@@ -1821,9 +1813,7 @@ void AppletPrivate::configDialogFinished()
         QKeySequence shortcut = shortcutEditor.data()->keySequence();
         if (shortcut != q->globalShortcut()) {
             // kDebug() << "before" << shortcut << q->globalShortcut();
-            if (activationAction) {
-                activationAction->setGlobalShortcut(shortcut, KAction::ActiveShortcut);
-            }
+            activationAction->setGlobalShortcut(shortcut, KAction::ActiveShortcut);
             emit q->configNeedsSaving();
         }
     }
@@ -1872,6 +1862,28 @@ void AppletPrivate::propagateConfigChanged()
     }
 
     q->configChanged();
+}
+
+void AppletPrivate::createActivationAction()
+{
+    if (activationAction) {
+        return;
+    }
+    activationAction = new KAction(q);
+    activationAction->setText(i18n("Activate %1 Widget", q->name()));
+    activationAction->setObjectName(QString("activate widget %1").arg(q->id())); // NO I18N
+    QObject::connect(
+        activationAction, SIGNAL(triggered()),
+        q, SIGNAL(activate())
+    );
+    QObject::connect(
+        activationAction, SIGNAL(globalShortcutChanged(QKeySequence)),
+        q, SLOT(globalShortcutChanged()));
+
+    QList<QWidget *> widgets = actions->associatedWidgets();
+    foreach (QWidget *w, widgets) {
+        w->addAction(activationAction);
+    }
 }
 
 void Applet::configChanged()
