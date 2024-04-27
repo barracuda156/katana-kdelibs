@@ -47,14 +47,6 @@ static QString kObjectString(const QObject *object)
     return QString::number(quintptr(object), 16);
 }
 
-static void kSetPropertiesHeaders(QTableWidget *propertieswidget)
-{
-    const QStringList tableheaders = QStringList()
-        << i18n("Property")
-        << i18n("Value");
-    propertieswidget->setHorizontalHeaderLabels(tableheaders);
-}
-
 class KDebuggerPrivate : public QObject
 {
     Q_OBJECT
@@ -269,10 +261,8 @@ void KDebuggerPrivate::slotItemSelectionChanged()
     }
     m_object = m_objects.value(object);
     eventsedit->clear();
-    propertieswidget->clear();
+    propertieswidget->clearContents();
     propertieswidget->setRowCount(0);
-    // this has to be done after every clear
-    kSetPropertiesHeaders(propertieswidget);
     if (!m_object) {
         return;
     }
@@ -355,7 +345,10 @@ KDebugger::KDebugger(QWidget *parent)
     d->propertieswidget->setSelectionBehavior(QAbstractItemView::SelectItems);
     d->propertieswidget->setRowCount(0);
     d->propertieswidget->setColumnCount(2);
-    kSetPropertiesHeaders(d->propertieswidget);
+    const QStringList tableheaders = QStringList()
+        << i18n("Property")
+        << i18n("Value");
+    d->propertieswidget->setHorizontalHeaderLabels(tableheaders);
     QHeaderView* verticalheader = d->propertieswidget->verticalHeader();
     verticalheader->setVisible(false);
     QHeaderView* horizontalheader = d->propertieswidget->horizontalHeader();
