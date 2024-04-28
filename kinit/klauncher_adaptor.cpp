@@ -346,10 +346,14 @@ int KLauncherAdaptor::start_service_by_desktop_path(const QString &serviceName, 
         kWarning() << "could not process service" << kservice->entryPath();
         return KLauncherAdaptor::ArgumentsError;
     }
+    QString programworkdir = kservice->path();
+    if (programworkdir.isEmpty()) {
+        programworkdir = QDir::currentPath();
+    }
     kDebug() << "starting" << kservice->entryPath() << urls;
     const QString program = programandargs.takeFirst();
     qint64 pid = 0;
-    return startProgram(program, programandargs, envs, QString(), QDir::currentPath(), pid, m_startuptimeout, kservice);
+    return startProgram(program, programandargs, envs, QString(), programworkdir, pid, m_startuptimeout, kservice);
 }
 
 #ifdef KLAUNCHER_DEBUG
