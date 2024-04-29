@@ -155,8 +155,8 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
                 QDBusConnection::sessionBus(), this
             );
             connect(
-                m_notificationsiface, SIGNAL(closeRequested(QString,QString)),
-                this, SLOT(slotCloseRequested(QString,QString))
+                m_notificationsiface, SIGNAL(closeRequested(QString)),
+                this, SLOT(slotCloseRequested(QString))
             );
             connect(
                 m_notificationsiface, SIGNAL(actionRequested(QString,QString)),
