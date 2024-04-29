@@ -55,7 +55,6 @@ public:
     pid_t m_pid;
     quint16 m_port;
     bool dead;
-    time_t contact_started;
     time_t m_idleSince;
     int m_refCount;
 };

@@ -34,7 +34,6 @@ class KUrl;
 namespace KIO {
 
 class SimpleJob;
-class Connection;
 // better there is one ...
 class SlaveInterfacePrivate;
 
@@ -202,9 +201,6 @@ public:
     void ref();
     void deref();
 
-    void setConnection(Connection *connection);
-    Connection* connection() const;
-
     // Send our answer to the MSG_RESUME (canResume) request
     // (to tell the "put" job whether to resume or not)
     void sendResumeAnswer(bool resume);
@@ -266,7 +262,6 @@ protected Q_SLOTS:
     void calcSpeed();
     void accept();
     void gotInput();
-    void timeout();
 
 protected:
     SlaveInterfacePrivate* const d_ptr;

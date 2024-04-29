@@ -41,18 +41,6 @@
 
 using namespace KIO;
 
-#define SLAVE_CONNECTION_TIMEOUT_MIN       2
-
-// Without debug info we consider it an error if the slave doesn't connect
-// within 10 seconds.
-// With debug info we give the slave an hour so that developers have a chance
-// to debug their slave.
-#ifdef NDEBUG
-#define SLAVE_CONNECTION_TIMEOUT_MAX      10
-#else
-#define SLAVE_CONNECTION_TIMEOUT_MAX    3600
-#endif
-
 Q_GLOBAL_STATIC(UserNotificationHandler, globalUserNotificationHandler)
 
 SlaveInterfacePrivate::SlaveInterfacePrivate(const QString &protocol)
@@ -68,7 +56,6 @@ SlaveInterfacePrivate::SlaveInterfacePrivate(const QString &protocol)
     m_pid(0),
     m_port(0),
     dead(false),
-    contact_started(time(0)),
     m_idleSince(0),
     m_refCount(1)
 {
@@ -308,18 +295,6 @@ SlaveInterface* SlaveInterface::createSlave(const QString &protocol, const KUrl 
     slave->setPID(slavepid);
 
     return slave;
-}
-
-void SlaveInterface::setConnection(Connection* connection)
-{
-    Q_D(SlaveInterface);
-    d->connection = connection;
-}
-
-Connection *SlaveInterface::connection() const
-{
-    Q_D(const SlaveInterface);
-    return d->connection;
 }
 
 bool SlaveInterface::dispatch()
@@ -632,45 +607,6 @@ void SlaveInterface::gotInput()
     }
     deref();
     // Here we might be dead!!
-}
-
-void SlaveInterface::timeout()
-{
-    Q_D(SlaveInterface);
-    if (d->dead) {
-        // already dead? then slaveDied was emitted and we are done
-        return;
-    }
-    if (d->connection->isConnected()) {
-        return;
-    }
-
-    kDebug(7002) << "slave failed to connect to application pid=" << d->m_pid
-                 << " protocol=" << d->m_protocol;
-    if (d->m_pid && (::kill(d->m_pid, 0) == 0)) {
-        int delta_t = (int) difftime(time(0), d->contact_started);
-        kDebug(7002) << "slave is slow... pid=" << d->m_pid << " t=" << delta_t;
-        if (delta_t < SLAVE_CONNECTION_TIMEOUT_MAX) {
-            QTimer::singleShot(1000*SLAVE_CONNECTION_TIMEOUT_MIN, this, SLOT(timeout()));
-            return;
-        }
-    }
-    kDebug(7002) << "Houston, we lost our slave, pid=" << d->m_pid;
-    d->connection->close();
-    d->dead = true;
-    QString arg = d->m_protocol;
-    if (!d->m_host.isEmpty()) {
-        arg += QString::fromLatin1("://") + d->m_host;
-    }
-    kDebug(7002) << "slave died pid = " << d->m_pid;
-
-    ref();
-    // Tell the job about the problem.
-    emit error(ERR_SLAVE_DIED, arg);
-    // Tell the scheduler about the problem.
-    emit slaveDied(this);
-    // After the above signal we're dead!!
-    deref();
 }
 
 #include "moc_slaveinterface.cpp"
