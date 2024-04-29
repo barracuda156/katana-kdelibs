@@ -191,7 +191,7 @@ public:
     /**
      * @return The time this slave has been idle.
      */
-    time_t idleTime() const;
+    qint64 idleTime() const;
 
     /**
      * Marks this slave as idle.

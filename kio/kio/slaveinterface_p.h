@@ -22,7 +22,8 @@
 #include "global.h"
 #include "connection.h"
 
-#include <QtCore/QTimer>
+#include <QTimer>
+#include <QElapsedTimer>
 
 #include <sys/time.h>
 
@@ -55,7 +56,7 @@ public:
     pid_t m_pid;
     quint16 m_port;
     bool dead;
-    time_t m_idleSince;
+    QElapsedTimer m_idleSince;
     int m_refCount;
 };
 

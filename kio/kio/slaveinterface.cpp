@@ -56,7 +56,6 @@ SlaveInterfacePrivate::SlaveInterfacePrivate(const QString &protocol)
     m_pid(0),
     m_port(0),
     dead(false),
-    m_idleSince(0),
     m_refCount(1)
 {
     start_time.tv_sec = 0;
@@ -130,7 +129,7 @@ QString SlaveInterface::passwd() const
 void SlaveInterface::setIdle()
 {
     Q_D(SlaveInterface);
-    d->m_idleSince = time(0);
+    d->m_idleSince.start();
 }
 
 void SlaveInterface::ref()
@@ -150,13 +149,10 @@ void SlaveInterface::deref()
     }
 }
 
-time_t SlaveInterface::idleTime() const
+qint64 SlaveInterface::idleTime() const
 {
     Q_D(const SlaveInterface);
-    if (!d->m_idleSince) {
-        return time_t(0);
-    }
-    return time_t(difftime(time(0), d->m_idleSince));
+    return d->m_idleSince.elapsed();
 }
 
 void SlaveInterface::setPID(pid_t pid)
