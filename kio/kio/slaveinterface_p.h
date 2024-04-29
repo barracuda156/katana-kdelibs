@@ -35,27 +35,29 @@ public:
     SlaveInterfacePrivate(const QString &protocol);
     ~SlaveInterfacePrivate();
 
-    Connection *connection;
-    QTimer speed_timer;
+    QTimer m_speedtimer;
 
-    KIO::filesize_t sizes[max_nums];
-    long times[max_nums];
+    KIO::filesize_t m_sizes[max_nums];
+    long m_times[max_nums];
 
-    KIO::filesize_t filesize, offset;
-    size_t last_time;
-    struct timeval start_time;
-    uint nums;
-    bool slave_calcs_speed;
+    KIO::filesize_t m_filesize;
+    KIO::filesize_t m_offset;
+    size_t m_lasttime;
+    struct timeval m_starttime;
+    uint m_nums;
+    bool m_slavecalcsspeed;
 
     QString m_protocol;
     QString m_host;
     QString m_user;
     QString m_passwd;
-    KIO::ConnectionServer *slaveconnserver;
+    quint16 m_port;
+
+    KIO::Connection* m_connection;
+    KIO::ConnectionServer* m_slaveconnserver;
     KIO::SimpleJob *m_job;
     pid_t m_pid;
-    quint16 m_port;
-    bool dead;
+    bool m_dead;
     QElapsedTimer m_idleSince;
     int m_refCount;
 };

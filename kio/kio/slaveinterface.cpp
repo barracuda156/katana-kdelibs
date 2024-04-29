@@ -44,33 +44,28 @@ using namespace KIO;
 Q_GLOBAL_STATIC(UserNotificationHandler, globalUserNotificationHandler)
 
 SlaveInterfacePrivate::SlaveInterfacePrivate(const QString &protocol)
-    : connection(nullptr),
-    filesize(0),
-    offset(0),
-    last_time(0),
-    nums(0),
-    slave_calcs_speed(false),
+    : m_filesize(0),
+    m_offset(0),
+    m_lasttime(0),
+    m_nums(0),
+    m_slavecalcsspeed(false),
     m_protocol(protocol),
-    slaveconnserver(new KIO::ConnectionServer()),
+    m_port(0),
+    m_connection(nullptr),
+    m_slaveconnserver(nullptr),
     m_job(nullptr),
     m_pid(0),
-    m_port(0),
-    dead(false),
+    m_dead(false),
     m_refCount(1)
 {
-    start_time.tv_sec = 0;
-    start_time.tv_usec = 0;
-
-    slaveconnserver->listenForRemote();
-    if (!slaveconnserver->isListening()) {
-        kWarning() << "Connection server not listening, could not connect";
-    }
+    m_starttime.tv_sec = 0;
+    m_starttime.tv_usec = 0;
 }
 
 SlaveInterfacePrivate::~SlaveInterfacePrivate()
 {
-    delete slaveconnserver;
-    delete connection;
+    delete m_slaveconnserver;
+    delete m_connection;
 }
 
 
@@ -78,10 +73,15 @@ SlaveInterface::SlaveInterface(const QString &protocol, QObject *parent)
     : QObject(parent),
     d_ptr(new SlaveInterfacePrivate(protocol))
 {
-    connect(&d_ptr->speed_timer, SIGNAL(timeout()), SLOT(calcSpeed()));
-    d_ptr->slaveconnserver->setParent(this);
-    d_ptr->connection = new Connection(this);
-    connect(d_ptr->slaveconnserver, SIGNAL(newConnection()), SLOT(accept()));
+    connect(&d_ptr->m_speedtimer, SIGNAL(timeout()), SLOT(calcSpeed()));
+    d_ptr->m_slaveconnserver = new KIO::ConnectionServer(this);
+    d_ptr->m_connection = new KIO::Connection(this);
+    connect(d_ptr->m_slaveconnserver, SIGNAL(newConnection()), SLOT(accept()));
+
+    d_ptr->m_slaveconnserver->listenForRemote();
+    if (!d_ptr->m_slaveconnserver->isListening()) {
+        kWarning() << "Connection server not listening, could not connect";
+    }
 }
 
 SlaveInterface::~SlaveInterface()
@@ -143,7 +143,7 @@ void SlaveInterface::deref()
     Q_D(SlaveInterface);
     d->m_refCount--;
     if (!d->m_refCount) {
-        d->connection->disconnect(this);
+        d->m_connection->disconnect(this);
         this->disconnect();
         deleteLater();
     }
@@ -182,37 +182,37 @@ KIO::SimpleJob *SlaveInterface::job() const
 bool SlaveInterface::isAlive() const
 {
     Q_D(const SlaveInterface);
-    return !d->dead;
+    return !d->m_dead;
 }
 
 void SlaveInterface::suspend()
 {
     Q_D(SlaveInterface);
-    d->connection->suspend();
+    d->m_connection->suspend();
 }
 
 void SlaveInterface::resume()
 {
     Q_D(SlaveInterface);
-    d->connection->resume();
+    d->m_connection->resume();
 }
 
 bool SlaveInterface::suspended() const
 {
     Q_D(const SlaveInterface);
-    return d->connection->suspended();
+    return d->m_connection->suspended();
 }
 
 void SlaveInterface::send(int cmd, const QByteArray &arr)
 {
     Q_D(SlaveInterface);
-    d->connection->send(cmd, arr);
+    d->m_connection->send(cmd, arr);
 }
 
 void SlaveInterface::kill()
 {
     Q_D(SlaveInterface);
-    d->dead = true; // OO can be such simple.
+    d->m_dead = true; // OO can be such simple.
     kDebug(7002) << "killing slave pid" << d->m_pid
                  << "(" << d->m_protocol + "://" + d->m_host << ")";
     if (d->m_pid) {
@@ -233,7 +233,7 @@ void SlaveInterface::setHost( const QString &host, quint16 port,
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream << d->m_host << d->m_port << d->m_user << d->m_passwd;
-    d->connection->send(CMD_HOST, data);
+    d->m_connection->send(CMD_HOST, data);
 }
 
 void SlaveInterface::resetHost()
@@ -248,14 +248,14 @@ void SlaveInterface::setConfig(const MetaData &config)
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream << config;
-    d->connection->send(CMD_CONFIG, data);
+    d->m_connection->send(CMD_CONFIG, data);
 }
 
 SlaveInterface* SlaveInterface::createSlave(const QString &protocol, const KUrl &url, int &error, QString &error_text)
 {
     kDebug(7002) << "createSlave" << protocol << "for" << url;
     SlaveInterface *slave = new SlaveInterface(protocol);
-    const QString slaveaddress = slave->d_func()->slaveconnserver->address();
+    const QString slaveaddress = slave->d_func()->m_slaveconnserver->address();
 
     const QString slavename = KProtocolInfo::exec(protocol);
     if (slavename.isEmpty()) {
@@ -296,11 +296,11 @@ SlaveInterface* SlaveInterface::createSlave(const QString &protocol, const KUrl 
 bool SlaveInterface::dispatch()
 {
     Q_D(SlaveInterface);
-    Q_ASSERT(d->connection);
+    Q_ASSERT(d->m_connection);
 
     int cmd = 0;
     QByteArray data;
-    int ret = d->connection->read(&cmd, data);
+    int ret = d->m_connection->read(&cmd, data);
     if (ret == -1) {
         return false;
     }
@@ -311,43 +311,43 @@ bool SlaveInterface::dispatch()
 void SlaveInterface::calcSpeed()
 {
     Q_D(SlaveInterface);
-    if (d->slave_calcs_speed) {
-        d->speed_timer.stop();
+    if (d->m_slavecalcsspeed) {
+        d->m_speedtimer.stop();
         return;
     }
 
     struct timeval tv;
     gettimeofday(&tv, 0);
 
-    long diff = ((tv.tv_sec - d->start_time.tv_sec) * 1000000 +
-                  tv.tv_usec - d->start_time.tv_usec) / 1000;
-    if (diff - d->last_time >= 900) {
-        d->last_time = diff;
-        if (d->nums == max_nums) {
+    long diff = ((tv.tv_sec - d->m_starttime.tv_sec) * 1000000 +
+                  tv.tv_usec - d->m_starttime.tv_usec) / 1000;
+    if (diff - d->m_lasttime >= 900) {
+        d->m_lasttime = diff;
+        if (d->m_nums == max_nums) {
             // let's hope gcc can optimize that well enough
             // otherwise I'd try memcpy :)
             for (unsigned int i = 1; i < max_nums; ++i) {
-                d->times[i-1] = d->times[i];
-                d->sizes[i-1] = d->sizes[i];
+                d->m_times[i-1] = d->m_times[i];
+                d->m_sizes[i-1] = d->m_sizes[i];
             }
-            d->nums--;
+            d->m_nums--;
         }
-        d->times[d->nums] = diff;
-        d->sizes[d->nums++] = d->filesize - d->offset;
+        d->m_times[d->m_nums] = diff;
+        d->m_sizes[d->m_nums++] = d->m_filesize - d->m_offset;
 
-        KIO::filesize_t lspeed = 1000 * (d->sizes[d->nums-1] - d->sizes[0]) / (d->times[d->nums-1] - d->times[0]);
+        KIO::filesize_t lspeed = 1000 * (d->m_sizes[d->m_nums-1] - d->m_sizes[0]) / (d->m_times[d->m_nums-1] - d->m_times[0]);
 
-//      kDebug() << (long)d->filesize << diff
-//          << long(d->sizes[d->nums-1] - d->sizes[0])
-//          << d->times[d->nums-1] - d->times[0]
-//          << long(lspeed) << double(d->filesize) / diff
+//      kDebug() << (long)d->m_filesize << diff
+//          << long(d->m_sizes[d->m_nums-1] - d->m_sizes[0])
+//          << d->m_times[d->m_nums-1] - d->m_times[0]
+//          << long(lspeed) << double(d->m_filesize) / diff
 //          << convertSize(lspeed)
-//          << convertSize(long(double(d->filesize) / diff) * 1000);
+//          << convertSize(long(double(d->m_filesize) / diff) * 1000);
 
         if (!lspeed) {
-            d->nums = 1;
-            d->times[0] = diff;
-            d->sizes[0] = d->filesize - d->offset;
+            d->m_nums = 1;
+            d->m_times[0] = diff;
+            d->m_sizes[0] = d->m_filesize - d->m_offset;
         }
         emit speed(lspeed);
     }
@@ -369,8 +369,8 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
         }
         case MSG_FINISHED: {
             // kDebug(7007) << "Finished [this = " << this << "]";
-            d->offset = 0;
-            d->speed_timer.stop();
+            d->m_offset = 0;
+            d->m_speedtimer.stop();
             emit finished();
             break;
         }
@@ -383,7 +383,7 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
         }
         case MSG_LIST_ENTRIES: {
             QDataStream stream(rawdata);
-            quint32 count;
+            quint32 count = 0;
             stream >> count;
             UDSEntryList list;
             list.reserve(count);
@@ -397,18 +397,18 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
         }
         case MSG_RESUME: { // From the put job
             QDataStream stream(rawdata);
-            stream >> d->offset;
-            emit canResume(d->offset);
+            stream >> d->m_offset;
+            emit canResume(d->m_offset);
             break;
         }
         case MSG_CANRESUME: { // From the get job
-            d->filesize = d->offset;
+            d->m_filesize = d->m_offset;
             emit canResume(0); // the arg doesn't matter
             break;
         }
         case MSG_ERROR: {
             QDataStream stream(rawdata);
-            qint32 i;
+            qint32 i = 0;
             QString str;
             stream >> i >> str;
             kDebug(7007) << "error " << i << " " << str;
@@ -417,31 +417,31 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
         }
         case INF_TOTAL_SIZE: {
             QDataStream stream(rawdata);
-            KIO::filesize_t size;
+            KIO::filesize_t size = 0;
             stream >> size;
-            gettimeofday(&d->start_time, 0);
-            d->last_time = 0;
-            d->filesize = d->offset;
-            d->sizes[0] = d->filesize - d->offset;
-            d->times[0] = 0;
-            d->nums = 1;
-            d->speed_timer.start(1000);
-            d->slave_calcs_speed = false;
+            gettimeofday(&d->m_starttime, 0);
+            d->m_lasttime = 0;
+            d->m_filesize = d->m_offset;
+            d->m_sizes[0] = d->m_filesize - d->m_offset;
+            d->m_times[0] = 0;
+            d->m_nums = 1;
+            d->m_speedtimer.start(1000);
+            d->m_slavecalcsspeed = false;
             emit totalSize(size);
             break;
         }
         case INF_PROCESSED_SIZE: {
             QDataStream stream(rawdata);
-            stream >> d->filesize;
-            emit processedSize(d->filesize);
+            stream >> d->m_filesize;
+            emit processedSize(d->m_filesize);
             break;
         }
         case INF_SPEED: {
             QDataStream stream(rawdata);
-            quint32 ul;
+            quint32 ul = 0;
             stream >> ul;
-            d->slave_calcs_speed = true;
-            d->speed_timer.stop();
+            d->m_slavecalcsspeed = true;
+            d->m_speedtimer.stop();
             emit speed(ul);
             break;
         }
@@ -457,8 +457,8 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             QString str;
             stream >> str;
             emit mimeType(str);
-            if (!d->connection->suspended())
-                d->connection->sendnow(CMD_NONE, QByteArray());
+            if (!d->m_connection->suspended())
+                d->m_connection->sendnow(CMD_NONE, QByteArray());
             break;
         }
         case INF_WARNING: {
@@ -472,7 +472,7 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             kDebug(7007) << "needs a msg box";
             QDataStream stream(rawdata);
             QString text, caption, buttonYes, buttonNo, dontAskAgainName;
-            qint32 type;
+            qint32 type = 0;
             stream >> type >> text >> caption >> buttonYes >> buttonNo >> dontAskAgainName;
             messageBox(type, text, caption, buttonYes, buttonNo, dontAskAgainName);
             break;
@@ -502,36 +502,36 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
 void SlaveInterface::setOffset(KIO::filesize_t o)
 {
     Q_D(SlaveInterface);
-    d->offset = o;
+    d->m_offset = o;
 }
 
 KIO::filesize_t SlaveInterface::offset() const
 {
     Q_D(const SlaveInterface);
-    return d->offset;
+    return d->m_offset;
 }
 
 void SlaveInterface::sendResumeAnswer(bool resume)
 {
     Q_D(SlaveInterface);
     kDebug(7007) << "ok for resuming:" << resume;
-    d->connection->sendnow(resume ? CMD_RESUMEANSWER : CMD_NONE, QByteArray());
+    d->m_connection->sendnow(resume ? CMD_RESUMEANSWER : CMD_NONE, QByteArray());
 }
 
 void SlaveInterface::sendMessageBoxAnswer(int result)
 {
     Q_D(SlaveInterface);
-    if (!d->connection) {
+    if (!d->m_connection) {
         return;
     }
 
-    if (d->connection->suspended()) {
-        d->connection->resume();
+    if (d->m_connection->suspended()) {
+        d->m_connection->resume();
     }
     QByteArray packedArgs;
     QDataStream stream(&packedArgs, QIODevice::WriteOnly);
     stream << result;
-    d->connection->sendnow(CMD_MESSAGEBOXANSWER, packedArgs);
+    d->m_connection->sendnow(CMD_MESSAGEBOXANSWER, packedArgs);
     kDebug(7007) << "message box answer" << result;
 }
 
@@ -546,8 +546,8 @@ void SlaveInterface::messageBox(int type, const QString &text, const QString &ca
 {
     Q_D(SlaveInterface);
 
-    if (d->connection) {
-        d->connection->suspend();
+    if (d->m_connection) {
+        d->m_connection->suspend();
     }
 
     QHash<UserNotificationHandler::MessageBoxDataType, QString> data;
@@ -573,24 +573,24 @@ void SlaveInterface::messageBox(int type, const QString &text, const QString &ca
 void SlaveInterface::accept()
 {
     Q_D(SlaveInterface);
-    d->slaveconnserver->setNextPendingConnection(d->connection);
-    d->slaveconnserver->deleteLater();
-    d->slaveconnserver = 0;
+    d->m_slaveconnserver->setNextPendingConnection(d->m_connection);
+    d->m_slaveconnserver->deleteLater();
+    d->m_slaveconnserver = nullptr;
 
-    connect(d->connection, SIGNAL(readyRead()), SLOT(gotInput()));
+    connect(d->m_connection, SIGNAL(readyRead()), SLOT(gotInput()));
 }
 
 void SlaveInterface::gotInput()
 {
     Q_D(SlaveInterface);
-    if (d->dead) {
+    if (d->m_dead) {
         // already dead? then slaveDied was emitted and we are done
         return;
     }
     ref();
     if (!dispatch()) {
-        d->connection->close();
-        d->dead = true;
+        d->m_connection->close();
+        d->m_dead = true;
         QString arg = d->m_protocol;
         if (!d->m_host.isEmpty()) {
             arg += QString::fromLatin1("://") + d->m_host;
