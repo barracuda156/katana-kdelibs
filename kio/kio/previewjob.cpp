@@ -531,20 +531,13 @@ void PreviewJobPrivate::slotThumbData(KIO::Job *, const QByteArray &data)
                 currentItem.plugin->property("CacheThumbnail").toBool() &&
                 (currentItem.item.url().protocol() != "file" ||
                  !currentItem.item.url().directory( KUrl::AddTrailingSlash ).startsWith(thumbRoot));
-    QImage thumb;
-    QDataStream s(data);
-    s >> thumb;
-
-    QString tempFileName;
-    bool savedCorrectly = false;
-    if (save) {
-        // Only try to write out the thumbnail if we actually created the temp file.
-        tempFileName = KTemporaryFile::filePath(QString::fromLatin1("XXXXXXXXXX%1").arg(thumbExt));
-        savedCorrectly = thumb.save(tempFileName, thumbFormat);
-    }
-    if (savedCorrectly) {
-        Q_ASSERT(!tempFileName.isEmpty());
-        KDE::rename(tempFileName, thumbPath + thumbName);
+    const QString imagePath = QFile::decodeName(data);
+    QImage thumb = QImage(imagePath);
+    if (save && !thumb.isNull()) {
+        Q_ASSERT(!imagePath.isEmpty());
+        KDE::rename(imagePath, thumbPath + thumbName);
+    } else {
+        QFile::remove(imagePath);
     }
     emitPreview(thumb);
     succeeded = true;
