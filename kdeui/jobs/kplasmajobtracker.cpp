@@ -208,8 +208,6 @@ void KPlasmaJobTracker::description(KJob *job, const QString &title,
 
 void KPlasmaJobTracker::infoMessage(KJob *job, const QString &plain, const QString &rich)
 {
-    Q_UNUSED(rich);
-
     if (!d->jobs.contains(job)) {
         return;
     }
