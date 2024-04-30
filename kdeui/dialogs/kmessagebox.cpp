@@ -211,8 +211,7 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
 
 
     bool usingScrollArea = desktop.height() / 3 < messageLabel->sizeHint().height();
-    if (usingScrollArea)
-    {
+    if (usingScrollArea) {
         QScrollArea* messageScrollArea = new QScrollArea(mainWidget);
         messageScrollArea->setWidget(messageLabel);
         messageScrollArea->setFrameShape(QFrame::NoFrame);
@@ -227,8 +226,6 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
 
     const bool usingListWidget = !strlist.isEmpty();
     if (usingListWidget) {
-        // enable automatic wrapping since the listwidget has already a good initial width
-        messageLabel->setWordWrap(true);
         QListWidget *listWidget = new QListWidget(mainWidget);
         listWidget->addItems(strlist);
 
@@ -266,27 +263,16 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     if (!details.isEmpty()) {
         QGroupBox *detailsGroup = new QGroupBox(i18n("Details"));
         QVBoxLayout *detailsLayout = new QVBoxLayout(detailsGroup);
-        if (details.length() < 512) {
-            QLabel *detailsLabel = new QLabel(details, detailsGroup);
-            detailsLabel->setOpenExternalLinks(options & KMessageBox::AllowLink);
-            Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
-            if ( options & KMessageBox::AllowLink )
-                flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
-            detailsLabel->setTextInteractionFlags(flags);
-            detailsLabel->setWordWrap(true);
-            detailsLayout->addWidget(detailsLabel,50);
-        } else {
-            QTextBrowser *detailTextBrowser = new QTextBrowser(detailsGroup);
-            detailTextBrowser->setHtml(details);
-            detailTextBrowser->setReadOnly(true);
-            detailTextBrowser->setMinimumHeight(detailTextBrowser->fontMetrics().lineSpacing() * 11);
-            detailTextBrowser->setOpenExternalLinks(options & KMessageBox::AllowLink);
-            Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
-            if ( options & KMessageBox::AllowLink )
-                flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
-            detailTextBrowser->setTextInteractionFlags(flags);
-            detailsLayout->addWidget(detailTextBrowser,50);
-        }
+        QTextBrowser *detailTextBrowser = new QTextBrowser(detailsGroup);
+        detailTextBrowser->setHtml(details);
+        detailTextBrowser->setReadOnly(true);
+        detailTextBrowser->setMinimumHeight(detailTextBrowser->fontMetrics().lineSpacing() * 11);
+        detailTextBrowser->setOpenExternalLinks(options & KMessageBox::AllowLink);
+        Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
+        if ( options & KMessageBox::AllowLink )
+            flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
+        detailTextBrowser->setTextInteractionFlags(flags);
+        detailsLayout->addWidget(detailTextBrowser,50);
         if (!usingListWidget)
             mainLayout->setStretchFactor(hLayout,10);
         dialog->setDetailsWidget(detailsGroup);
