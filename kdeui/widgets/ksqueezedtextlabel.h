@@ -36,9 +36,8 @@ class KSqueezedTextLabelPrivate;
  * http://www.kde.org/documentation/index.html could be squeezed to
  * http://www.kde...ion/index.html
  *
- * \image html ksqueezedtextlabel.png "KSqueezedTextLabel Widget"
- *
  * @author Ronny Standtke <Ronny.Standtke@gmx.de>
+ * @warning do not use to display rich text
  */
 class KDEUI_EXPORT KSqueezedTextLabel : public QLabel
 {
@@ -89,8 +88,8 @@ public Q_SLOTS:
      * \code
      * KSqueezedTextLabel* squeezed = new KSqueezedTextLabel("text", parent);
      * QLabel* label = squeezed;
-     * label->setText("new text");	// this will not work
-     * squeezed->setText("new text");	// works as expected
+     * label->setText("new text"); // this will not work
+     * squeezed->setText("new text"); // works as expected
      * static_cast<KSqueezedTextLabel*>(label)->setText("new text");	// works as expected
      * \endcode
      * @param mode The new text.
