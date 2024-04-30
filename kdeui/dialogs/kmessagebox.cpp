@@ -26,7 +26,6 @@
 #include "knotification.h"
 #include "kiconloader.h"
 #include "kconfiggroup.h"
-#include "ksqueezedtextlabel.h"
 #include "kwindowsystem.h"
 #include "kpixmapwidget.h"
 
@@ -206,27 +205,12 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     messageLabel->setTextInteractionFlags(flags);
 
     QRect desktop = QApplication::desktop()->screenGeometry(dialog);
-    bool usingSqueezedTextLabel = false;
-    if (messageLabel->sizeHint().width() > desktop.width() * 0.5) {
-        // enable automatic wrapping of messages which are longer than 50% of screen width
-        messageLabel->setWordWrap(true);
-        // display a text widget with scrollbar if still too wide
-        usingSqueezedTextLabel = messageLabel->sizeHint().width() > desktop.width() * 0.85;
-        if (usingSqueezedTextLabel)
-        {
-            delete messageLabel;
-            messageLabel = new KSqueezedTextLabel(text, mainWidget);
-            messageLabel->setOpenExternalLinks(options & KMessageBox::AllowLink);
-            messageLabel->setTextInteractionFlags(flags);
-        }
-    }
-
     QPalette messagePal(messageLabel->palette());
     messagePal.setColor(QPalette::Window, Qt::transparent);
     messageLabel->setPalette(messagePal);
 
 
-    bool usingScrollArea=desktop.height() / 3 < messageLabel->sizeHint().height();
+    bool usingScrollArea = desktop.height() / 3 < messageLabel->sizeHint().height();
     if (usingScrollArea)
     {
         QScrollArea* messageScrollArea = new QScrollArea(mainWidget);
@@ -309,7 +293,7 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     }
 
     dialog->setMainWidget(mainWidget);
-    if (!usingListWidget && !usingScrollArea && !usingSqueezedTextLabel && details.isEmpty())
+    if (!usingListWidget && !usingScrollArea && details.isEmpty())
         dialog->setFixedSize(dialog->sizeHint() + QSize( 10, 10 ));
     else if (!details.isEmpty() && dialog->minimumHeight()<iconWidget->sizeHint().height()*2)//strange bug...
     {
