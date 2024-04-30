@@ -182,38 +182,45 @@ int KIO::JobUiDelegate::requestMessageBox(KIO::JobUiDelegate::MessageBoxType typ
 
     const KGuiItem buttonYesGui (buttonYes, iconYes);
     const KGuiItem buttonNoGui (buttonNo, iconNo);
-    KMessageBox::Options options = (KMessageBox::Notify | KMessageBox::WindowModal);
-
+    KMessageBox::Options options = (KMessageBox::Notify | KMessageBox::WindowModal | KMessageBox::AllowLink);
     switch (type) {
-    case QuestionYesNo:
-        result = KMessageBox::questionYesNo(
-                    window(), text, caption, buttonYesGui,
-                    buttonNoGui, dontAskAgainName, options);
-        break;
-    case WarningYesNo:
-        result = KMessageBox::warningYesNo(
-                    window(), text, caption, buttonYesGui,
-                    buttonNoGui, dontAskAgainName,
-                    options | KMessageBox::Dangerous);
-        break;
-    case WarningYesNoCancel:
-        result = KMessageBox::warningYesNoCancel(
-                    window(), text, caption, buttonYesGui, buttonNoGui,
-                    KStandardGuiItem::cancel(), dontAskAgainName, options);
-        break;
-    case WarningContinueCancel:
-        result = KMessageBox::warningContinueCancel(
-                    window(), text, caption, buttonYesGui,
-                    KStandardGuiItem::cancel(), dontAskAgainName, options);
-        break;
-    case Information:
-        KMessageBox::information(window(), text, caption, dontAskAgainName, options);
-        result = 1; // whatever
-        break;
-    default:
-        kWarning() << "Unknown type" << type;
-        result = 0;
-        break;
+        case KIO::JobUiDelegate::QuestionYesNo: {
+            result = KMessageBox::questionYesNo(
+                window(), text, caption, buttonYesGui,
+                buttonNoGui, dontAskAgainName, options
+            );
+            break;
+        }
+        case KIO::JobUiDelegate::WarningYesNo:
+            result = KMessageBox::warningYesNo(
+                window(), text, caption, buttonYesGui,
+                buttonNoGui, dontAskAgainName,
+                options | KMessageBox::Dangerous
+            );
+            break;
+        case KIO::JobUiDelegate::WarningYesNoCancel:
+            result = KMessageBox::warningYesNoCancel(
+                window(), text, caption, buttonYesGui, buttonNoGui,
+                KStandardGuiItem::cancel(), dontAskAgainName, options
+            );
+            break;
+        case KIO::JobUiDelegate::WarningContinueCancel: {
+            result = KMessageBox::warningContinueCancel(
+                window(), text, caption, buttonYesGui,
+                KStandardGuiItem::cancel(), dontAskAgainName, options
+            );
+            break;
+        }
+        case KIO::JobUiDelegate::Information: {
+            KMessageBox::information(window(), text, caption, dontAskAgainName, options);
+            result = 1; // whatever
+            break;
+        }
+        default: {
+            kWarning() << "Unknown type" << type;
+            result = 0;
+            break;
+        }
     }
     KMessageBox::setDontShowAskAgainConfig(0);
     return result;
@@ -229,7 +236,10 @@ void KIO::JobUiDelegate::showErrorMessage()
             const QStringList errors = kiosimplejob->detailedErrorStrings(&kiosimplejoburl);
             // qDebug() << Q_FUNC_INFO << errors;
             Q_ASSERT(errors.size() == 3);
-            KMessageBox::detailedError(window(), errors[1], errors[2], errors[0]);
+            KMessageBox::detailedError(
+                window(), errors[1], errors[2], errors[0],
+                KMessageBox::Notify | KMessageBox::AllowLink
+            );
             return;
         }
 
@@ -238,7 +248,10 @@ void KIO::JobUiDelegate::showErrorMessage()
             const QStringList errors = kiojob->detailedErrorStrings();
             Q_ASSERT(errors.size() == 3);
             // qDebug() << Q_FUNC_INFO << errors;
-            KMessageBox::detailedError(window(), errors[1], errors[2], errors[0]);
+            KMessageBox::detailedError(
+                window(), errors[1], errors[2], errors[0],
+                KMessageBox::Notify | KMessageBox::AllowLink
+            );
             return;
         }
 
