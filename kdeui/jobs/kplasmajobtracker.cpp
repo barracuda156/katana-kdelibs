@@ -92,10 +92,6 @@ void KPlasmaJobTracker::registerJob(KJob *job)
     }
 
     const KComponentData componentData = KGlobal::mainComponent();
-    QString appName = job->property("appName").toString();
-    if (appName.isEmpty()) {
-        appName = componentData.aboutData()->programName();
-    }
     QString appIconName = job->property("appIconName").toString();
     if (appIconName.isEmpty()) {
         appIconName = componentData.aboutData()->programIconName();
@@ -109,7 +105,6 @@ void KPlasmaJobTracker::registerJob(KJob *job)
     const QString jobid = kJobID(job);
     QVariantMap jobdata;
     jobdata.insert("infoMessage", QString());
-    jobdata.insert("appName", appName); // currently not used
     jobdata.insert("appIconName", appIconName);
     jobdata.insert("labelName0", QString());
     jobdata.insert("labelName1", QString());

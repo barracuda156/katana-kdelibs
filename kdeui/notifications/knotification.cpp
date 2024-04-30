@@ -187,12 +187,7 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
                 eventactions.append(eventaction);
                 actionscounter++;
             }
-            QString eventapp = globalcomment;
-            if (eventapp.isEmpty()) {
-                eventapp = KGlobal::mainComponent().componentName();
-            }
 
-            eventdata.insert("appName", eventapp); // unused
             eventdata.insert("appIcon", eventicon);
             eventdata.insert("summary", eventtitle); // unused
             eventdata.insert("body", eventtext);
