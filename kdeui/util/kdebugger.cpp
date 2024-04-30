@@ -892,7 +892,11 @@ void KDebuggerPrivate::slotItemSelectionChanged()
         QTableWidgetItem* propertynameitem = new QTableWidgetItem(metaproperty.name());
         propertynameitem->setFlags(Qt::ItemIsEnabled);
         propertieswidget->setItem(propertiesrowcount, 0, propertynameitem);
-        QTableWidgetItem* propertyvalueitem = new QTableWidgetItem(metaproperty.read(m_object).toString());
+        const QVariant propertyvalue = metaproperty.read(m_object);
+        if (!propertyvalue.isValid()) {
+            kWarning() << "property value is not valid" << metaproperty.name();
+        }
+        QTableWidgetItem* propertyvalueitem = new QTableWidgetItem(propertyvalue.toString());
         Qt::ItemFlags propertyvalueflags = (Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         if (metaproperty.isWritable()) {
             propertyvalueflags |= Qt::ItemIsEditable;
@@ -913,9 +917,15 @@ void KDebuggerPrivate::slotItemChanged(QTableWidgetItem *propertyvalueitem)
         return;
     }
     const int propertyindex = propertyvalueitem->data(Qt::UserRole).toInt();
+    const QString propertyvalue = propertyvalueitem->text();
     const QMetaObject* metaobject = m_object->metaObject();
     QMetaProperty metaproperty = metaobject->property(propertyindex);
-    metaproperty.write(m_object, propertyvalueitem->text());
+    if (!metaproperty.write(m_object, propertyvalue)) {
+        kWarning() << "could not write property" << metaproperty.name();
+        propertieswidget->blockSignals(true);
+        propertyvalueitem->setText(metaproperty.read(m_object).toString());
+        propertieswidget->blockSignals(false);
+    }
 }
 
 void KDebuggerPrivate::slotFuzzReleased()
