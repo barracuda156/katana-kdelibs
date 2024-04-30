@@ -78,24 +78,24 @@ KShortcutsDialog::KShortcutsDialog(KShortcutsEditor::ActionTypes types,
     d(new KShortcutsDialogPrivate(this))
 {
     setCaption(i18n("Configure Shortcuts"));
-    setButtons(KDialog::Reset | KDialog::Ok| KDialog::Cancel);
+    setButtons(KDialog::Reset | KDialog::Ok | KDialog::Cancel);
     setModal(true);
     d->m_keyChooser = new KShortcutsEditor(this, types, allowLetterShortcuts);
-    setMainWidget( d->m_keyChooser );
-    setButtonText(Reset,i18n("Reset to Defaults"));
+    setMainWidget(d->m_keyChooser);
+    setButtonText(Reset, i18n("Reset to Defaults"));
 
     connect(this, SIGNAL(resetClicked()), d->m_keyChooser, SLOT(allDefault()));
     connect(this, SIGNAL(okClicked()), this, SLOT(save()));
 
     KConfigGroup group(KGlobal::config(), "KShortcutsDialog Settings");
-    resize(group.readEntry( "Dialog Size", sizeHint()));
+    resize(group.readEntry("Dialog Size", sizeHint()));
 }
 
 
 KShortcutsDialog::~KShortcutsDialog()
 {
     KConfigGroup group(KGlobal::config(), "KShortcutsDialog Settings");
-    group.writeEntry("Dialog Size", size(), KConfigGroup::Persistent|KConfigGroup::Global);
+    group.writeEntry("Dialog Size", size(), KConfigGroup::Persistent | KConfigGroup::Global);
     delete d;
 }
 
@@ -103,6 +103,7 @@ KShortcutsDialog::~KShortcutsDialog()
 void KShortcutsDialog::addCollection(KActionCollection *collection, const QString &title)
 {
     d->m_keyChooser->addCollection(collection, title);
+    d->m_keyChooser->importConfiguration();
     d->m_collections << collection;
 }
 
@@ -132,7 +133,7 @@ int KShortcutsDialog::configure(KActionCollection *collection,
 {
     kDebug(125) << "KShortcutsDialog::configure()" << collection;
     KShortcutsDialog dlg(KShortcutsEditor::AllActions, allowLetterShortcuts, parent);
-    dlg.d->m_keyChooser->addCollection(collection);
+    dlg.addCollection(collection);
     return dlg.configure();
 }
 
