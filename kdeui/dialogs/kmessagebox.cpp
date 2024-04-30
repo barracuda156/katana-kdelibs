@@ -301,32 +301,23 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         return KMessageBox::Cancel; // We have to return something.
     }
 
-    // use a QPointer because the dialog may get deleted
-    // during exec() if the parent of the dialog gets deleted.
-    // In that case the QPointer will reset to 0.
-    QPointer<KDialog> guardedDialog = dialog;
-
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
     // raise the dialog in case the parent is minimized (hidden), e.g. status
     // status notifier item (kget)
-    guardedDialog->show();
-    KWindowSystem::raiseWindow(guardedDialog->winId());
-    KWindowSystem::forceActiveWindow(guardedDialog->winId());
+    dialog->show();
+    KWindowSystem::raiseWindow(dialog->winId());
+    KWindowSystem::forceActiveWindow(dialog->winId());
 
-    const int result = guardedDialog->exec();
+    const int result = dialog->exec();
     if (checkbox && checkboxReturn) {
         *checkboxReturn = checkbox->isChecked();
     }
-
-    delete (KDialog *) guardedDialog;
     return result;
 }
 
-int KMessageBox::questionYesNo(QWidget *parent, const QString &text,
-                           const QString &caption,
-                           const KGuiItem &buttonYes,
-                           const KGuiItem &buttonNo,
-                           const QString &dontAskAgainName,
-                           Options options)
+int KMessageBox::questionYesNo(QWidget *parent, const QString &text, const QString &caption,
+                               const KGuiItem &buttonYes, const KGuiItem &buttonNo,
+                               const QString &dontAskAgainName, Options options)
 {
     return questionYesNoList(
         parent, text, QStringList(), caption,
@@ -670,11 +661,11 @@ int KMessageBox::warningContinueCancelListWId(WId parent_id, const QString &text
     I18N_FILTER_BUTTON_CANCEL(buttonCancel_, buttonCancel)
     I18N_POST_BUTTON_FILTER
 
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Warning") : caption);
-    dialog->setButtons( KDialog::Yes | KDialog::No );
-    dialog->setObjectName("warningYesNo" );
+    dialog->setCaption(caption.isEmpty() ? i18n("Warning") : caption);
+    dialog->setButtons(KDialog::Yes | KDialog::No);
+    dialog->setObjectName("warningYesNo");
     dialog->setButtonGuiItem(KDialog::Yes, buttonContinue);
     dialog->setButtonGuiItem(KDialog::No, buttonCancel);
     dialog->setDefaultButton(KDialog::Yes);
@@ -762,7 +753,7 @@ int KMessageBox::warningYesNoCancelListWId(WId parent_id, const QString &text,
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
     dialog->setCaption(caption.isEmpty() ? i18n("Warning") : caption);
     dialog->setButtons(KDialog::Yes | KDialog::No | KDialog::Cancel);
-    dialog->setObjectName("warningYesNoCancel" );
+    dialog->setObjectName("warningYesNoCancel");
     dialog->setButtonGuiItem(KDialog::Yes, buttonYes);
     dialog->setButtonGuiItem(KDialog::No, buttonNo);
     dialog->setButtonGuiItem(KDialog::Cancel, buttonCancel);
@@ -845,7 +836,7 @@ void KMessageBox::detailedErrorWId(WId parent_id,  const QString &text,
                                    const QString &details,
                                    const QString &caption, Options options)
 {
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
     dialog->setCaption(caption.isEmpty() ? i18n("Error") : caption);
     dialog->setButtons(KDialog::Ok | KDialog::Details);
@@ -960,7 +951,7 @@ void KMessageBox::informationListWId(WId parent_id,const QString &text, const QS
         return;
     }
 
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
     dialog->setCaption(caption.isEmpty() ? i18n("Information") : caption);
     dialog->setButtons(KDialog::Ok);
