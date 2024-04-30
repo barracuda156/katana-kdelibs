@@ -425,6 +425,9 @@ void KConfigDialogManager::setProperty(QWidget *w, const QVariant &v)
 
     QByteArray customproperty = getCustomProperty(w);
     if (customproperty.isEmpty()) {
+        customproperty = s_propertyMap->value(w->metaObject()->className());
+    }
+    if (customproperty.isEmpty()) {
         QComboBox *cb = qobject_cast<QComboBox *>(w);
         if (cb) {
             if (cb->isEditable()) {
@@ -455,6 +458,9 @@ QVariant KConfigDialogManager::property(QWidget *w) const
     return QVariant(bg->id(bg->checkedButton()));*/
 
     QByteArray customproperty = getCustomProperty(w);
+    if (customproperty.isEmpty()) {
+        customproperty = s_propertyMap->value(w->metaObject()->className());
+    }
     if (customproperty.isEmpty()) {
         QComboBox *cb = qobject_cast<QComboBox *>(w);
         if (cb) {
