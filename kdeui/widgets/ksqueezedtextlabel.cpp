@@ -32,6 +32,10 @@
 class KSqueezedTextLabelPrivate
 {
 public:
+    KSqueezedTextLabelPrivate()
+        : elideMode(Qt::ElideMiddle)
+    {
+    }
 
     void _k_copyFullText()
     {
@@ -42,22 +46,20 @@ public:
     Qt::TextElideMode elideMode;
 };
 
-KSqueezedTextLabel::KSqueezedTextLabel(const QString &text , QWidget *parent)
+KSqueezedTextLabel::KSqueezedTextLabel(const QString &text, QWidget *parent)
     : QLabel (parent),
-    d(new KSqueezedTextLabelPrivate)
+    d(new KSqueezedTextLabelPrivate())
 {
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
     d->fullText = text;
-    d->elideMode = Qt::ElideMiddle;
     squeezeTextToLabel();
 }
 
 KSqueezedTextLabel::KSqueezedTextLabel(QWidget *parent)
- : QLabel (parent),
-  d(new KSqueezedTextLabelPrivate)
+    : QLabel (parent),
+    d(new KSqueezedTextLabelPrivate())
 {
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-    d->elideMode = Qt::ElideMiddle;
 }
 
 KSqueezedTextLabel::~KSqueezedTextLabel()
@@ -65,8 +67,9 @@ KSqueezedTextLabel::~KSqueezedTextLabel()
     delete d;
 }
 
-void KSqueezedTextLabel::resizeEvent(QResizeEvent *)
+void KSqueezedTextLabel::resizeEvent(QResizeEvent *event)
 {
+    Q_UNUSED(event);
     squeezeTextToLabel();
 }
 
@@ -106,7 +109,7 @@ void KSqueezedTextLabel::squeezeTextToLabel()
     int labelWidth = size().width();
     QStringList squeezedLines;
     bool squeezed = false;
-    foreach (const QString& line, d->fullText.split('\n')) {
+    foreach (const QString &line, d->fullText.split(QLatin1Char('\n'))) {
         int lineWidth = fm.width(line);
         if (lineWidth > labelWidth) {
             squeezed = true;
@@ -138,7 +141,7 @@ Qt::TextElideMode KSqueezedTextLabel::textElideMode() const
     return d->elideMode;
 }
 
-void KSqueezedTextLabel::setTextElideMode(Qt::TextElideMode mode)
+void KSqueezedTextLabel::setTextElideMode(const Qt::TextElideMode mode)
 {
     d->elideMode = mode;
     squeezeTextToLabel();
@@ -149,16 +152,10 @@ QString KSqueezedTextLabel::fullText() const
     return d->fullText;
 }
 
-void KSqueezedTextLabel::contextMenuEvent(QContextMenuEvent* ev)
+void KSqueezedTextLabel::contextMenuEvent(QContextMenuEvent *event)
 {
-    // We want to reimplement "Copy" to include the elided text.
-    // But this means reimplementing the full popup menu, so no more
-    // copy-link-address or copy-selection support anymore, since we
-    // have no access to the QTextDocument.
-    // Maybe we should have a boolean flag in KSqueezedTextLabel itself for
-    // whether to show the "Copy Full Text" custom popup?
-    // For now I chose to show it when the text is squeezed; when it's not, the
-    // standard popup menu can do the job (select all, copy).
+    // want to reimplement "Copy" to include the elided text but this means reimplementing the full
+    // popup menu, so no more copy-link-address or copy-selection support anymore
 
     const bool squeezed = text() != d->fullText;
     const bool showCustomPopup = squeezed;
@@ -169,18 +166,18 @@ void KSqueezedTextLabel::contextMenuEvent(QContextMenuEvent* ev)
         connect(act, SIGNAL(triggered()), this, SLOT(_k_copyFullText()));
         menu.addAction(act);
 
-        ev->accept();
-        menu.exec(ev->globalPos());
+        event->accept();
+        menu.exec(event->globalPos());
     } else {
-        QLabel::contextMenuEvent(ev);
+        QLabel::contextMenuEvent(event);
     }
 }
 
-void KSqueezedTextLabel::mouseReleaseEvent(QMouseEvent* ev)
+void KSqueezedTextLabel::mouseReleaseEvent(QMouseEvent *event)
 {
     if (QApplication::clipboard()->supportsSelection() &&
         textInteractionFlags() != Qt::NoTextInteraction &&
-        ev->button() == Qt::LeftButton &&
+        event->button() == Qt::LeftButton &&
         !d->fullText.isEmpty() &&
         hasSelectedText()) {
         // Expand "..." when selecting with the mouse
@@ -206,7 +203,7 @@ void KSqueezedTextLabel::mouseReleaseEvent(QMouseEvent* ev)
         }
         QApplication::clipboard()->setText(txt, QClipboard::Selection);
     } else {
-        QLabel::mouseReleaseEvent(ev);
+        QLabel::mouseReleaseEvent(event);
     }
 }
 
