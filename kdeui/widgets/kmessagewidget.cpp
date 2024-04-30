@@ -122,8 +122,8 @@ void KMessageWidgetPrivate::updateColors()
     const KColorScheme scheme(QPalette::Active, KColorScheme::Window);
     switch (messagetype) {
         case KMessageWidget::Information: {
-            // even tho the selection color may be more suitable for that it cannot be used because
-            // the text is selectable
+            // even tho the selection color may be more suitable for that there is KColorScheme
+            // background type for it
             textlabel->bg = scheme.background(KColorScheme::PositiveBackground).color();
             break;
         }
@@ -185,7 +185,8 @@ KMessageWidget::KMessageWidget(QWidget *parent)
 
     d->textlabel = new KMessageLabel(this);
     d->textlabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    d->textlabel->setTextInteractionFlags(Qt::TextBrowserInteraction | Qt::LinksAccessibleByMouse);
+    d->textlabel->setOpenExternalLinks(true);
+    d->textlabel->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
     d->textlabel->setAlignment(Qt::AlignCenter);
     connect(d->textlabel, SIGNAL(linkActivated(QString)), this, SIGNAL(linkActivated(QString)));
     connect(d->textlabel, SIGNAL(linkHovered(QString)), this, SIGNAL(linkHovered(QString)));

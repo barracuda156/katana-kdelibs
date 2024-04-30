@@ -212,7 +212,7 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         styleOption.initFrom(listWidget);
         QFontMetrics fm(styleOption.font);
         int w = listWidget->width();
-        Q_FOREACH(const QString &str, strlist) {
+        foreach (const QString &str, strlist) {
             w = qMax(w, fm.width(str));
         }
         const int borderWidth = listWidget->width() - listWidget->viewport()->width() + listWidget->verticalScrollBar()->height();
@@ -246,8 +246,9 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         detailTextBrowser->setMinimumHeight(detailTextBrowser->fontMetrics().lineSpacing() * 11);
         detailTextBrowser->setOpenExternalLinks(options & KMessageBox::AllowLink);
         Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
-        if ( options & KMessageBox::AllowLink )
+        if (options & KMessageBox::AllowLink) {
             flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
+        }
         detailTextBrowser->setTextInteractionFlags(flags);
         detailsLayout->addWidget(detailTextBrowser, 50);
         if (!usingListWidget) {
