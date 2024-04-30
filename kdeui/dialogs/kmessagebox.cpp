@@ -28,6 +28,7 @@
 #include "kconfiggroup.h"
 #include "kwindowsystem.h"
 #include "kpixmapwidget.h"
+#include "kdebug.h"
 
 #include <QtCore/QPointer>
 #include <QtCore/QDebug>
@@ -178,23 +179,17 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->setMargin(0);
     hLayout->setSpacing(-1); // use default spacing
-    mainLayout->addLayout(hLayout,5);
+    mainLayout->addLayout(hLayout, 5);
 
     KPixmapWidget *iconWidget = new KPixmapWidget(mainWidget);
-
     if (!icon.isNull()) {
         QStyleOption option;
         option.initFrom(mainWidget);
-        iconWidget->setPixmap(icon.pixmap(mainWidget->style()->pixelMetric(QStyle::PM_MessageBoxIconSize, &option, mainWidget)));
+        const int iconSize = mainWidget->style()->pixelMetric(QStyle::PM_MessageBoxIconSize, &option, mainWidget);
+        iconWidget->setPixmap(icon.pixmap(iconSize));
+        iconWidget->setMinimumSize(QSize(iconSize, iconSize));
     }
-
-    QVBoxLayout *iconLayout = new QVBoxLayout();
-    iconLayout->addStretch(1);
-    iconLayout->addWidget(iconWidget);
-    iconLayout->addStretch(5);
-
-    hLayout->addLayout(iconLayout,0);
-    hLayout->addSpacing(KDialog::spacingHint());
+    hLayout->addWidget(iconWidget, 0, Qt::AlignTop | Qt::AlignVCenter);
 
     QLabel *messageLabel = new QLabel(text, mainWidget);
     messageLabel->setOpenExternalLinks(options & KMessageBox::AllowLink);
@@ -203,27 +198,11 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
     }
     messageLabel->setTextInteractionFlags(flags);
+    messageLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 
-    QRect desktop = QApplication::desktop()->screenGeometry(dialog);
-    QPalette messagePal(messageLabel->palette());
-    messagePal.setColor(QPalette::Window, Qt::transparent);
-    messageLabel->setPalette(messagePal);
+    hLayout->addWidget(messageLabel, 5, Qt::AlignTop | Qt::AlignLeft);
 
-
-    bool usingScrollArea = desktop.height() / 3 < messageLabel->sizeHint().height();
-    if (usingScrollArea) {
-        QScrollArea* messageScrollArea = new QScrollArea(mainWidget);
-        messageScrollArea->setWidget(messageLabel);
-        messageScrollArea->setFrameShape(QFrame::NoFrame);
-        messageScrollArea->setWidgetResizable(true);
-        QPalette scrollPal(messageScrollArea->palette());
-        scrollPal.setColor(QPalette::Window, Qt::transparent);
-        messageScrollArea->viewport()->setPalette(scrollPal);
-        hLayout->addWidget(messageScrollArea,5);
-    } else {
-        hLayout->addWidget(messageLabel,5);
-    }
-
+    const QRect desktop = QApplication::desktop()->screenGeometry(dialog);
     const bool usingListWidget = !strlist.isEmpty();
     if (usingListWidget) {
         QListWidget *listWidget = new QListWidget(mainWidget);
@@ -243,12 +222,9 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         }
         listWidget->setMinimumWidth(w);
 
-        mainLayout->addWidget(listWidget,usingScrollArea?10:50);
+        mainLayout->addWidget(listWidget, 50);
         listWidget->setSelectionMode(QListWidget::NoSelection);
-        messageLabel->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Minimum);
     }
-    else if (!usingScrollArea)
-        mainLayout->addStretch(15);
 
 
     QPointer<QCheckBox> checkbox = 0;
@@ -260,8 +236,9 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         }
     }
 
+    QGroupBox *detailsGroup = nullptr;
     if (!details.isEmpty()) {
-        QGroupBox *detailsGroup = new QGroupBox(i18n("Details"));
+        detailsGroup = new QGroupBox(i18n("Details"));
         QVBoxLayout *detailsLayout = new QVBoxLayout(detailsGroup);
         QTextBrowser *detailTextBrowser = new QTextBrowser(detailsGroup);
         detailTextBrowser->setHtml(details);
@@ -272,29 +249,37 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         if ( options & KMessageBox::AllowLink )
             flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
         detailTextBrowser->setTextInteractionFlags(flags);
-        detailsLayout->addWidget(detailTextBrowser,50);
-        if (!usingListWidget)
-            mainLayout->setStretchFactor(hLayout,10);
+        detailsLayout->addWidget(detailTextBrowser, 50);
+        if (!usingListWidget) {
+            mainLayout->setStretchFactor(hLayout, 10);
+        }
         dialog->setDetailsWidget(detailsGroup);
     }
 
     dialog->setMainWidget(mainWidget);
-    if (!usingListWidget && !usingScrollArea && details.isEmpty())
-        dialog->setFixedSize(dialog->sizeHint() + QSize( 10, 10 ));
-    else if (!details.isEmpty() && dialog->minimumHeight()<iconWidget->sizeHint().height()*2)//strange bug...
-    {
-        if (!usingScrollArea)
-            dialog->setMinimumSize(300,qMax(150,qMax(iconWidget->sizeHint().height(),messageLabel->sizeHint().height())));
-        else
-            dialog->setMinimumSize(300,qMax(150,iconWidget->sizeHint().height()));
+    // HACK: force KDialog to re-layout and change the details widget stretch factor because the
+    // main widget stretch factor is 10, everything else uses default stretch factor (less)
+    dialog->adjustSize();
+    if (detailsGroup) {
+        QVBoxLayout* dialogVLayout = qobject_cast<QVBoxLayout*>(dialog->layout());
+        if (dialogVLayout) {
+            dialogVLayout->setStretchFactor(detailsGroup, 200);
+        } else {
+            QHBoxLayout* dialogHLayout = qobject_cast<QHBoxLayout*>(dialog->layout());
+            if (dialogHLayout) {
+                dialogHLayout->setStretchFactor(detailsGroup, 200);
+            } else {
+                kWarning() << "dialog layout is neither QVBoxLayout nor QHBoxLayout";
+            }
+        }
     }
 
-
     if ((options & KMessageBox::Dangerous)) {
-        if (dialog->isButtonEnabled(KDialog::Cancel))
+        if (dialog->isButtonEnabled(KDialog::Cancel)) {
             dialog->setDefaultButton(KDialog::Cancel);
-        else if (dialog->isButtonEnabled(KDialog::No))
+        } else if (dialog->isButtonEnabled(KDialog::No)) {
             dialog->setDefaultButton(KDialog::No);
+        }
     }
 
     KDialog::ButtonCode defaultCode = dialog->defaultButton();
