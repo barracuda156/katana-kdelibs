@@ -438,25 +438,27 @@ int KMessageBox::questionYesNoListWId(WId parent_id, const QString &text,
 
     QWidget* parent = QWidget::find( parent_id );
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Question") : caption );
-    dialog->setButtons( KDialog::Yes | KDialog::No );
-    dialog->setObjectName( "questionYesNo" );
-    dialog->setButtonGuiItem( KDialog::Yes, buttonYes );
-    dialog->setButtonGuiItem( KDialog::No, buttonNo );
-    dialog->setDefaultButton( KDialog::Yes );
-    dialog->setEscapeButton( KDialog::No );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Question") : caption);
+    dialog->setButtons(KDialog::Yes | KDialog::No);
+    dialog->setObjectName("questionYesNo");
+    dialog->setButtonGuiItem(KDialog::Yes, buttonYes);
+    dialog->setButtonGuiItem(KDialog::No, buttonNo);
+    dialog->setDefaultButton(KDialog::Yes);
+    dialog->setEscapeButton(KDialog::No);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     bool checkboxResult = false;
-    const int result = createKMessageBox(dialog, QMessageBox::Information, text, strlist,
-                       dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
-                       &checkboxResult, options);
+    const int result = createKMessageBox(
+        dialog, QMessageBox::Information, text, strlist,
+        dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
+        &checkboxResult, options
+    );
     res = (result==KDialog::Yes ? Yes : No);
 
     if (checkboxResult) {
@@ -499,28 +501,29 @@ int KMessageBox::questionYesNoCancelWId(WId parent_id,
 
     QWidget* parent = QWidget::find( parent_id );
     KDialog *dialog= new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Question") : caption );
-    dialog->setButtons( KDialog::Yes | KDialog::No | KDialog::Cancel );
-    dialog->setObjectName( "questionYesNoCancel" );
-    dialog->setButtonGuiItem( KDialog::Yes, buttonYes );
-    dialog->setButtonGuiItem( KDialog::No, buttonNo );
-    dialog->setButtonGuiItem( KDialog::Cancel, buttonCancel );
-    dialog->setDefaultButton( KDialog::Yes );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Question") : caption);
+    dialog->setButtons(KDialog::Yes | KDialog::No | KDialog::Cancel);
+    dialog->setObjectName("questionYesNoCancel");
+    dialog->setButtonGuiItem(KDialog::Yes, buttonYes);
+    dialog->setButtonGuiItem(KDialog::No, buttonNo);
+    dialog->setButtonGuiItem(KDialog::Cancel, buttonCancel);
+    dialog->setDefaultButton(KDialog::Yes);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     bool checkboxResult = false;
-    const int result = createKMessageBox(dialog, QMessageBox::Information,
-                       text, QStringList(),
-                       dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
-                       &checkboxResult, options);
-
-    if ( result == KDialog::Yes ) {
+    const int result = createKMessageBox(
+        dialog, QMessageBox::Information,
+        text, QStringList(),
+        dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
+        &checkboxResult, options
+    );
+    if (result == KDialog::Yes) {
         res = Yes;
     } else if ( result == KDialog::No ) {
         res = No;
@@ -585,27 +588,29 @@ int KMessageBox::warningYesNoListWId(WId parent_id, const QString &text,
     I18N_FILTER_BUTTON_NO(buttonNo_, buttonNo)
     I18N_POST_BUTTON_FILTER
 
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Warning") : caption );
-    dialog->setButtons( KDialog::Yes | KDialog::No );
-    dialog->setObjectName( "warningYesNoList" );
-    dialog->setButtonGuiItem( KDialog::Yes, buttonYes );
-    dialog->setButtonGuiItem( KDialog::No, buttonNo );
-    dialog->setDefaultButton( KDialog::No );
-    dialog->setEscapeButton( KDialog::No );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Warning") : caption);
+    dialog->setButtons(KDialog::Yes | KDialog::No);
+    dialog->setObjectName("warningYesNoList");
+    dialog->setButtonGuiItem(KDialog::Yes, buttonYes);
+    dialog->setButtonGuiItem(KDialog::No, buttonNo);
+    dialog->setDefaultButton(KDialog::No);
+    dialog->setEscapeButton(KDialog::No);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     bool checkboxResult = false;
-    const int result = createKMessageBox(dialog, QMessageBox::Warning, text, strlist,
-                       dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
-                       &checkboxResult, options);
+    const int result = createKMessageBox(
+        dialog, QMessageBox::Warning, text, strlist,
+        dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
+        &checkboxResult, options
+    );
     res = (result==KDialog::Yes ? Yes : No);
 
     if (checkboxResult) {
@@ -667,27 +672,28 @@ int KMessageBox::warningContinueCancelListWId(WId parent_id, const QString &text
 
     QWidget* parent = QWidget::find( parent_id );
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Warning") : caption );
+    dialog->setCaption( caption.isEmpty() ? i18n("Warning") : caption);
     dialog->setButtons( KDialog::Yes | KDialog::No );
-    dialog->setObjectName( "warningYesNo" );
-    dialog->setButtonGuiItem( KDialog::Yes, buttonContinue );
-    dialog->setButtonGuiItem( KDialog::No, buttonCancel );
-    dialog->setDefaultButton( KDialog::Yes );
-    dialog->setEscapeButton( KDialog::No );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setObjectName("warningYesNo" );
+    dialog->setButtonGuiItem(KDialog::Yes, buttonContinue);
+    dialog->setButtonGuiItem(KDialog::No, buttonCancel);
+    dialog->setDefaultButton(KDialog::Yes);
+    dialog->setEscapeButton(KDialog::No);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     bool checkboxResult = false;
-    const int result = createKMessageBox(dialog, QMessageBox::Warning, text, strlist,
-                       dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
-                       &checkboxResult, options);
-
-    if ( result != KDialog::Yes ) {
+    const int result = createKMessageBox(
+        dialog, QMessageBox::Warning, text, strlist,
+        dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
+        &checkboxResult, options
+    );
+    if (result != KDialog::Yes) {
         return Cancel;
     }
     if (checkboxResult) {
@@ -754,27 +760,28 @@ int KMessageBox::warningYesNoCancelListWId(WId parent_id, const QString &text,
 
     QWidget* parent = QWidget::find( parent_id );
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Warning") : caption );
-    dialog->setButtons( KDialog::Yes | KDialog::No | KDialog::Cancel );
-    dialog->setObjectName( "warningYesNoCancel" );
-    dialog->setButtonGuiItem( KDialog::Yes, buttonYes );
-    dialog->setButtonGuiItem( KDialog::No, buttonNo );
-    dialog->setButtonGuiItem( KDialog::Cancel, buttonCancel );
-    dialog->setDefaultButton( KDialog::Yes );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Warning") : caption);
+    dialog->setButtons(KDialog::Yes | KDialog::No | KDialog::Cancel);
+    dialog->setObjectName("warningYesNoCancel" );
+    dialog->setButtonGuiItem(KDialog::Yes, buttonYes);
+    dialog->setButtonGuiItem(KDialog::No, buttonNo);
+    dialog->setButtonGuiItem(KDialog::Cancel, buttonCancel);
+    dialog->setDefaultButton(KDialog::Yes);
+    applyOptions(dialog, options );
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     bool checkboxResult = false;
-    const int result = createKMessageBox(dialog, QMessageBox::Warning, text, strlist,
-                       dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
-                       &checkboxResult, options);
-
-    if ( result == KDialog::Yes ) {
+    const int result = createKMessageBox(
+        dialog, QMessageBox::Warning, text, strlist,
+        dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
+        &checkboxResult, options
+    );
+    if (result == KDialog::Yes) {
         res = Yes;
     } else if ( result == KDialog::No ) {
         res = No;
@@ -788,85 +795,82 @@ int KMessageBox::warningYesNoCancelListWId(WId parent_id, const QString &text,
     return res;
 }
 
-void KMessageBox::error(QWidget *parent,  const QString &text,
-                   const QString &caption, Options options)
+void KMessageBox::error(QWidget *parent,  const QString &text, const QString &caption,
+                        Options options)
 {
     return errorListWId( parent ? parent->effectiveWinId() : 0, text, QStringList(), caption, options );
 }
 
-void KMessageBox::errorWId(WId parent_id, const QString &text,
-                      const QString &caption, Options options)
+void KMessageBox::errorWId(WId parent_id, const QString &text, const QString &caption,
+                           Options options)
 {
-    errorListWId( parent_id, text, QStringList(), caption, options );
+    errorListWId(parent_id, text, QStringList(), caption, options);
 }
 
 void KMessageBox::errorList(QWidget *parent, const QString &text, const QStringList &strlist,
-                       const QString &caption, Options options)
+                            const QString &caption, Options options)
 {
-    return errorListWId( parent ? parent->effectiveWinId() : 0, text, strlist, caption, options );
+    return errorListWId(parent ? parent->effectiveWinId() : 0, text, strlist, caption, options);
 }
 
 void KMessageBox::errorListWId(WId parent_id,  const QString &text, const QStringList &strlist,
-                   const QString &caption, Options options)
+                               const QString &caption, Options options)
 {
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Error") : caption );
-    dialog->setButtons( KDialog::Ok );
-    dialog->setObjectName( "error" );
-    dialog->setDefaultButton( KDialog::Ok );
-    dialog->setEscapeButton( KDialog::Ok );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Error") : caption);
+    dialog->setButtons(KDialog::Ok);
+    dialog->setObjectName("error");
+    dialog->setDefaultButton(KDialog::Ok);
+    dialog->setEscapeButton(KDialog::Ok);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     createKMessageBox(dialog, QMessageBox::Critical, text, strlist, QString(), 0, options);
 }
 
-void
-KMessageBox::detailedError(QWidget *parent,  const QString &text,
-                   const QString &details,
-                   const QString &caption, Options options)
+void KMessageBox::detailedError(QWidget *parent,  const QString &text,
+                                const QString &details,
+                                const QString &caption, Options options)
 {
     return detailedErrorWId( parent ? parent->effectiveWinId() : 0, text, details, caption, options );
 }
 
 void KMessageBox::detailedErrorWId(WId parent_id,  const QString &text,
-                   const QString &details,
-                   const QString &caption, Options options)
+                                   const QString &details,
+                                   const QString &caption, Options options)
 {
     QWidget* parent = QWidget::find( parent_id );
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Error") : caption );
-    dialog->setButtons( KDialog::Ok | KDialog::Details );
-    dialog->setObjectName( "error" );
-    dialog->setDefaultButton( KDialog::Ok );
-    dialog->setEscapeButton( KDialog::Ok );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Error") : caption);
+    dialog->setButtons(KDialog::Ok | KDialog::Details);
+    dialog->setObjectName("error");
+    dialog->setDefaultButton(KDialog::Ok);
+    dialog->setEscapeButton(KDialog::Ok);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     createKMessageBox(dialog, QMessageBox::Critical, text, QStringList(), QString(), 0, options, details);
 }
 
-void KMessageBox::queuedDetailedError(QWidget *parent,  const QString &text,
-                   const QString &details,
-                   const QString &caption)
+void KMessageBox::queuedDetailedError(QWidget *parent,  const QString &text, const QString &details,
+                                      const QString &caption)
 {
-    return queuedDetailedErrorWId( parent ? parent->effectiveWinId() : 0, text, details, caption );
+    return queuedDetailedErrorWId(parent ? parent->effectiveWinId() : 0, text, details, caption);
 }
 
 void KMessageBox::queuedDetailedErrorWId(WId parent_id,  const QString &text,
-                   const QString &details,
-                   const QString &caption)
+                                         const QString &details, const QString &caption)
 {
    KMessageBox_queue = true;
    (void) detailedErrorWId(parent_id, text, details, caption);
@@ -874,82 +878,82 @@ void KMessageBox::queuedDetailedErrorWId(WId parent_id,  const QString &text,
 }
 
 
-void KMessageBox::sorry(QWidget *parent, const QString &text,
-                   const QString &caption, Options options)
+void KMessageBox::sorry(QWidget *parent, const QString &text, const QString &caption,
+                        Options options)
 {
-    return sorryWId( parent ? parent->effectiveWinId() : 0, text, caption, options );
+    return sorryWId(parent ? parent->effectiveWinId() : 0, text, caption, options);
 }
 
-void KMessageBox::sorryWId(WId parent_id, const QString &text,
-                   const QString &caption, Options options)
+void KMessageBox::sorryWId(WId parent_id, const QString &text, const QString &caption,
+                           Options options)
 {
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Sorry") : caption );
-    dialog->setButtons( KDialog::Ok );
-    dialog->setObjectName( "sorry" );
-    dialog->setDefaultButton( KDialog::Ok );
-    dialog->setEscapeButton( KDialog::Ok );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Sorry") : caption);
+    dialog->setButtons(KDialog::Ok);
+    dialog->setObjectName("sorry");
+    dialog->setDefaultButton(KDialog::Ok);
+    dialog->setEscapeButton(KDialog::Ok);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     createKMessageBox(dialog, QMessageBox::Warning, text, QStringList(), QString(), 0, options);
 }
 
-void KMessageBox::detailedSorry(QWidget *parent, const QString &text,
-                   const QString &details,
-                   const QString &caption, Options options)
+void KMessageBox::detailedSorry(QWidget *parent, const QString &text, const QString &details,
+                                const QString &caption, Options options)
 {
-    return detailedSorryWId( parent ? parent->effectiveWinId() : 0, text, details, caption, options );
+    return detailedSorryWId(parent ? parent->effectiveWinId() : 0, text, details, caption, options);
 }
 
-void KMessageBox::detailedSorryWId(WId parent_id, const QString &text,
-                   const QString &details,
-                   const QString &caption, Options options)
+void KMessageBox::detailedSorryWId(WId parent_id, const QString &text, const QString &details,
+                                   const QString &caption, Options options)
 {
     QWidget* parent = QWidget::find( parent_id );
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption.isEmpty() ? i18n("Sorry") : caption );
-    dialog->setButtons( KDialog::Ok | KDialog::Details );
-    dialog->setObjectName( "sorry" );
-    dialog->setDefaultButton( KDialog::Ok );
-    dialog->setEscapeButton( KDialog::Ok );
-    applyOptions( dialog, options );
-    if ( options & KMessageBox::PlainCaption ) {
-        dialog->setWindowTitle( caption );
+    dialog->setCaption(caption.isEmpty() ? i18n("Sorry") : caption);
+    dialog->setButtons(KDialog::Ok | KDialog::Details);
+    dialog->setObjectName("sorry");
+    dialog->setDefaultButton(KDialog::Ok);
+    dialog->setEscapeButton(KDialog::Ok);
+    applyOptions(dialog, options);
+    if (options & KMessageBox::PlainCaption) {
+        dialog->setWindowTitle(caption);
     }
-    if ( parent == NULL && parent_id ) {
-        KWindowSystem::setMainWindow( dialog, parent_id );
+    if (parent == NULL && parent_id) {
+        KWindowSystem::setMainWindow(dialog, parent_id);
     }
 
     createKMessageBox(dialog, QMessageBox::Warning, text, QStringList(), QString(), 0, options, details);
 }
 
-void KMessageBox::information(QWidget *parent,const QString &text,
-			 const QString &caption, const QString &dontShowAgainName, Options options)
+void KMessageBox::information(QWidget *parent,const QString &text, const QString &caption,
+                              const QString &dontShowAgainName, Options options)
 {
     informationList(parent, text, QStringList(), caption, dontShowAgainName, options);
 }
 
-void KMessageBox::informationWId(WId parent_id,const QString &text,
-			 const QString &caption, const QString &dontShowAgainName, Options options)
+void KMessageBox::informationWId(WId parent_id,const QString &text, const QString &caption,
+                                 const QString &dontShowAgainName, Options options)
 {
     informationListWId(parent_id, text, QStringList(), caption, dontShowAgainName, options);
 }
 
 void KMessageBox::informationList(QWidget *parent,const QString &text, const QStringList & strlist,
-                         const QString &caption, const QString &dontShowAgainName, Options options)
+                                  const QString &caption, const QString &dontShowAgainName, Options options)
 {
-    return informationListWId( parent ? parent->effectiveWinId() : 0, text, strlist, caption,
-        dontShowAgainName, options );
+    return informationListWId(
+        parent ? parent->effectiveWinId() : 0, text, strlist, caption,
+        dontShowAgainName, options
+    );
 }
 
-void KMessageBox::informationListWId(WId parent_id,const QString &text, const QStringList & strlist,
+void KMessageBox::informationListWId(WId parent_id,const QString &text, const QStringList &strlist,
                                      const QString &caption, const QString &dontShowAgainName, Options options)
 {
     if (!shouldBeShownContinue(dontShowAgainName)) {
@@ -963,7 +967,7 @@ void KMessageBox::informationListWId(WId parent_id,const QString &text, const QS
     dialog->setObjectName("information");
     dialog->setDefaultButton(KDialog::Ok);
     dialog->setEscapeButton(KDialog::Ok);
-    applyOptions( dialog, options );
+    applyOptions(dialog, options);
     if (options & KMessageBox::PlainCaption) {
         dialog->setWindowTitle(caption);
     }
@@ -1015,8 +1019,8 @@ void KMessageBox::enableMessage(const QString &dontShowAgainName)
     config->sync();
 }
 
-void KMessageBox::about(QWidget *parent, const QString &text,
-                   const QString &caption, Options options)
+void KMessageBox::about(QWidget *parent, const QString &text, const QString &caption,
+                        Options options)
 {
     QString _caption = caption;
     if (_caption.isEmpty()) {
@@ -1024,12 +1028,12 @@ void KMessageBox::about(QWidget *parent, const QString &text,
     }
 
     KDialog *dialog = new KDialog(parent, Qt::Dialog);
-    dialog->setCaption( caption );
-    dialog->setButtons( KDialog::Ok );
-    dialog->setObjectName( "about" );
-    applyOptions( dialog, options );
-    dialog->setDefaultButton( KDialog::Ok );
-    dialog->setEscapeButton( KDialog::Ok );
+    dialog->setCaption(caption);
+    dialog->setButtons(KDialog::Ok);
+    dialog->setObjectName("about");
+    applyOptions(dialog, options);
+    dialog->setDefaultButton(KDialog::Ok);
+    dialog->setEscapeButton(KDialog::Ok);
     if (qApp->windowIcon().isNull()) {
         QPixmap ret = QMessageBox::standardIcon(QMessageBox::Information);
         dialog->setWindowIcon(ret);

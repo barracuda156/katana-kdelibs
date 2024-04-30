@@ -54,8 +54,7 @@ public:
     Q_ENUMS(ToolType)
 
     explicit AbstractToolBox(Containment *parent);
-    explicit AbstractToolBox(QObject *parent = 0,
-                    const QVariantList &args = QVariantList());
+    explicit AbstractToolBox(QObject *parent = 0, const QVariantList &args = QVariantList());
     ~AbstractToolBox();
 
     /**
@@ -78,8 +77,7 @@ public:
      *
      * @since 4.6
      */
-    static KPluginInfo::List listToolBoxInfo(const QString
- &parentApp = QString());
+    static KPluginInfo::List listToolBoxInfo(const QString &parentApp = QString());
 
     /**
      * create a toolbox tool from the given action
