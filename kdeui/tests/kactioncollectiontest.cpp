@@ -85,13 +85,8 @@ void tst_KActionCollection::writeSettings()
 {
     KConfigGroup cfg = clearConfig();
 
-    KShortcut defaultShortcut;
-    defaultShortcut.setPrimary(Qt::Key_A);
-    defaultShortcut.setAlternate(Qt::Key_B);
-
-    KShortcut temporaryShortcut;
-    temporaryShortcut.setPrimary(Qt::Key_C);
-    temporaryShortcut.setAlternate(Qt::Key_D);
+    QKeySequence defaultShortcut = QKeySequence(Qt::Key_A, Qt::Key_B);
+    QKeySequence temporaryShortcut = QKeySequence(Qt::Key_C, Qt::Key_D);
 
     KAction *actionWithDifferentShortcut = new KAction(this);
     actionWithDifferentShortcut->setShortcut(defaultShortcut, KAction::DefaultShortcut);
@@ -117,7 +112,7 @@ void tst_KActionCollection::writeSettings()
 
     collection->writeSettings(&cfg);
 
-    QCOMPARE(cfg.readEntry("actionWithDifferentShortcut", QString()), KShortcut(actionWithDifferentShortcut->shortcut()).toString());
+    QCOMPARE(cfg.readEntry("actionWithDifferentShortcut", QString()), actionWithDifferentShortcut->shortcut().toString());
     QCOMPARE(cfg.readEntry("immutableAction", QString()), QString());
     QCOMPARE(cfg.readEntry("actionWithSameShortcut", QString()), QString());
     QCOMPARE(cfg.readEntry("actionToDelete", QString()), QString());
@@ -129,13 +124,8 @@ void tst_KActionCollection::readSettings()
 {
     KConfigGroup cfg = clearConfig();
 
-    KShortcut defaultShortcut;
-    defaultShortcut.setPrimary(Qt::Key_A);
-    defaultShortcut.setAlternate(Qt::Key_B);
-
-    KShortcut temporaryShortcut;
-    temporaryShortcut.setPrimary(Qt::Key_C);
-    temporaryShortcut.setAlternate(Qt::Key_D);
+    QKeySequence defaultShortcut = QKeySequence(Qt::Key_A, Qt::Key_B);
+    QKeySequence temporaryShortcut = QKeySequence(Qt::Key_C, Qt::Key_D);
 
     cfg.writeEntry("normalAction", defaultShortcut.toString());
     cfg.writeEntry("immutable", defaultShortcut.toString());
@@ -154,14 +144,14 @@ void tst_KActionCollection::readSettings()
     collection->addAction("empty", empty);
     empty->setShortcut(temporaryShortcut, KAction::ActiveShortcut);
     empty->setShortcut(defaultShortcut, KAction::DefaultShortcut);
-    QCOMPARE(KShortcut(empty->shortcut()).toString(), temporaryShortcut.toString());
+    QCOMPARE(empty->shortcut().toString(), temporaryShortcut.toString());
 
     collection->readSettings(&cfg);
 
-    QCOMPARE(KShortcut(normal->shortcut()).toString(), defaultShortcut.toString());
-    QCOMPARE(KShortcut(empty->shortcut()).toString(), defaultShortcut.toString());
+    QCOMPARE(normal->shortcut().toString(), defaultShortcut.toString());
+    QCOMPARE(empty->shortcut().toString(), defaultShortcut.toString());
 
-    QCOMPARE(KShortcut(immutable->shortcut()).toString(), temporaryShortcut.toString());
+    QCOMPARE(immutable->shortcut().toString(), temporaryShortcut.toString());
 
     qDeleteAll(collection->actions());
 }
@@ -224,17 +214,11 @@ void tst_KActionCollection::testSetShortcuts()
 {
     KAction *action = new KAction(i18n("Next Unread &Folder"), this);
     collection->addAction("go_next_unread_folder", action);
-    action->setShortcut(QKeySequence(Qt::ALT+Qt::Key_Plus));
-    KShortcut shortcut = KShortcut(action->shortcut());
-    shortcut.setAlternate( QKeySequence( Qt::CTRL+Qt::Key_Plus ) );
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Plus));
+    QKeySequence shortcut = action->shortcut();
+    shortcut = QKeySequence(shortcut[0], Qt::CTRL + Qt::Key_Plus);
     action->setShortcut( shortcut );
-    QCOMPARE(action->shortcut().toString(), QString("Alt++; Ctrl++"));
-
-    // Simpler way:
-    KShortcut shortcut2;
-    shortcut2.setPrimary( QKeySequence( Qt::ALT+Qt::Key_Plus ) );
-    shortcut2.setAlternate( QKeySequence( Qt::CTRL+Qt::Key_Plus ) );
-    QCOMPARE(shortcut2.toString(), QString("Alt++; Ctrl++"));
+    QCOMPARE(action->shortcut().toString(), QString("Alt++, Ctrl++"));
 }
 
 QTEST_KDEMAIN(tst_KActionCollection, GUI)

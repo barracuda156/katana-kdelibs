@@ -618,7 +618,7 @@ void KXmlGui_UnitTest::testActionListAndSeparator()
 
     KAction* action1 = new KAction(this);
     action1->setObjectName("action1");
-    action1->setShortcut(KShortcut("Ctrl+2"));
+    action1->setShortcut(QKeySequence("Ctrl+2"));
     QList<QAction*> actionList;
     actionList << action1;
     client.plugActionList("view_groups_list", actionList);

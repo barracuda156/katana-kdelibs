@@ -32,7 +32,6 @@ private Q_SLOTS:
     void testLabel();
     void testShortcut();
     void testFindStdAccel();
-    void testRemoveShortcut();
 };
 
 

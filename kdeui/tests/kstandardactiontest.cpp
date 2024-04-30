@@ -44,18 +44,16 @@ void tst_KStandardAction::implicitInsertionUsingCut()
 
 void tst_KStandardAction::shortcutForActionId()
 {
-    KShortcut stdShortcut = KStandardShortcut::shortcut(KStandardShortcut::Cut);
+    QKeySequence stdShortcut = KStandardShortcut::shortcut(KStandardShortcut::Cut);
 
     KAction *cut = KStandardAction::cut(NULL);
-    KShortcut actShortcut = cut->shortcut();
-    QVERIFY(stdShortcut.primary() == actShortcut.primary());
-    QVERIFY(actShortcut.alternate() == actShortcut.alternate());
+    QKeySequence actShortcut = cut->shortcut();
+    QCOMPARE(stdShortcut.toString(), actShortcut.toString());
     delete cut;
 
     cut = KStandardAction::create(KStandardAction::Cut, NULL, NULL, NULL);
     actShortcut = cut->shortcut();
-    QVERIFY(stdShortcut.primary() == actShortcut.primary());
-    QVERIFY(actShortcut.alternate() == actShortcut.alternate());
+    QCOMPARE(stdShortcut.toString(), actShortcut.toString());
     delete cut;
 }
 

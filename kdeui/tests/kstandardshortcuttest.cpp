@@ -58,18 +58,3 @@ void KStandardShortcutTest::testFindStdAccel()
     QCOMPARE( KStandardShortcut::find( QString( "Ctrl+F" ) ), KStandardShortcut::Find );
     QCOMPARE( KStandardShortcut::find( QString( "Ctrl+Shift+Alt+G" ) ), KStandardShortcut::AccelNone );
 }
-
-void KStandardShortcutTest::testRemoveShortcut()
-{
-    KShortcut cutShortCut = KStandardShortcut::shortcut( KStandardShortcut::Cut );
-    cutShortCut.remove( Qt::SHIFT + Qt::Key_Delete, KShortcut::KeepEmpty );
-    cutShortCut.remove( Qt::CTRL + Qt::Key_X, KShortcut::KeepEmpty );
-    //qDebug( "%s", qPrintable( cutShortCut.toString() ) );
-    QVERIFY( cutShortCut.isEmpty() );
-
-    cutShortCut = KStandardShortcut::shortcut( KStandardShortcut::Cut );
-    //remove primary shortcut. We expect the alternate to become primary.
-    cutShortCut.remove( Qt::CTRL + Qt::Key_X, KShortcut::RemoveEmpty );
-    QVERIFY( cutShortCut.primary() == QKeySequence(Qt::SHIFT + Qt::Key_Delete) );
-    QVERIFY( cutShortCut.alternate().isEmpty() );
-}
