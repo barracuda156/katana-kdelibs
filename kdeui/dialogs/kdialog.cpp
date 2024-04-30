@@ -844,6 +844,9 @@ void KDialog::setDetailsWidgetVisible(bool visible)
             if (layout()) {
                 layout()->activate();
                 layout()->setEnabled(true);
+                if (layout()->sizeConstraint() == QLayout::SetFixedSize) {
+                    adjustSize();
+                }
             }
         }
     } else {
@@ -854,6 +857,9 @@ void KDialog::setDetailsWidgetVisible(bool visible)
 
         if (layout()) {
             layout()->activate();
+            if (layout()->sizeConstraint() == QLayout::SetFixedSize) {
+                adjustSize();
+            }
         }
     }
 

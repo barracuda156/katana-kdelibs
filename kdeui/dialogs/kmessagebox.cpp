@@ -261,12 +261,14 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     // HACK: force KDialog to re-layout and change the details widget stretch factor because the
     // main widget stretch factor is 10, everything else uses default stretch factor (less)
     dialog->adjustSize();
+    QLayout* dialogLayout = dialog->layout();
+    dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
     if (detailsGroup) {
-        QVBoxLayout* dialogVLayout = qobject_cast<QVBoxLayout*>(dialog->layout());
+        QVBoxLayout* dialogVLayout = qobject_cast<QVBoxLayout*>(dialogLayout);
         if (dialogVLayout) {
             dialogVLayout->setStretchFactor(detailsGroup, 200);
         } else {
-            QHBoxLayout* dialogHLayout = qobject_cast<QHBoxLayout*>(dialog->layout());
+            QHBoxLayout* dialogHLayout = qobject_cast<QHBoxLayout*>(dialogLayout);
             if (dialogHLayout) {
                 dialogHLayout->setStretchFactor(detailsGroup, 200);
             } else {
