@@ -26,7 +26,6 @@
 #include "knotification.h"
 #include "kiconloader.h"
 #include "kconfiggroup.h"
-#include "ktextedit.h"
 #include "ksqueezedtextlabel.h"
 #include "kwindowsystem.h"
 #include "kpixmapwidget.h"
@@ -40,7 +39,7 @@
 #include <QtGui/QListWidget>
 #include <QtGui/QScrollArea>
 #include <QtGui/QScrollBar>
-#include <QtGui/QTextDocumentFragment>
+#include <QtGui/QTextBrowser>
 #include <QtGui/QDesktopWidget>
 
 // Some i18n filters, that standard button texts are piped through
@@ -284,19 +283,25 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         QGroupBox *detailsGroup = new QGroupBox(i18n("Details"));
         QVBoxLayout *detailsLayout = new QVBoxLayout(detailsGroup);
         if (details.length() < 512) {
-            QLabel *detailsLabel = new QLabel(details);
+            QLabel *detailsLabel = new QLabel(details, detailsGroup);
             detailsLabel->setOpenExternalLinks(options & KMessageBox::AllowLink);
             Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
             if ( options & KMessageBox::AllowLink )
-                flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;;
+                flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
             detailsLabel->setTextInteractionFlags(flags);
             detailsLabel->setWordWrap(true);
             detailsLayout->addWidget(detailsLabel,50);
         } else {
-            KTextEdit *detailTextEdit = new KTextEdit(details);
-            detailTextEdit->setReadOnly(true);
-            detailTextEdit->setMinimumHeight(detailTextEdit->fontMetrics().lineSpacing() * 11);
-            detailsLayout->addWidget(detailTextEdit,50);
+            QTextBrowser *detailTextBrowser = new QTextBrowser(detailsGroup);
+            detailTextBrowser->setHtml(details);
+            detailTextBrowser->setReadOnly(true);
+            detailTextBrowser->setMinimumHeight(detailTextBrowser->fontMetrics().lineSpacing() * 11);
+            detailTextBrowser->setOpenExternalLinks(options & KMessageBox::AllowLink);
+            Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
+            if ( options & KMessageBox::AllowLink )
+                flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
+            detailTextBrowser->setTextInteractionFlags(flags);
+            detailsLayout->addWidget(detailTextBrowser,50);
         }
         if (!usingListWidget)
             mainLayout->setStretchFactor(hLayout,10);
