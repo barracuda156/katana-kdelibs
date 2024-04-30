@@ -173,13 +173,11 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
 {
     QWidget *mainWidget = new QWidget(dialog);
     QVBoxLayout *mainLayout = new QVBoxLayout(mainWidget);
-    mainLayout->setSpacing(KDialog::spacingHint() * 2); // provide extra spacing
     mainLayout->setMargin(0);
 
     QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->setMargin(0);
-    hLayout->setSpacing(-1); // use default spacing
-    mainLayout->addLayout(hLayout, 5);
+    mainLayout->addLayout(hLayout);
 
     KPixmapWidget *iconWidget = new KPixmapWidget(mainWidget);
     if (!icon.isNull()) {
@@ -200,7 +198,7 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     messageLabel->setTextInteractionFlags(flags);
     messageLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 
-    hLayout->addWidget(messageLabel, 5, Qt::AlignTop | Qt::AlignLeft);
+    hLayout->addWidget(messageLabel, 0, Qt::AlignLeft | Qt::AlignVCenter);
 
     const QRect desktop = QApplication::desktop()->screenGeometry(dialog);
     const bool usingListWidget = !strlist.isEmpty();
@@ -222,7 +220,7 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         }
         listWidget->setMinimumWidth(w);
 
-        mainLayout->addWidget(listWidget, 50);
+        mainLayout->addWidget(listWidget);
         listWidget->setSelectionMode(QListWidget::NoSelection);
     }
 
@@ -250,32 +248,15 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
             flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
         }
         detailTextBrowser->setTextInteractionFlags(flags);
-        detailsLayout->addWidget(detailTextBrowser, 50);
-        if (!usingListWidget) {
-            mainLayout->setStretchFactor(hLayout, 10);
-        }
+        detailsLayout->addWidget(detailTextBrowser);
         dialog->setDetailsWidget(detailsGroup);
     }
 
     dialog->setMainWidget(mainWidget);
-    // HACK: force KDialog to re-layout and change the details widget stretch factor because the
-    // main widget stretch factor is 10, everything else uses default stretch factor (less)
+    // force KDialog to re-layout
     dialog->adjustSize();
     QLayout* dialogLayout = dialog->layout();
     dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
-    if (detailsGroup) {
-        QVBoxLayout* dialogVLayout = qobject_cast<QVBoxLayout*>(dialogLayout);
-        if (dialogVLayout) {
-            dialogVLayout->setStretchFactor(detailsGroup, 200);
-        } else {
-            QHBoxLayout* dialogHLayout = qobject_cast<QHBoxLayout*>(dialogLayout);
-            if (dialogHLayout) {
-                dialogHLayout->setStretchFactor(detailsGroup, 200);
-            } else {
-                kWarning() << "dialog layout is neither QVBoxLayout nor QHBoxLayout";
-            }
-        }
-    }
 
     if ((options & KMessageBox::Dangerous)) {
         if (dialog->isButtonEnabled(KDialog::Cancel)) {
