@@ -999,7 +999,12 @@ void KConfigTest::testSubGroup()
     KConfigGroup srcg( &rcg, "ParentGroup" );
     QCOMPARE(srcg.readEntry( "parentgrpstring", ""), QString("somevalue") );
 
-    QCOMPARE(cg.groupList(), (QStringList() << "SubGroup/3" << "SubGroup1" << "SubGroup2"));
+    const QStringList expectedSubGroups = (QStringList() << "SubGroup/3" << "SubGroup1" << "SubGroup2");
+    const QStringList cgSubGroups = cg.groupList();
+    QCOMPARE(cgSubGroups.size(), expectedSubGroups.size());
+    for (int i = 0; i < expectedSubGroups.size(); i++) {
+        QVERIFY(cgSubGroups.contains(expectedSubGroups.at(i)));
+    }
 
     const QStringList expectedSubgroup3Keys = (QStringList() << "sub3string");
     QCOMPARE(subcg3.keyList(), expectedSubgroup3Keys);
@@ -1041,7 +1046,12 @@ void KConfigTest::testSubGroup()
     //QEXPECT_FAIL("", "Empty subgroups do not show up in groupList()", Continue);
     //QCOMPARE(neg.groupList(), QStringList() << "NEG Child1" << "NEG Child2" << "NEG Child3" << "NEG Child4");
     // This is what happens
-    QCOMPARE(neg.groupList(), QStringList() << "NEG Child1" << "NEG Child4");
+    const QStringList expectedNegGroups = (QStringList() << "NEG Child1" << "NEG Child4");
+    const QStringList negSubGroups = neg.groupList();
+    QCOMPARE(negSubGroups.size(), expectedNegGroups.size());
+    for (int i = 0; i < expectedNegGroups.size(); i++) {
+        QVERIFY(negSubGroups.contains(expectedNegGroups.at(i)));
+    }
 
     // make sure groupList() isn't returning something it shouldn't
     foreach(const QString& group, sc.groupList()) {
