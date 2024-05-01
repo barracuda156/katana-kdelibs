@@ -500,12 +500,6 @@ void SlaveBase::processedSize(KIO::filesize_t _bytes)
     }
 }
 
-void SlaveBase::speed(unsigned long _bytes_per_second)
-{
-    KIO_DATA << (quint32) _bytes_per_second;
-    send(INF_SPEED, data);
-}
-
 void SlaveBase::redirection(const KUrl &_url)
 {
     KIO_DATA << _url;

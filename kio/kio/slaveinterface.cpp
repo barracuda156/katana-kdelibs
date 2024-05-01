@@ -44,13 +44,12 @@ Q_GLOBAL_STATIC(UserNotificationHandler, globalUserNotificationHandler)
 
 SlaveInterface::SlaveInterface(const QString &protocol, QObject *parent)
     : QObject(parent),
-    m_filesize(0),
     m_offset(0),
-    m_lasttime(0),
-    m_nums(0),
-    m_slavecalcsspeed(false),
     m_protocol(protocol),
     m_port(0),
+    m_processedsize(0),
+    m_totalsize(0),
+    m_lasttime(0),
     m_connection(nullptr),
     m_slaveconnserver(nullptr),
     m_job(nullptr),
@@ -58,9 +57,6 @@ SlaveInterface::SlaveInterface(const QString &protocol, QObject *parent)
     m_dead(false),
     m_refcount(1)
 {
-    m_starttime.tv_sec = 0;
-    m_starttime.tv_usec = 0;
-
     connect(&m_speedtimer, SIGNAL(timeout()), SLOT(calcSpeed()));
     m_slaveconnserver = new KIO::ConnectionServer(this);
     m_connection = new KIO::Connection(this);
@@ -273,45 +269,19 @@ bool SlaveInterface::dispatch()
 
 void SlaveInterface::calcSpeed()
 {
-    if (m_slavecalcsspeed) {
-        m_speedtimer.stop();
-        return;
+    if (m_lasttime > 0 && m_processedsize > 0) {
+        const unsigned long lspeed = (m_processedsize - m_lasttime);
+        if (lspeed >= 0) {
+            emit speed(lspeed);
+        } else {
+            kWarning() << "speed is negative" << m_lasttime << m_processedsize << lspeed;
+            emit speed(0);
+        }
     }
-
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-
-    long diff = ((tv.tv_sec - m_starttime.tv_sec) * 1000000 +
-                  tv.tv_usec - m_starttime.tv_usec) / 1000;
-    if (diff - m_lasttime >= 900) {
-        m_lasttime = diff;
-        if (m_nums == max_nums) {
-            // let's hope gcc can optimize that well enough
-            // otherwise I'd try memcpy :)
-            for (unsigned int i = 1; i < max_nums; ++i) {
-                m_times[i-1] = m_times[i];
-                m_sizes[i-1] = m_sizes[i];
-            }
-            m_nums--;
-        }
-        m_times[m_nums] = diff;
-        m_sizes[m_nums++] = m_filesize - m_offset;
-
-        KIO::filesize_t lspeed = 1000 * (m_sizes[m_nums-1] - m_sizes[0]) / (m_times[m_nums-1] - m_times[0]);
-
-//      kDebug() << (long)m_filesize << diff
-//          << long(m_sizes[m_nums-1] - m_sizes[0])
-//          << m_times[m_nums-1] - m_times[0]
-//          << long(lspeed) << double(m_filesize) / diff
-//          << convertSize(lspeed)
-//          << convertSize(long(double(m_filesize) / diff) * 1000);
-
-        if (!lspeed) {
-            m_nums = 1;
-            m_times[0] = diff;
-            m_sizes[0] = m_filesize - m_offset;
-        }
-        emit speed(lspeed);
+    if (m_processedsize > 0) {
+        m_lasttime = m_processedsize;
+    } else {
+        m_lasttime = 0;
     }
 }
 
@@ -365,7 +335,6 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
         }
         case MSG_CANRESUME: {
             // From the get job
-            m_filesize = m_offset;
             emit canResume(0); // the arg doesn't matter
             break;
         }
@@ -380,32 +349,23 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
         }
         case INF_TOTAL_SIZE: {
             QDataStream stream(rawdata);
-            KIO::filesize_t size = 0;
-            stream >> size;
-            gettimeofday(&m_starttime, 0);
-            m_lasttime = 0;
-            m_filesize = m_offset;
-            m_sizes[0] = m_filesize - m_offset;
-            m_times[0] = 0;
-            m_nums = 1;
-            m_speedtimer.start(1000);
-            m_slavecalcsspeed = false;
-            emit totalSize(size);
+            KIO::filesize_t totalsize;
+            stream >> totalsize;
+            if (totalsize != m_totalsize) {
+                // start again with speed calculation
+                m_totalsize = totalsize;
+                m_lasttime = 0;
+            }
+            emit totalSize(totalsize);
             break;
         }
         case INF_PROCESSED_SIZE: {
             QDataStream stream(rawdata);
-            stream >> m_filesize;
-            emit processedSize(m_filesize);
-            break;
-        }
-        case INF_SPEED: {
-            QDataStream stream(rawdata);
-            quint32 ul = 0;
-            stream >> ul;
-            m_slavecalcsspeed = true;
-            m_speedtimer.stop();
-            emit speed(ul);
+            stream >> m_processedsize;
+            if (!m_speedtimer.isActive()) {
+                m_speedtimer.start(1000);
+            }
+            emit processedSize(m_processedsize);
             break;
         }
         case INF_REDIRECTION: {

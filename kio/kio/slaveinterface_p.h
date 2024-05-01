@@ -45,7 +45,6 @@ class SimpleJob;
 enum Info {
    INF_TOTAL_SIZE = 10,
    INF_PROCESSED_SIZE = 11,
-   INF_SPEED,
    INF_REDIRECTION = 20,
    INF_MIME_TYPE = 21,
    INF_WARNING = 23,
@@ -262,23 +261,17 @@ protected Q_SLOTS:
 private:
     Q_DISABLE_COPY(SlaveInterface);
 
-    QTimer m_speedtimer;
-
-    KIO::filesize_t m_sizes[max_nums];
-    long m_times[max_nums];
-
-    KIO::filesize_t m_filesize;
     KIO::filesize_t m_offset;
-    size_t m_lasttime;
-    struct timeval m_starttime;
-    uint m_nums;
-    bool m_slavecalcsspeed;
-
     QString m_protocol;
     QString m_host;
     QString m_user;
     QString m_passwd;
     quint16 m_port;
+
+    KIO::filesize_t m_processedsize;
+    KIO::filesize_t m_totalsize;
+    KIO::filesize_t m_lasttime;
+    QTimer m_speedtimer;
 
     KIO::Connection* m_connection;
     KIO::ConnectionServer* m_slaveconnserver;
