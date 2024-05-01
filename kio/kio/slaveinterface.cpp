@@ -269,15 +269,15 @@ bool SlaveInterface::dispatch()
 
 void SlaveInterface::calcSpeed()
 {
+    unsigned long lspeed = 0;
     if (m_lasttime > 0 && m_processedsize > 0) {
-        const unsigned long lspeed = (m_processedsize - m_lasttime);
-        if (lspeed >= 0) {
-            emit speed(lspeed);
-        } else {
+        lspeed = (m_processedsize - m_lasttime);
+        if (lspeed < 0) {
             kWarning() << "speed is negative" << m_lasttime << m_processedsize << lspeed;
-            emit speed(0);
+            lspeed = 0;
         }
     }
+    emit speed(lspeed);
     if (m_processedsize > 0) {
         m_lasttime = m_processedsize;
     } else {
