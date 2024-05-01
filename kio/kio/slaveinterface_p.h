@@ -84,7 +84,7 @@ public:
     explicit SlaveInterface(const QString &protocol, QObject *parent = nullptr);
     ~SlaveInterface();
 
-    void setPID(pid_t);
+    void setPID(const pid_t pid);
     pid_t pid() const;
 
     void setJob(KIO::SimpleJob *job);
@@ -184,7 +184,7 @@ public:
      * @param cmd command id
      * @param arr byte array containing data
      */
-    void send(int cmd, const QByteArray &arr = QByteArray());
+    void send(int cmd, const QByteArray &arr);
     // == end communication with connected kioslave ==
 
     /**
@@ -211,7 +211,7 @@ public:
      */
     void sendMessageBoxAnswer(int result);
 
-    void setOffset(KIO::filesize_t offset);
+    void setOffset(const KIO::filesize_t offset);
     KIO::filesize_t offset() const;
 
 Q_SIGNALS:
@@ -251,9 +251,6 @@ protected:
     bool dispatch(int cmd, const QByteArray &data);
 
     void messageBox(int type, const QString &text, const QString &caption,
-                    const QString &buttonYes, const QString &buttonNo);
-
-    void messageBox(int type, const QString &text, const QString &caption,
                     const QString &buttonYes, const QString &buttonNo,
                     const QString &dontAskAgainName);
 
@@ -264,6 +261,7 @@ protected Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(SlaveInterface);
+
     QTimer m_speedtimer;
 
     KIO::filesize_t m_sizes[max_nums];

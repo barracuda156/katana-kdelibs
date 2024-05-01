@@ -134,7 +134,7 @@ qint64 SlaveInterface::idleTime() const
     return m_idlesince.elapsed();
 }
 
-void SlaveInterface::setPID(pid_t pid)
+void SlaveInterface::setPID(const pid_t pid)
 {
     m_pid = pid;
 }
@@ -262,14 +262,12 @@ SlaveInterface* SlaveInterface::createSlave(const QString &protocol, const KUrl 
 bool SlaveInterface::dispatch()
 {
     Q_ASSERT(m_connection);
-
     int cmd = 0;
     QByteArray data;
     int ret = m_connection->read(&cmd, data);
     if (ret == -1) {
         return false;
     }
-
     return dispatch(cmd, data);
 }
 
@@ -464,7 +462,7 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
     return true;
 }
 
-void SlaveInterface::setOffset(KIO::filesize_t o)
+void SlaveInterface::setOffset(const KIO::filesize_t o)
 {
     m_offset = o;
 }
@@ -494,12 +492,6 @@ void SlaveInterface::sendMessageBoxAnswer(int result)
     stream << result;
     m_connection->sendnow(CMD_MESSAGEBOXANSWER, packedArgs);
     kDebug(7007) << "message box answer" << result;
-}
-
-void SlaveInterface::messageBox(int type, const QString &text, const QString &caption,
-                                const QString &buttonYes, const QString &buttonNo)
-{
-    messageBox(type, text, caption, buttonYes, buttonNo, QString());
 }
 
 void SlaveInterface::messageBox(int type, const QString &text, const QString &caption,

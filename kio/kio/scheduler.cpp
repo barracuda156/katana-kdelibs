@@ -691,7 +691,7 @@ void SchedulerPrivate::slotReparseSlaveConfiguration(const QString &proto, const
                                                                           it + 1;
     for (; it != endIt; ++it) {
         Q_FOREACH(SlaveInterface *slave, (*it)->allSlaves()) {
-            slave->send(CMD_REPARSECONFIGURATION);
+            slave->send(CMD_REPARSECONFIGURATION, QByteArray());
             slave->resetHost();
         }
     }
