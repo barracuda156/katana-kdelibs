@@ -18,7 +18,7 @@
 
 #include "usernotificationhandler_p.h"
 
-#include "slaveinterface.h"
+#include "slaveinterface_p.h"
 #include "jobuidelegate.h"
 
 #include <kdebug.h>

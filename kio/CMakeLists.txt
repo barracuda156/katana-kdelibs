@@ -197,7 +197,6 @@ install(
     FILES
     ${CMAKE_CURRENT_BINARY_DIR}/kio_export.h
     kio/connection.h
-    kio/slaveinterface.h
     kio/slaveconfig.h
     kio/global.h
     kio/netaccess.h

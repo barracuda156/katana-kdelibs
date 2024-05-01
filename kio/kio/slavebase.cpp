@@ -50,7 +50,7 @@
 #include "kremoteencoding.h"
 #include "connection.h"
 #include "ioslave_defaults.h"
-#include "slaveinterface.h"
+#include "slaveinterface_p.h"
 #include "job_p.h"
 
 #define AUTHINFO_EXTRAFIELD_DOMAIN QLatin1String("domain")

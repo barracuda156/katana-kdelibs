@@ -340,7 +340,6 @@ install(
     KIO/SkipDialog
     KIO/SlaveBase
     KIO/SlaveConfig
-    KIO/SlaveInterface
     KIO/StatJob
     KIO/StoredTransferJob
     KIO/Task

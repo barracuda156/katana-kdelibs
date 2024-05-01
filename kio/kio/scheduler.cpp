@@ -23,7 +23,7 @@
 
 #include "slaveconfig.h"
 #include "authinfo.h"
-#include "slaveinterface.h"
+#include "slaveinterface_p.h"
 #include "connection.h"
 #include "job_p.h"
 

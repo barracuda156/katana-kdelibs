@@ -24,7 +24,7 @@
 #include "clipboardupdater_p.h"
 #include "jobuidelegate.h"
 #include "kmimetype.h"
-#include "slaveinterface.h"
+#include "slaveinterface_p.h"
 #include "scheduler.h"
 #include "kdirwatch.h"
 #include "kprotocolinfo.h"
