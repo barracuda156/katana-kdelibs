@@ -81,6 +81,18 @@ KPlasmaJobTracker::KPlasmaJobTracker(QObject *parent)
 
 KPlasmaJobTracker::~KPlasmaJobTracker()
 {
+    const int registeredjobs = d->jobs.size();
+    if (registeredjobs > 0) {
+        // force-unregister any jobs in applets otherwise the interface for the jobs becomes
+        // non-operational (there would be no jobs to stop anyway, this is the proxy to do it too)
+        kWarning() << "there are" << registeredjobs << "registered jobs still";
+        QMutableMapIterator<KJob*, QVariantMap> iter(d->jobs);
+        while (iter.hasNext()) {
+            iter.next();
+            unregisterJob(iter.key());
+            iter.remove();
+        }
+    }
     delete d;
 }
 
