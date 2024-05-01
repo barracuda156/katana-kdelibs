@@ -31,13 +31,9 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-static const unsigned int max_nums = 8;
-
 class KUrl;
 
 namespace KIO {
-
-class SimpleJob;
 
 /**
  * Identifiers for KIO informational messages.
@@ -86,9 +82,6 @@ public:
     void setPID(const pid_t pid);
     pid_t pid() const;
 
-    void setJob(KIO::SimpleJob *job);
-    KIO::SimpleJob *job() const;
-
     /**
      * Force termination
      */
@@ -98,20 +91,6 @@ public:
      * @return true if the slave survived the last mission.
      */
     bool isAlive() const;
-
-    /**
-     * Set host for url
-     * @param host to connect to.
-     * @param port to connect to.
-     * @param user to login as
-     * @param passwd to login with
-     */
-    void setHost(const QString &host, quint16 port, const QString &user, const QString &passwd);
-
-    /**
-     * Clear host info.
-     */
-    void resetHost();
 
     /**
      * Configure slave
@@ -125,27 +104,16 @@ public:
      */
     QString protocol() const;
 
-    void setProtocol(const QString &protocol);
-
     /**
      * @return Host this slave is (was?) connected to
      */
     QString host() const;
 
     /**
-     * @return port this slave is (was?) connected to
+     * Set host for url, includes everything but the path
+     * @param host to connect to.
      */
-    quint16 port() const;
-
-    /**
-     * @return User this slave is (was?) logged in as
-     */
-    QString user() const;
-
-    /**
-     * @return Passwd used to log in
-     */
-    QString passwd() const;
+    void setHost(const QString &host);
 
     /**
      * Creates a new slave.
@@ -264,9 +232,6 @@ private:
     KIO::filesize_t m_offset;
     QString m_protocol;
     QString m_host;
-    QString m_user;
-    QString m_passwd;
-    quint16 m_port;
 
     KIO::filesize_t m_processedsize;
     KIO::filesize_t m_totalsize;
@@ -275,7 +240,6 @@ private:
 
     KIO::Connection* m_connection;
     KIO::ConnectionServer* m_slaveconnserver;
-    KIO::SimpleJob *m_job;
     pid_t m_pid;
     bool m_dead;
     QElapsedTimer m_idlesince;

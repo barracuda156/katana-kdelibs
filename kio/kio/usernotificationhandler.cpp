@@ -31,9 +31,7 @@ QString UserNotificationHandler::Request::key() const
 {
     QString key;
     if (slave) {
-        key = slave->protocol();
-        key += slave->host();
-        key += slave->port();
+        key = slave->host();
         key += QLatin1Char('-');
         key += type;
     }

@@ -270,29 +270,9 @@ public:
      */
     KRemoteEncoding* remoteEncoding();
 
-
-    ///////////
-    // Commands sent by the job, the slave has to
-    // override what it wants to implement
-    ///////////
-
-    /**
-     * Set the host
-     * @param host
-     * @param port
-     * @param user
-     * @param pass
-     * Called directly by createSlave, this is why there is no equivalent in
-     * SlaveInterface, unlike the other methods.
-     *
-     * This method is called whenever a change in host, port or user occurs.
-     */
-    virtual void setHost(const QString &host, quint16 port, const QString &user, const QString &pass);
-
     /**
      * get, aka read.
-     * @param url the full url for this request. Host, port and user of the URL
-     *        can be assumed to be the same as in the last setHost() call.
+     * @param url the full url for this request.
      *
      * The slave should first "emit" the mimetype by calling mimeType(),
      * and then "emit" the data using the data() method.

@@ -49,7 +49,6 @@
 #include "kio/job.h"
 #include "kio/jobuidelegate.h"
 #include "kio/global.h"
-#include "kio/scheduler.h"
 #include "kio/netaccess.h"
 #include "kfile/kopenwithdialog.h"
 #include "kfile/krecentdocument.h"

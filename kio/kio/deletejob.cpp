@@ -22,13 +22,12 @@
 #include "deletejob.h"
 
 #include "kdirlister.h"
-#include "scheduler.h"
+#include "scheduler_p.h"
 #include "kdirwatch.h"
 #include "kprotocolmanager.h"
 #include "jobuidelegate.h"
 #include "clipboardupdater_p.h"
-#include <kdirnotify.h>
-
+#include "kdirnotify.h"
 #include <klocale.h>
 #include <kdebug.h>
 #include <kde_file.h>
@@ -228,7 +227,6 @@ void DeleteJobPrivate::statNextSrc()
             statNextSrc();
         } else {
             KIO::SimpleJob * job = KIO::stat( m_currentURL, StatJob::SourceSide, 0, KIO::HideProgressInfo );
-            Scheduler::setJobPriority(job, 1);
             //kDebug(7007) << "stat'ing" << m_currentURL;
             q->addSubjob(job);
         }
@@ -276,7 +274,6 @@ void DeleteJobPrivate::deleteNextFile()
             { // if remote - or if unlink() failed (we'll use the job's error handling in that case)
                 //kDebug(7007) << "calling file_delete on" << *it;
                 job = KIO::file_delete( *it, KIO::HideProgressInfo );
-                Scheduler::setJobPriority(job, 1);
                 m_currentURL=(*it);
             }
             if ( isLink )
@@ -314,7 +311,6 @@ void DeleteJobPrivate::deleteNextDir()
                 // CMD_DEL will trigger the recursive deletion in the slave.
                 SimpleJob* job = KIO::rmdir(*it);
                 job->addMetaData(QString::fromLatin1("recurse"), "true");
-                Scheduler::setJobPriority(job, 1);
                 dirs.erase(it);
                 q->addSubjob( job );
                 return;
@@ -345,7 +341,6 @@ void DeleteJobPrivate::currentSourceStated(bool isDir, bool isLink)
             //kDebug(7007) << url << "is a directory, let's list it";
             ListJob *newjob = KIO::listRecursive(url, KIO::HideProgressInfo);
             newjob->addMetaData("details", "0");
-            Scheduler::setJobPriority(newjob, 1);
             QObject::connect(newjob, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)),
                              q, SLOT(slotEntries(KIO::Job*,KIO::UDSEntryList)));
             q->addSubjob(newjob);

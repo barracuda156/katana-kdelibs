@@ -28,8 +28,8 @@
 #include "ksharedconfig.h"
 #include "kurl.h"
 #include "kprotocolinfofactory.h"
-#include "kio/slaveconfig.h"
 #include "kio/ioslave_defaults.h"
+#include "scheduler_p.h"
 
 #include <QCoreApplication>
 
@@ -80,7 +80,7 @@ void KProtocolManager::reparseConfiguration()
     d->useragent.clear();
 
     // Force the slave config to re-read its config...
-    KIO::SlaveConfig::self()->reset();
+    KIO::Scheduler::self()->reparseSlaveConfiguration();
 }
 
 KSharedConfig::Ptr KProtocolManager::config()
@@ -347,7 +347,11 @@ QString KProtocolManager::defaultMimetype(const KUrl &url)
 
 QString KProtocolManager::charsetFor(const KUrl &url)
 {
-    return KIO::SlaveConfig::self()->configData(url.scheme(), url.host(), QLatin1String("Charset"));
+    KSharedConfig::Ptr config = KSharedConfig::openConfig(KProtocolInfo::config(url.scheme()), KConfig::NoGlobals);
+    if (config) {
+        return config->group(url.host()).readEntry(QLatin1String("Charset"));
+    }
+    return QString();
 }
 
 #undef PRIVATE_DATA

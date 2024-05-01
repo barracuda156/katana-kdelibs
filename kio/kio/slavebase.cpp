@@ -538,10 +538,6 @@ void SlaveBase::mimeType(const QString &_type)
                 return;
             }
             // kDebug(7019) << "got" << cmd;
-            if (cmd == CMD_HOST) {
-                // Ignore.
-                continue;
-            }
             if (!isSubCommand(cmd)) {
                 break;
             }
@@ -625,10 +621,6 @@ static void sigpipe_handler (int)
     slaveWriteError = true;
 
     // Don't add anything else here, especially no debug output
-}
-
-void SlaveBase::setHost(const QString&, quint16, const QString&, QString const &)
-{
 }
 
 void SlaveBase::stat(KUrl const &)
@@ -854,17 +846,6 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
     QDataStream stream(data);
 
     switch(command) {
-        case CMD_HOST: {
-            QString passwd;
-            QString host, user;
-            quint16 port;
-            stream >> host >> port >> user >> passwd;
-            d->m_state = SlaveBasePrivate::InsideMethod;
-            setHost(host, port, user, passwd);
-            d->verifyErrorFinishedNotCalled("setHost()");
-            d->m_state = SlaveBasePrivate::Idle;
-            break;
-        }
         case CMD_REPARSECONFIGURATION: {
             d->m_state = SlaveBasePrivate::InsideMethod;
             reparseConfiguration();

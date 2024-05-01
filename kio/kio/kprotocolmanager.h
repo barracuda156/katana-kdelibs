@@ -33,7 +33,7 @@ typedef KSharedPtr<KSharedConfig> KSharedConfigPtr;
 
 namespace KIO
 {
-    class SlaveConfigPrivate;
+    class Scheduler;
 } // namespace KIO
 
 /**
@@ -280,7 +280,7 @@ public:
     static QString charsetFor(const KUrl &url);
 
 private:
-    friend class KIO::SlaveConfigPrivate;
+    friend class KIO::Scheduler;
 
     /**
      * @internal

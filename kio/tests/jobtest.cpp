@@ -43,7 +43,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <kprotocolinfo.h>
-#include <kio/scheduler.h>
 #include <kio/directorysizejob.h>
 #include <kio/copyjob.h>
 #include <kio/deletejob.h>
@@ -981,8 +980,6 @@ void JobTest::getInvalidUrl()
     KIO::SimpleJob* job = KIO::get(url, KIO::HideProgressInfo);
     QVERIFY(job != 0);
     job->setUiDelegate( 0 );
-
-    KIO::Scheduler::setJobPriority(job, 1); // shouldn't crash (#135456)
 
     bool ok = KIO::NetAccess::synchronousRun( job, 0 );
     QVERIFY( !ok ); // it should fail :)

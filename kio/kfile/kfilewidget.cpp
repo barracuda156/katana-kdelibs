@@ -49,7 +49,6 @@
 #include <kio/job.h>
 #include <kio/jobuidelegate.h>
 #include <kio/netaccess.h>
-#include <kio/scheduler.h>
 #include <kio/kfileitemdelegate.h>
 #include <krecentdirs.h>
 #include <kdebug.h>

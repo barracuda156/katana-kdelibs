@@ -46,13 +46,11 @@ SlaveInterface::SlaveInterface(const QString &protocol, QObject *parent)
     : QObject(parent),
     m_offset(0),
     m_protocol(protocol),
-    m_port(0),
     m_processedsize(0),
     m_totalsize(0),
     m_lasttime(0),
     m_connection(nullptr),
     m_slaveconnserver(nullptr),
-    m_job(nullptr),
     m_pid(0),
     m_dead(false),
     m_refcount(1)
@@ -80,29 +78,14 @@ QString SlaveInterface::protocol() const
     return m_protocol;
 }
 
-void SlaveInterface::setProtocol(const QString &protocol)
-{
-    m_protocol = protocol;
-}
-
 QString SlaveInterface::host() const
 {
     return m_host;
 }
 
-quint16 SlaveInterface::port() const
+void SlaveInterface::setHost(const QString &host)
 {
-    return m_port;
-}
-
-QString SlaveInterface::user() const
-{
-    return m_user;
-}
-
-QString SlaveInterface::passwd() const
-{
-    return m_passwd;
+    m_host = host;
 }
 
 void SlaveInterface::setIdle()
@@ -140,16 +123,6 @@ pid_t SlaveInterface::pid() const
     return m_pid;
 }
 
-void SlaveInterface::setJob(KIO::SimpleJob *job)
-{
-    m_job = job;
-}
-
-KIO::SimpleJob *SlaveInterface::job() const
-{
-    return m_job;
-}
-
 bool SlaveInterface::isAlive() const
 {
     return !m_dead;
@@ -179,30 +152,11 @@ void SlaveInterface::kill()
 {
     m_dead = true; // OO can be such simple.
     kDebug(7002) << "killing slave pid" << m_pid
-                 << "(" << m_protocol + "://" + m_host << ")";
+                 << "(" << m_protocol << m_host << ")";
     if (m_pid) {
        ::kill(m_pid, SIGTERM);
        m_pid = 0;
     }
-}
-
-void SlaveInterface::setHost(const QString &host, quint16 port,
-                             const QString &user, const QString &passwd)
-{
-    m_host = host;
-    m_port = port;
-    m_user = user;
-    m_passwd = passwd;
-
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly);
-    stream << m_host << m_port << m_user << m_passwd;
-    m_connection->send(CMD_HOST, data);
-}
-
-void SlaveInterface::resetHost()
-{
-    m_host = "<reset>";
 }
 
 void SlaveInterface::setConfig(const MetaData &config)
@@ -500,13 +454,9 @@ void SlaveInterface::gotInput()
     if (!dispatch()) {
         m_connection->close();
         m_dead = true;
-        QString arg = m_protocol;
-        if (!m_host.isEmpty()) {
-            arg += QString::fromLatin1("://") + m_host;
-        }
         kDebug(7002) << "slave died pid = " << m_pid;
         // Tell the job about the problem.
-        emit error(ERR_SLAVE_DIED, arg);
+        emit error(ERR_SLAVE_DIED, m_host);
         // Tell the scheduler about the problem.
         emit slaveDied(this);
     }

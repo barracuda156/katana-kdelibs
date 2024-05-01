@@ -61,7 +61,6 @@
 #include <kdebug.h>
 #include "kio/jobclasses.h" // for KIO::JobFlags
 #include "kio/job.h"
-#include "kio/scheduler.h"
 
 namespace Plasma
 {

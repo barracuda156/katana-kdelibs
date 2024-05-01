@@ -39,27 +39,26 @@ namespace KIO {
      * @note protocol-specific commands shouldn't be added here, but should use special.
      */
     enum Command {
-        CMD_HOST = '0', // 48
-        CMD_NONE = '1',
-        CMD_GET = '2',
-        CMD_PUT = 'A',
-        CMD_STAT = 'B',
-        CMD_MIMETYPE = 'C',
-        CMD_LISTDIR = 'D',
-        CMD_MKDIR = 'E',
-        CMD_RENAME = 'F',
-        CMD_COPY = 'G',
-        CMD_DEL = 'H',
-        CMD_CHMOD = 'I',
-        CMD_SPECIAL = 'J',
-        CMD_SETMODIFICATIONTIME = 'K',
-        CMD_REPARSECONFIGURATION = 'L',
-        CMD_META_DATA = 'M',
-        CMD_SYMLINK = 'N',
-        CMD_MESSAGEBOXANSWER = 'O',
-        CMD_RESUMEANSWER = 'P',
-        CMD_CONFIG = 'Q',
-        CMD_CHOWN = 'R'
+        CMD_NONE = '0', // 48
+        CMD_GET = '1',
+        CMD_PUT = '2',
+        CMD_STAT = 'A',
+        CMD_MIMETYPE = 'B',
+        CMD_LISTDIR = 'C',
+        CMD_MKDIR = 'D',
+        CMD_RENAME = 'E',
+        CMD_COPY = 'F',
+        CMD_DEL = 'G',
+        CMD_CHMOD = 'H',
+        CMD_SPECIAL = 'I',
+        CMD_SETMODIFICATIONTIME = 'J',
+        CMD_REPARSECONFIGURATION = 'K',
+        CMD_META_DATA = 'L',
+        CMD_SYMLINK = 'M',
+        CMD_MESSAGEBOXANSWER = 'N',
+        CMD_RESUMEANSWER = 'O',
+        CMD_CONFIG = 'P',
+        CMD_CHOWN = 'Q'
     };
 
     class JobPrivate: public KCompositeJobPrivate
@@ -111,7 +110,7 @@ namespace KIO {
          */
         SimpleJobPrivate(const KUrl& url, int command, const QByteArray &packedArgs)
             : m_slave(0), m_packedArgs(packedArgs), m_url(url), m_command(command),
-              m_schedSerial(0), m_redirectionHandlingEnabled(true)
+              m_redirectionHandlingEnabled(true), m_schedSerial(0)
         {
         }
 
@@ -119,25 +118,10 @@ namespace KIO {
         QByteArray m_packedArgs;
         KUrl m_url;
         int m_command;
+        bool m_redirectionHandlingEnabled;
 
         // for use in KIO::Scheduler
-        //
-        // There are two kinds of protocol:
-        // (1) The protocol of the url
-        // (2) The actual protocol that the io-slave uses.
-        //
-        // These two often match, but not necessarily. Most notably, they don't
-        // match when a slave is used for more than one protocol (e.g. curl).
-        // In that case (1) is ftp, but (2) is http.
-        //
-        // JobData::protocol stores (2) while Job::url().protocol() returns (1).
-        // The ProtocolInfoDict is indexed with (2).
-        //
-        // We schedule slaves based on (2) but tell the slave about (1) via
-        // Slave::setProtocol().
-        QString m_protocol;
         int m_schedSerial;
-        bool m_redirectionHandlingEnabled;
 
         /**
          * Forward signal from the slave.

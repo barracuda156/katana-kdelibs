@@ -25,7 +25,7 @@
 #include "jobuidelegate.h"
 #include "kmimetype.h"
 #include "slaveinterface_p.h"
-#include "scheduler.h"
+#include "scheduler_p.h"
 #include "kdirwatch.h"
 #include "kprotocolinfo.h"
 #include "kprotocolmanager.h"
@@ -50,7 +50,6 @@
 
 using namespace KIO;
 
-// TODO: duplicate
 static inline SlaveInterface *jobSlave(SimpleJob *job)
 {
     return SimpleJobPrivate::get(job)->m_slave;
@@ -258,7 +257,7 @@ SimpleJob::SimpleJob(SimpleJobPrivate &dd)
         return;
     }
 
-    Scheduler::doJob(this);
+    Scheduler::self()->doJob(this);
 }
 
 bool SimpleJob::doKill()
@@ -266,7 +265,7 @@ bool SimpleJob::doKill()
     Q_D(SimpleJob);
     if ((d->m_extraFlags & JobPrivate::EF_KillCalled) == 0) {
         d->m_extraFlags |= JobPrivate::EF_KillCalled;
-        Scheduler::cancelJob(this); // deletes the slave if not 0
+        Scheduler::self()->cancelJob(this); // deletes the slave if not 0
     } else {
         kWarning(7007) << this << "This is overkill.";
     }
@@ -313,7 +312,7 @@ SimpleJob::~SimpleJob()
     // last chance to remove this job from the scheduler!
     if (d->m_schedSerial) {
         kDebug(7007) << "Killing job" << this << "in destructor!"  << kBacktrace();
-        Scheduler::cancelJob(this);
+        Scheduler::self()->cancelJob(this);
     }
 }
 
@@ -322,13 +321,10 @@ void SimpleJobPrivate::start(SlaveInterface *slave)
     Q_Q(SimpleJob);
     m_slave = slave;
 
-    // SlaveInterface::setJob can send us metadata if there is a persistent connection
     q->connect(
         slave, SIGNAL(metaData(KIO::MetaData)),
         SLOT(slotMetaData(KIO::MetaData))
     );
-
-    slave->setJob(q);
 
     q->connect(
         slave, SIGNAL(error(int,QString)),
@@ -398,7 +394,7 @@ void SimpleJobPrivate::slaveDone()
     }
     // only finish a job once; Scheduler::jobFinished() resets schedSerial to zero.
     if (m_schedSerial) {
-        Scheduler::jobFinished(q, m_slave);
+        Scheduler::self()->jobFinished(q, m_slave);
     }
 }
 
@@ -484,7 +480,7 @@ void SimpleJobPrivate::restartAfterRedirection(KUrl *redirectionUrl)
     m_url = *redirectionUrl;
     redirectionUrl->clear();
     if ((m_extraFlags & EF_KillCalled) == 0) {
-        Scheduler::doJob(q);
+        Scheduler::self()->doJob(q);
     }
 }
 
@@ -782,7 +778,7 @@ StatJob *KIO::mostLocalUrl(const KUrl &url, JobFlags flags)
     StatJob* job = stat(url, StatJob::SourceSide, 2, flags);
     if (url.isLocalFile()) {
         QTimer::singleShot(0, job, SLOT(slotFinished()));
-        Scheduler::cancelJob(job); // deletes the slave if not 0
+        Scheduler::self()->cancelJob(job); // deletes the slave if not 0
     }
     return job;
 }
@@ -1958,7 +1954,6 @@ void ListJobPrivate::slotListEntries(const KIO::UDSEntryList &list)
                         m_displayPrefix + displayName + '/',
                         includeHidden
                     );
-                    Scheduler::setJobPriority(job, 1);
                     q->connect(
                         job, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)),
                         SLOT(gotEntries(KIO::Job*,KIO::UDSEntryList))

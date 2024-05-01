@@ -71,7 +71,6 @@ set(kiocore_STAT_SRCS
     kio/scheduler.cpp
     kio/skipdialog.cpp
     kio/slavebase.cpp
-    kio/slaveconfig.cpp
     kio/slaveinterface.cpp
     kio/thumbcreator.cpp
     kio/udsentry.cpp
@@ -197,11 +196,9 @@ install(
     FILES
     ${CMAKE_CURRENT_BINARY_DIR}/kio_export.h
     kio/connection.h
-    kio/slaveconfig.h
     kio/global.h
     kio/netaccess.h
     kio/job.h
-    kio/scheduler.h
     kio/jobclasses.h
     kio/copyjob.h
     kio/deletejob.h

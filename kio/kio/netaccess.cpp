@@ -45,7 +45,6 @@
 #include "copyjob.h"
 #include "deletejob.h"
 #include "jobuidelegate.h"
-#include "scheduler.h"
 
 namespace KIO
 {

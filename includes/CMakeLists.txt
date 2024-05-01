@@ -335,11 +335,9 @@ install(
     KIO/NetRC
     KIO/PreviewJob
     KIO/RenameDialog
-    KIO/Scheduler
     KIO/SimpleJob
     KIO/SkipDialog
     KIO/SlaveBase
-    KIO/SlaveConfig
     KIO/StatJob
     KIO/StoredTransferJob
     KIO/Task
