@@ -237,23 +237,11 @@ public:
      * data() or finished() signal.
      */
     void setMetaData(const QString &key, const QString &value);
-    
-    /**
-     * Queries for the existence of a certain config/meta-data entry
-     * send by the application to the slave.
-     */
-    bool hasMetaData(const QString &key) const;
 
     /**
      * Queries for config/meta-data send by the application to the slave.
      */
     QString metaData(const QString &key) const;
-
-
-    /**
-     * Contains all metadata (but no config) sent by the application to the slave.
-     */
-    MetaData allMetaData() const;
 
     /**
      * Returns a configuration object to query config/meta-data information

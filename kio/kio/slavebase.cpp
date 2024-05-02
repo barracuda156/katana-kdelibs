@@ -350,22 +350,6 @@ QString SlaveBase::metaData(const QString &key) const
     return QString();
 }
 
-MetaData SlaveBase::allMetaData() const
-{
-    return d->m_incomingMetaData;
-}
-
-bool SlaveBase::hasMetaData(const QString &key) const
-{
-    if (d->m_incomingMetaData.contains(key)) {
-        return true;
-    }
-    if (d->configData.contains(key)) {
-        return true;
-    }
-    return false;
-}
-
 KConfigGroup *SlaveBase::config()
 {
     return d->configGroup;

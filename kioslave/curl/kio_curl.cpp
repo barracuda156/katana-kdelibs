@@ -537,9 +537,9 @@ void CurlProtocol::get(const KUrl &url)
     }
 
     CURLcode curlresult = CURLE_OK;
-    if (hasMetaData(QLatin1String("resume"))) {
-        Q_ASSERT(sizeof(qlonglong) == sizeof(curl_off_t));
-        const qlonglong resumeoffset = metaData(QLatin1String("resume")).toLongLong();
+    const qlonglong resumeoffset = metaData(QLatin1String("resume")).toLongLong();
+    if (resumeoffset > 0) {
+        Q_ASSERT(sizeof(qlonglong) == sizeof(curl_off_t));;
         kDebug(7103) << "Resume offset" << resumeoffset;
         curlresult = curl_easy_setopt(m_curl, CURLOPT_RESUME_FROM_LARGE, curl_off_t(resumeoffset));
         if (curlresult != CURLE_OK) {
@@ -966,15 +966,12 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     }
 #endif
 
-    kDebug(7103) << "Metadata" << allMetaData();
-
-    if (hasMetaData(QLatin1String("UserAgent"))) {
-        const QByteArray useragentbytes = metaData("UserAgent").toAscii();
-        curlresult = curl_easy_setopt(m_curl, CURLOPT_USERAGENT, useragentbytes.constData());
-        if (curlresult != CURLE_OK) {
-            KIO_CURL_ERROR(curlresult);
-            return false;
-        }
+    // should not be empty, see KIO::Scheduler
+    const QByteArray useragentbytes = metaData("UserAgent").toAscii();
+    curlresult = curl_easy_setopt(m_curl, CURLOPT_USERAGENT, useragentbytes.constData());
+    if (curlresult != CURLE_OK) {
+        KIO_CURL_ERROR(curlresult);
+        return false;
     }
 
     const bool noauth = (metaData("no-auth") == QLatin1String("yes"));
@@ -1007,20 +1004,20 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
         m_curlheaders = nullptr;
     }
     if (m_ishttp) {
-        if (hasMetaData(QLatin1String("Languages"))) {
-            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Language: ") + metaData("Languages").toAscii());
+        // also should not be empty, see KIO::Scheduler
+        const QByteArray languagesbytes = metaData("Languages").toAscii();
+        m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Language: ") + languagesbytes);
+        const QByteArray charsetsbytes = metaData("Charsets").toAscii();
+        m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Charset: ") + charsetsbytes);
+
+        const QByteArray acceptbytes = metaData("accept").toAscii();
+        if (!acceptbytes.isEmpty()) {
+            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept: ") + acceptbytes);
         }
 
-        if (hasMetaData(QLatin1String("Charsets"))) {
-            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Charset: ") + metaData("Charsets").toAscii());
-        }
-
-        if (hasMetaData(QLatin1String("accept"))) {
-            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept: ") + metaData("accept").toAscii());
-        }
-
-        if (hasMetaData(QLatin1String("Authorization"))) {
-            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Authorization: ") + metaData("Authorization").toAscii());
+        const QByteArray authorizationbytes = metaData("Authorization").toAscii();
+        if (!authorizationbytes.isEmpty()) {
+            m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Authorization: ") + authorizationbytes);
         }
 
         curlresult = curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, m_curlheaders);
