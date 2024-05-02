@@ -284,7 +284,6 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
         return KMessageBox::Cancel; // We have to return something.
     }
 
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
     // raise the dialog in case the parent is minimized (hidden), e.g. status
     // status notifier item (kget)
     dialog->show();
@@ -295,6 +294,7 @@ int KMessageBox::createKMessageBox(KDialog *dialog, const QIcon &icon, const QSt
     if (checkbox && checkboxReturn) {
         *checkboxReturn = checkbox->isChecked();
     }
+    dialog->deleteLater();
     return result;
 }
 
@@ -309,18 +309,20 @@ int KMessageBox::questionYesNo(QWidget *parent, const QString &text, const QStri
 }
 
 int KMessageBox::questionYesNoWId(WId parent_id, const QString &text,
-                           const QString &caption,
-                           const KGuiItem &buttonYes,
-                           const KGuiItem &buttonNo,
-                           const QString &dontAskAgainName,
-                           Options options)
+                                 const QString &caption,
+                                 const KGuiItem &buttonYes,
+                                 const KGuiItem &buttonNo,
+                                 const QString &dontAskAgainName,
+                                 Options options)
 {
-    return questionYesNoListWId(parent_id, text, QStringList(), caption,
-                            buttonYes, buttonNo, dontAskAgainName, options);
+    return questionYesNoListWId(
+        parent_id, text, QStringList(), caption,
+        buttonYes, buttonNo, dontAskAgainName, options
+    );
 }
 
 bool KMessageBox::shouldBeShownYesNo(const QString &dontShowAgainName,
-                                ButtonCode &result)
+                                     ButtonCode &result)
 {
     if ( dontShowAgainName.isEmpty() ) {
         return true;
@@ -340,39 +342,39 @@ bool KMessageBox::shouldBeShownYesNo(const QString &dontShowAgainName,
 
 bool KMessageBox::shouldBeShownContinue(const QString &dontShowAgainName)
 {
-    if ( dontShowAgainName.isEmpty() ) {
+    if (dontShowAgainName.isEmpty()) {
         return true;
     }
-    KConfigGroup cg( KMessageBox_againConfig ? KMessageBox_againConfig : KGlobal::config().data(), "Notification Messages" );
+    KConfigGroup cg(KMessageBox_againConfig ? KMessageBox_againConfig : KGlobal::config().data(), "Notification Messages");
     return cg.readEntry(dontShowAgainName, true);
 }
 
 void KMessageBox::saveDontShowAgainYesNo(const QString &dontShowAgainName,
-                                    ButtonCode result)
+                                         ButtonCode result)
 {
-    if ( dontShowAgainName.isEmpty() ) {
+    if (dontShowAgainName.isEmpty()) {
         return;
     }
     KConfigGroup::WriteConfigFlags flags = KConfig::Persistent;
     if (dontShowAgainName[0] == ':') {
         flags |= KConfigGroup::Global;
     }
-    KConfigGroup cg( KMessageBox_againConfig? KMessageBox_againConfig : KGlobal::config().data(), "Notification Messages" );
-    cg.writeEntry( dontShowAgainName, result==Yes, flags );
+    KConfigGroup cg(KMessageBox_againConfig? KMessageBox_againConfig : KGlobal::config().data(), "Notification Messages");
+    cg.writeEntry(dontShowAgainName, result == Yes, flags);
     cg.sync();
 }
 
 void KMessageBox::saveDontShowAgainContinue(const QString &dontShowAgainName)
 {
-    if ( dontShowAgainName.isEmpty() ) {
+    if (dontShowAgainName.isEmpty() ) {
         return;
     }
     KConfigGroup::WriteConfigFlags flags = KConfigGroup::Persistent;
     if (dontShowAgainName[0] == ':') {
         flags |= KConfigGroup::Global;
     }
-    KConfigGroup cg( KMessageBox_againConfig? KMessageBox_againConfig: KGlobal::config().data(), "Notification Messages" );
-    cg.writeEntry( dontShowAgainName, false, flags );
+    KConfigGroup cg(KMessageBox_againConfig? KMessageBox_againConfig: KGlobal::config().data(), "Notification Messages");
+    cg.writeEntry(dontShowAgainName, false, flags);
     cg.sync();
 }
 
@@ -382,27 +384,30 @@ void KMessageBox::setDontShowAskAgainConfig(KConfig* cfg)
 }
 
 int KMessageBox::questionYesNoList(QWidget *parent, const QString &text,
-                           const QStringList &strlist,
-                           const QString &caption,
-                           const KGuiItem &buttonYes,
-                           const KGuiItem &buttonNo,
-                           const QString &dontAskAgainName,
-                           Options options)
-{ // in order to avoid code duplication, convert to WId, it will be converted back
-    return questionYesNoListWId( parent ? parent->effectiveWinId() : 0, text, strlist,
-        caption, buttonYes, buttonNo, dontAskAgainName, options );
+                                   const QStringList &strlist,
+                                   const QString &caption,
+                                   const KGuiItem &buttonYes,
+                                   const KGuiItem &buttonNo,
+                                   const QString &dontAskAgainName,
+                                   Options options)
+{
+    // in order to avoid code duplication, convert to WId, it will be converted back
+    return questionYesNoListWId(
+        parent ? parent->effectiveWinId() : 0, text, strlist,
+        caption, buttonYes, buttonNo, dontAskAgainName, options
+    );
 }
 
 int KMessageBox::questionYesNoListWId(WId parent_id, const QString &text,
-                           const QStringList &strlist,
-                           const QString &caption,
-                           const KGuiItem &buttonYes_,
-                           const KGuiItem &buttonNo_,
-                           const QString &dontAskAgainName,
-                           Options options)
+                                     const QStringList &strlist,
+                                     const QString &caption,
+                                     const KGuiItem &buttonYes_,
+                                     const KGuiItem &buttonNo_,
+                                     const QString &dontAskAgainName,
+                                     Options options)
 {
     ButtonCode res;
-    if ( !shouldBeShownYesNo(dontAskAgainName, res) ) {
+    if (!shouldBeShownYesNo(dontAskAgainName, res)) {
         return res;
     }
 
@@ -442,29 +447,31 @@ int KMessageBox::questionYesNoListWId(WId parent_id, const QString &text,
 }
 
 int KMessageBox::questionYesNoCancel(QWidget *parent,
-                          const QString &text,
-                          const QString &caption,
-                          const KGuiItem &buttonYes,
-                          const KGuiItem &buttonNo,
-                          const KGuiItem &buttonCancel,
-                          const QString &dontAskAgainName,
-                          Options options)
+                                     const QString &text,
+                                     const QString &caption,
+                                     const KGuiItem &buttonYes,
+                                     const KGuiItem &buttonNo,
+                                     const KGuiItem &buttonCancel,
+                                     const QString &dontAskAgainName,
+                                     Options options)
 {
-    return questionYesNoCancelWId( parent ? parent->effectiveWinId() : 0, text, caption, buttonYes, buttonNo, buttonCancel,
-        dontAskAgainName, options );
+    return questionYesNoCancelWId(
+        parent ? parent->effectiveWinId() : 0, text, caption, buttonYes, buttonNo, buttonCancel,
+        dontAskAgainName, options
+    );
 }
 
 int KMessageBox::questionYesNoCancelWId(WId parent_id,
-                          const QString &text,
-                          const QString &caption,
-                          const KGuiItem &buttonYes_,
-                          const KGuiItem &buttonNo_,
-                          const KGuiItem &buttonCancel_,
-                          const QString &dontAskAgainName,
-                          Options options)
+                                        const QString &text,
+                                        const QString &caption,
+                                        const KGuiItem &buttonYes_,
+                                        const KGuiItem &buttonNo_,
+                                        const KGuiItem &buttonCancel_,
+                                        const QString &dontAskAgainName,
+                                        Options options)
 {
     ButtonCode res;
-    if ( !shouldBeShownYesNo(dontAskAgainName, res) ) {
+    if (!shouldBeShownYesNo(dontAskAgainName, res)) {
         return res;
     }
 
@@ -473,7 +480,7 @@ int KMessageBox::questionYesNoCancelWId(WId parent_id,
     I18N_FILTER_BUTTON_CANCEL(buttonCancel_, buttonCancel)
     I18N_POST_BUTTON_FILTER
 
-    QWidget* parent = QWidget::find( parent_id );
+    QWidget* parent = QWidget::find(parent_id);
     KDialog *dialog= new KDialog(parent, Qt::Dialog);
     dialog->setCaption(caption.isEmpty() ? i18n("Question") : caption);
     dialog->setButtons(KDialog::Yes | KDialog::No | KDialog::Cancel);
@@ -512,34 +519,38 @@ int KMessageBox::questionYesNoCancelWId(WId parent_id,
 }
 
 int KMessageBox::warningYesNo(QWidget *parent, const QString &text,
-                          const QString &caption,
-                          const KGuiItem &buttonYes,
-                          const KGuiItem &buttonNo,
-                          const QString &dontAskAgainName,
-                          Options options)
-{
-    return warningYesNoList(parent, text, QStringList(), caption,
-                       buttonYes, buttonNo, dontAskAgainName, options);
-}
-
-int KMessageBox::warningYesNoWId(WId parent_id, const QString &text,
-                          const QString &caption,
-                          const KGuiItem &buttonYes,
-                          const KGuiItem &buttonNo,
-                          const QString &dontAskAgainName,
-                          Options options)
-{
-    return warningYesNoListWId(parent_id, text, QStringList(), caption,
-                       buttonYes, buttonNo, dontAskAgainName, options);
-}
-
-int KMessageBox::warningYesNoList(QWidget *parent, const QString &text,
-                              const QStringList &strlist,
                               const QString &caption,
                               const KGuiItem &buttonYes,
                               const KGuiItem &buttonNo,
                               const QString &dontAskAgainName,
                               Options options)
+{
+    return warningYesNoList(
+        parent, text, QStringList(), caption,
+        buttonYes, buttonNo, dontAskAgainName, options
+    );
+}
+
+int KMessageBox::warningYesNoWId(WId parent_id, const QString &text,
+                                const QString &caption,
+                                const KGuiItem &buttonYes,
+                                const KGuiItem &buttonNo,
+                                const QString &dontAskAgainName,
+                                Options options)
+{
+    return warningYesNoListWId(
+        parent_id, text, QStringList(), caption,
+        buttonYes, buttonNo, dontAskAgainName, options
+    );
+}
+
+int KMessageBox::warningYesNoList(QWidget *parent, const QString &text,
+                                  const QStringList &strlist,
+                                  const QString &caption,
+                                  const KGuiItem &buttonYes,
+                                  const KGuiItem &buttonNo,
+                                  const QString &dontAskAgainName,
+                                  Options options)
 {
     return warningYesNoListWId( parent ? parent->effectiveWinId() : 0, text, strlist, caption,
         buttonYes, buttonNo, dontAskAgainName, options );
@@ -554,7 +565,7 @@ int KMessageBox::warningYesNoListWId(WId parent_id, const QString &text,
                               Options options)
 {
     ButtonCode res;
-    if ( !shouldBeShownYesNo(dontAskAgainName, res) ) {
+    if (!shouldBeShownYesNo(dontAskAgainName, res)) {
         return res;
     }
 
@@ -585,7 +596,7 @@ int KMessageBox::warningYesNoListWId(WId parent_id, const QString &text,
         dontAskAgainName.isEmpty() ? QString() : i18n("Do not ask again"),
         &checkboxResult, options
     );
-    res = (result==KDialog::Yes ? Yes : No);
+    res = (result == KDialog::Yes ? Yes : No);
 
     if (checkboxResult) {
         saveDontShowAgainYesNo(dontAskAgainName, res);
@@ -594,48 +605,54 @@ int KMessageBox::warningYesNoListWId(WId parent_id, const QString &text,
 }
 
 int KMessageBox::warningContinueCancel(QWidget *parent,
-                                   const QString &text,
-                                   const QString &caption,
-                                   const KGuiItem &buttonContinue,
-                                   const KGuiItem &buttonCancel,
-                                   const QString &dontAskAgainName,
-                                   Options options)
+                                       const QString &text,
+                                       const QString &caption,
+                                       const KGuiItem &buttonContinue,
+                                       const KGuiItem &buttonCancel,
+                                       const QString &dontAskAgainName,
+                                       Options options)
 {
-    return warningContinueCancelList(parent, text, QStringList(), caption,
-                                buttonContinue, buttonCancel, dontAskAgainName, options);
+    return warningContinueCancelList(
+        parent, text, QStringList(), caption,
+        buttonContinue, buttonCancel, dontAskAgainName, options
+    );
 }
 
 int KMessageBox::warningContinueCancelWId(WId parent_id,
-                                   const QString &text,
-                                   const QString &caption,
-                                   const KGuiItem &buttonContinue,
-                                   const KGuiItem &buttonCancel,
-                                   const QString &dontAskAgainName,
-                                   Options options)
+                                         const QString &text,
+                                         const QString &caption,
+                                         const KGuiItem &buttonContinue,
+                                         const KGuiItem &buttonCancel,
+                                         const QString &dontAskAgainName,
+                                         Options options)
 {
-    return warningContinueCancelListWId(parent_id, text, QStringList(), caption,
-                                buttonContinue, buttonCancel, dontAskAgainName, options);
+    return warningContinueCancelListWId(
+        parent_id, text, QStringList(), caption,
+        buttonContinue, buttonCancel, dontAskAgainName, options
+    );
 }
 
 int KMessageBox::warningContinueCancelList(QWidget *parent, const QString &text,
-                             const QStringList &strlist,
-                             const QString &caption,
-                             const KGuiItem &buttonContinue,
-                             const KGuiItem &buttonCancel,
-                             const QString &dontAskAgainName,
-                             Options options)
+                                           const QStringList &strlist,
+                                           const QString &caption,
+                                           const KGuiItem &buttonContinue,
+                                           const KGuiItem &buttonCancel,
+                                           const QString &dontAskAgainName,
+                                           Options options)
 {
-    return warningContinueCancelListWId( parent ? parent->effectiveWinId() : 0, text, strlist,
-        caption, buttonContinue, buttonCancel, dontAskAgainName, options );
+    return warningContinueCancelListWId(
+        parent ? parent->effectiveWinId() : 0, text, strlist,
+        caption, buttonContinue, buttonCancel, dontAskAgainName, options
+    );
 }
 
 int KMessageBox::warningContinueCancelListWId(WId parent_id, const QString &text,
-                             const QStringList &strlist,
-                             const QString &caption,
-                             const KGuiItem &buttonContinue_,
-                             const KGuiItem &buttonCancel_,
-                             const QString &dontAskAgainName,
-                             Options options)
+                                              const QStringList &strlist,
+                                              const QString &caption,
+                                              const KGuiItem &buttonContinue_,
+                                              const KGuiItem &buttonCancel_,
+                                              const QString &dontAskAgainName,
+                                              Options options)
 {
     if ( !shouldBeShownContinue(dontAskAgainName) )
         return Continue;
