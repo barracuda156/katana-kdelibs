@@ -48,7 +48,7 @@
 #include "kwindowsystem.h"
 #include "kpasswdstore.h"
 #include "kremoteencoding.h"
-#include "connection.h"
+#include "connection_p.h"
 #include "ioslave_defaults.h"
 #include "slaveinterface_p.h"
 #include "job_p.h"

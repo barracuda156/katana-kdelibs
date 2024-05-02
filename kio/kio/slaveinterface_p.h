@@ -22,7 +22,7 @@
 
 #include "kio/global.h"
 #include "kio/udsentry.h"
-#include "kio/connection.h"
+#include "kio/connection_p.h"
 
 #include <QTimer>
 #include <QElapsedTimer>

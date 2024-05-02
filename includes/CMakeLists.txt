@@ -320,7 +320,6 @@ install(
     FILES
     KIO/AuthInfo
     KIO/ChmodJob
-    KIO/Connection
     KIO/CopyInfo
     KIO/CopyJob
     KIO/DeleteJob
@@ -332,7 +331,6 @@ install(
     KIO/MetaData
     KIO/MimetypeJob
     KIO/NetAccess
-    KIO/NetRC
     KIO/PreviewJob
     KIO/RenameDialog
     KIO/SimpleJob

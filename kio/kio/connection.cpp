@@ -19,10 +19,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "connection.h"
 #include "connection_p.h"
 
-#include <QQueue>
 #include <QPointer>
 #include <QElapsedTimer>
 
@@ -33,85 +31,14 @@
 #include <kstandarddirs.h>
 #include <kurl.h>
 
-using namespace KIO;
-
-class KIO::ConnectionPrivate
-{
-public:
-    inline ConnectionPrivate()
-        : backend(0), suspended(false)
-    { }
-
-    void dequeue();
-    void commandReceived(const Task &task);
-    void disconnected();
-    void setBackend(SocketConnectionBackend *b);
-
-    QQueue<Task> outgoingTasks;
-    QQueue<Task> incomingTasks;
-    SocketConnectionBackend *backend;
-    Connection *q;
-    bool suspended;
-};
-
-class KIO::ConnectionServerPrivate
-{
-public:
-    inline ConnectionServerPrivate()
-        : backend(0)
-    { }
-
-    ConnectionServer *q;
-    SocketConnectionBackend *backend;
-};
-
-void ConnectionPrivate::dequeue()
-{
-    if (!backend || suspended)
-        return;
-
-    while (!outgoingTasks.isEmpty()) {
-       const Task task = outgoingTasks.dequeue();
-       q->sendnow(task.cmd, task.data);
-    }
-
-    if (!incomingTasks.isEmpty())
-        emit q->readyRead();
-}
-
-void ConnectionPrivate::commandReceived(const Task &task)
-{
-    //kDebug() << this << "Command " << task.cmd << " added to the queue";
-    if (!suspended && incomingTasks.isEmpty())
-        QMetaObject::invokeMethod(q, "dequeue", Qt::QueuedConnection);
-    incomingTasks.enqueue(task);
-}
-
-void ConnectionPrivate::disconnected()
-{
-    q->close();
-    QMetaObject::invokeMethod(q, "readyRead", Qt::QueuedConnection);
-}
-
-void ConnectionPrivate::setBackend(SocketConnectionBackend *b)
-{
-    backend = b;
-    if (backend) {
-        q->connect(backend, SIGNAL(commandReceived(Task)), SLOT(commandReceived(Task)));
-        q->connect(backend, SIGNAL(disconnected()), SLOT(disconnected()));
-        backend->setSuspended(suspended);
-    }
-}
+namespace KIO {
 
 SocketConnectionBackend::SocketConnectionBackend(QObject *parent)
-    : QObject(parent), state(Idle), socket(nullptr), localServer(nullptr), len(-1),
-    cmd(0), signalEmitted(false)
+    : QObject(parent),
+    state(Idle), socket(nullptr), localServer(nullptr),
+    len(-1), cmd(0), signalEmitted(false)
 {
     qRegisterMetaType<Task>("Task");
-}
-
-SocketConnectionBackend::~SocketConnectionBackend()
-{
 }
 
 void SocketConnectionBackend::setSuspended(bool enable)
@@ -254,7 +181,7 @@ SocketConnectionBackend *SocketConnectionBackend::nextPendingConnection()
 
     QLocalSocket *newSocket = localServer->nextPendingConnection();
     if (!newSocket)
-        return 0;               // there was no connection...
+        return nullptr;               // there was no connection...
 
     SocketConnectionBackend *result = new SocketConnectionBackend();
     result->state = Connected;
@@ -330,23 +257,63 @@ void SocketConnectionBackend::socketReadyRead()
 }
 
 Connection::Connection(QObject *parent)
-    : QObject(parent), d(new ConnectionPrivate)
+    : QObject(parent),
+    m_backend(nullptr), m_suspended(false)
 {
-    d->q = this;
 }
 
 Connection::~Connection()
 {
     close();
-    delete d;
+}
+
+void Connection::dequeue()
+{
+    if (!m_backend || m_suspended) {
+        return;
+    }
+
+    while (!m_outgoingTasks.isEmpty()) {
+       const Task task = m_outgoingTasks.dequeue();
+       sendnow(task.cmd, task.data);
+    }
+
+    if (!m_incomingTasks.isEmpty()) {
+        emit readyRead();
+    }
+}
+
+void Connection::commandReceived(const Task &task)
+{
+    //kDebug() << this << "Command " << task.cmd << " added to the queue";
+    if (!m_suspended && m_incomingTasks.isEmpty()) {
+        QMetaObject::invokeMethod(this, "dequeue", Qt::QueuedConnection);
+    }
+    m_incomingTasks.enqueue(task);
+}
+
+void Connection::disconnected()
+{
+    close();
+    QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
+}
+
+void Connection::setBackend(SocketConnectionBackend *b)
+{
+    m_backend = b;
+    if (m_backend) {
+        connect(m_backend, SIGNAL(commandReceived(Task)), this, SLOT(commandReceived(Task)));
+        connect(m_backend, SIGNAL(disconnected()), this, SLOT(disconnected()));
+        m_backend->setSuspended(m_suspended);
+    }
 }
 
 void Connection::suspend()
 {
     //kDebug() << this << "Suspended";
-    d->suspended = true;
-    if (d->backend)
-        d->backend->setSuspended(true);
+    m_suspended = true;
+    if (m_backend)
+        m_backend->setSuspended(true);
 }
 
 void Connection::resume()
@@ -355,76 +322,76 @@ void Connection::resume()
     QMetaObject::invokeMethod(this, "dequeue", Qt::QueuedConnection);
 
     //kDebug() << this << "Resumed";
-    d->suspended = false;
-    if (d->backend)
-        d->backend->setSuspended(false);
+    m_suspended = false;
+    if (m_backend)
+        m_backend->setSuspended(false);
 }
 
 void Connection::close()
 {
-    if (d->backend) {
-        d->backend->disconnect(this);
-        d->backend->deleteLater();
-        d->backend = 0;
+    if (m_backend) {
+        m_backend->disconnect(this);
+        m_backend->deleteLater();
+        m_backend = nullptr;
     }
-    d->outgoingTasks.clear();
-    d->incomingTasks.clear();
+    m_outgoingTasks.clear();
+    m_incomingTasks.clear();
 }
 
 bool Connection::isConnected() const
 {
-    return d->backend && d->backend->state == SocketConnectionBackend::Connected;
+    return m_backend && m_backend->state == SocketConnectionBackend::Connected;
 }
 
 bool Connection::inited() const
 {
-    return d->backend;
+    return m_backend;
 }
 
 bool Connection::suspended() const
 {
-    return d->suspended;
+    return m_suspended;
 }
 
 void Connection::connectToRemote(const QString &address)
 {
-    d->setBackend(new SocketConnectionBackend(this));
+    setBackend(new SocketConnectionBackend(this));
     kDebug(7017) << "Connection requested to" << address;
 
-    if (!d->backend->connectToRemote(address)) {
+    if (!m_backend->connectToRemote(address)) {
         // should the process owning QLocalServer crash and its address remain in use attempt to
         // connect to new server
         kDebug(7017) << "Creating new server since connecting to address failed" << address;
-        d->backend->listenForRemote();
-        if (!d->backend->connectToRemote(d->backend->address)) {
+        m_backend->listenForRemote();
+        if (!m_backend->connectToRemote(m_backend->address)) {
             kWarning(7017) << "Could not connect to" << address;
-            delete d->backend;
-            d->backend = 0;
+            delete m_backend;
+            m_backend = nullptr;
             return;
         }
     }
 
-    d->dequeue();
+    dequeue();
 }
 
 QString Connection::errorString() const
 {
-    if (d->backend)
-        return d->backend->errorString;
+    if (m_backend) {
+        return m_backend->errorString;
+    }
     return QString();
 }
 
 bool Connection::send(int cmd, const QByteArray& data)
 {
-    if (!inited() || !d->outgoingTasks.isEmpty()) {
+    if (!inited() || !m_outgoingTasks.isEmpty()) {
         Task task;
         task.cmd = cmd;
         task.data = data;
-        d->outgoingTasks.enqueue(task);
+        m_outgoingTasks.enqueue(task);
         return true;
-    } else {
-        return sendnow(cmd, data);
     }
+    return sendnow(cmd, data);
 }
 
 bool Connection::sendnow(int _cmd, const QByteArray &data)
@@ -439,12 +406,12 @@ bool Connection::sendnow(int _cmd, const QByteArray &data)
     Task task;
     task.cmd = _cmd;
     task.data = data;
-    return d->backend->sendCommand(task);
+    return m_backend->sendCommand(task);
 }
 
 bool Connection::hasTaskAvailable() const
 {
-    return !d->incomingTasks.isEmpty();
+    return !m_incomingTasks.isEmpty();
 }
 
 bool Connection::waitForIncomingTask(int ms)
@@ -452,84 +419,83 @@ bool Connection::waitForIncomingTask(int ms)
     if (!isConnected())
         return false;
 
-    if (d->backend)
-        return d->backend->waitForIncomingTask(ms);
+    if (m_backend)
+        return m_backend->waitForIncomingTask(ms);
     return false;
 }
 
-int Connection::read( int* _cmd, QByteArray &data )
+int Connection::read(int *cmd, QByteArray &data)
 {
     // if it's still empty, then it's an error
-    if (d->incomingTasks.isEmpty()) {
+    if (m_incomingTasks.isEmpty()) {
         //kWarning() << this << "Task list is empty!";
         return -1;
     }
-    const Task task = d->incomingTasks.dequeue();
+    const Task task = m_incomingTasks.dequeue();
     //kDebug() << this << "Command " << task.cmd << " removed from the queue (size "
     //         << task.data.size() << ")";
-    *_cmd = task.cmd;
+    *cmd = task.cmd;
     data = task.data;
 
     // if we didn't empty our reading queue, emit again
-    if (!d->suspended && !d->incomingTasks.isEmpty())
+    if (!m_suspended && !m_incomingTasks.isEmpty()) {
         QMetaObject::invokeMethod(this, "dequeue", Qt::QueuedConnection);
+    }
 
     return data.size();
 }
 
 ConnectionServer::ConnectionServer(QObject *parent)
-    : QObject(parent), d(new ConnectionServerPrivate)
+    : QObject(parent),
+    m_backend(nullptr)
 {
-    d->q = this;
-}
-
-ConnectionServer::~ConnectionServer()
-{
-    delete d;
 }
 
 void ConnectionServer::listenForRemote()
 {
-    d->backend = new SocketConnectionBackend(this);
-    if (!d->backend->listenForRemote()) {
-        delete d->backend;
-        d->backend = 0;
+    m_backend = new SocketConnectionBackend(this);
+    if (!m_backend->listenForRemote()) {
+        delete m_backend;
+        m_backend = nullptr;
         return;
     }
 
-    connect(d->backend, SIGNAL(newConnection()), this, SIGNAL(newConnection()));
-    kDebug(7017) << "Listening on " << d->backend->address;
+    connect(m_backend, SIGNAL(newConnection()), this, SIGNAL(newConnection()));
+    kDebug(7017) << "Listening on " << m_backend->address;
 }
 
 QString ConnectionServer::address() const
 {
-    if (d->backend)
-        return d->backend->address;
+    if (m_backend) {
+        return m_backend->address;
+    }
     return QString();
 }
 
 bool ConnectionServer::isListening() const
 {
-    return d->backend && d->backend->state == SocketConnectionBackend::Listening;
+    return m_backend && m_backend->state == SocketConnectionBackend::Listening;
 }
 
 void ConnectionServer::close()
 {
-    delete d->backend;
-    d->backend = 0;
+    delete m_backend;
+    m_backend = nullptr;
 }
 
-Connection *ConnectionServer::nextPendingConnection()
+Connection* ConnectionServer::nextPendingConnection()
 {
-    if (!isListening())
-        return 0;
+    if (!isListening()) {
+        return nullptr;
+    }
 
-    SocketConnectionBackend *newBackend = d->backend->nextPendingConnection();
-    if (!newBackend)
-        return 0;               // no new backend...
+    SocketConnectionBackend *newBackend = m_backend->nextPendingConnection();
+    if (!newBackend) {
+        return nullptr;               // no new backend...
+    }
 
-    Connection *result = new Connection;
-    result->d->setBackend(newBackend);
+    Connection *result = new Connection();
+    result->setBackend(newBackend);
     newBackend->setParent(result);
 
     return result;
@@ -537,15 +503,15 @@ Connection *ConnectionServer::nextPendingConnection()
 
 void ConnectionServer::setNextPendingConnection(Connection *conn)
 {
-    SocketConnectionBackend *newBackend = d->backend->nextPendingConnection();
+    SocketConnectionBackend *newBackend = m_backend->nextPendingConnection();
     Q_ASSERT(newBackend);
 
-    conn->d->backend = newBackend;
-    conn->d->setBackend(newBackend);
+    conn->setBackend(newBackend);
     newBackend->setParent(conn);
 
-    conn->d->dequeue();
+    conn->dequeue();
+}
+
 }
 
 #include "moc_connection_p.cpp"
-#include "moc_connection.cpp"

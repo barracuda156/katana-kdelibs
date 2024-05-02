@@ -21,7 +21,7 @@
 #include "slaveinterface_p.h"
 #include "usernotificationhandler_p.h"
 #include "slavebase.h"
-#include "connection.h"
+#include "connection_p.h"
 #include "job_p.h"
 
 #include <kdebug.h>
