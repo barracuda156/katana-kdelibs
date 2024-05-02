@@ -77,8 +77,7 @@ QByteArray KRemoteEncoding::encode(const KUrl &url) const
 
 QByteArray KRemoteEncoding::directory(const KUrl &url, bool ignore_trailing_slash) const
 {
-    QString dir = url.directory(ignore_trailing_slash ? KUrl::KUrl::RemoveTrailingSlash : KUrl::LeaveTrailingSlash);
-    return encode(dir);
+    return encode(url.directory(ignore_trailing_slash ? KUrl::KUrl::RemoveTrailingSlash : KUrl::LeaveTrailingSlash));
 }
 
 QByteArray KRemoteEncoding::fileName(const KUrl &url) const
