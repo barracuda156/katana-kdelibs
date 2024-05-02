@@ -135,7 +135,6 @@ void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
 void Scheduler::reparseSlaveConfiguration()
 {
     QMutexLocker locker(&m_mutex);
-    KProtocolManager::reparseConfiguration();
     m_sessionData.reset();
     foreach (KIO::SlaveInterface* slave, m_slaves) {
         slave->send(CMD_REPARSECONFIGURATION, QByteArray());
