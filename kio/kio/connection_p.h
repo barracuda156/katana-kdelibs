@@ -86,8 +86,8 @@ namespace KIO {
          * Creates a new connection.
          * @see connectToRemote, listenForRemote
         */
-        explicit Connection(QObject *parent = 0);
-        virtual ~Connection();
+        explicit Connection(QObject *parent = nullptr);
+        ~Connection();
 
         /**
          * Connects to the remote address.
@@ -107,7 +107,7 @@ namespace KIO {
          * @param arr the bytes to send
          * @return true if successful, false otherwise
          */
-        bool send(int cmd, const QByteArray &arr = QByteArray());
+        bool send(int cmd, const QByteArray &arr);
 
         /**
          * Sends the given command immediately.
