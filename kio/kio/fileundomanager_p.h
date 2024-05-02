@@ -31,8 +31,6 @@ class KJob;
 
 namespace KIO {
 
-class FileUndoManagerAdaptor;
-
 struct BasicOperation
 {
     typedef QList<BasicOperation> Stack;
@@ -44,7 +42,7 @@ struct BasicOperation
     bool m_renamed;
 
     enum Type { File, Link, Directory };
-    Type m_type:2;
+    Type m_type;
 
     KUrl m_src;
     KUrl m_dst;
@@ -96,8 +94,6 @@ private:
 
 enum UndoState { MAKINGDIRS = 0, MOVINGFILES, STATINGFILE, REMOVINGDIRS, REMOVINGLINKS };
 
-// The private class is, exceptionally, a real QObject
-// so that it can be the class with the DBUS adaptor forwarding its signals.
 class FileUndoManagerPrivate : public QObject
 {
     Q_OBJECT
@@ -109,15 +105,7 @@ public:
         delete m_uiInterface;
     }
 
-    void pushCommand( const UndoCommand& cmd );
-
-    void broadcastPush( const UndoCommand &cmd );
-    void broadcastPop();
-    void broadcastLock();
-    void broadcastUnlock();
-
     void addDirToUpdate( const KUrl& url );
-    bool initializeFromKDesky();
 
     void undoStep();
 
@@ -125,9 +113,6 @@ public:
     void stepMovingFiles();
     void stepRemovingLinks();
     void stepRemovingDirectories();
-
-    /// called by FileUndoManagerAdaptor
-    QByteArray get() const;
 
     friend class UndoJob;
     /// called by UndoJob
@@ -137,7 +122,6 @@ public:
     /// called by UndoCommandRecorder
     void addCommand( const UndoCommand &cmd );
 
-    bool m_syncronized;
     bool m_lock;
 
     UndoCommand::Stack m_commands;
@@ -156,24 +140,12 @@ public:
 
     FileUndoManager* q;
 
-    // DBUS interface
-Q_SIGNALS:
-    /// DBUS signal
-    void push(const QByteArray &command);
-    /// DBUS signal
+    void push(const UndoCommand &cmd);
     void pop();
-    /// DBUS signal
     void lock();
-    /// DBUS signal
     void unlock();
 
 public Q_SLOTS:
-    // Those four slots are connected to DBUS signals
-    void slotPush(QByteArray);
-    void slotPop();
-    void slotLock();
-    void slotUnlock();
-
     void slotResult(KJob*);
 };
 

@@ -78,13 +78,6 @@ set(kiocore_STAT_SRCS
     kio/kautomount.cpp
 )
 
-qt4_add_dbus_adaptor(kiocore_STAT_SRCS
-    kio/org.kde.kio.FileUndoManager.xml
-    fileundomanager_p.h KIO::FileUndoManagerPrivate
-    fileundomanager_adaptor
-    KIOFileUndoManagerAdaptor
-)
-
 set(kbookmarks_STAT_SRCS
     bookmarks/kbookmark.cc
     bookmarks/kbookmarkmanager.cc
@@ -271,13 +264,6 @@ install(
     bookmarks/kbookmarkmenu.h
     bookmarks/kbookmarkdialog.h
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}
-)
-
-install(
-    FILES
-    kio/org.kde.KDirNotify.xml
-    kio/org.kde.kio.FileUndoManager.xml
-    DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR}
 )
 
 install(

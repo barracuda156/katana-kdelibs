@@ -218,8 +218,6 @@ void FileUndoManagerTest::testCopyFiles()
     // Don't use QFile::exists, it's a broken symlink...
     QVERIFY( QFileInfo( destLink() ).isSymLink() );
 
-    // might have to wait for dbus signal here... but this is currently disabled.
-    //QTest::qWait( 20 );
     QVERIFY( FileUndoManager::self()->undoAvailable() );
     QCOMPARE( spyUndoAvailable.count(), 1 );
     QCOMPARE( spyTextChanged.count(), 1 );

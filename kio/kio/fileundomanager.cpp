@@ -21,7 +21,6 @@
 #include "fileundomanager.h"
 #include "fileundomanager_p.h"
 #include "clipboardupdater_p.h"
-#include "fileundomanager_adaptor.h"
 
 #include <kdebug.h>
 #include <kdirnotify.h>
@@ -32,8 +31,6 @@
 #include <klocale.h>
 #include <kmessagebox.h>
 #include <kjobtrackerinterface.h>
-
-#include <QtDBus/QtDBus>
 
 #include <assert.h>
 
@@ -220,17 +217,6 @@ FileUndoManagerPrivate::FileUndoManagerPrivate(FileUndoManager* qq)
     : m_uiInterface(new FileUndoManager::UiInterface()),
       m_undoJob(0), m_nextCommandIndex(1000), q(qq)
 {
-    m_syncronized = initializeFromKDesky();
-    (void) new KIOFileUndoManagerAdaptor(this);
-    const QString dbusPath = "/FileUndoManager";
-    const QString dbusInterface = "org.kde.kio.FileUndoManager";
-
-    QDBusConnection dbus = QDBusConnection::sessionBus();
-    dbus.registerObject(dbusPath, this);
-    dbus.connect(QString(), dbusPath, dbusInterface, "lock", this, SLOT(slotLock()));
-    dbus.connect(QString(), dbusPath, dbusInterface, "pop", this, SLOT(slotPop()));
-    dbus.connect(QString(), dbusPath, dbusInterface, "push", this, SLOT(slotPush(QByteArray)));
-    dbus.connect(QString(), dbusPath, dbusInterface, "unlock", this, SLOT(slotUnlock()));
 }
 
 FileUndoManager::FileUndoManager()
@@ -272,7 +258,7 @@ void FileUndoManager::recordCopyJob(KIO::CopyJob* copyJob)
 
 void FileUndoManagerPrivate::addCommand(const UndoCommand &cmd)
 {
-    broadcastPush(cmd);
+    push(cmd);
     emit q->jobRecordingFinished(cmd.m_type);
 }
 
@@ -329,7 +315,7 @@ void FileUndoManager::undo()
         return;
     }
 
-    // Make a copy of the command to undo before broadcastPop() pops it.
+    // Make a copy of the command to undo before slotPop() pops it.
     UndoCommand cmd = d->m_commands.last();
     assert(cmd.m_valid);
     d->m_current = cmd;
@@ -355,8 +341,8 @@ void FileUndoManager::undo()
         }
     }
 
-    d->broadcastPop();
-    d->broadcastLock();
+    d->pop();
+    d->lock();
 
     d->m_dirCleanupStack.clear();
     d->m_dirStack.clear();
@@ -594,9 +580,7 @@ void FileUndoManagerPrivate::stepRemovingDirectories()
         m_currentJob = KIO::rmdir(dir);
         m_undoJob->emitDeleting(dir);
         addDirToUpdate(dir);
-    }
-    else
-    {
+    } else {
         m_current.m_valid = false;
         m_currentJob = 0;
         if (m_undoJob)
@@ -610,123 +594,36 @@ void FileUndoManagerPrivate::stepRemovingDirectories()
             org::kde::KDirNotify::emitFilesAdded(it.url());
         }
         emit q->undoJobFinished();
-        broadcastUnlock();
+        unlock();
     }
 }
 
-// const ref doesn't work due to QDataStream
-void FileUndoManagerPrivate::slotPush(QByteArray data)
-{
-    QDataStream strm(&data, QIODevice::ReadOnly);
-    UndoCommand cmd;
-    strm >> cmd;
-    pushCommand(cmd);
-}
-
-void FileUndoManagerPrivate::pushCommand(const UndoCommand& cmd)
+void FileUndoManagerPrivate::push(const UndoCommand &cmd)
 {
     m_commands.append(cmd);
     emit q->undoAvailable(true);
     emit q->undoTextChanged(q->undoText());
 }
 
-void FileUndoManagerPrivate::slotPop()
+void FileUndoManagerPrivate::pop()
 {
     m_commands.removeLast();
     emit q->undoAvailable(q->undoAvailable());
     emit q->undoTextChanged(q->undoText());
 }
 
-void FileUndoManagerPrivate::slotLock()
+void FileUndoManagerPrivate::lock()
 {
-//  assert(!m_lock);
+    // assert(!m_lock);
     m_lock = true;
     emit q->undoAvailable(q->undoAvailable());
 }
 
-void FileUndoManagerPrivate::slotUnlock()
+void FileUndoManagerPrivate::unlock()
 {
-//  assert(m_lock);
+    // assert(m_lock);
     m_lock = false;
     emit q->undoAvailable(q->undoAvailable());
-}
-
-QByteArray FileUndoManagerPrivate::get() const
-{
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly);
-    stream << m_commands;
-    return data;
-}
-
-void FileUndoManagerPrivate::broadcastPush(const UndoCommand &cmd)
-{
-    if (!m_syncronized) {
-        pushCommand(cmd);
-        return;
-    }
-
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly);
-    stream << cmd;
-    emit push(data); // DBUS signal
-}
-
-void FileUndoManagerPrivate::broadcastPop()
-{
-    if (!m_syncronized) {
-        slotPop();
-        return;
-    }
-
-    emit pop(); // DBUS signal
-}
-
-void FileUndoManagerPrivate::broadcastLock()
-{
-//  assert(!m_lock);
-
-    if (!m_syncronized) {
-        slotLock();
-        return;
-    }
-    emit lock(); // DBUS signal
-}
-
-void FileUndoManagerPrivate::broadcastUnlock()
-{
-//  assert(m_lock);
-
-    if (!m_syncronized) {
-        slotUnlock();
-        return;
-    }
-    emit unlock(); // DBUS signal
-}
-
-bool FileUndoManagerPrivate::initializeFromKDesky()
-{
-    // ### workaround for dcop problem and upcoming 2.1 release:
-    // in case of huge io operations the amount of data sent over
-    // dcop (containing undo information broadcasted for global undo
-    // to all konqueror instances) can easily exceed the 64kb limit
-    // of dcop. In order not to run into trouble we disable global
-    // undo for now! (Simon)
-    // ### FIXME: post 2.1
-    // TODO KDE4: port to DBUS and test
-    return false;
-#if 0
-    DCOPClient *client = kapp->dcopClient();
-
-    if (client->appId() == "kdesktop") // we are master :)
-        return true;
-
-    if (!client->isApplicationRegistered("kdesktop"))
-        return false;
-
-    d->m_commands = DCOPRef("kdesktop", "FileUndoManager").call("get");
-    return true;
-#endif
 }
 
 void FileUndoManager::setUiInterface(UiInterface* ui)
