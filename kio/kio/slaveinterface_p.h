@@ -25,11 +25,9 @@
 #include "kio/connection_p.h"
 
 #include <QTimer>
-#include <QElapsedTimer>
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/time.h>
 
 class KUrl;
 
@@ -154,16 +152,6 @@ public:
     void send(int cmd, const QByteArray &arr);
     // == end communication with connected kioslave ==
 
-    /**
-     * @return The time this slave has been idle.
-     */
-    qint64 idleTime() const;
-
-    /**
-     * Marks this slave as idle.
-     */
-    void setIdle();
-
     void ref();
     void deref();
 
@@ -242,7 +230,6 @@ private:
     KIO::ConnectionServer* m_slaveconnserver;
     pid_t m_pid;
     bool m_dead;
-    QElapsedTimer m_idlesince;
     int m_refcount;
 };
 

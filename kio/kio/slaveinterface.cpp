@@ -23,20 +23,16 @@
 #include "slavebase.h"
 #include "connection_p.h"
 #include "job_p.h"
+#include "klocale.h"
+#include "kprotocolinfo.h"
+#include "kstandarddirs.h"
+#include "kdebug.h"
 
-#include <kdebug.h>
-#include <klocale.h>
-#include <kprotocolinfo.h>
-#include <kstandarddirs.h>
+#include <QProcess>
+#include <QDir>
 
-#include <QtCore/QProcess>
-#include <QtCore/QDir>
-
-#include <errno.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <time.h>
 
 using namespace KIO;
 
@@ -88,11 +84,6 @@ void SlaveInterface::setHost(const QString &host)
     m_host = host;
 }
 
-void SlaveInterface::setIdle()
-{
-    m_idlesince.start();
-}
-
 void SlaveInterface::ref()
 {
     m_refcount++;
@@ -106,11 +97,6 @@ void SlaveInterface::deref()
         this->disconnect();
         deleteLater();
     }
-}
-
-qint64 SlaveInterface::idleTime() const
-{
-    return m_idlesince.elapsed();
 }
 
 void SlaveInterface::setPID(const pid_t pid)
