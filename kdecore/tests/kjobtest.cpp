@@ -81,7 +81,6 @@ void KJobTest::testProgressTracking()
     KJob *job = testJob;
 
     qRegisterMetaType<KJob*>("KJob*");
-    qRegisterMetaType<qulonglong>("qulonglong");
 
     QSignalSpy processed_spy( job, SIGNAL(processedAmount(KJob*,KJob::Unit,qulonglong)) );
     QSignalSpy total_spy( job, SIGNAL(totalAmount(KJob*,KJob::Unit,qulonglong)) );

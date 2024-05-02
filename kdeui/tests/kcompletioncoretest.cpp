@@ -40,7 +40,6 @@ Test_KCompletion::initTestCase()
 		 << QString("coolcat@test.org:20")
 		 << QString("carpet@test.org:40")
 		 << QString("carp@test.org:7");
-	qRegisterMetaType<QStringList>("QStringList");
 }
 
 void
