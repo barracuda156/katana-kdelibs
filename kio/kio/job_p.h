@@ -110,7 +110,7 @@ namespace KIO {
          */
         SimpleJobPrivate(const KUrl& url, int command, const QByteArray &packedArgs)
             : m_slave(0), m_packedArgs(packedArgs), m_url(url), m_command(command),
-              m_redirectionHandlingEnabled(true), m_schedPrio(10)
+              m_redirectionHandlingEnabled(true), m_schedPrio(1)
         {
         }
 

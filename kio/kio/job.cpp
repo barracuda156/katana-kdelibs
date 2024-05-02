@@ -509,7 +509,7 @@ public:
     MkdirJobPrivate(const KUrl &url, int command, const QByteArray &packedArgs)
         : SimpleJobPrivate(url, command, packedArgs)
     {
-        m_schedPrio = 1;
+        m_schedPrio = 0;
     }
 
     KUrl m_redirectionURL;
@@ -646,7 +646,7 @@ public:
     inline StatJobPrivate(const KUrl &url, int command, const QByteArray &packedArgs)
         : SimpleJobPrivate(url, command, packedArgs), m_bSource(true), m_details(2)
     {
-        m_schedPrio = 1;
+        m_schedPrio = 0;
     }
 
     UDSEntry m_statResult;
@@ -1855,7 +1855,7 @@ public:
         recursive(_recursive), includeHidden(_includeHidden),
         m_prefix(prefix), m_displayPrefix(displayPrefix), m_processedEntries(0)
     {
-        m_schedPrio = 1;
+        m_schedPrio = 0;
     }
 
     bool recursive;
