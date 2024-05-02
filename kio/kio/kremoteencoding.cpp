@@ -18,96 +18,87 @@
 
 #include "kremoteencoding.h"
 
-#include <config.h>
-
+#include <QTextConverter>
 #include <kdebug.h>
-#include <kstringhandler.h>
-
 
 class KRemoteEncodingPrivate
 {
-  public:
+public:
     KRemoteEncodingPrivate()
-      : m_codec(0)
+        : converter(nullptr)
     {
     }
 
-    QTextCodec *m_codec;
+    ~KRemoteEncodingPrivate()
+    {
+        delete converter;
+    }
+
+    QByteArray name;
+    QTextConverter* converter;
 };
 
 KRemoteEncoding::KRemoteEncoding(const char *name)
-  : d(new KRemoteEncodingPrivate)
+    : d(new KRemoteEncodingPrivate())
 {
-  setEncoding(name);
+    setEncoding(name);
 }
 
 KRemoteEncoding::~KRemoteEncoding()
 {
-  delete d;
+    delete d;
 }
 
 QString KRemoteEncoding::decode(const QByteArray& name) const
 {
-  QString result = d->m_codec->toUnicode(name);
-  if (d->m_codec->fromUnicode(result) != name)
-    // fallback in case of decoding failure
-    return QString::fromLatin1(name.constData(), name.size());
-
-  return result;
+    d->converter->reset();
+    const QString result = d->converter->toUnicode(name);
+    if (d->converter->hasFailure()) {
+        // fallback in case of decoding failure
+        return QString::fromLatin1(name.constData(), name.size());
+    }
+    return result;
 }
 
 QByteArray KRemoteEncoding::encode(const QString& name) const
 {
-  QByteArray result = d->m_codec->fromUnicode(name);
-  if (d->m_codec->toUnicode(result) != name)
-    return name.toLatin1();
-
-  return result;
+    d->converter->reset();
+    const QByteArray result = d->converter->fromUnicode(name);
+    if (d->converter->hasFailure()) {
+        return name.toLatin1();
+    }
+    return result;
 }
 
-QByteArray KRemoteEncoding::encode(const KUrl& url) const
+QByteArray KRemoteEncoding::encode(const KUrl &url) const
 {
-  return encode(url.path());
+    return encode(url.path());
 }
 
-QByteArray KRemoteEncoding::directory(const KUrl& url, bool ignore_trailing_slash) const
+QByteArray KRemoteEncoding::directory(const KUrl &url, bool ignore_trailing_slash) const
 {
-  QString dir = url.directory(ignore_trailing_slash ? KUrl::KUrl::RemoveTrailingSlash : KUrl::LeaveTrailingSlash);
-
-  return encode(dir);
+    QString dir = url.directory(ignore_trailing_slash ? KUrl::KUrl::RemoveTrailingSlash : KUrl::LeaveTrailingSlash);
+    return encode(dir);
 }
 
-QByteArray KRemoteEncoding::fileName(const KUrl& url) const
+QByteArray KRemoteEncoding::fileName(const KUrl &url) const
 {
-  return encode(url.fileName());
+    return encode(url.fileName());
 }
 
 const char *KRemoteEncoding::encoding() const
 {
-    return d->m_codec->name();
-}
-
-int KRemoteEncoding::encodingMib() const
-{
-    return d->m_codec->mibEnum();
+    return d->name.constData();
 }
 
 void KRemoteEncoding::setEncoding(const char *name)
 {
-  // don't delete codecs
-
-  if (name)
-    d->m_codec = QTextCodec::codecForName(name);
-
-  if (d->m_codec == 0)
-    d->m_codec = QTextCodec::codecForMib( 106 ); // fallback to UTF-8
-
-  if (d->m_codec == 0)
-    d->m_codec = QTextCodec::codecForMib(4 /* latin-1 */);
-
-  Q_ASSERT(d->m_codec);
-
-  kDebug() << "setting encoding" << d->m_codec->name()
-	    << "for name=" << name;
+    delete d->converter;
+    d->name = name;
+    if (d->name.isEmpty()) {
+        d->name = "UTF-8";
+    }
+    d->converter = new QTextConverter(d->name);
+    kDebug() << "setting encoding to" << d->name;
 }
 
