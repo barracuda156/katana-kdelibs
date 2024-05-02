@@ -1006,7 +1006,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
         // also should not be empty, see KIO::Scheduler
         const QByteArray languagesbytes = metaData("Languages").toAscii();
         m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Language: ") + languagesbytes);
-        const QByteArray charsetsbytes = metaData("Charsets").toAscii();
+        const QByteArray charsetsbytes = metaData("Charset").toAscii();
         m_curlheaders = curl_slist_append(m_curlheaders, QByteArray("Accept-Charset: ") + charsetsbytes);
 
         const QByteArray acceptbytes = metaData("accept").toAscii();

@@ -184,18 +184,18 @@ void Scheduler::slotStartJob()
         if (protocol.startsWith(QLatin1String("http"), Qt::CaseInsensitive)) {
             if (!m_initdone) {
                 m_initdone = true;
-                m_language = KProtocolManager::acceptLanguagesHeader();
-                m_charsets = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
+                m_languages = KProtocolManager::acceptLanguagesHeader();
+                m_charset = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
                 m_useragent = KProtocolManager::defaultUserAgent();
             }
 
             // these might have already been set so check first to make sure that metadata is not
             // overriden
             if (configData["Languages"].isEmpty()) {
-                configData["Languages"] = m_language;
+                configData["Languages"] = m_languages;
             }
-            if (configData["Charsets"].isEmpty()) {
-                configData["Charsets"] = m_charsets;
+            if (configData["Charset"].isEmpty()) {
+                configData["Charset"] = m_charset;
             }
             if (configData["UserAgent"].isEmpty()) {
                 configData["UserAgent"] = m_useragent;

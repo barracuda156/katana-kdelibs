@@ -80,8 +80,8 @@ namespace KIO {
         QList<KIO::SimpleJob*> m_jobs;
         QTimer m_jobtimer;
         bool m_initdone;
-        QString m_charsets;
-        QString m_language;
+        QString m_charset;
+        QString m_languages;
         QString m_useragent;
 };
 
