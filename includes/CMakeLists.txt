@@ -125,7 +125,6 @@ install(
     KHBox
     KHelpMenu
     KHistoryComboBox
-    KHueSaturationSelector
     KIcon
     KIconButton
     KIconCanvas
