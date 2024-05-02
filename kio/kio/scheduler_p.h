@@ -33,7 +33,7 @@
 namespace KIO {
 
     /**
-     * The KIO::Scheduler manages io-slaves for the jobs
+     * This class manages KIO slaves for the jobs
      *
      * @see KIO::SlaveInterface
      * @see KIO::Job

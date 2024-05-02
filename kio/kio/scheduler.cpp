@@ -94,8 +94,8 @@ void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
 
 void Scheduler::reparseSlaveConfiguration()
 {
-    kDebug(7006) << "reparsing slave configuration";
     QMutexLocker locker(&m_mutex);
+    kDebug(7006) << "reparsing slave configuration";
     m_initdone = false;
     foreach (KIO::SlaveInterface* slave, m_slaves) {
         slave->send(CMD_REPARSECONFIGURATION, QByteArray());
@@ -110,7 +110,7 @@ void Scheduler::slotSlaveDied(KIO::SlaveInterface *slave)
     slave->kill();
     m_slaves.removeAll(slave);
     locker.unlock();
-    slave->deref(); // Delete slave
+    slave->deref(); // deletes slave
 }
 
 void Scheduler::slotStartJob()
@@ -189,8 +189,8 @@ void Scheduler::slotStartJob()
                 m_useragent = KProtocolManager::defaultUserAgent();
             }
 
-            // these might have already been set so check first to make sure that we do not trumpt
-            // settings sent by apps or end-user.
+            // these might have already been set so check first to make sure that metadata is not
+            // overriden
             if (configData["Languages"].isEmpty()) {
                 configData["Languages"] = m_language;
             }
