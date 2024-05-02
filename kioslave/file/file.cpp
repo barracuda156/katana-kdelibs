@@ -418,7 +418,7 @@ void FileProtocol::put(const KUrl &url, int _mode, KIO::JobFlags _flags)
         return;
     }
 
-    int result;
+    int result = -1;
     QString dest;
     int fd = -1;
 
