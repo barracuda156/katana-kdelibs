@@ -102,13 +102,6 @@ namespace KIO {
         bool isConnected() const;
 
         /**
-         * Checks whether the connection has been initialized.
-         * @return true if the initialized
-         * @see init()
-         */
-        bool inited() const;
-
-        /**
          * Sends/queues the given command to be sent.
          * @param cmd the command to set
          * @param arr the bytes to send
@@ -137,7 +130,7 @@ namespace KIO {
          * @param ms   the time to wait in milliseconds
          * @returns true if one command can be read, false if we timed out
          */
-        bool waitForIncomingTask(int ms = 30000);
+        bool waitForIncomingTask(int ms);
 
         /**
          * Receive data.

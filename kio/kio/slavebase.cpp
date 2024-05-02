@@ -272,7 +272,7 @@ SlaveBase::SlaveBase(const QByteArray &protocol,
 
     const QString address = QFile::decodeName(app_socket);
     d->appConnection.connectToRemote(address);
-    if (!d->appConnection.inited()) {
+    if (!d->appConnection.isConnected()) {
         kDebug(7019) << "failed to connect to" << address << '\n'
                      << "Reason:" << d->appConnection.errorString();
         exit();
@@ -296,8 +296,6 @@ void SlaveBase::dispatchLoop()
             d->timeoutData = QByteArray();
             special(data);
         }
-
-        Q_ASSERT(d->appConnection.inited());
 
         int ms = -1;
         if (d->timeout) {

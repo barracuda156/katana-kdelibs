@@ -129,24 +129,31 @@ bool SocketConnectionBackend::waitForIncomingTask(int ms)
     }
 
     signalEmitted = false;
-    if (socket->bytesAvailable())
+    if (socket->bytesAvailable()) {
         socketReadyRead();
-    if (signalEmitted)
-        return true;            // there was enough data in the socket
+    }
+    if (signalEmitted) {
+        // there was enough data in the socket
+        return true;
+    }
 
     // not enough data in the socket, so wait for more
     QElapsedTimer timer;
     timer.start();
 
     while (socket->state() == QLocalSocket::ConnectedState && !signalEmitted &&
-           (ms == -1 || timer.elapsed() < ms))
-        if (!socket->waitForReadyRead(ms == -1 ? -1 : ms - timer.elapsed()))
+           (ms == -1 || timer.elapsed() < ms)) {
+        if (!socket->waitForReadyRead(ms == -1 ? -1 : ms - timer.elapsed())) {
             break;
+        }
+    }
 
-    if (signalEmitted)
+    if (signalEmitted) {
         return true;
-    if (socket->state() != QLocalSocket::ConnectedState)
+    }
+    if (socket->state() != QLocalSocket::ConnectedState) {
         state = Idle;
+    }
     return false;
 }
 
@@ -343,11 +350,6 @@ bool Connection::isConnected() const
     return m_backend && m_backend->state == SocketConnectionBackend::Connected;
 }
 
-bool Connection::inited() const
-{
-    return m_backend;
-}
-
 bool Connection::suspended() const
 {
     return m_suspended;
@@ -384,7 +386,7 @@ QString Connection::errorString() const
 
 bool Connection::send(int cmd, const QByteArray& data)
 {
-    if (!inited() || !m_outgoingTasks.isEmpty()) {
+    if (!isConnected() || !m_outgoingTasks.isEmpty()) {
         Task task;
         task.cmd = cmd;
         task.data = data;
@@ -394,17 +396,19 @@ bool Connection::send(int cmd, const QByteArray& data)
     return sendnow(cmd, data);
 }
 
-bool Connection::sendnow(int _cmd, const QByteArray &data)
+bool Connection::sendnow(int cmd, const QByteArray &data)
 {
-    if (data.size() > 0xffffff)
+    if (data.size() > 0xffffff) {
         return false;
+    }
 
-    if (!isConnected())
+    if (!isConnected()) {
         return false;
+    }
 
-    //kDebug() << this << "Sending command " << _cmd << " of size " << data.size();
+    // kDebug() << this << "Sending command " << cmd << " of size " << data.size();
     Task task;
-    task.cmd = _cmd;
+    task.cmd = cmd;
     task.data = data;
     return m_backend->sendCommand(task);
 }
@@ -416,11 +420,12 @@ bool Connection::hasTaskAvailable() const
 
 bool Connection::waitForIncomingTask(int ms)
 {
-    if (!isConnected())
+    if (!isConnected()) {
         return false;
-
-    if (m_backend)
+    }
+    if (m_backend) {
         return m_backend->waitForIncomingTask(ms);
+    }
     return false;
 }
 
