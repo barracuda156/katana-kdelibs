@@ -65,7 +65,6 @@ void SessionData::reset()
     initDone = true;
     language = KProtocolManager::acceptLanguagesHeader();
     charsets = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
-    KProtocolManager::reparseConfiguration();
 }
 
 K_GLOBAL_STATIC(Scheduler, kScheduler)
