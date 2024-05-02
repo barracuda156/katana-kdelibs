@@ -259,6 +259,9 @@ void Scheduler::slotCheckSlaves()
             slave->deref();
         }
     }
+    if (m_slaves.size() <= 0) {
+        m_idletimer.stop();
+    }
 }
 
 }
