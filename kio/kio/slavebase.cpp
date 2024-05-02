@@ -376,7 +376,7 @@ void SlaveBase::sendMetaData()
 QString SlaveBase::decodeName(const QByteArray &name) const
 {
     if (!d->converter) {
-        d->converter = textConverter(metaData(QLatin1String("Charset")).toLatin1());
+        d->converter = textConverter(metaData(QLatin1String("Charsets")).toLatin1());
     }
     d->converter->reset();
     const QString result = d->converter->toUnicode(name);
@@ -389,7 +389,7 @@ QString SlaveBase::decodeName(const QByteArray &name) const
 QByteArray SlaveBase::encodeName(const QString &name) const
 {
     if (!d->converter) {
-        d->converter = textConverter(metaData(QLatin1String("Charset")).toLatin1());
+        d->converter = textConverter(metaData(QLatin1String("Charsets")).toLatin1());
     }
     d->converter->reset();
     const QByteArray result = d->converter->fromUnicode(name);
