@@ -19,7 +19,6 @@
 #include "kio_curl.h"
 #include "kcomponentdata.h"
 #include "kmimetype.h"
-#include "kremoteencoding.h"
 #include "kconfiggroup.h"
 #include "kstandarddirs.h"
 #include "kmessagebox.h"
@@ -609,7 +608,7 @@ void CurlProtocol::put(const KUrl &url, int permissions, KIO::JobFlags flags)
         const QByteArray putpermissions = ftpPermissions(permissions);
         kDebug(7103) << "Filename" << putfilename << "permissions" << putpermissions;
 
-        const QByteArray putfilenamebytes = remoteEncoding()->encode(putfilename);
+        const QByteArray putfilenamebytes = SlaveBase::encodeName(putfilename);
         m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + putpermissions + " " + putfilenamebytes);
         curlresult = curl_easy_setopt(m_curl, CURLOPT_POSTQUOTE, m_curlquotes);
         if (curlresult != CURLE_OK) {
@@ -659,7 +658,7 @@ void CurlProtocol::chmod(const KUrl &url, int permissions)
         return;
     }
 
-    const QByteArray chmodfilenamebytes = remoteEncoding()->encode(chmodfilename);
+    const QByteArray chmodfilenamebytes = SlaveBase::encodeName(chmodfilename);
     m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + chmodpermissions + " " + chmodfilenamebytes);
     CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
     if (curlresult != CURLE_OK) {
@@ -708,7 +707,7 @@ void CurlProtocol::mkdir(const KUrl &url, int permissions)
         return;
     }
 
-    const QByteArray mkdirfilenamebytes = remoteEncoding()->encode(mkdirfilename);
+    const QByteArray mkdirfilenamebytes = SlaveBase::encodeName(mkdirfilename);
     m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("MKD ") + mkdirfilenamebytes);
     m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("SITE CHMOD ") + mkdirpermissions + " " + mkdirfilenamebytes);
     CURLcode curlresult = curl_easy_setopt(m_curl, CURLOPT_QUOTE, m_curlquotes);
@@ -757,7 +756,7 @@ void CurlProtocol::del(const KUrl &url, bool isfile)
         return;
     }
 
-    const QByteArray delfilenamebytes = remoteEncoding()->encode(delfilename);
+    const QByteArray delfilenamebytes = SlaveBase::encodeName(delfilename);
     if (isfile) {
         m_curlquotes = curl_slist_append(m_curlquotes, QByteArray("DELE ") + delfilenamebytes);
     } else {
@@ -1139,8 +1138,6 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
 {
     QList<KIO::UDSEntry> result;
 
-    kDebug(7103) << "Encoding" << remoteEncoding()->encoding();
-
     // sample line:
     // drwxr-xr-x   1 nobody   nobody          512 Mar 19 19:17 .
     static const QByteArray linkseparator = QByteArray("->");
@@ -1206,7 +1203,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         KIO::UDSEntry kioudsentry;
         const mode_t stdmode = ftpModeFromString(ftpmode);
         const qlonglong ftpmodtime = ftpTimeFromString(ftpmonth, ftpday, ftphouroryear, currentdate.year());
-        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, remoteEncoding()->decode(ftpfilepath));
+        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, SlaveBase::decodeName(ftpfilepath));
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
         kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);
@@ -1216,7 +1213,7 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         if (!ftplinkpath.isEmpty()) {
             // link paths to current path causes KIO to do strange things
             if (ftplinkpath.at(0) != '.' && ftplinkpath.size() != 1) {
-                kioudsentry.insert(KIO::UDSEntry::UDS_LINK_DEST, remoteEncoding()->decode(ftplinkpath));
+                kioudsentry.insert(KIO::UDSEntry::UDS_LINK_DEST, SlaveBase::decodeName(ftplinkpath));
             }
             if (ftpsize <= 0) {
                 kioudsentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QString::fromLatin1("application/x-zerosize"));

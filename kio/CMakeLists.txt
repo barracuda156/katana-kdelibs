@@ -58,7 +58,6 @@ set(kiocore_STAT_SRCS
     kio/kfilemetadata.cpp
     kio/kmimetypechooser.cpp
     kio/kprotocolmanager.cpp
-    kio/kremoteencoding.cpp
     kio/krun.cpp
     kio/kurifilter.cpp
     kio/kurlcompletion.cpp
@@ -237,7 +236,6 @@ install(
     kio/kfilemetadata.h
     kio/kmimetypechooser.h
     kio/kprotocolmanager.h
-    kio/kremoteencoding.h
     kio/krun.h
     kio/kurifilter.h
     kio/kurlcompletion.h

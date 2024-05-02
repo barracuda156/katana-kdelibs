@@ -27,7 +27,6 @@
 #include <klocale.h>
 
 class KConfigGroup;
-class KRemoteEncoding;
 class KUrl;
 
 namespace KIO {
@@ -253,10 +252,14 @@ public:
     KConfigGroup* config();
 
     /**
-     * Returns an object that can translate remote filenames into proper
-     * Unicode forms. This encoding can be set by the user.
+     * Converts the given name to Unicode.
      */
-    KRemoteEncoding* remoteEncoding();
+    QString decodeName(const QByteArray &name) const;
+
+    /**
+     * Converts the given name from Unicode.
+     */
+    QByteArray encodeName(const QString &name) const;
 
     /**
      * get, aka read.

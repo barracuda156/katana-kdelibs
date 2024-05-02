@@ -201,7 +201,6 @@ install(
     KRecentDocument
     KRecentFilesAction
     KRecursiveFilterProxyModel
-    KRemoteEncoding
     KReplace
     KReplaceDialog
     KRestrictedLine

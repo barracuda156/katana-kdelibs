@@ -32,11 +32,12 @@
 #include <signal.h>
 #include <time.h>
 
-#include <QtCore/QBuffer>
-#include <QtCore/QFile>
-#include <QtCore/QList>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QCoreApplication>
+#include <QBuffer>
+#include <QFile>
+#include <QTextConverter>
+#include <QList>
+#include <QElapsedTimer>
+#include <QCoreApplication>
 
 #include "kdebug.h"
 #include "kcrash.h"
@@ -47,7 +48,6 @@
 #include "kpassworddialog.h"
 #include "kwindowsystem.h"
 #include "kpasswdstore.h"
-#include "kremoteencoding.h"
 #include "connection_p.h"
 #include "ioslave_defaults.h"
 #include "slaveinterface_p.h"
@@ -144,7 +144,7 @@ public:
 
     struct timeval last_tv;
     KIO::filesize_t totalSize;
-    KRemoteEncoding *remotefile;
+    QTextConverter *converter;
     time_t timeout;
     enum { Idle, InsideMethod, FinishedCalled, ErrorCalled } m_state;
     QByteArray timeoutData;
@@ -206,7 +206,7 @@ SlaveBasePrivate::SlaveBasePrivate(const QByteArray &protocol)
     config(nullptr),
     configGroup(nullptr),
     totalSize(0),
-    remotefile(nullptr),
+    converter(nullptr),
     timeout(0),
     m_passwdStore(nullptr),
     m_protocol(protocol)
@@ -283,7 +283,7 @@ SlaveBase::~SlaveBase()
 {
     delete d->configGroup;
     delete d->config;
-    delete d->remotefile;
+    delete d->converter;
     delete d;
 }
 
@@ -365,13 +365,30 @@ void SlaveBase::sendMetaData()
     d->m_outgoingMetaData.clear();
 }
 
-KRemoteEncoding *SlaveBase::remoteEncoding()
+QString SlaveBase::decodeName(const QByteArray &name) const
 {
-    if (d->remotefile) {
-        return d->remotefile;
+    if (!d->converter) {
+        d->converter = new QTextConverter(metaData(QLatin1String("Charset")).toLatin1());
     }
-    const QByteArray charset (metaData(QLatin1String("Charset")).toLatin1());
-    return (d->remotefile = new KRemoteEncoding(charset));
+    d->converter->reset();
+    const QString result = d->converter->toUnicode(name);
+    if (d->converter->hasFailure()) {
+        return QString::fromLatin1(name.constData(), name.size());
+    }
+    return result;
+}
+
+QByteArray SlaveBase::encodeName(const QString &name) const
+{
+    if (!d->converter) {
+        d->converter = new QTextConverter(metaData(QLatin1String("Charset")).toLatin1());
+    }
+    d->converter->reset();
+    const QByteArray result = d->converter->fromUnicode(name);
+    if (d->converter->hasFailure()) {
+        return name.toLatin1();
+    }
+    return result;
 }
 
 void SlaveBase::data(const QByteArray &data)
@@ -631,8 +648,8 @@ void SlaveBase::chown(KUrl const &, const QString &, const QString &)
 
 void SlaveBase::reparseConfiguration()
 {
-    delete d->remotefile;
-    d->remotefile = nullptr;
+    delete d->converter;
+    d->converter = nullptr;
 }
 
 bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
@@ -833,8 +850,8 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         case CMD_CONFIG: {
             stream >> d->configData;
             d->rebuildConfig();
-            delete d->remotefile;
-            d->remotefile = nullptr;
+            delete d->converter;
+            d->converter = nullptr;
             break;
         }
         case CMD_GET: {
