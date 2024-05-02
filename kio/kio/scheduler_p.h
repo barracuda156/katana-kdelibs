@@ -71,7 +71,6 @@ namespace KIO {
     private Q_SLOTS:
         void slotSlaveDied(KIO::SlaveInterface *slave);
         void slotStartJob();
-        void slotCheckSlaves();
 
     private:
         Q_DISABLE_COPY(Scheduler)
@@ -80,7 +79,6 @@ namespace KIO {
         QList<KIO::SlaveInterface*> m_slaves;
         QList<KIO::SimpleJob*> m_jobs;
         QTimer m_jobtimer;
-        QTimer m_idletimer;
         bool m_initdone;
         QString m_charsets;
         QString m_language;

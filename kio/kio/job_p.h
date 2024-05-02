@@ -110,7 +110,7 @@ namespace KIO {
          */
         SimpleJobPrivate(const KUrl& url, int command, const QByteArray &packedArgs)
             : m_slave(0), m_packedArgs(packedArgs), m_url(url), m_command(command),
-              m_redirectionHandlingEnabled(true), m_schedSerial(0)
+              m_redirectionHandlingEnabled(true), m_schedPrio(10)
         {
         }
 
@@ -121,7 +121,7 @@ namespace KIO {
         bool m_redirectionHandlingEnabled;
 
         // for use in KIO::Scheduler
-        int m_schedSerial;
+        int m_schedPrio;
 
         /**
          * Forward signal from the slave.

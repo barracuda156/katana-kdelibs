@@ -810,7 +810,7 @@ int SlaveBase::waitForAnswer(int expected1, int expected2, QByteArray &data, int
         if (isSubCommand(cmd)) {
             dispatch(cmd, data);
         } else {
-            kFatal(7019) << "Got cmd " << cmd << " while waiting for an answer!";
+            kFatal(7019) << "Got cmd " << cmd << "while waiting for" << expected1 << expected2;
         }
     }
     return result;
@@ -866,8 +866,9 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         }
         case CMD_PUT: {
             KUrl url;
-            int permissions;
-            qint8 iOverwrite, iResume;
+            int permissions = 0;
+            qint8 iOverwrite = 0;
+            qint8 iResume = 0;
             stream >> url >> iOverwrite >> iResume >> permissions;
             JobFlags flags = DefaultFlags;
             if (iOverwrite != 0) {
@@ -916,7 +917,7 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         }
         case CMD_MKDIR: {
             KUrl url;
-            int i;
+            int i = 0;
             stream >> url >> i;
             d->m_state = SlaveBasePrivate::InsideMethod;
             mkdir(url, i);
@@ -942,7 +943,7 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         case CMD_SYMLINK: {
             KUrl url;
             QString target;
-            qint8 iOverwrite;
+            qint8 iOverwrite = 0;
             stream >> target >> url >> iOverwrite;
             JobFlags flags = DefaultFlags;
             if (iOverwrite != 0) {
@@ -957,8 +958,8 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         case CMD_COPY: {
             KUrl url;
             KUrl url2;
-            int permissions;
-            qint8 iOverwrite;
+            int permissions = 0;
+            qint8 iOverwrite = 0;
             stream >> url >> url2 >> permissions >> iOverwrite;
             JobFlags flags = DefaultFlags;
             if (iOverwrite != 0) {
@@ -982,7 +983,7 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         }
         case CMD_CHMOD: {
             KUrl url;
-            int i;
+            int i = 0;
             stream >> url >> i;
             d->m_state = SlaveBasePrivate::InsideMethod;
             chmod(url, i);

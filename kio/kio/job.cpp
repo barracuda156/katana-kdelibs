@@ -309,11 +309,8 @@ void SimpleJob::setRedirectionHandlingEnabled(bool handle)
 SimpleJob::~SimpleJob()
 {
     Q_D(SimpleJob);
-    // last chance to remove this job from the scheduler!
-    if (d->m_schedSerial) {
-        kDebug(7007) << "Killing job" << this << "in destructor!"  << kBacktrace();
-        Scheduler::self()->cancelJob(this);
-    }
+    kDebug(7007) << "Killing job" << this << "in destructor!"  << kBacktrace();
+    Scheduler::self()->cancelJob(this);
 }
 
 void SimpleJobPrivate::start(SlaveInterface *slave)
@@ -392,10 +389,8 @@ void SimpleJobPrivate::slaveDone()
         // Remove all signals between slave and job
         q->disconnect(m_slave);
     }
-    // only finish a job once; Scheduler::jobFinished() resets schedSerial to zero.
-    if (m_schedSerial) {
-        Scheduler::self()->jobFinished(q, m_slave);
-    }
+    // only finish a job once
+    Scheduler::self()->jobFinished(q, m_slave);
 }
 
 void SimpleJob::slotFinished()
@@ -514,6 +509,7 @@ public:
     MkdirJobPrivate(const KUrl &url, int command, const QByteArray &packedArgs)
         : SimpleJobPrivate(url, command, packedArgs)
     {
+        m_schedPrio = 1;
     }
 
     KUrl m_redirectionURL;
@@ -650,6 +646,7 @@ public:
     inline StatJobPrivate(const KUrl &url, int command, const QByteArray &packedArgs)
         : SimpleJobPrivate(url, command, packedArgs), m_bSource(true), m_details(2)
     {
+        m_schedPrio = 1;
     }
 
     UDSEntry m_statResult;
@@ -1858,6 +1855,7 @@ public:
         recursive(_recursive), includeHidden(_includeHidden),
         m_prefix(prefix), m_displayPrefix(displayPrefix), m_processedEntries(0)
     {
+        m_schedPrio = 1;
     }
 
     bool recursive;

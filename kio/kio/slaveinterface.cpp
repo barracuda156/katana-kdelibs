@@ -447,7 +447,7 @@ void SlaveInterface::accept()
 void SlaveInterface::gotInput()
 {
     if (m_dead) {
-        // already dead? then slaveDied was emitted and we are done
+        // already dead? then slaveDied was emitted
         return;
     }
     ref();
