@@ -654,14 +654,6 @@ public:
      */
     void sendMetaData();
 
-    /**
-     * Internal function to transmit meta data to the application.
-     * Like sendMetaData() but m_outgoingMetaData will not be cleared.
-     * This method is mainly useful in code that runs before the slave is connected
-     * to its final job.
-     */
-    void sendAndKeepMetaData();
-
     /** If your ioslave was killed by a signal, wasKilled() returns true.
      Check it regularly in lengthy functions (e.g. in get();) and return
      as fast as possible from this function if wasKilled() returns true.

@@ -375,17 +375,12 @@ KConfigGroup *SlaveBase::config()
 
 void SlaveBase::sendMetaData()
 {
-    sendAndKeepMetaData();
-    d->m_outgoingMetaData.clear();
-}
-
-void SlaveBase::sendAndKeepMetaData()
-{
     if (!d->m_outgoingMetaData.isEmpty()) {
         KIO_DATA << d->m_outgoingMetaData;
 
         send(INF_META_DATA, data);
     }
+    d->m_outgoingMetaData.clear();
 }
 
 KRemoteEncoding *SlaveBase::remoteEncoding()
