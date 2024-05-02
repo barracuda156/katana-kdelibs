@@ -454,9 +454,13 @@ void SlaveInterface::gotInput()
     if (!dispatch()) {
         m_connection->close();
         m_dead = true;
-        kDebug(7002) << "slave died pid = " << m_pid;
+        QString arg = m_protocol;
+        if (!m_host.isEmpty()) {
+            arg += QString::fromLatin1("://") + m_host;
+        }
+        kDebug(7002) << "slave died pid = " << m_pid << arg;
         // Tell the job about the problem.
-        emit error(ERR_SLAVE_DIED, m_host);
+        emit error(ERR_SLAVE_DIED, arg);
         // Tell the scheduler about the problem.
         emit slaveDied(this);
     }

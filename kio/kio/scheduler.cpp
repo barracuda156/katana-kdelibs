@@ -133,6 +133,7 @@ void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
 
 void Scheduler::reparseSlaveConfiguration()
 {
+    kDebug(7006) << "Scheduler: reparsing slave configuration finished";
     QMutexLocker locker(&m_mutex);
     m_sessionData.reset();
     foreach (KIO::SlaveInterface* slave, m_slaves) {
@@ -164,14 +165,7 @@ void Scheduler::slotStartJob()
         KIO::SimpleJob* job = iter.next();
         const KUrl url = job->url();
         const QString protocol = url.protocol();
-        KUrl hosturl = url;
-        const bool islocalfile = hosturl.isLocalFile();
-        if (!islocalfile) {
-            hosturl.setPath(QString());
-        }
-        hosturl.setQuery(QString());
-        hosturl.setFragment(QString());
-        const QString host = hosturl.url();
+        const QString host = url.host();
 
         KIO::SlaveInterface* slave = nullptr;
         const int maxSlaves = KProtocolInfo::maxSlaves(protocol);
@@ -197,7 +191,7 @@ void Scheduler::slotStartJob()
             kDebug(7006) << "Scheduler: slave protocol limit reached" << protocol << slaveForProtoCounter << maxSlaves;
             break;
         }
-        if (!islocalfile && maxSlavesPerHost > 0 && slaveForHostCounter >= maxSlavesPerHost) {
+        if (maxSlavesPerHost > 0 && slaveForHostCounter >= maxSlavesPerHost) {
             kDebug(7006) << "Scheduler: slave host limit reached" << protocol << slaveForHostCounter << maxSlavesPerHost;
             break;
         }
@@ -227,8 +221,8 @@ void Scheduler::slotStartJob()
             configData += config->entryMap("<default>");
         }
         config = KSharedConfig::openConfig(KProtocolInfo::config(protocol), KConfig::NoGlobals);
-        if (!islocalfile) {
-            configData += config->entryMap(url.host());
+        if (config) {
+            configData += config->entryMap(host);
         }
         m_sessionData.configDataFor(configData, protocol);
         slave->setConfig(configData);
