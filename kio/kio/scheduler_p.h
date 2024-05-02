@@ -24,15 +24,13 @@
 
 #include "kio/job.h"
 #include "kio/jobclasses.h"
+#include "kio/slaveinterface_p.h"
 
 #include <QMutex>
 #include <QTimer>
 #include <QList>
 
 namespace KIO {
-
-    class SlaveInterface;
-    class SchedulerPrivate;
 
     class SessionData
     {
@@ -43,20 +41,17 @@ namespace KIO {
         void reset();
     
     private:
-        bool initDone;
-        QString charsets;
-        QString language;
+        bool m_initDone;
+        QString m_charsets;
+        QString m_language;
     };
 
     /**
-     * The KIO::Scheduler manages io-slaves for the application.
-     * It also queues jobs and assigns the job to a slave when one
-     * becomes available.
+     * The KIO::Scheduler manages io-slaves for the jobs
      *
      * @see KIO::SlaveInterface
      * @see KIO::Job
      **/
-
     class Scheduler : public QObject
     {
         Q_OBJECT

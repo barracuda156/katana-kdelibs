@@ -37,24 +37,24 @@ namespace KIO
 
 /********************************* SessionData ****************************/
 SessionData::SessionData()
-    : initDone(false)
+    : m_initDone(false)
 {
 }
 
 void SessionData::configDataFor(MetaData &configData, const QString &proto)
 {
     if (proto.startsWith(QLatin1String("http"), Qt::CaseInsensitive)) {
-        if (!initDone) {
+        if (!m_initDone) {
             reset();
         }
 
         // these might have already been set so check first to make sure that we do not trumpt
         // settings sent by apps or end-user.
         if (configData["Languages"].isEmpty()) {
-            configData["Languages"] = language;
+            configData["Languages"] = m_language;
         }
         if (configData["Charsets"].isEmpty()) {
-            configData["Charsets"] = charsets;
+            configData["Charsets"] = m_charsets;
         }
         if (configData["UserAgent"].isEmpty()) {
             configData["UserAgent"] = KProtocolManager::defaultUserAgent();
@@ -64,9 +64,9 @@ void SessionData::configDataFor(MetaData &configData, const QString &proto)
 
 void SessionData::reset()
 {
-    initDone = true;
-    language = KProtocolManager::acceptLanguagesHeader();
-    charsets = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
+    m_initDone = true;
+    m_language = KProtocolManager::acceptLanguagesHeader();
+    m_charsets = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
 }
 
 K_GLOBAL_STATIC(Scheduler, kScheduler)
