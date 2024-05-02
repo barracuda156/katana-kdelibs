@@ -126,6 +126,14 @@ static AuthInfo authInfoFromData(const QByteArray &authdata)
     return authinfo;
 }
 
+static QTextConverter* textConverter(const QByteArray &name)
+{
+    if (name.isEmpty()) {
+        return new QTextConverter("UTF-8");
+    }
+    return new QTextConverter(name);
+}
+
 class SlaveBasePrivate {
 public:
     SlaveBasePrivate(const QByteArray &protocol);
@@ -368,7 +376,7 @@ void SlaveBase::sendMetaData()
 QString SlaveBase::decodeName(const QByteArray &name) const
 {
     if (!d->converter) {
-        d->converter = new QTextConverter(metaData(QLatin1String("Charset")).toLatin1());
+        d->converter = textConverter(metaData(QLatin1String("Charset")).toLatin1());
     }
     d->converter->reset();
     const QString result = d->converter->toUnicode(name);
@@ -381,7 +389,7 @@ QString SlaveBase::decodeName(const QByteArray &name) const
 QByteArray SlaveBase::encodeName(const QString &name) const
 {
     if (!d->converter) {
-        d->converter = new QTextConverter(metaData(QLatin1String("Charset")).toLatin1());
+        d->converter = textConverter(metaData(QLatin1String("Charset")).toLatin1());
     }
     d->converter->reset();
     const QByteArray result = d->converter->fromUnicode(name);
