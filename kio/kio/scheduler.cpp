@@ -35,40 +35,6 @@ static const int s_idleslavelifetime = 60000;
 namespace KIO
 {
 
-/********************************* SessionData ****************************/
-SessionData::SessionData()
-    : m_initDone(false)
-{
-}
-
-void SessionData::configDataFor(MetaData &configData, const QString &proto)
-{
-    if (proto.startsWith(QLatin1String("http"), Qt::CaseInsensitive)) {
-        if (!m_initDone) {
-            reset();
-        }
-
-        // these might have already been set so check first to make sure that we do not trumpt
-        // settings sent by apps or end-user.
-        if (configData["Languages"].isEmpty()) {
-            configData["Languages"] = m_language;
-        }
-        if (configData["Charsets"].isEmpty()) {
-            configData["Charsets"] = m_charsets;
-        }
-        if (configData["UserAgent"].isEmpty()) {
-            configData["UserAgent"] = KProtocolManager::defaultUserAgent();
-        }
-    }
-}
-
-void SessionData::reset()
-{
-    m_initDone = true;
-    m_language = KProtocolManager::acceptLanguagesHeader();
-    m_charsets = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
-}
-
 K_GLOBAL_STATIC(Scheduler, kScheduler)
 
 Scheduler* Scheduler::self()
@@ -77,7 +43,8 @@ Scheduler* Scheduler::self()
 }
 
 Scheduler::Scheduler(QObject *parent)
-    : QObject(parent)
+    : QObject(parent),
+    m_initdone(false)
 {
     setObjectName("scheduler");
     connect(&m_jobtimer, SIGNAL(timeout()), this, SLOT(slotStartJob()));
@@ -145,7 +112,7 @@ void Scheduler::reparseSlaveConfiguration()
 {
     kDebug(7006) << "reparsing slave configuration";
     QMutexLocker locker(&m_mutex);
-    m_sessionData.reset();
+    m_initdone = false;
     foreach (KIO::SlaveInterface* slave, m_slaves) {
         slave->send(CMD_REPARSECONFIGURATION, QByteArray());
     }
@@ -211,7 +178,7 @@ void Scheduler::slotStartJob()
             QString errortext;
             slave = SlaveInterface::createSlave(protocol, url, error, errortext);
             if (!slave) {
-                kError(7006) << "Scheduler:  could not create slave:" << errortext;
+                kError(7006) << "could not create slave" << errortext;
                 job->slotError(error, errortext);
                 return;
             }
@@ -234,7 +201,27 @@ void Scheduler::slotStartJob()
         if (config) {
             configData += config->entryMap(host);
         }
-        m_sessionData.configDataFor(configData, protocol);
+        if (protocol.startsWith(QLatin1String("http"), Qt::CaseInsensitive)) {
+            if (!m_initdone) {
+                m_initdone = true;
+                m_language = KProtocolManager::acceptLanguagesHeader();
+                m_charsets = QString::fromLatin1(QTextCodec::codecForLocale()->name()).toLower();
+                m_useragent = KProtocolManager::defaultUserAgent();
+            }
+
+            // these might have already been set so check first to make sure that we do not trumpt
+            // settings sent by apps or end-user.
+            if (configData["Languages"].isEmpty()) {
+                configData["Languages"] = m_language;
+            }
+            if (configData["Charsets"].isEmpty()) {
+                configData["Charsets"] = m_charsets;
+            }
+            if (configData["UserAgent"].isEmpty()) {
+                configData["UserAgent"] = m_useragent;
+            }
+        }
+
         slave->setConfig(configData);
         slave->setHost(host);
 

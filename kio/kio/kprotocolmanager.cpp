@@ -52,7 +52,6 @@ public:
     ~KProtocolManagerPrivate();
 
     KSharedConfig::Ptr config;
-    QString useragent;
 };
 
 K_GLOBAL_STATIC(KProtocolManagerPrivate, kProtocolManagerPrivate)
@@ -77,9 +76,8 @@ void KProtocolManager::reparseConfiguration()
     if (d->config) {
         d->config->reparseConfiguration();
     }
-    d->useragent.clear();
 
-    // Force the slave config to re-read its config...
+    // Force slave configs re-read...
     KIO::Scheduler::self()->reparseSlaveConfiguration();
 }
 
@@ -110,35 +108,29 @@ int KProtocolManager::responseTimeout()
 /*================================= USER-AGENT SETTINGS =====================*/
 QString KProtocolManager::defaultUserAgent()
 {
-    PRIVATE_DATA;
-    if (!d->useragent.isEmpty()) {
-        return d->useragent;
-    }
-
-    QString tmp;
+    QString useragent;
     QString systemName, systemVersion, machine, supp;
     bool sysInfoFound = false;
     struct utsname unameBuf;
     if (uname(&unameBuf) == 0) {
         sysInfoFound = true;
-        tmp += unameBuf.sysname;
+        useragent += unameBuf.sysname;
 
-        tmp += QL1C(' ');
-        tmp += unameBuf.release;
+        useragent += QL1C(' ');
+        useragent += unameBuf.release;
 
-        tmp += QL1C(' ');
-        tmp += unameBuf.machine;
+        useragent += QL1C(' ');
+        useragent += unameBuf.machine;
     }
 
     if (sysInfoFound) {
-        tmp += QL1S("; ");
+        useragent += QL1S("; ");
     }
-    tmp += QL1S("Katana ");
-    tmp += KDE::versionString();
+    useragent += QL1S("Katana ");
+    useragent += KDE::versionString();
 
-    d->useragent = tmp;
-    // kDebug() << "USERAGENT STRING:" << d->useragent;
-    return d->useragent;
+    // kDebug() << "USERAGENT STRING:" << useragent;
+    return useragent;
 }
 
 QString KProtocolManager::acceptLanguagesHeader()

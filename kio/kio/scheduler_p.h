@@ -32,20 +32,6 @@
 
 namespace KIO {
 
-    class SessionData
-    {
-    public:
-        SessionData();
-
-        void configDataFor(KIO::MetaData &configData, const QString &proto);
-        void reset();
-    
-    private:
-        bool m_initDone;
-        QString m_charsets;
-        QString m_language;
-    };
-
     /**
      * The KIO::Scheduler manages io-slaves for the jobs
      *
@@ -95,7 +81,10 @@ namespace KIO {
         QList<KIO::SimpleJob*> m_jobs;
         QTimer m_jobtimer;
         QTimer m_idletimer;
-        SessionData m_sessionData;
+        bool m_initdone;
+        QString m_charsets;
+        QString m_language;
+        QString m_useragent;
 };
 
 }
