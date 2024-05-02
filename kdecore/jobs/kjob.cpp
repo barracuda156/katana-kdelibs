@@ -60,7 +60,7 @@ void KJobLoop::slotFinished(KJob* job)
 
 KJobPrivate::KJobPrivate()
     : q_ptr(0), uiDelegate(0), error(KJob::NoError),
-      progressUnit(KJob::Bytes), percentage(0),
+      percentage(0),
       suspended(false), capabilities(KJob::NoCapabilities),
       speedTimer(0), isAutoDelete(true), isFinished(false)
 {
@@ -279,7 +279,7 @@ void KJob::setProcessedAmount(Unit unit, qulonglong amount)
     {
         d->processedAmount[unit] = amount;
         emit processedAmount(this, unit, amount);
-        if (unit==d->progressUnit) {
+        if (unit == KJob::Bytes) {
             emit processedSize(this, amount);
             emitPercent(amount, d->totalAmount[unit]);
         }
@@ -293,7 +293,7 @@ void KJob::setTotalAmount(Unit unit, qulonglong amount)
     {
         d->totalAmount[unit] = amount;
         emit totalAmount(this, unit, amount);
-        if (unit==d->progressUnit) {
+        if (unit == KJob::Bytes) {
             emit totalSize(this, amount);
             emitPercent(d->processedAmount[unit], amount);
         }

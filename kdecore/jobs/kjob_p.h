@@ -44,7 +44,6 @@ public:
     KJobUiDelegate *uiDelegate;
     int error;
     QString errorText;
-    KJob::Unit progressUnit;
     std::array<qulonglong, 3> processedAmount;
     std::array<qulonglong, 3> totalAmount;
     unsigned long percentage;
