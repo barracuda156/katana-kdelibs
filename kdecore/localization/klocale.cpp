@@ -495,16 +495,13 @@ QString KLocale::formatDuration(unsigned long mSec) const
         return kGetDuration(
             KLocaleDuration::KDurationMinute, minutes
         );
-    } else if (seconds && milliseconds) {
-        return kGetMultiDuration(
-            KLocaleDuration::KDurationSecond, seconds,
-            KLocaleDuration::KDurationMillisecond, milliseconds
-        );
+    // round around seconds
     } else if (seconds) {
         return kGetDuration(
             KLocaleDuration::KDurationSecond, seconds
         );
     }
+    // and if less than second to milliseconds
     return kGetDuration(
         KLocaleDuration::KDurationMillisecond, milliseconds
     );
