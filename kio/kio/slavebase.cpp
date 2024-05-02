@@ -25,12 +25,9 @@
 
 #include <config.h>
 
-#include <sys/time.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <unistd.h>
 #include <signal.h>
-#include <time.h>
 
 #include <QBuffer>
 #include <QFile>
@@ -150,8 +147,6 @@ public:
     KConfig *config;
     KConfigGroup *configGroup;
 
-    struct timeval last_tv;
-    KIO::filesize_t totalSize;
     QTextConverter *converter;
     time_t timeout;
     enum { Idle, InsideMethod, FinishedCalled, ErrorCalled } m_state;
@@ -213,7 +208,6 @@ SlaveBasePrivate::SlaveBasePrivate(const QByteArray &protocol)
     exit_loop(false),
     config(nullptr),
     configGroup(nullptr),
-    totalSize(0),
     converter(nullptr),
     timeout(0),
     m_passwdStore(nullptr),
@@ -222,8 +216,6 @@ SlaveBasePrivate::SlaveBasePrivate(const QByteArray &protocol)
     config = new KConfig(QString(), KConfig::SimpleConfig);
     // The KConfigGroup needs the KConfig to exist during its whole lifetime.
     configGroup = new KConfigGroup(config, QString());
-    last_tv.tv_sec = 0;
-    last_tv.tv_usec = 0;
 }
 
 SlaveBasePrivate::~SlaveBasePrivate()
@@ -431,8 +423,6 @@ void SlaveBase::error(int _errid, const QString &_text)
     KIO_DATA << (qint32)_errid << _text;
 
     send(MSG_ERROR, data);
-    // reset
-    d->totalSize = 0;
 }
 
 void SlaveBase::finished()
@@ -450,9 +440,6 @@ void SlaveBase::finished()
     d->rebuildConfig();
     sendMetaData();
     send(MSG_FINISHED);
-
-    // reset
-    d->totalSize = 0;
 }
 
 void SlaveBase::canResume()
@@ -464,42 +451,12 @@ void SlaveBase::totalSize(KIO::filesize_t _bytes)
 {
     KIO_DATA << KIO_FILESIZE_T(_bytes);
     send(INF_TOTAL_SIZE, data);
-
-    //this one is usually called before the first item is listed in listDir()
-    d->totalSize = _bytes;
 }
 
 void SlaveBase::processedSize(KIO::filesize_t _bytes)
 {
-    bool emitSignal = false;
-    struct timeval tv;
-    int gettimeofday_res = gettimeofday(&tv, 0L);
-
-    if (_bytes == d->totalSize) {
-        emitSignal = true;
-    } else if (gettimeofday_res == 0) {
-        time_t msecdiff = 2000;
-        if (d->last_tv.tv_sec) {
-            // Compute difference, in ms
-            msecdiff = 1000 * (tv.tv_sec - d->last_tv.tv_sec);
-            time_t usecdiff = tv.tv_usec - d->last_tv.tv_usec;
-            if (usecdiff < 0) {
-                msecdiff--;
-                msecdiff += 1000;
-            }
-            msecdiff += usecdiff / 1000;
-        }
-        emitSignal = msecdiff >= 100; // emit size 10 times a second
-    }
-
-    if (emitSignal) {
-        KIO_DATA << KIO_FILESIZE_T(_bytes);
-        send(INF_PROCESSED_SIZE, data);
-        if (gettimeofday_res == 0) {
-            d->last_tv.tv_sec = tv.tv_sec;
-            d->last_tv.tv_usec = tv.tv_usec;
-        }
-    }
+    KIO_DATA << KIO_FILESIZE_T(_bytes);
+    send(INF_PROCESSED_SIZE, data);
 }
 
 void SlaveBase::redirection(const KUrl &_url)
