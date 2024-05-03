@@ -65,28 +65,6 @@ static KIO::Job* putDataAsyncTo(const KUrl& url, const QByteArray& data, QWidget
     return job;
 }
 
-class PasteDialog : public KDialog
-{
-    Q_OBJECT
-public:
-    PasteDialog( const QString &caption, const QString &label,
-                 const QString &value, const QStringList& items,
-                 QWidget *parent, bool clipboard );
-
-    QString lineEditText() const;
-    int comboItem() const;
-    bool clipboardChanged() const { return m_clipboardChanged; }
-
-private Q_SLOTS:
-    void slotClipboardDataChanged();
-
-private:
-    QLabel* m_label;
-    KLineEdit* m_lineEdit;
-    KComboBox* m_comboBox;
-    bool m_clipboardChanged;
-};
-
 static QStringList extractFormats(const QMimeData* mimeData)
 {
     QStringList formats;
@@ -106,6 +84,98 @@ static QStringList extractFormats(const QMimeData* mimeData)
         formats.append(format);
     }
     return formats;
+}
+
+class PasteDialog : public KDialog
+{
+    Q_OBJECT
+public:
+    PasteDialog( const QString &caption, const QString &label,
+                 const QString &value, const QStringList& items,
+                 QWidget *parent, bool clipboard );
+
+    QString lineEditText() const;
+    int comboItem() const;
+    bool clipboardChanged() const;
+
+private Q_SLOTS:
+    void slotClipboardDataChanged();
+
+private:
+    QLabel* m_label;
+    KLineEdit* m_lineEdit;
+    KComboBox* m_comboBox;
+    bool m_clipboardChanged;
+};
+
+PasteDialog::PasteDialog(const QString &caption, const QString &label,
+                         const QString &value, const QStringList &items,
+                         QWidget *parent,
+                         bool clipboard)
+    : KDialog(parent),
+    m_label(nullptr),
+    m_lineEdit(nullptr),
+    m_comboBox(nullptr),
+    m_clipboardChanged(false)
+{
+    setCaption(caption );
+    setButtons(KDialog::Ok | KDialog::Cancel);
+    setModal(true);
+    setDefaultButton(KDialog::Ok);
+
+    QFrame *frame = new QFrame;
+    setMainWidget(frame);
+
+    QVBoxLayout *layout = new QVBoxLayout(frame);
+
+    m_label = new QLabel(label, frame);
+    layout->addWidget(m_label);
+
+    m_lineEdit = new KLineEdit(value, frame);
+    layout->addWidget(m_lineEdit);
+
+    m_lineEdit->setFocus();
+    m_label->setBuddy(m_lineEdit);
+
+    layout->addWidget( new QLabel(i18n("Data format:"), frame));
+    m_comboBox = new KComboBox(frame);
+    m_comboBox->addItems(items);
+    layout->addWidget(m_comboBox);
+
+    layout->addStretch();
+
+    // connect( m_lineEdit, SIGNAL(textChanged(QString)), SLOT(slotEditTextChanged(QString)));
+    // connect(this, SIGNAL(user1Clicked()), m_lineEdit, SLOT(clear()));
+
+    //slotEditTextChanged(value);
+    setMinimumWidth(350);
+
+    if (clipboard) {
+        connect(
+            QApplication::clipboard(), SIGNAL(dataChanged()),
+            this, SLOT(slotClipboardDataChanged())
+        );
+    }
+}
+
+void PasteDialog::slotClipboardDataChanged()
+{
+    m_clipboardChanged = true;
+}
+
+QString PasteDialog::lineEditText() const
+{
+    return m_lineEdit->text();
+}
+
+int PasteDialog::comboItem() const
+{
+    return m_comboBox->currentIndex();
+}
+
+bool PasteDialog::clipboardChanged() const
+{
+    return m_clipboardChanged;
 }
 
 KIO_EXPORT bool KIO::canPasteMimeSource(const QMimeData* data)
