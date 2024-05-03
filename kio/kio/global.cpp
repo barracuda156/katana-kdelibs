@@ -309,8 +309,6 @@ KIO_EXPORT QString KIO::unsupportedActionErrorString(const QString &protocol, in
       return i18n("Listing folders is not supported for protocol %1.", protocol);
     case CMD_GET:
       return i18n("Retrieving data from %1 is not supported.", protocol);
-    case CMD_MIMETYPE:
-      return i18n("Retrieving mime type information from %1 is not supported.", protocol);
     case CMD_RENAME:
       return i18n("Renaming or moving files within %1 is not supported.", protocol);
     case CMD_SYMLINK:

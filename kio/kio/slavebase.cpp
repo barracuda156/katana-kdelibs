@@ -472,41 +472,6 @@ static bool isSubCommand(int cmd)
            (cmd == CMD_CONFIG));
 }
 
-void SlaveBase::mimeType(const QString &_type)
-{
-    kDebug(7019) << _type;
-    int cmd = 0;
-    do {
-        // Send the meta-data each time we send the mime-type.
-        if (!d->m_outgoingMetaData.isEmpty()) {
-            // kDebug(7019) << "emitting meta data";
-            KIO_DATA << d->m_outgoingMetaData;
-            send(INF_META_DATA, data);
-        }
-        KIO_DATA << _type;
-        send(INF_MIME_TYPE, data);
-        while (true) {
-            cmd = 0;
-            int ret = -1;
-            if (d->appConnection.hasTaskAvailable() || d->appConnection.waitForIncomingTask(-1)) {
-                ret = d->appConnection.read(&cmd, data);
-            }
-            if (ret == -1) {
-                kDebug(7019) << "read error";
-                exit();
-                return;
-            }
-            // kDebug(7019) << "got" << cmd;
-            if (!isSubCommand(cmd)) {
-                break;
-            }
-
-            dispatch(cmd, data );
-        }
-    } while (cmd != CMD_NONE);
-    d->m_outgoingMetaData.clear();
-}
-
 void SlaveBase::exit()
 {
     d->exit_loop = true;
@@ -592,8 +557,6 @@ void SlaveBase::listDir(KUrl const &)
 { error(ERR_UNSUPPORTED_ACTION, unsupportedActionErrorString(d->m_protocol, CMD_LISTDIR)); }
 void SlaveBase::get(KUrl const & )
 { error(ERR_UNSUPPORTED_ACTION, unsupportedActionErrorString(d->m_protocol, CMD_GET)); }
-void SlaveBase::mimetype(KUrl const &url)
-{ get(url); }
 void SlaveBase::rename(KUrl const &, KUrl const &, JobFlags)
 { error(ERR_UNSUPPORTED_ACTION, unsupportedActionErrorString(d->m_protocol, CMD_RENAME)); }
 void SlaveBase::symlink(QString const &, KUrl const &, JobFlags)
@@ -858,15 +821,6 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
             d->m_state = SlaveBasePrivate::InsideMethod;
             stat(url);
             d->verifyState("stat()");
-            d->m_state = SlaveBasePrivate::Idle;
-            break;
-        }
-        case CMD_MIMETYPE: {
-            KUrl url;
-            stream >> url;
-            d->m_state = SlaveBasePrivate::InsideMethod;
-            mimetype(url);
-            d->verifyState("mimetype()");
             d->m_state = SlaveBasePrivate::Idle;
             break;
         }

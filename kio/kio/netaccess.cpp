@@ -56,7 +56,6 @@ namespace KIO
             , bJobOK(true)
         {}
         UDSEntry m_entry;
-        QString m_mimetype;
         QByteArray m_data;
         KUrl m_url;
         MetaData *m_metaData;
@@ -241,12 +240,6 @@ bool NetAccess::synchronousRun( Job* job, QWidget* window, QByteArray* data,
   return ok;
 }
 
-QString NetAccess::mimetype( const KUrl& url, QWidget* window )
-{
-  NetAccess kioNet;
-  return kioNet.mimetypeInternal( url, window );
-}
-
 QString NetAccess::lastErrorString()
 {
     return lastErrorMsg;
@@ -334,25 +327,6 @@ bool NetAccess::mkdirInternal( const KUrl & url, int permissions,
            this, SLOT(slotResult(KJob*)) );
   enter_loop();
   return d->bJobOK;
-}
-
-QString NetAccess::mimetypeInternal( const KUrl & url, QWidget* window )
-{
-  d->bJobOK = true; // success unless further error occurs
-  d->m_mimetype = QLatin1String("unknown");
-  KIO::Job * job = KIO::mimetype( url );
-  job->ui()->setWindow (window);
-  connect( job, SIGNAL(result(KJob*)),
-           this, SLOT(slotResult(KJob*)) );
-  connect( job, SIGNAL(mimetype(KIO::Job*,QString)),
-           this, SLOT(slotMimetype(KIO::Job*,QString)) );
-  enter_loop();
-  return d->m_mimetype;
-}
-
-void NetAccess::slotMimetype( KIO::Job *, const QString & type  )
-{
-  d->m_mimetype = type;
 }
 
 bool NetAccess::synchronousRunInternal( Job* job, QWidget* window, QByteArray* data,

@@ -603,7 +603,6 @@ Q_SIGNALS:
         /**
         * This slot is called when the 'stat' after a job event has finished.
         */
-        Q_PRIVATE_SLOT(d, void mimeTypeRetrieved(KIO::Job *, const QString &))
         Q_PRIVATE_SLOT(d, void dropJobResult(KJob *))
 
         friend class Applet;

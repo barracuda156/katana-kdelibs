@@ -364,12 +364,6 @@ protected Q_SLOTS:
     void slotScanFinished(KJob *);
 
     /**
-     * This slot is called when the scan job has found out
-     * the mime type.
-     */
-    void slotScanMimeType(KIO::Job *, const QString &type);
-
-    /**
      * Call this from subclasses when you have determined the mimetype.
      * It will call foundMimeType, but also sets up protection against deletion during message boxes.
      * @since 4.0.2

@@ -315,15 +315,6 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             emit redirection(url);
             break;
         }
-        case INF_MIME_TYPE: {
-            QDataStream stream(rawdata);
-            QString str;
-            stream >> str;
-            emit mimeType(str);
-            if (!m_connection->suspended())
-                m_connection->sendnow(CMD_NONE, QByteArray());
-            break;
-        }
         case INF_WARNING: {
             QDataStream stream(rawdata);
             QString str;

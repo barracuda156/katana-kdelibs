@@ -1206,12 +1206,10 @@ void KRun::scanFile()
     kDebug(7010) << this << " Scanning file " << d->m_strURL.url();
 
     KIO::JobFlags flags = d->m_bProgressInfo ? KIO::DefaultFlags : KIO::HideProgressInfo;
-    KIO::TransferJob *job = KIO::get(d->m_strURL, flags);
+    KIO::StatJob *job = KIO::stat(d->m_strURL, flags);
     job->ui()->setWindow(d->m_window);
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(slotScanFinished(KJob*)));
-    connect(job, SIGNAL(mimetype(KIO::Job*,QString)),
-            this, SLOT(slotScanMimeType(KIO::Job*,QString)));
     d->m_job = job;
     kDebug(7010) << " Job " << job << " is about getting from " << d->m_strURL.url();
 }
@@ -1309,15 +1307,6 @@ void KRun::slotStatResult(KJob * job)
     }
 }
 
-void KRun::slotScanMimeType(KIO::Job *, const QString &mimetype)
-{
-    if (mimetype.isEmpty()) {
-        kWarning(7010) << "get() didn't emit a mimetype! Probably a kioslave bug, please check the implementation of" << url().protocol();
-    }
-    mimeTypeDetermined(mimetype);
-    d->m_job = 0;
-}
-
 void KRun::slotScanFinished(KJob *job)
 {
     d->m_job = 0;
@@ -1338,7 +1327,21 @@ void KRun::slotScanFinished(KJob *job)
         d->m_bFinished = true;
         // will emit the error and autodelete this
         d->startTimer();
+        return;
     }
+
+    KIO::StatJob* statJob = qobject_cast<KIO::StatJob*>(job);
+    if (!statJob) {
+        kFatal() << "job is a " << typeid(*job).name() << " should be a StatJob";
+    }
+
+    const KIO::UDSEntry entry = statJob->statResult();
+    const QString mimetype = entry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+    if (mimetype.isEmpty()) {
+        kWarning(7010) << "get() didn't emit a mimetype! Probably a kioslave bug, please check the implementation of" << url().protocol();
+    }
+    mimeTypeDetermined(mimetype);
+    d->m_job = 0;
 }
 
 void KRun::mimeTypeDetermined(const QString& mimeType)

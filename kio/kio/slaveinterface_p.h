@@ -40,7 +40,6 @@ enum Info {
    INF_TOTAL_SIZE = 10,
    INF_PROCESSED_SIZE = 11,
    INF_REDIRECTION = 20,
-   INF_MIME_TYPE = 21,
    INF_WARNING = 23,
    INF_INFOMESSAGE,
    INF_META_DATA,
@@ -189,7 +188,6 @@ Q_SIGNALS:
     void processedSize(KIO::filesize_t );
     void redirection(const KUrl &);
     void speed(unsigned long );
-    void mimeType(const QString &);
     void warning(const QString &);
     void infoMessage(const QString &);
 

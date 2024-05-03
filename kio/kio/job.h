@@ -205,20 +205,6 @@ namespace KIO {
                                              JobFlags flags = DefaultFlags );
 
     /**
-     * Find mimetype for one file or directory.
-     *
-     * If you are going to download the file right after determining its mimetype,
-     * then don't use this, prefer using a KIO::get() job instead. See the note
-     * about putting the job on hold once the mimetype is determined.
-     *
-     * @param url the URL of the file
-     * @param flags Can be HideProgressInfo here
-     * @return the job handling the operation.
-     */
-    KIO_EXPORT MimetypeJob * mimetype( const KUrl& url,
-                                       JobFlags flags = DefaultFlags );
-
-    /**
      * Copy a single file.
      *
      * Uses either SlaveBase::copy() if the slave supports that

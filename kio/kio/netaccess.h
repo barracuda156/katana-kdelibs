@@ -334,27 +334,6 @@ public:
                                 KUrl* finalURL=0, MetaData* metaData=0 );
 
     /**
-     * Determines the mimetype of a given URL.
-     *
-     * This is a convenience function for KIO::mimetype.  You
-     * should call this only when really necessary.
-     * KMimeType::findByUrl can determine extension a lot faster, but
-     * less reliably for remote files. Only when findByUrl() returns
-     * unknown (application/octet-stream) then this one should be
-     * used.
-     *
-     * @param url The URL whose mimetype we are interested in.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
-     * @return The mimetype name.
-     */
-    static QString mimetype( const KUrl & url, QWidget* window );
-
-
-    /**
      * Returns the error string for the last job, in case it failed.
      * Note that this is already translated.
      * @return the last error string, or QString()
@@ -394,12 +373,10 @@ private:
     bool synchronousRunInternal( Job* job, QWidget* window, QByteArray* data,
                                  KUrl* finalURL, MetaData* metaData );
 
-    QString mimetypeInternal(const KUrl & url, QWidget* window = 0);
     void enter_loop();
 
 private Q_SLOTS:
     void slotResult( KJob * job );
-    void slotMimetype( KIO::Job * job, const QString & type );
     void slotData( KIO::Job*, const QByteArray& );
     void slotRedirection( KIO::Job*, const KUrl& );
 

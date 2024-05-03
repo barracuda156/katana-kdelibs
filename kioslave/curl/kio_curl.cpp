@@ -367,7 +367,7 @@ int main(int argc, char **argv)
 CurlProtocol::CurlProtocol(const QByteArray &app)
     : SlaveBase("curl", app),
     p_aborttransfer(false), p_upload(false),
-    m_emitmime(true), m_ishttp(false), m_isftp(false), m_collectdata(false),
+    m_firstchunk(true), m_ishttp(false), m_isftp(false), m_collectdata(false),
     m_curl(nullptr), m_curlheaders(nullptr), m_curlquotes(nullptr)
 {
     m_curl = curl_easy_init();
@@ -799,8 +799,8 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
 
     const QByteArray bytedata = QByteArray::fromRawData(curldata, curldatasize);
 
-    if (m_emitmime) {
-        m_emitmime = false;
+    if (m_firstchunk) {
+        m_firstchunk = false;
 
         if (m_ishttp) {
             // if it's HTTP error do not send data and MIME, abort transfer
@@ -809,21 +809,6 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
                 p_aborttransfer = true;
                 return;
             }
-
-            QString httpmimetype = QString::fromLatin1("application/octet-stream");
-            char *curlcontenttype = nullptr;
-            CURLcode curlresult = curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &curlcontenttype);
-            if (curlresult == CURLE_OK) {
-                httpmimetype = HTTPMIMEType(QString::fromAscii(curlcontenttype));
-            } else {
-                kWarning(7103) << "Could not get content type info" << curl_easy_strerror(curlresult);
-            }
-            mimeType(httpmimetype);
-        } else {
-            KMimeType::Ptr kmimetype = KMimeType::findByNameAndContent(p_url.url(), bytedata);
-            // default MIME type should be returned in the worst case
-            Q_ASSERT(kmimetype);
-            mimeType(kmimetype->name());
         }
     }
 
@@ -893,7 +878,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     p_aborttransfer = false;
     p_upload = false;
     p_url = url;
-    m_emitmime = true;
+    m_firstchunk = true;
     const QString urlprotocol = url.protocol();
     m_ishttp = (urlprotocol == QLatin1String("http") || urlprotocol == QLatin1String("https"));
     m_isftp = (urlprotocol == QLatin1String("ftp") || urlprotocol == QLatin1String("sftp"));

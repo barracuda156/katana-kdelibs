@@ -985,12 +985,6 @@ void JobTest::getInvalidUrl()
     QVERIFY( !ok ); // it should fail :)
 }
 
-void JobTest::slotMimetype(KIO::Job* job, const QString& type)
-{
-    QVERIFY( job != 0 );
-    m_mimetype = type;
-}
-
 void JobTest::deleteFile()
 {
     const QString dest = otherTmpDir() + "fileFromHome_copied";
@@ -1209,46 +1203,6 @@ void JobTest::mostLocalUrl()
     bool ok = KIO::NetAccess::synchronousRun(job, 0);
     QVERIFY(ok);
     QCOMPARE(job->mostLocalUrl().toLocalFile(), filePath);
-}
-
-void JobTest::mimeType()
-{
-#if 1
-    const QString filePath = homeTmpDir() + "fileFromHome";
-    createTestFile( filePath );
-    KIO::MimetypeJob* job = KIO::mimetype(filePath, KIO::HideProgressInfo);
-    QVERIFY(job);
-    QSignalSpy spyMimeType(job, SIGNAL(mimetype(KIO::Job*,QString)));
-    bool ok = KIO::NetAccess::synchronousRun(job, 0);
-    QVERIFY(ok);
-    QCOMPARE(spyMimeType.count(), 1);
-    QCOMPARE(spyMimeType[0][0], QVariant::fromValue(static_cast<KIO::Job*>(job)));
-    QCOMPARE(spyMimeType[0][1].toString(), QString("application/octet-stream"));
-#else
-    // Testing mimetype over HTTP
-    KIO::MimetypeJob* job = KIO::mimetype(KUrl("http://www.kde.org"), KIO::HideProgressInfo);
-    QVERIFY(job);
-    QSignalSpy spyMimeType(job, SIGNAL(mimetype(KIO::Job*,QString)));
-    bool ok = KIO::NetAccess::synchronousRun(job, 0);
-    QVERIFY(ok);
-    QCOMPARE(spyMimeType.count(), 1);
-    QCOMPARE(spyMimeType[0][0], QVariant::fromValue(static_cast<KIO::Job*>(job)));
-    QCOMPARE(spyMimeType[0][1].toString(), QString("text/html"));
-#endif
-}
-
-void JobTest::mimeTypeError()
-{
-    // KIO::mimetype() on a file that doesn't exist
-    const QString filePath = homeTmpDir() + "doesNotExist";
-    KIO::MimetypeJob* job = KIO::mimetype(QUrl::fromLocalFile(filePath), KIO::HideProgressInfo);
-    QVERIFY(job);
-    QSignalSpy spyMimeType(job, SIGNAL(mimetype(KIO::Job*,QString)));
-    QSignalSpy spyResult(job, SIGNAL(result(KJob*)));
-    bool ok = KIO::NetAccess::synchronousRun(job, 0);
-    QVERIFY(!ok);
-    QCOMPARE(spyMimeType.count(), 0);
-    QCOMPARE(spyResult.count(), 1);
 }
 
 void JobTest::moveFileDestAlreadyExists() // #157601

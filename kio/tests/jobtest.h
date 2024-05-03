@@ -68,8 +68,6 @@ private Q_SLOTS:
     void rmdirNotEmpty();
     void stat();
     void mostLocalUrl();
-    void mimeType();
-    void mimeTypeError();
     //void newApiPerformance();
     void calculateRemainingSeconds();
     void moveFileDestAlreadyExists();
@@ -89,7 +87,6 @@ protected Q_SLOTS:
     void slotGetResult( KJob* );
     void slotDataReq( KIO::Job*, QByteArray& );
     void slotResult( KJob* );
-    void slotMimetype(KIO::Job*, const QString&);
 
 private:
     void enterLoop();

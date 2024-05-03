@@ -478,13 +478,6 @@ namespace KIO {
         void setModificationTime( const QDateTime& mtime );
 
         /**
-         * Call this in the slot connected to result,
-         * and only after making sure no error happened.
-         * @return the mimetype of the URL
-         */
-        QString mimetype() const;
-
-        /**
          * Set the total size of data that we are going to send
          * in a put job. Helps getting proper progress information.
          * @since 4.2.1
@@ -538,13 +531,6 @@ namespace KIO {
         void redirection( KIO::Job *job, const KUrl &url );
 
         /**
-         * Mimetype determined.
-         * @param job the job that emitted this signal
-         * @param type the mime type
-         */
-        void mimetype( KIO::Job *job, const QString &type );
-
-        /**
          * @internal
          * Emitted if the "put" job found an existing partial file
          * (in which case offset is the size of that file)
@@ -559,7 +545,6 @@ namespace KIO {
         virtual void slotFinished();
         virtual void slotData( const QByteArray &data);
         virtual void slotDataReq();
-        virtual void slotMimetype( const QString &mimetype );
 
     protected:
         TransferJob(TransferJobPrivate &dd);
@@ -617,24 +602,6 @@ namespace KIO {
         Q_DECLARE_PRIVATE(StoredTransferJob)
     };
 
-    class MimetypeJobPrivate;
-    /**
-     * A MimetypeJob is a TransferJob that  allows you to get
-     * the mime type of an URL. Don't create directly,
-     * but use KIO::mimetype() instead.
-     * @see KIO::mimetype()
-     */
-    class KIO_EXPORT MimetypeJob : public TransferJob {
-    Q_OBJECT
-
-    protected Q_SLOTS:
-        virtual void slotFinished( );
-    protected:
-        MimetypeJob(MimetypeJobPrivate &dd);
-    private:
-        Q_DECLARE_PRIVATE(MimetypeJob)
-    };
-
     /**
      * The FileCopyJob copies data from one place to another.
      * @see KIO::file_copy()
@@ -675,19 +642,6 @@ namespace KIO {
         bool doSuspend();
         bool doResume();
 
-    Q_SIGNALS:
-        /**
-         * Mimetype determined during a file copy.
-         * This is never emitted during a move, and might not be emitted during
-         * a file copy, depending on the slave. But when a get and a put are
-         * being used (which is the common case), this signal forwards the
-         * mimetype information from the get job.
-         *
-         * @param job the job that emitted this signal
-         * @param type the mime type
-         */
-        void mimetype( KIO::Job *job, const QString &type );
-
     protected Q_SLOTS:
         /**
          * Called whenever a subjob finishes.
@@ -702,7 +656,6 @@ namespace KIO {
         Q_PRIVATE_SLOT(d_func(), void slotStart())
         Q_PRIVATE_SLOT(d_func(), void slotData( KIO::Job *, const QByteArray &data))
         Q_PRIVATE_SLOT(d_func(), void slotDataReq( KIO::Job *, QByteArray &data))
-        Q_PRIVATE_SLOT(d_func(), void slotMimetype( KIO::Job*, const QString& type ))
         Q_PRIVATE_SLOT(d_func(), void slotProcessedSize( KJob *job, qulonglong size ))
         Q_PRIVATE_SLOT(d_func(), void slotTotalSize( KJob *job, qulonglong size ))
         Q_PRIVATE_SLOT(d_func(), void slotPercent( KJob *job, unsigned long pct ))

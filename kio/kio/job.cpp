@@ -806,13 +806,6 @@ TransferJob::TransferJob(TransferJobPrivate &dd)
 void TransferJob::slotData(const QByteArray &_data)
 {
     Q_D(TransferJob);
-    if (d->m_command == CMD_GET && !d->m_isMimetypeEmitted) {
-        kWarning(7007) << "mimeType() not emitted when sending first data!; job URL ="
-                       << d->m_url << "data size =" << _data.size();
-    }
-    // shut up the warning, HACK: downside is that it changes the meaning of the variable
-    d->m_isMimetypeEmitted = true;
-
     if (d->m_redirectionURL.isEmpty() || !d->m_redirectionURL.isValid() || error()) {
         emit data(this, _data);
     }
@@ -892,11 +885,6 @@ void TransferJob::slotFinished()
     SimpleJob::slotFinished();
 }
 
-QString TransferJob::mimetype() const
-{
-    return d_func()->m_mimetype;
-}
-
 // Slave requests data
 void TransferJob::slotDataReq()
 {
@@ -923,19 +911,6 @@ void TransferJob::slotDataReq()
         d->m_subJob->d_func()->internalResume(); // Ask for more!
     }
 }
-
-void TransferJob::slotMimetype(const QString &type)
-{
-    Q_D(TransferJob);
-    d->m_mimetype = type;
-    if (d->m_command == CMD_GET && d->m_isMimetypeEmitted) {
-        kWarning(7007) << "mimetype() emitted again, or after sending first data!; job URL ="
-                       << d->m_url;
-    }
-    d->m_isMimetypeEmitted = true;
-    emit mimetype(this, type);
-}
-
 
 void TransferJobPrivate::internalSuspend()
 {
@@ -986,17 +961,11 @@ void TransferJobPrivate::start(SlaveInterface *slave)
     );
 
     q->connect(
-        slave, SIGNAL(mimeType(QString)),
-        SLOT(slotMimetype(QString))
-    );
-
-    q->connect(
         slave, SIGNAL(canResume(KIO::filesize_t)),
         SLOT(slotCanResume(KIO::filesize_t))
     );
 
     if (slave->suspended()) {
-       m_mimetype = "unknown";
        // WABA: The slave was put on hold. Resume operation.
        slave->resume();
     }
@@ -1153,73 +1122,6 @@ StoredTransferJob *KIO::storedPut(const QByteArray &arr, const KUrl &url, int pe
     return job;
 }
 
-//////////
-
-class KIO::MimetypeJobPrivate: public KIO::TransferJobPrivate
-{
-public:
-    MimetypeJobPrivate(const KUrl &url, int command, const QByteArray &packedArgs)
-        : TransferJobPrivate(url, command, packedArgs)
-    {
-    }
-
-    Q_DECLARE_PUBLIC(MimetypeJob)
-
-    static inline MimetypeJob *newJob(const KUrl &url, int command, const QByteArray &packedArgs,
-                                      JobFlags flags)
-    {
-        MimetypeJob *job = new MimetypeJob(*new MimetypeJobPrivate(url, command, packedArgs));
-        job->setUiDelegate(new JobUiDelegate());
-        if (!(flags & HideProgressInfo)) {
-            KIO::getJobTracker()->registerJob(job);
-            emitStating(job, url);
-        }
-        return job;
-    }
-};
-
-MimetypeJob::MimetypeJob(MimetypeJobPrivate &dd)
-    : TransferJob(dd)
-{
-}
-
-void MimetypeJob::slotFinished()
-{
-    Q_D(MimetypeJob);
-    // kDebug(7007);
-    if (error() == KIO::ERR_IS_DIRECTORY) {
-        // It is in fact a directory. This happens when HTTP redirects to FTP.
-        // Due to the "protocol doesn't support listing" code in KRun, we
-        // assumed it was a file.
-        kDebug(7007) << "It is in fact a directory!";
-        d->m_mimetype = QString::fromLatin1("inode/directory");
-        emit TransferJob::mimetype(this, d->m_mimetype);
-        setError(0);
-    }
-
-    if (!d->m_redirectionURL.isEmpty() && d->m_redirectionURL.isValid() && !error()) {
-        //kDebug(7007) << "Redirection to " << m_redirectionURL;
-        if (d->m_redirectionHandlingEnabled) {
-            d->m_internalSuspended = false;
-            d->m_packedArgs.truncate(0);
-            QDataStream stream(&d->m_packedArgs, QIODevice::WriteOnly);
-            stream << d->m_redirectionURL;
-
-            d->restartAfterRedirection(&d->m_redirectionURL);
-            return;
-        }
-    }
-
-    // Return slave to the scheduler
-    TransferJob::slotFinished();
-}
-
-MimetypeJob *KIO::mimetype(const KUrl &url, JobFlags flags)
-{
-    KIO_ARGS << url;
-    return MimetypeJobPrivate::newJob(url, CMD_MIMETYPE, packedArgs, flags);
-}
-
 //////////////////////////
 
 class KIO::DirectCopyJobPrivate: public KIO::SimpleJobPrivate
@@ -1307,7 +1209,6 @@ public:
     void slotStart();
     void slotData(KIO::Job *, const QByteArray &data);
     void slotDataReq(KIO::Job *, QByteArray &data);
-    void slotMimetype(KIO::Job*, const QString &type);
     /**
      * Forward signal from subjob
      * @param job the job that emitted this signal
@@ -1660,10 +1561,6 @@ void FileCopyJobPrivate::slotCanResume(KIO::Job *job, KIO::filesize_t offset)
                 m_getJob, SIGNAL(data(KIO::Job*,QByteArray)),
                 SLOT(slotData(KIO::Job*,QByteArray))
             );
-            q->connect(
-                m_getJob, SIGNAL(mimetype(KIO::Job*,QString)),
-                SLOT(slotMimetype(KIO::Job*,QString))
-            );
         } else  {
             // copyjob
             jobSlave(m_copyJob)->sendResumeAnswer(offset != 0);
@@ -1721,12 +1618,6 @@ void FileCopyJobPrivate::slotDataReq(KIO::Job * , QByteArray &data)
     }
     data = m_buffer;
     m_buffer = QByteArray();
-}
-
-void FileCopyJobPrivate::slotMimetype(KIO::Job *, const QString &type)
-{
-    Q_Q(FileCopyJob);
-    emit q->mimetype(q, type);
 }
 
 void FileCopyJob::slotResult(KJob *job)

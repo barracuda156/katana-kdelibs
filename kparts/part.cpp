@@ -284,7 +284,6 @@ public:
 
     void _k_slotJobFinished(KJob *job);
     void _k_slotStatJobFinished(KJob *job);
-    void _k_slotGotMimeType(KIO::Job *job, const QString &mime);
     bool openLocalFile();
     void openRemoteFile();
 
@@ -494,10 +493,6 @@ void ReadOnlyPartPrivate::openRemoteFile()
         m_job, SIGNAL(result(KJob*)),
         q, SLOT(_k_slotJobFinished(KJob*))
     );
-    QObject::connect(
-        m_job, SIGNAL(mimetype(KIO::Job*,QString)),
-        q, SLOT(_k_slotGotMimeType(KIO::Job*,QString))
-    );
 }
 
 void ReadOnlyPart::abortLoad()
@@ -541,8 +536,15 @@ void ReadOnlyPartPrivate::_k_slotStatJobFinished(KJob * job)
     // We could emit canceled on error, but we haven't even emitted started yet,
     // this could maybe confuse some apps? So for now we'll just fallback to KIO::get
     // and error again. Well, maybe this even helps with wrong stat results.
-    if (!job->error()) {
-        const KUrl localUrl = static_cast<KIO::StatJob*>(job)->mostLocalUrl();
+    if (job->error() != KJob::NoError) {
+        KIO::StatJob* statjob = static_cast<KIO::StatJob*>(job);
+        const KUrl localUrl = statjob->mostLocalUrl();
+        const QString mime = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+        // set the mimetype only if it was not already set (for example, by the host application)
+        if (m_arguments.mimeType().isEmpty()) {
+            m_arguments.setMimeType(mime);
+            m_bAutoDetectedMime = true;
+        }
         if (localUrl.isLocalFile()) {
             m_file = localUrl.toLocalFile();
             (void)openLocalFile();
@@ -567,17 +569,6 @@ void ReadOnlyPartPrivate::_k_slotJobFinished(KJob *job)
         } else {
             emit q->canceled(QString());
         }
-    }
-}
-
-void ReadOnlyPartPrivate::_k_slotGotMimeType(KIO::Job *job, const QString &mime)
-{
-    kDebug() << mime;
-    Q_ASSERT(job == m_job); Q_UNUSED(job)
-    // set the mimetype only if it was not already set (for example, by the host application)
-    if (m_arguments.mimeType().isEmpty()) {
-        m_arguments.setMimeType(mime);
-        m_bAutoDetectedMime = true;
     }
 }
 

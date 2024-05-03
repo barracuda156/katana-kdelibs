@@ -1252,7 +1252,7 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
             kDebug() << "can decode" << mimeName << args;
 
             // It may be a directory or a file, let's stat
-            KIO::MimetypeJob *job = KIO::mimetype(url, KIO::HideProgressInfo);
+            KIO::StatJob *job = KIO::stat(url, KIO::HideProgressInfo);
             if (dropEvent) {
                 dropPoints[job] = dropEvent->pos();
             } else {
@@ -1260,8 +1260,6 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
             }
 
             QObject::connect(job, SIGNAL(result(KJob*)), q, SLOT(dropJobResult(KJob*)));
-            QObject::connect(job, SIGNAL(mimetype(KIO::Job*,QString)),
-                                q, SLOT(mimeTypeRetrieved(KIO::Job*,QString)));
 
             KMenu *choices = new KMenu("Content dropped");
             choices->addAction(KIcon("process-working"), i18n("Fetching file type..."));
@@ -1355,7 +1353,7 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
     }
 }
 
-void ContainmentPrivate::clearDataForMimeJob(KIO::Job *job)
+void ContainmentPrivate::clearDataForMimeJob(KJob *job)
 {
     QObject::disconnect(job, 0, q, 0);
     dropPoints.remove(job);
@@ -1366,47 +1364,39 @@ void ContainmentPrivate::clearDataForMimeJob(KIO::Job *job)
 
 void ContainmentPrivate::dropJobResult(KJob *job)
 {
-    KIO::TransferJob* tjob = qobject_cast<KIO::TransferJob*>(job);
-    if (!tjob) {
-        kDebug() << "job is not a KIO::TransferJob, won't handle the drop...";
-        clearDataForMimeJob(tjob);
-        return;
-    }
-    if (job->error()) {
-        kDebug() << "ERROR" << tjob->error() << ' ' << tjob->errorString();
-    }
-    // We call mimetypeRetrieved since there might be other mechanisms
-    // for finding suitable applets. Cleanup happens there as well.
-    mimeTypeRetrieved(qobject_cast<KIO::Job *>(job), QString());
-}
-
-void ContainmentPrivate::mimeTypeRetrieved(KIO::Job *job, const QString &mimetype)
-{
-    kDebug() << "Mimetype Job returns." << mimetype;
-    KIO::TransferJob* tjob = qobject_cast<KIO::TransferJob*>(job);
-    if (!tjob) {
-        kDebug() << "job should be a TransferJob, but isn't";
+    KIO::StatJob* statjob = qobject_cast<KIO::StatJob*>(job);
+    if (!statjob) {
+        kDebug() << "job is not a KIO::StatJob, won't handle the drop...";
         clearDataForMimeJob(job);
         return;
     }
-    KPluginInfo::List appletList = Applet::listAppletInfoForUrl(tjob->url());
+    if (job->error() != KJob::NoError) {
+        kDebug() << "ERROR" << statjob->error() << ' ' << statjob->errorString();
+        clearDataForMimeJob(job);
+        return;
+    }
+
+    const QString mimetype = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+    kDebug() << "StatJob returns" << mimetype;
+
+    KPluginInfo::List appletList = Applet::listAppletInfoForUrl(statjob->url());
     if (mimetype.isEmpty() && !appletList.count()) {
         clearDataForMimeJob(job);
-        kDebug() << "No applets found matching the url (" << tjob->url() << ") or the mimetype (" << mimetype << ")";
+        kDebug() << "No applets found matching the url (" << statjob->url() << ") or the mimetype (" << mimetype << ")";
         return;
     } else {
 
         QPointF posi; // will be overwritten with the event's position
-        if (dropPoints.keys().contains(tjob)) {
-            posi = dropPoints[tjob];
+        if (dropPoints.keys().contains(statjob)) {
+            posi = dropPoints[statjob];
             kDebug() << "Received a suitable dropEvent at" << posi;
         } else {
-            kDebug() << "Bailing out. Cannot find associated dropEvent related to the TransferJob";
+            kDebug() << "Bailing out. Cannot find associated dropEvent related to the StatJob";
             clearDataForMimeJob(job);
             return;
         }
 
-        KMenu *choices = dropMenus.value(tjob);
+        KMenu *choices = dropMenus.value(statjob);
         if (!choices) {
             kDebug() << "Bailing out. No QMenu found for this job.";
             clearDataForMimeJob(job);
@@ -1414,7 +1404,7 @@ void ContainmentPrivate::mimeTypeRetrieved(KIO::Job *job, const QString &mimetyp
         }
 
         QVariantList args;
-        args << tjob->url().url() << mimetype;
+        args << statjob->url().url() << mimetype;
 
         kDebug() << "Creating menu for:" << mimetype  << posi << args;
 
@@ -1474,13 +1464,13 @@ void ContainmentPrivate::mimeTypeRetrieved(KIO::Job *job, const QString &mimetyp
                     //set wallpapery stuff
                     plugin = actionsToWallpapers.value(choice);
                     if (!wallpaper || plugin != wallpaper->pluginName()) {
-                        kDebug() << "Wallpaper dropped:" << tjob->url();
+                        kDebug() << "Wallpaper dropped:" << statjob->url();
                         q->setWallpaper(plugin);
                     }
 
                     if (wallpaper) {
-                        kDebug() << "Wallpaper dropped:" << tjob->url();
-                        wallpaper->setUrls(KUrl::List() << tjob->url());
+                        kDebug() << "Wallpaper dropped:" << statjob->url();
+                        wallpaper->setUrls(KUrl::List() << statjob->url());
                     }
                 } else {
                     addApplet(actionsToApplets[choice], args, QRectF(posi, QSize()));
@@ -1488,8 +1478,8 @@ void ContainmentPrivate::mimeTypeRetrieved(KIO::Job *job, const QString &mimetyp
                 // Put the job slave on hold so it can be recycled to fetch the actual content,
                 // which is to be expected when something's dropped onto the desktop and
                 // an applet is to be created with this URL
-                if (!mimetype.isEmpty() && !tjob->error()) {
-                    tjob->kill(KJob::Quietly);
+                if (!mimetype.isEmpty() && !statjob->error()) {
+                    statjob->kill(KJob::Quietly);
                 }
     
                 clearDataForMimeJob(job);

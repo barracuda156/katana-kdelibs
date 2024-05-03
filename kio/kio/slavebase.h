@@ -168,12 +168,6 @@ public:
     void redirection(const KUrl &_url);
 
     /**
-     * Call this in mimetype() and in get(), when you know the mimetype.
-     * See mimetype about other ways to implement it.
-     */
-    void mimeType(const QString &_type);
-
-    /**
      * Call to signal a warning, to be displayed in a dialog box.
      */
     void warning(const QString &msg);
@@ -265,19 +259,7 @@ public:
      * get, aka read.
      * @param url the full url for this request.
      *
-     * The slave should first "emit" the mimetype by calling mimeType(),
-     * and then "emit" the data using the data() method.
-     *
-     * The reason why we need get() to emit the mimetype is:
-     * when pasting a URL in krunner, or konqueror's location bar,
-     * we have to find out what is the mimetype of that URL.
-     * Rather than doing it with a call to mimetype(), then the app or part
-     * would have to do a second request to the same server, this is done
-     * like this: get() is called, and when it emits the mimetype, the job
-     * is put on hold and the right app or part is launched. When that app
-     * or part calls get(), the slave is magically reused, and the download
-     * can now happen. All with a single call to get() in the slave.
-     * This mechanism is also described in KIO::get().
+     * The slave should emit the data using the data() method.
      */
     virtual void get(const KUrl &url);
 
@@ -314,20 +296,6 @@ public:
      * "it's a file or a directory (or a symlink), or it doesn't exist".
      */
     virtual void stat(const KUrl &url);
-
-    /**
-     * Finds mimetype for one file or directory.
-     *
-     * This method should either emit 'mimeType' or it
-     * should send a block of data big enough to be able
-     * to determine the mimetype.
-     *
-     * If the slave doesn't reimplement it, a get will
-     * be issued, i.e. the whole file will be downloaded before
-     * determining the mimetype on it - this is obviously not a
-     * good thing in most cases.
-     */
-    virtual void mimetype(const KUrl &url);
 
     /**
      * Lists the contents of @p url.

@@ -51,7 +51,7 @@ private:
     CURLcode performCurl(const KUrl &url, KUrl *redirecturl);
     QList<KIO::UDSEntry> udsEntries();
 
-    bool m_emitmime;
+    bool m_firstchunk;
     bool m_ishttp;
     bool m_isftp;
     bool m_collectdata;

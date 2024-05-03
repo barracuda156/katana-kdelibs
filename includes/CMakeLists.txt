@@ -327,7 +327,6 @@ install(
     KIO/JobUiDelegate
     KIO/ListJob
     KIO/MetaData
-    KIO/MimetypeJob
     KIO/NetAccess
     KIO/PreviewJob
     KIO/RenameDialog
@@ -336,7 +335,6 @@ install(
     KIO/SlaveBase
     KIO/StatJob
     KIO/StoredTransferJob
-    KIO/Task
     KIO/TransferJob
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/KDE/KIO
 )

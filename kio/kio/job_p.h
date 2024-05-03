@@ -43,22 +43,21 @@ namespace KIO {
         CMD_GET = '1',
         CMD_PUT = '2',
         CMD_STAT = 'A',
-        CMD_MIMETYPE = 'B',
-        CMD_LISTDIR = 'C',
-        CMD_MKDIR = 'D',
-        CMD_RENAME = 'E',
-        CMD_COPY = 'F',
-        CMD_DEL = 'G',
-        CMD_CHMOD = 'H',
-        CMD_SPECIAL = 'I',
-        CMD_SETMODIFICATIONTIME = 'J',
-        CMD_REPARSECONFIGURATION = 'K',
-        CMD_META_DATA = 'L',
-        CMD_SYMLINK = 'M',
-        CMD_MESSAGEBOXANSWER = 'N',
-        CMD_RESUMEANSWER = 'O',
-        CMD_CONFIG = 'P',
-        CMD_CHOWN = 'Q'
+        CMD_LISTDIR = 'B',
+        CMD_MKDIR = 'C',
+        CMD_RENAME = 'D',
+        CMD_COPY = 'E',
+        CMD_DEL = 'F',
+        CMD_CHMOD = 'G',
+        CMD_SPECIAL = 'H',
+        CMD_SETMODIFICATIONTIME = 'I',
+        CMD_REPARSECONFIGURATION = 'J',
+        CMD_META_DATA = 'K',
+        CMD_SYMLINK = 'L',
+        CMD_MESSAGEBOXANSWER = 'M',
+        CMD_RESUMEANSWER = 'N',
+        CMD_CONFIG = 'O',
+        CMD_CHOWN = 'P'
     };
 
     class JobPrivate: public KCompositeJobPrivate
@@ -237,14 +236,12 @@ namespace KIO {
         inline TransferJobPrivate(const KUrl& url, int command, const QByteArray &packedArgs)
             : SimpleJobPrivate(url, command, packedArgs),
               m_internalSuspended(false),
-              m_isMimetypeEmitted(false), m_subJob(0)
+              m_subJob(0)
             { }
 
         bool m_internalSuspended;
         KUrl m_redirectionURL;
         KUrl::List m_redirectionList;
-        QString m_mimetype;
-        bool m_isMimetypeEmitted;
         TransferJob *m_subJob;
 
         /**

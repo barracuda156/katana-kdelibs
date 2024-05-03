@@ -103,8 +103,7 @@ public:
     void appletDestroyed(Applet*);
     void appletAppearAnimationComplete();
     void appletAppeared(Applet*);
-    void clearDataForMimeJob(KIO::Job *job);
-    void mimeTypeRetrieved(KIO::Job *job, const QString &mimetype);
+    void clearDataForMimeJob(KJob *job);
     void dropJobResult(KJob *);
     void addContainmentActions(KMenu &desktopMenu, QEvent *event);
     void addAppletActions(KMenu &desktopMenu, Applet *applet, QEvent *event);

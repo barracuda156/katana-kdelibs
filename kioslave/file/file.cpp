@@ -305,14 +305,6 @@ void FileProtocol::get(const KUrl &url)
     posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
 
-    // Determine the mimetype of the file to be retrieved, and emit it.
-    // This is mandatory in all slaves (for KRun/BrowserRun to work)
-    // In real "remote" slaves, this is usually done using findByNameAndContent
-    // after receiving some data. But we don't know how much data the mimemagic rules
-    // need, so for local files, better use findByUrl with localUrl=true.
-    KMimeType::Ptr mt = KMimeType::findByUrl(url, buff.st_mode, true /* local URL */);
-    emit mimeType(mt->name());
-    // Emit total size AFTER mimetype
     totalSize(buff.st_size);
 
     KIO::filesize_t processed_size = 0;
@@ -659,6 +651,14 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
 #endif
 
  notype:
+    if (details > 1) {
+        // In real "remote" slaves, this is usually done using findByNameAndContent
+        // after receiving some data. But we don't know how much data the mimemagic rules
+        // need, so for local files, better use findByPath with mode.
+        KMimeType::Ptr mt = KMimeType::findByPath(filename, buff.st_mode);
+        entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, mt->name());
+    }
+
     if (details > 0) {
         entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, buff.st_mtime);
         entry.insert(KIO::UDSEntry::UDS_USER, getUserName(buff.st_uid));
