@@ -64,7 +64,6 @@ set(kiocore_STAT_SRCS
     kio/khttp.cpp
     kio/netaccess.cpp
     kio/paste.cpp
-    kio/pastedialog.cpp
     kio/previewjob.cpp
     kio/renamedialog.cpp
     kio/scheduler.cpp
