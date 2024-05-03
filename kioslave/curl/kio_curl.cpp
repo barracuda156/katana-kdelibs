@@ -335,7 +335,7 @@ int curlKeyCallback(CURL *curl,
     );
     const QString kiocaption = i18n("Key mismatch");
     const int messageresult = curlprotocol->messageBox(
-        kiomessage, KIO::SlaveBase::WarningContinueCancel, kiocaption,
+        KIO::SlaveBase::WarningContinueCancel, kiomessage, kiocaption,
         i18n("&Yes"), i18n("&No"), kiodontaskagain
     );
     kWarning(7103) << "Key mismatch for" << curlprotocol->p_url << messageresult;

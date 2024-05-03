@@ -359,7 +359,6 @@ void SlaveBase::sendMetaData()
 {
     if (!d->m_outgoingMetaData.isEmpty()) {
         KIO_DATA << d->m_outgoingMetaData;
-
         send(SI_META_DATA, data);
     }
     d->m_outgoingMetaData.clear();
@@ -421,7 +420,6 @@ void SlaveBase::error(int errid, const QString &text)
     d->rebuildConfig();
     d->m_outgoingMetaData.clear();
     KIO_DATA << (qint32)errid << text;
-
     send(SI_ERROR, data);
 }
 
@@ -674,12 +672,6 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
 }
 
 int SlaveBase::messageBox(MessageBoxType type, const QString &text, const QString &caption,
-                          const QString &buttonYes, const QString &buttonNo)
-{
-    return messageBox(text, type, caption, buttonYes, buttonNo, QString());
-}
-
-int SlaveBase::messageBox(const QString &text, MessageBoxType type, const QString &caption,
                           const QString &buttonYes, const QString &buttonNo,
                           const QString &dontAskAgainName)
 {

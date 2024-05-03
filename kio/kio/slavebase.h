@@ -197,29 +197,11 @@ public:
      *                  The default is i18n("&No").
      * Note: for ContinueCancel, buttonYes is the continue button and buttonNo is unused.
      *       and for Information, none is used.
-     * @return a button code, as defined in KMessageBox, or 0 on communication error.
-     */
-    int messageBox(MessageBoxType type, const QString &text,
-                   const QString &caption = QString(),
-                   const QString &buttonYes = i18n("&Yes"),
-                   const QString &buttonNo = i18n("&No"));
-
-    /**
-     * Call this to show a message box from the slave
-     * @param text Message string. May contain newlines.
-     * @param type type of message box: QuestionYesNo, WarningYesNo, WarningContinueCancel...
-     * @param caption Message box title.
-     * @param buttonYes The text for the first button.
-     *                  The default is i18n("&Yes").
-     * @param buttonNo  The text for the second button.
-     *                  The default is i18n("&No").
-     * Note: for ContinueCancel, buttonYes is the continue button and buttonNo is unused.
-     *       and for Information, none is used.
      * @param dontAskAgain A checkbox is added with which further confirmation can be turned off.
      *        If the checkbox was ticked @p*dontAskAgain will be set to true, otherwise false.
      * @return a button code, as defined in KMessageBox, or 0 on communication error.
      */
-    int messageBox(const QString &text, MessageBoxType type,
+    int messageBox(MessageBoxType type, const QString &text,
                    const QString &caption = QString(),
                    const QString &buttonYes = i18n("&Yes"),
                    const QString &buttonNo = i18n("&No"),
