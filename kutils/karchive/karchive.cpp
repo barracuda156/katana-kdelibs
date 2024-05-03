@@ -395,10 +395,9 @@ bool KArchivePrivate::writeFile(struct archive* writearchive, QFile *file)
     while (readsize > 0) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, KARCHIVE_TIMEOUT);
 
-        const int result = archive_errno(writearchive);
-        if (result != ARCHIVE_OK) {
-            m_error = archive_error_string(writearchive);
-            kDebug() << "archive_read_data" << m_error;
+        if (readsize < 0) {
+            m_error = file->errorString();
+            kDebug() << m_error;
             return false;
         }
 
