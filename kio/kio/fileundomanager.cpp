@@ -36,8 +36,11 @@
 
 using namespace KIO;
 
-static const char* undoStateToString(UndoState state) {
-    static const char* const s_undoStateToString[] = { "MAKINGDIRS", "MOVINGFILES", "STATINGFILE", "REMOVINGDIRS", "REMOVINGLINKS" };
+static const char* undoStateToString(UndoState state)
+{
+    static const char* const s_undoStateToString[] = {
+        "MAKINGDIRS", "MOVINGFILES", "STATINGFILE", "REMOVINGDIRS", "REMOVINGLINKS"
+    };
     return s_undoStateToString[state];
 }
 
@@ -392,7 +395,7 @@ void FileUndoManagerPrivate::slotResult(KJob *job)
         KIO::StatJob* statJob = static_cast<KIO::StatJob*>(job);
         time_t mtime = statJob->statResult().numberValue(KIO::UDSEntry::UDS_MODIFICATION_TIME, -1);
         if (mtime != op.m_mtime) {
-            kDebug() << op.m_dst << " was modified after being copied!";
+            kDebug() << op.m_dst << "was modified after being copied!";
             QDateTime srcTime; srcTime.setTime_t(op.m_mtime); srcTime = srcTime.toLocalTime();
             QDateTime destTime; destTime.setTime_t(mtime); destTime = destTime.toLocalTime();
             if (!m_uiInterface->copiedFileWasModified(op.m_src, op.m_dst, srcTime, destTime)) {
