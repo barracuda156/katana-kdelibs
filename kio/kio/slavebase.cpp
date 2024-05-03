@@ -179,7 +179,7 @@ public:
 
     void verifyState(const char* cmdName)
     {
-        if ((m_state != SlaveBasePrivate::FinishedCalled) && (m_state != SlaveBasePrivate::ErrorCalled)){
+        if (m_state != SlaveBasePrivate::FinishedCalled && m_state != SlaveBasePrivate::ErrorCalled){
             kWarning(7019) << m_protocol << cmdName << "did not call finished() or error()! Please fix the KIO slave.";
         }
     }
@@ -403,10 +403,10 @@ void SlaveBase::dataReq()
     if (d->needSendCanResume) {
         canResume(0);
     }
-    send(SI_DATA_REQ);
+    send(SI_DATA_REQ, QByteArray());
 }
 
-void SlaveBase::error(int _errid, const QString &_text)
+void SlaveBase::error(int errid, const QString &text)
 {
     if (d->m_state == SlaveBasePrivate::ErrorCalled) {
         kWarning(7019) << "error() called twice! Please fix the KIO slave.";
@@ -420,7 +420,7 @@ void SlaveBase::error(int _errid, const QString &_text)
     d->m_incomingMetaData.clear(); // Clear meta data
     d->rebuildConfig();
     d->m_outgoingMetaData.clear();
-    KIO_DATA << (qint32)_errid << _text;
+    KIO_DATA << (qint32)errid << text;
 
     send(SI_ERROR, data);
 }
@@ -439,29 +439,29 @@ void SlaveBase::finished()
     d->m_incomingMetaData.clear(); // Clear meta data
     d->rebuildConfig();
     sendMetaData();
-    send(SI_FINISHED);
+    send(SI_FINISHED, QByteArray());
 }
 
 void SlaveBase::canResume()
 {
-    send(SI_CANRESUME);
+    send(SI_CANRESUME, QByteArray());
 }
 
-void SlaveBase::totalSize(KIO::filesize_t _bytes)
+void SlaveBase::totalSize(KIO::filesize_t bytes)
 {
-    KIO_DATA << KIO_FILESIZE_T(_bytes);
+    KIO_DATA << KIO_FILESIZE_T(bytes);
     send(SI_TOTAL_SIZE, data);
 }
 
-void SlaveBase::processedSize(KIO::filesize_t _bytes)
+void SlaveBase::processedSize(KIO::filesize_t bytes)
 {
-    KIO_DATA << KIO_FILESIZE_T(_bytes);
+    KIO_DATA << KIO_FILESIZE_T(bytes);
     send(SI_PROCESSED_SIZE, data);
 }
 
-void SlaveBase::redirection(const KUrl &_url)
+void SlaveBase::redirection(const KUrl &url)
 {
-    KIO_DATA << _url;
+    KIO_DATA << url;
     send(SI_REDIRECTION, data);
 }
 
