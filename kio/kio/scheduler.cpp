@@ -80,16 +80,17 @@ void Scheduler::doJob(KIO::SimpleJob *job)
 void Scheduler::cancelJob(KIO::SimpleJob *job)
 {
     QMutexLocker locker(&m_mutex);
-    kDebug(7006) << "canceling job" << job->url();
     KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
     KIO::SlaveInterface* slave = jobPriv->m_slave;
     if (slave) {
+        // a job without a slave is not active job
+        kDebug(7006) << "canceling job" << job->url();
         slave->disconnect(job);
         slave->kill();
         slave->deref();
+        m_slaves.removeAll(slave);
+        jobPriv->m_slave = nullptr;
     }
-    m_slaves.removeAll(slave);
-    jobPriv->m_slave = nullptr;
     m_jobs.removeAll(job);
 }
 
@@ -101,8 +102,8 @@ void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
     if (slave) {
         slave->disconnect(job);
         slave->setIdle(true);
+        jobPriv->m_slave = nullptr;
     }
-    jobPriv->m_slave = nullptr;
     m_jobs.removeAll(job);
 }
 

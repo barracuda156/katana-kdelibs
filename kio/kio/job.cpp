@@ -866,8 +866,9 @@ void TransferJob::slotFinished()
                     break;
                 }
                 case CMD_PUT: {
-                    int permissions;
-                    qint8 iOverwrite, iResume;
+                    int permissions = 0;
+                    qint8 iOverwrite = 0;
+                    qint8 iResume = 0;
                     KUrl dummyUrl;
                     QDataStream istream(d->m_packedArgs);
                     istream >> dummyUrl >> iOverwrite >> iResume >> permissions;
