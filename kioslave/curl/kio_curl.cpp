@@ -131,8 +131,8 @@ static inline mode_t ftpModeFromString(const char* const modestring)
 
 // for reference:
 // https://files.stairways.com/other/ftp-list-specs-info.txt
-qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday, const QByteArray &ftphouroryear,
-                            const int currentyear)
+qlonglong inline ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday, const QByteArray &ftphouroryear,
+                                   const int currentyear)
 {
     const QString ftptimestring = ftpmonth + QLatin1Char(' ') + ftpday + QLatin1Char(' ') + ftphouroryear;
     QDateTime ftpdatetime;
@@ -165,6 +165,25 @@ static inline long HTTPCode(CURL *curl)
     }
     kDebug(7103) << "HTTP error" << curlresponsecode;
     return curlresponsecode;
+}
+
+// this is for optimization purpose (for KFileItem to not have to determine it via KMimeType)
+static inline QString mimeFromMode(const mode_t mode)
+{
+    if (S_ISDIR(mode)) {
+        return QString::fromLatin1("inode/directory");
+    } else if (S_ISCHR(mode)) {
+        return QString::fromLatin1("inode/chardevice");
+    } else if (S_ISBLK(mode)) {
+        return QString::fromLatin1("inode/blockdevice");
+    } else if (S_ISFIFO(mode)) {
+        return QString::fromLatin1("inode/fifo");
+    } else if (S_ISSOCK(mode)) {
+        return QString::fromLatin1("inode/socket");
+    }
+    // for files either figure it out from the name or get() and probe the data, FTP and SFTP
+    // simply do not provide MIME type info
+    return QString();
 }
 
 // for reference:
@@ -1191,13 +1210,17 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner.constData(), ftpowner.size()));
         kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup.constData(), ftpgroup.size()));
         kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, ftpmodtime);
+        const QString mimefrommode = mimeFromMode(stdmode & S_IFMT);
+        if (!mimefrommode.isEmpty()) {
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimefrommode);
+        }
         if (!ftplinkpath.isEmpty()) {
             // link paths to current path causes KIO to do strange things
             if (ftplinkpath.at(0) != '.' && ftplinkpath.size() != 1) {
                 kioudsentry.insert(KIO::UDSEntry::UDS_LINK_DEST, SlaveBase::decodeName(ftplinkpath));
             }
             if (ftpsize <= 0) {
-                kioudsentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QString::fromLatin1("application/x-zerosize"));
+                kioudsentry.insert(KIO::UDSEntry::UDS_GUESSED_MIME_TYPE, QLatin1String("application/x-zerosize"));
             }
         }
         result.append(kioudsentry);
