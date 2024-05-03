@@ -144,7 +144,6 @@ qlonglong ftpTimeFromString(const QByteArray &ftpmonth, const QByteArray &ftpday
     } else {
         ftpdatetime = QDateTime::fromString(ftptimestring, "MMM d yyyy");
     }
-    // qDebug() << Q_FUNC_INFO << ftptimestring << ftpdatetime.toString();
     return ftpdatetime.toTime_t();
 }
 
@@ -1139,7 +1138,6 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
             }
             lineparts.append(linepart);
         }
-        // qDebug() << Q_FUNC_INFO << lineparts;
 
         // basic validation
         if (lineparts.size() < 9) {
@@ -1182,8 +1180,6 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
             ftpfilepath.append(' ');
         }
         ftpfilepath.chop(1);
-
-        // qDebug() << Q_FUNC_INFO << ftpmode << ftpowner << ftpgroup << ftpsize << ftpmonth << ftpday << ftphouroryear << ftpfilepath << ftplinkpath;
 
         KIO::UDSEntry kioudsentry;
         const mode_t stdmode = ftpModeFromString(ftpmode);
