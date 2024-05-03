@@ -41,13 +41,13 @@
 #include <QLabel>
 #include <QLayout>
 
-static KIO::Job *pasteClipboardUrls(const QMimeData* mimeData, const KUrl& destDir)
+static KIO::Job* pasteClipboardUrls(const QMimeData *mimeData, const KUrl &destDir)
 {
     const KUrl::List urls = KUrl::List::fromMimeData(mimeData, KUrl::List::PreferLocalUrls);
     if (!urls.isEmpty()) {
         const QByteArray data = mimeData->data("application/x-kde-cutselection");
         const bool move = data.isEmpty() ? false : data.at(0) == '1';
-        KIO::Job *job = 0;
+        KIO::Job *job = nullptr;
         if (move) {
             job = KIO::move(urls, destDir);
         } else {
@@ -55,7 +55,7 @@ static KIO::Job *pasteClipboardUrls(const QMimeData* mimeData, const KUrl& destD
         }
         return job;
     }
-    return 0;
+    return nullptr;
 }
 
 static KIO::Job* putDataAsyncTo(const KUrl& url, const QByteArray& data, QWidget* widget, KIO::JobFlags flags)
@@ -90,9 +90,9 @@ class PasteDialog : public KDialog
 {
     Q_OBJECT
 public:
-    PasteDialog( const QString &caption, const QString &label,
-                 const QString &value, const QStringList& items,
-                 QWidget *parent, bool clipboard );
+    PasteDialog(const QString &caption, const QString &label,
+                const QString &value, const QStringList &items,
+                QWidget *parent, bool clipboard);
 
     QString lineEditText() const;
     int comboItem() const;
@@ -118,12 +118,12 @@ PasteDialog::PasteDialog(const QString &caption, const QString &label,
     m_comboBox(nullptr),
     m_clipboardChanged(false)
 {
-    setCaption(caption );
+    setCaption(caption);
     setButtons(KDialog::Ok | KDialog::Cancel);
     setModal(true);
     setDefaultButton(KDialog::Ok);
 
-    QFrame *frame = new QFrame;
+    QFrame *frame = new QFrame();
     setMainWidget(frame);
 
     QVBoxLayout *layout = new QVBoxLayout(frame);
@@ -144,10 +144,10 @@ PasteDialog::PasteDialog(const QString &caption, const QString &label,
 
     layout->addStretch();
 
-    // connect( m_lineEdit, SIGNAL(textChanged(QString)), SLOT(slotEditTextChanged(QString)));
+    // connect(m_lineEdit, SIGNAL(textChanged(QString)), SLOT(slotEditTextChanged(QString)));
     // connect(this, SIGNAL(user1Clicked()), m_lineEdit, SLOT(clear()));
 
-    //slotEditTextChanged(value);
+    // slotEditTextChanged(value);
     setMinimumWidth(350);
 
     if (clipboard) {
@@ -302,7 +302,7 @@ KIO_EXPORT KIO::Job *KIO::pasteClipboard( const KUrl& destUrl, QWidget* widget, 
 
     if (!destUrl.isValid()) {
         KMessageBox::error(widget, i18n("Malformed URL\n%1", destUrl.prettyUrl()));
-        return 0;
+        return nullptr;
     }
 
     // TODO: if we passed mimeData as argument, we could write unittests that don't
@@ -332,8 +332,8 @@ KIO_EXPORT QString KIO::pasteActionText()
             return i18np("&Paste File", "&Paste %1 Files", urls.count());
         }
         return i18np("&Paste URL", "&Paste %1 URLs", urls.count());
-    } else if ( !mimeData->formats().isEmpty() ) {
-        return i18n( "&Paste Clipboard Contents" );
+    } else if (!mimeData->formats().isEmpty() ) {
+        return i18n("&Paste Clipboard Contents");
     }
     return QString();
 }
