@@ -60,8 +60,6 @@ extern "C" {
 
 using namespace KIO;
 
-typedef QList<QByteArray> AuthKeysList;
-typedef QMap<QString,QByteArray> AuthKeysMap;
 #define KIO_DATA QByteArray data; QDataStream stream( &data, QIODevice::WriteOnly ); stream
 #define KIO_FILESIZE_T(x) quint64(x)
 
