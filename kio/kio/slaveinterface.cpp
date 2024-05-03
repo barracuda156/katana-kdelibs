@@ -84,6 +84,20 @@ void SlaveInterface::setHost(const QString &host)
     m_host = host;
 }
 
+void SlaveInterface::setIdle(const bool idle)
+{
+    if (idle) {
+        m_idlesince.start();
+    } else {
+        m_idlesince.invalidate();
+    }
+}
+
+qint64 SlaveInterface::idleTime() const
+{
+    return m_idlesince.elapsed();
+}
+
 void SlaveInterface::ref()
 {
     m_refcount++;

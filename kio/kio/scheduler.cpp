@@ -27,7 +27,10 @@
 
 #include <QTextCodec>
 
-static const int s_jobtimeout = 100; // ms
+static const int s_jobtimeout = 50; // ms
+static const int s_idletimeout = 5000; // ms
+// slaves may be idle for 10 seconds before they are killed
+static const int s_idleslavelifetime = 10000;
 
 namespace KIO
 {
@@ -45,6 +48,7 @@ Scheduler::Scheduler(QObject *parent)
 {
     setObjectName("scheduler");
     connect(&m_jobtimer, SIGNAL(timeout()), this, SLOT(slotStartJob()));
+    connect(&m_idletimer, SIGNAL(timeout()), this, SLOT(slotCheckSlaves()));
 }
 
 Scheduler::~Scheduler()
@@ -68,13 +72,25 @@ void Scheduler::doJob(KIO::SimpleJob *job)
     if (!m_jobtimer.isActive()) {
         m_jobtimer.start(s_jobtimeout);
     }
+    if (!m_idletimer.isActive()) {
+        m_idletimer.start(s_idletimeout);
+    }
 }
 
 void Scheduler::cancelJob(KIO::SimpleJob *job)
 {
+    QMutexLocker locker(&m_mutex);
     kDebug(7006) << "canceling job" << job->url();
     KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
-    jobFinished(job, jobPriv->m_slave);
+    KIO::SlaveInterface* slave = jobPriv->m_slave;
+    if (slave) {
+        slave->disconnect(job);
+        slave->kill();
+        slave->deref();
+    }
+    m_slaves.removeAll(slave);
+    jobPriv->m_slave = nullptr;
+    m_jobs.removeAll(job);
 }
 
 void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
@@ -84,10 +100,8 @@ void Scheduler::jobFinished(KIO::SimpleJob *job, KIO::SlaveInterface *slave)
     KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
     if (slave) {
         slave->disconnect(job);
-        slave->kill();
-        slave->deref();
+        slave->setIdle(true);
     }
-    m_slaves.removeAll(slave);
     jobPriv->m_slave = nullptr;
     m_jobs.removeAll(job);
 }
@@ -137,6 +151,11 @@ void Scheduler::slotStartJob()
             if (!itslave->isAlive()) {
                 continue;
             }
+            if (itslave->protocol() == protocol && itslave->host() == host && itslave->idleTime() > 0) {
+                slave = itslave;
+                slave->setIdle(false);
+                break;
+            }
             if (itslave->protocol() == protocol) {
                 slaveForProtoCounter++;
             }
@@ -153,7 +172,7 @@ void Scheduler::slotStartJob()
             break;
         }
 
-        if (!slave || slave->host() != host) {
+        if (!slave) {
             int error = 0;
             QString errortext;
             slave = SlaveInterface::createSlave(protocol, url, error, errortext);
@@ -162,6 +181,7 @@ void Scheduler::slotStartJob()
                 job->slotError(error, errortext);
                 return;
             }
+            slave->setHost(host);
             kDebug(7006) << "created slave" << protocol << slave->pid();
             m_slaves.append(slave);
             QObject::connect(
@@ -203,13 +223,30 @@ void Scheduler::slotStartJob()
         }
 
         slave->setConfig(configData);
-        slave->setHost(host);
 
         KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
         jobPriv->m_slave = slave;
         kDebug(7006) << "starting queued job" << jobPriv << jobPriv->m_slave->pid();
         iter.remove();
         jobPriv->start(jobPriv->m_slave);
+    }
+}
+
+void Scheduler::slotCheckSlaves()
+{
+    QMutexLocker locker(&m_mutex);
+    QMutableListIterator<KIO::SlaveInterface*> iter(m_slaves);
+    while (iter.hasNext()) {
+        KIO::SlaveInterface* slave = iter.next();
+        if (slave->idleTime() >= s_idleslavelifetime) {
+            kDebug(7006) << "killing idle slave" << slave->pid() << slave->protocol();
+            iter.remove();
+            slave->kill();
+            slave->deref();
+        }
+    }
+    if (m_slaves.size() <= 0) {
+        m_idletimer.stop();
     }
 }
 
