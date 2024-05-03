@@ -170,7 +170,7 @@ public:
 
 Q_SIGNALS:
     ///////////
-    // Messages sent by the slave
+    // Sent by the slave
     ///////////
     void data(const QByteArray &);
     void dataReq();
@@ -179,10 +179,6 @@ Q_SIGNALS:
     void listEntries(const KIO::UDSEntryList &);
     void statEntry(const KIO::UDSEntry &);
     void canResume(KIO::filesize_t );
-
-    ///////////
-    // Info sent by the slave
-    //////////
     void metaData(const KIO::MetaData &);
     void totalSize(KIO::filesize_t );
     void processedSize(KIO::filesize_t );
@@ -192,7 +188,7 @@ Q_SIGNALS:
     void infoMessage(const QString &);
 
     ///////////
-    // Info sent for the scheduler
+    // Sent for the scheduler
     //////////
     void slaveDied(KIO::SlaveInterface *slave);
 

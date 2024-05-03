@@ -132,9 +132,9 @@ void SlaveInterface::suspend()
 {
     m_connection->suspend();
     // TODO: this is not a proper way to suspend slaves (tho it works), e.g. for remote connections
-    // a server may decide to just close the connection because there is no reponse from the slave
+    // a server may decide to just close the connection because there is no response from the slave
     // for some time but otherwise data keeps getting pumped in or out. for example it works for
-    // file slave but not for the curl slave
+    // the file slave but not for the curl slave
     if (m_pid) {
         ::kill(m_pid, SIGSTOP);
     }
