@@ -53,11 +53,9 @@
 #include "kfile/kopenwithdialog.h"
 #include "kfile/krecentdocument.h"
 #include "kdesktopfileactions.h"
-#include "kmessageboxwrapper.h"
 #include "kurl.h"
 #include "kglobal.h"
 #include "ktoolinvocation.h"
-#include "kdebug.h"
 #include "klocale.h"
 #include "kprotocolmanager.h"
 #include "kstandarddirs.h"
@@ -72,6 +70,8 @@
 #include "kguiitem.h"
 #include "ksavefile.h"
 #include "kpixmapwidget.h"
+#include "kmessagebox.h"
+#include "kdebug.h"
 
 #ifdef Q_WS_X11
 #include <kwindowsystem.h>
@@ -1410,7 +1410,7 @@ void KRun::foundMimeType(const QString& type)
 
 void KRun::error(const QString& message)
 {
-    KMessageBoxWrapper::error(window(), message);
+    KMessageBox::error(window(), message);
 }
 
 void KRun::killJob()

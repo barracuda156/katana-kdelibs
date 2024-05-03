@@ -25,7 +25,7 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 
-#include <kmessageboxwrapper.h>
+#include <kmessagebox.h>
 #include <kdirnotify.h>
 #include <kmountpoint.h>
 #include <kstandarddirs.h>
@@ -33,6 +33,7 @@
 #include <kconfiggroup.h>
 #include <klocale.h>
 #include <kservice.h>
+#include <kdebug.h>
 
 enum BuiltinServiceType { ST_MOUNT = 0x0E1B05B0, ST_UNMOUNT = 0x0E1B05B1 }; // random numbers
 
@@ -50,9 +51,10 @@ bool KDesktopFileActions::run( const KUrl& u, bool _is_local )
     KDesktopFile cfg(u.toLocalFile());
     if ( !cfg.desktopGroup().hasKey("Type") )
     {
-        QString tmp = i18n("The desktop entry file %1 "
-                           "has no Type=... entry.", u.toLocalFile() );
-        KMessageBoxWrapper::error( 0, tmp);
+        KMessageBox::error(
+            nullptr,
+            i18n("The desktop entry file %1 has no Type=... entry.", u.toLocalFile())
+        );
         return false;
     }
 
@@ -66,8 +68,10 @@ bool KDesktopFileActions::run( const KUrl& u, bool _is_local )
     else if ( cfg.hasLinkType() )
         return runLink( u, cfg );
 
-    QString tmp = i18n("The desktop entry of type\n%1\nis unknown.",  cfg.readType() );
-    KMessageBoxWrapper::error( 0, tmp);
+    KMessageBox::error(
+        nullptr,
+        i18n("The desktop entry of type\n%1\nis unknown.",  cfg.readType())
+    );
 
     return false;
 }
@@ -80,8 +84,10 @@ static bool runFSDevice( const KUrl& _url, const KDesktopFile &cfg )
 
     if ( dev.isEmpty() )
     {
-        QString tmp = i18n("The desktop entry file\n%1\nis of type FSDevice but has no Dev=... entry.",  _url.toLocalFile() );
-        KMessageBoxWrapper::error( 0, tmp);
+        KMessageBox::error(
+            nullptr,
+            i18n("The desktop entry file\n%1\nis of type FSDevice but has no Dev=... entry.",  _url.toLocalFile())
+        );
         return retval;
     }
 
@@ -119,8 +125,10 @@ static bool runLink( const KUrl& _url, const KDesktopFile &cfg )
     QString u = cfg.readUrl();
     if ( u.isEmpty() )
     {
-        QString tmp = i18n("The desktop entry file\n%1\nis of type Link but has no URL=... entry.",  _url.prettyUrl() );
-        KMessageBoxWrapper::error( 0, tmp );
+        KMessageBox::error(
+            nullptr,
+            i18n("The desktop entry file\n%1\nis of type Link but has no URL=... entry.",  _url.prettyUrl())
+        );
         return false;
     }
 
@@ -151,8 +159,10 @@ QList<KServiceAction> KDesktopFileActions::builtinServices( const KUrl& _url )
     if ( cfg.hasDeviceType() ) {  // url to desktop file
         const QString dev = cfg.readDevice();
         if ( dev.isEmpty() ) {
-            QString tmp = i18n("The desktop entry file\n%1\nis of type FSDevice but has no Dev=... entry.",  _url.toLocalFile() );
-            KMessageBoxWrapper::error(0, tmp);
+            KMessageBox::error(
+                nullptr,
+                i18n("The desktop entry file\n%1\nis of type FSDevice but has no Dev=... entry.",  _url.toLocalFile())
+            );
             return result;
         }
 
@@ -252,8 +262,10 @@ void KDesktopFileActions::executeService( const KUrl::List& urls, const KService
         if (cfg.hasDeviceType()) { // path to desktop file
             const QString dev = cfg.readDevice();
             if ( dev.isEmpty() ) {
-                QString tmp = i18n("The desktop entry file\n%1\nis of type FSDevice but has no Dev=... entry.",  path );
-                KMessageBoxWrapper::error( 0, tmp );
+                KMessageBox::error(
+                    nullptr,
+                    i18n("The desktop entry file\n%1\nis of type FSDevice but has no Dev=... entry.",  path)
+                );
                 return;
             }
             KMountPoint::Ptr mp = KMountPoint::currentMountPoints().findByDevice( dev );
