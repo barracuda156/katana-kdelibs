@@ -68,7 +68,7 @@ void Scheduler::doJob(KIO::SimpleJob *job)
     QMutexLocker locker(&m_mutex);
     KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
     m_jobs.insert(jobPriv->m_schedPrio, job);
-    kDebug(7006) << "queued job" << job->url();
+    kDebug(7006) << "queued job" << job->url() << jobPriv->m_schedPrio;
     if (!m_jobtimer.isActive()) {
         m_jobtimer.start(s_jobtimeout);
     }
@@ -121,7 +121,7 @@ void Scheduler::slotSlaveDied(KIO::SlaveInterface *slave)
 {
     QMutexLocker locker(&m_mutex);
     Q_ASSERT(slave);
-    kDebug(7006) << "slave died" << slave->pid() << slave->protocol();
+    kDebug(7006) << "slave died" << slave->protocol();
     slave->kill();
     m_slaves.removeAll(slave);
     locker.unlock();
@@ -183,7 +183,7 @@ void Scheduler::slotStartJob()
                 return;
             }
             slave->setHost(host);
-            kDebug(7006) << "created slave" << protocol << slave->pid();
+            kDebug(7006) << "created slave" << slave->pid() << protocol;
             m_slaves.append(slave);
             QObject::connect(
                 slave, SIGNAL(slaveDied(KIO::SlaveInterface*)),
@@ -227,7 +227,7 @@ void Scheduler::slotStartJob()
 
         KIO::SimpleJobPrivate *const jobPriv = SimpleJobPrivate::get(job);
         jobPriv->m_slave = slave;
-        kDebug(7006) << "starting queued job" << jobPriv << jobPriv->m_slave->pid();
+        kDebug(7006) << "starting queued job" << job->url() << jobPriv->m_slave->pid();
         iter.remove();
         jobPriv->start(jobPriv->m_slave);
     }
