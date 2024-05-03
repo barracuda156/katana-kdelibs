@@ -200,7 +200,8 @@ public:
     static bool closeWrite(struct archive*);
 
     bool copyData(struct archive* readarchive, struct archive* writearchive);
-    bool copyData(struct archive* readarchive, QByteArray *buffer);
+    bool writeFile(struct archive* writearchive, QFile *file);
+    bool readData(struct archive* readarchive, QByteArray *buffer);
 
     QString tempFilePath() const;
 
@@ -384,10 +385,36 @@ bool KArchivePrivate::copyData(struct archive* readarchive, struct archive* writ
         readsize = archive_read_data(readarchive, readbuffer, sizeof(readbuffer));
     }
 
-    return true;
+    return (readsize >= 0);
 }
 
-bool KArchivePrivate::copyData(struct archive* readarchive, QByteArray *buffer)
+bool KArchivePrivate::writeFile(struct archive* writearchive, QFile *file)
+{
+    char readbuffer[KARCHIVE_BUFFSIZE];
+    ssize_t readsize = file->read(readbuffer, sizeof(readbuffer));
+    while (readsize > 0) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, KARCHIVE_TIMEOUT);
+
+        const int result = archive_errno(writearchive);
+        if (result != ARCHIVE_OK) {
+            m_error = archive_error_string(writearchive);
+            kDebug() << "archive_read_data" << m_error;
+            return false;
+        }
+
+        if (archive_write_data(writearchive, readbuffer, readsize) != readsize) {
+            m_error = archive_error_string(writearchive);
+            kDebug() << "archive_write_data" << m_error;
+            return false;
+        }
+
+        readsize = file->read(readbuffer, sizeof(readbuffer));
+    }
+
+    return (readsize >= 0);
+}
+
+bool KArchivePrivate::readData(struct archive* readarchive, QByteArray *buffer)
 {
     char readbuffer[KARCHIVE_BUFFSIZE];
     ssize_t readsize = archive_read_data(readarchive, readbuffer, sizeof(readbuffer));
@@ -557,134 +584,128 @@ bool KArchive::add(const QStringList &paths, const QByteArray &strip, const QByt
         }
 
         KArchivePrivate::closeRead(readarchive);
+    } else {
+        result = true;
     }
 
-    qreal progressvalue = 0.0;
-    const qreal progessstep = (qreal(1.0) / qreal(recursivepaths.size()));
+    if (result) {
+        qreal progressvalue = 0.0;
+        const qreal progessstep = (qreal(1.0) / qreal(recursivepaths.size()));
 
-    foreach (const QString &path, recursivepaths) {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, KARCHIVE_TIMEOUT);
+        foreach (const QString &path, recursivepaths) {
+            QCoreApplication::processEvents(QEventLoop::AllEvents, KARCHIVE_TIMEOUT);
 
-        const QByteArray localpath = QFile::encodeName(path);
+            const QByteArray localpath = QFile::encodeName(path);
 
-        struct stat statistic;
-        if (::lstat(localpath, &statistic) != 0) {
-            const int savederrno = errno;
-            d->m_error = i18n("lstat: %1", qt_error_string(savederrno));
-            kDebug() << d->m_error;
-            result = false;
-            break;
-        }
-
-        QByteArray pathname = localpath;
-        if (pathname.startsWith(strip)) {
-            pathname.remove(0, strip.size());
-        }
-        pathname.prepend(destination);
-        if (pathname.isEmpty()) {
-            kWarning() << "Not adding empty pathname";
-            continue;
-        }
-        kDebug() << "Adding" << path << "as" << pathname;
-
-        // NOTE: archive_entry_copy_stat doesn't work
-        // http://linux.die.net/man/2/stat
-        struct archive_entry* newentry = archive_entry_new();
-        archive_entry_set_pathname(newentry, pathname.constData());
-        archive_entry_set_size(newentry, statistic.st_size);
-        archive_entry_set_gid(newentry, statistic.st_gid);
-        archive_entry_set_uid(newentry, statistic.st_uid);
-        // filetype and mode are supposedly the same, permissions are set when mode is set
-        archive_entry_set_mode(newentry, statistic.st_mode);
-        archive_entry_set_atime(newentry, statistic.st_atim.tv_sec, statistic.st_atim.tv_nsec);
-        archive_entry_set_ctime(newentry, statistic.st_ctim.tv_sec, statistic.st_ctim.tv_nsec);
-        archive_entry_set_mtime(newentry, statistic.st_mtim.tv_sec, statistic.st_mtim.tv_nsec);
-
-        if (statistic.st_nlink > 1) {
-            // TODO: archive_entry_set_hardlink(newentry, pathname);
-        }
-
-        if (S_ISLNK(statistic.st_mode)) {
-            QByteArray linkbuffer(PATH_MAX + 1, char('\0'));
-            if (::readlink(localpath, linkbuffer.data(), PATH_MAX) == -1) {
+            struct stat statistic;
+            if (::lstat(localpath, &statistic) != 0) {
                 const int savederrno = errno;
-                d->m_error = i18n("readlink: %1", qt_error_string(savederrno));
-                result = false;
-                break;
-            }
-
-            if (linkbuffer.startsWith(strip)) {
-                linkbuffer.remove(0, strip.size());
-            }
-
-            archive_entry_set_symlink(newentry, linkbuffer.constData());
-        }
-
-        const QByteArray pathgname = KUserGroup(statistic.st_gid).name().toUtf8();
-        if (!pathgname.isEmpty()) {
-            archive_entry_set_gname(newentry, pathgname.constData());
-        } else {
-            kDebug() << "Empty group name";
-        }
-        const QByteArray pathuname = KUser(statistic.st_uid).loginName().toUtf8();
-        if (!pathuname.isEmpty()) {
-            archive_entry_set_uname(newentry, pathuname.constData());
-        } else {
-            kDebug() << "Empty user name";
-        }
-
-        if (archive_write_header(writearchive, newentry) != ARCHIVE_OK) {
-            d->m_error = archive_error_string(writearchive);
-            kDebug() << "archive_write_header" << d->m_error;
-            archive_entry_free(newentry);
-            result = false;
-            break;
-        }
-        archive_entry_free(newentry);
-
-        if (S_ISREG(statistic.st_mode)) {
-            QFile file(path);
-            if (!file.open(QFile::ReadOnly)) {
-                d->m_error = i18n("Could not open source: %1", path);
+                d->m_error = i18n("lstat: %1", qt_error_string(savederrno));
                 kDebug() << d->m_error;
                 result = false;
                 break;
             }
 
-            const QByteArray data = file.readAll();
-            if (data.isEmpty() && statistic.st_size > 0) {
-                d->m_error = i18n("Could not read source: %1", path);
-                kDebug() << d->m_error;
-                result = false;
-                break;
+            QByteArray pathname = localpath;
+            if (pathname.startsWith(strip)) {
+                pathname.remove(0, strip.size());
+            }
+            pathname.prepend(destination);
+            if (pathname.isEmpty()) {
+                kWarning() << "Not adding empty pathname";
+                continue;
+            }
+            kDebug() << "Adding" << path << "as" << pathname;
+
+            // NOTE: archive_entry_copy_stat doesn't work
+            // http://linux.die.net/man/2/stat
+            struct archive_entry* newentry = archive_entry_new();
+            archive_entry_set_pathname(newentry, pathname.constData());
+            archive_entry_set_size(newentry, statistic.st_size);
+            archive_entry_set_gid(newentry, statistic.st_gid);
+            archive_entry_set_uid(newentry, statistic.st_uid);
+            // filetype and mode are supposedly the same, permissions are set when mode is set
+            archive_entry_set_mode(newentry, statistic.st_mode);
+            archive_entry_set_atime(newentry, statistic.st_atim.tv_sec, statistic.st_atim.tv_nsec);
+            archive_entry_set_ctime(newentry, statistic.st_ctim.tv_sec, statistic.st_ctim.tv_nsec);
+            archive_entry_set_mtime(newentry, statistic.st_mtim.tv_sec, statistic.st_mtim.tv_nsec);
+
+            if (statistic.st_nlink > 1) {
+                // TODO: archive_entry_set_hardlink(newentry, pathname);
             }
 
-            if (statistic.st_size > 0 && data.size() != statistic.st_size) {
-                d->m_error = i18n("Read and stat size are different: %1", path);
-                kDebug() << d->m_error;
-                result = false;
-                break;
+            if (S_ISLNK(statistic.st_mode)) {
+                QByteArray linkbuffer(PATH_MAX + 1, char('\0'));
+                if (::readlink(localpath, linkbuffer.data(), PATH_MAX) == -1) {
+                    const int savederrno = errno;
+                    d->m_error = i18n("readlink: %1", qt_error_string(savederrno));
+                    result = false;
+                    break;
+                }
+
+                if (linkbuffer.startsWith(strip)) {
+                    linkbuffer.remove(0, strip.size());
+                }
+
+                archive_entry_set_symlink(newentry, linkbuffer.constData());
             }
 
-            if (archive_write_data(writearchive, data.constData(), data.size()) != statistic.st_size) {
+            const QByteArray pathgname = KUserGroup(statistic.st_gid).name().toUtf8();
+            if (!pathgname.isEmpty()) {
+                archive_entry_set_gname(newentry, pathgname.constData());
+            } else {
+                kDebug() << "Empty group name";
+            }
+            const QByteArray pathuname = KUser(statistic.st_uid).loginName().toUtf8();
+            if (!pathuname.isEmpty()) {
+                archive_entry_set_uname(newentry, pathuname.constData());
+            } else {
+                kDebug() << "Empty user name";
+            }
+
+            if (archive_write_header(writearchive, newentry) != ARCHIVE_OK) {
                 d->m_error = archive_error_string(writearchive);
-                kDebug() << "archive_write_data" << d->m_error;
+                kDebug() << "archive_write_header" << d->m_error;
+                archive_entry_free(newentry);
                 result = false;
                 break;
             }
+            archive_entry_free(newentry);
+
+            if (S_ISREG(statistic.st_mode)) {
+                QFile file(path);
+                if (!file.open(QFile::ReadOnly)) {
+                    d->m_error = i18n("Could not open source: %1", path);
+                    kDebug() << d->m_error;
+                    result = false;
+                    break;
+                }
+
+                if (statistic.st_size > 0 && file.size() != statistic.st_size) {
+                    d->m_error = i18n("File and stat size are different: %1", path);
+                    kDebug() << d->m_error;
+                    result = false;
+                    break;
+                }
+
+                if (!d->writeFile(writearchive, &file)) {
+                    result = false;
+                    break;
+                }
+            }
+
+            if (archive_write_finish_entry(writearchive) != ARCHIVE_OK) {
+                d->m_error = archive_error_string(writearchive);
+                kDebug() << "archive_write_finish_entry" << d->m_error;
+                result = false;
+                break;
+            }
+
+            result = true;
+
+            progressvalue += progessstep;
+            emit progress(progressvalue);
         }
-
-        if (archive_write_finish_entry(writearchive) != ARCHIVE_OK) {
-            d->m_error = archive_error_string(writearchive);
-            kDebug() << "archive_write_finish_entry" << d->m_error;
-            result = false;
-            break;
-        }
-
-        result = true;
-
-        progressvalue += progessstep;
-        emit progress(progressvalue);
     }
 
     KArchivePrivate::closeWrite(writearchive);
@@ -1165,7 +1186,7 @@ QByteArray KArchive::data(const QString &path) const
         const QByteArray pathname = archive_entry_pathname(entry);
         const QString pathnamestring = QFile::decodeName(pathname);
         if (pathnamestring == path) {
-            d->copyData(readarchive, &result);
+            d->readData(readarchive, &result);
 
             found = true;
             break;
