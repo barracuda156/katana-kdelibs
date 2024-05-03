@@ -244,29 +244,29 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
     // kDebug(7007) << "dispatch " << cmd;
 
     switch(cmd) {
-        case MSG_DATA: {
+        case SI_DATA: {
             emit data(rawdata);
             break;
         }
-        case MSG_DATA_REQ: {
+        case SI_DATA_REQ: {
             emit dataReq();
             break;
         }
-        case MSG_FINISHED: {
+        case SI_FINISHED: {
             // kDebug(7007) << "Finished [this = " << this << "]";
             m_offset = 0;
             m_speedtimer.stop();
             emit finished();
             break;
         }
-        case MSG_STAT_ENTRY: {
+        case SI_STAT_ENTRY: {
             QDataStream stream(rawdata);
             UDSEntry entry;
             stream >> entry;
             emit statEntry(entry);
             break;
         }
-        case MSG_LIST_ENTRIES: {
+        case SI_LIST_ENTRIES: {
             QDataStream stream(rawdata);
             quint32 count = 0;
             stream >> count;
@@ -280,19 +280,19 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             emit listEntries(list);
             break;
         }
-        case MSG_RESUME: {
+        case SI_RESUME: {
             // From the put job
             QDataStream stream(rawdata);
             stream >> m_offset;
             emit canResume(m_offset);
             break;
         }
-        case MSG_CANRESUME: {
+        case SI_CANRESUME: {
             // From the get job
             emit canResume(0); // the arg doesn't matter
             break;
         }
-        case MSG_ERROR: {
+        case SI_ERROR: {
             QDataStream stream(rawdata);
             qint32 i = 0;
             QString str;
@@ -301,7 +301,7 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             emit error(i, str);
             break;
         }
-        case INF_TOTAL_SIZE: {
+        case SI_TOTAL_SIZE: {
             QDataStream stream(rawdata);
             KIO::filesize_t totalsize;
             stream >> totalsize;
@@ -313,7 +313,7 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             emit totalSize(totalsize);
             break;
         }
-        case INF_PROCESSED_SIZE: {
+        case SI_PROCESSED_SIZE: {
             QDataStream stream(rawdata);
             stream >> m_processedsize;
             if (!m_speedtimer.isActive()) {
@@ -322,21 +322,21 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             emit processedSize(m_processedsize);
             break;
         }
-        case INF_REDIRECTION: {
+        case SI_REDIRECTION: {
             QDataStream stream(rawdata);
             KUrl url;
             stream >> url;
             emit redirection(url);
             break;
         }
-        case INF_WARNING: {
+        case SI_WARNING: {
             QDataStream stream(rawdata);
             QString str;
             stream >> str;
             emit warning(str);
             break;
         }
-        case INF_MESSAGEBOX: {
+        case SI_MESSAGEBOX: {
             kDebug(7007) << "needs a msg box";
             QDataStream stream(rawdata);
             QString text, caption, buttonYes, buttonNo, dontAskAgainName;
@@ -345,14 +345,14 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             messageBox(type, text, caption, buttonYes, buttonNo, dontAskAgainName);
             break;
         }
-        case INF_INFOMESSAGE: {
+        case SI_INFOMESSAGE: {
             QDataStream stream(rawdata);
             QString msg;
             stream >> msg;
             emit infoMessage(msg);
             break;
         }
-        case INF_META_DATA: {
+        case SI_META_DATA: {
             QDataStream stream(rawdata);
             MetaData m;
             stream >> m;

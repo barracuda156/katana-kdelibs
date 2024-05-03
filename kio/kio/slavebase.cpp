@@ -360,7 +360,7 @@ void SlaveBase::sendMetaData()
     if (!d->m_outgoingMetaData.isEmpty()) {
         KIO_DATA << d->m_outgoingMetaData;
 
-        send(INF_META_DATA, data);
+        send(SI_META_DATA, data);
     }
     d->m_outgoingMetaData.clear();
 }
@@ -394,7 +394,7 @@ QByteArray SlaveBase::encodeName(const QString &name) const
 void SlaveBase::data(const QByteArray &data)
 {
     sendMetaData();
-    send(MSG_DATA, data);
+    send(SI_DATA, data);
 }
 
 void SlaveBase::dataReq()
@@ -403,7 +403,7 @@ void SlaveBase::dataReq()
     if (d->needSendCanResume) {
         canResume(0);
     }
-    send(MSG_DATA_REQ);
+    send(SI_DATA_REQ);
 }
 
 void SlaveBase::error(int _errid, const QString &_text)
@@ -422,7 +422,7 @@ void SlaveBase::error(int _errid, const QString &_text)
     d->m_outgoingMetaData.clear();
     KIO_DATA << (qint32)_errid << _text;
 
-    send(MSG_ERROR, data);
+    send(SI_ERROR, data);
 }
 
 void SlaveBase::finished()
@@ -439,30 +439,30 @@ void SlaveBase::finished()
     d->m_incomingMetaData.clear(); // Clear meta data
     d->rebuildConfig();
     sendMetaData();
-    send(MSG_FINISHED);
+    send(SI_FINISHED);
 }
 
 void SlaveBase::canResume()
 {
-    send(MSG_CANRESUME);
+    send(SI_CANRESUME);
 }
 
 void SlaveBase::totalSize(KIO::filesize_t _bytes)
 {
     KIO_DATA << KIO_FILESIZE_T(_bytes);
-    send(INF_TOTAL_SIZE, data);
+    send(SI_TOTAL_SIZE, data);
 }
 
 void SlaveBase::processedSize(KIO::filesize_t _bytes)
 {
     KIO_DATA << KIO_FILESIZE_T(_bytes);
-    send(INF_PROCESSED_SIZE, data);
+    send(SI_PROCESSED_SIZE, data);
 }
 
 void SlaveBase::redirection(const KUrl &_url)
 {
     KIO_DATA << _url;
-    send(INF_REDIRECTION, data);
+    send(SI_REDIRECTION, data);
 }
 
 static bool isSubCommand(int cmd)
@@ -480,22 +480,22 @@ void SlaveBase::exit()
     ::exit(255);
 }
 
-void SlaveBase::warning(const QString &_msg)
+void SlaveBase::warning(const QString &msg)
 {
-    KIO_DATA << _msg;
-    send(INF_WARNING, data);
+    KIO_DATA << msg;
+    send(SI_WARNING, data);
 }
 
-void SlaveBase::infoMessage(const QString &_msg)
+void SlaveBase::infoMessage(const QString &msg)
 {
-    KIO_DATA << _msg;
-    send(INF_INFOMESSAGE, data);
+    KIO_DATA << msg;
+    send(SI_INFOMESSAGE, data);
 }
 
 void SlaveBase::statEntry(const UDSEntry &entry)
 {
     KIO_DATA << entry;
-    send(MSG_STAT_ENTRY, data);
+    send(SI_STAT_ENTRY, data);
 }
 
 void SlaveBase::listEntry(const UDSEntry &entry, bool ready)
@@ -533,7 +533,7 @@ void SlaveBase::listEntries(const UDSEntryList &list)
     for (; it != end; ++it) {
         stream << *it;
     }
-    send(MSG_LIST_ENTRIES, data);
+    send(SI_LIST_ENTRIES, data);
 }
 
 static void sigpipe_handler (int)
@@ -685,7 +685,7 @@ int SlaveBase::messageBox(const QString &text, MessageBoxType type, const QStrin
 {
     kDebug(7019) << "messageBox " << type << " " << text << " - " << caption << buttonYes << buttonNo;
     KIO_DATA << (qint32)type << text << caption << buttonYes << buttonNo << dontAskAgainName;
-    send(INF_MESSAGEBOX, data);
+    send(SI_MESSAGEBOX, data);
     if (waitForAnswer(CMD_MESSAGEBOXANSWER, 0, data) != -1) {
         QDataStream stream(data);
         int answer;
@@ -702,7 +702,7 @@ bool SlaveBase::canResume(KIO::filesize_t offset)
     kDebug(7019) << "offset=" << KIO::number(offset);
     d->needSendCanResume = false;
     KIO_DATA << KIO_FILESIZE_T(offset);
-    send(MSG_RESUME, data);
+    send(SI_RESUME, data);
     if (offset) {
         int cmd = 0;
         if (waitForAnswer(CMD_RESUMEANSWER, CMD_NONE, data, &cmd) != -1) {
@@ -745,7 +745,7 @@ int SlaveBase::waitForAnswer(int expected1, int expected2, QByteArray &data, int
 
 int SlaveBase::readData(QByteArray &buffer)
 {
-    int result = waitForAnswer(MSG_DATA, 0, buffer);
+    int result = waitForAnswer(SI_DATA, 0, buffer);
     // kDebug(7019) << "readData: length = " << result << " ";
     return result;
 }
@@ -846,7 +846,7 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         case CMD_RENAME: {
             KUrl url;
             KUrl url2;
-            qint8 iOverwrite;
+            qint8 iOverwrite = 0;
             stream >> url >> url2 >> iOverwrite;
             JobFlags flags = DefaultFlags;
             if (iOverwrite != 0) {

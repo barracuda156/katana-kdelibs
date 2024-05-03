@@ -898,7 +898,7 @@ void TransferJob::slotDataReq()
         kWarning(7007) << "send " << dataForSlave.size() / 1024 / 1024 << "MB of data in TransferJob::dataReq. This needs to be splitted, which requires a copy.";
     }
 
-    d->m_slave->send(MSG_DATA, dataForSlave);
+    d->m_slave->send(SI_DATA, dataForSlave);
     if (d->m_extraFlags & JobPrivate::EF_TransferJobDataSent) {
         // put job -> emit progress 
         KIO::filesize_t size = processedAmount(KJob::Bytes)+dataForSlave.size();

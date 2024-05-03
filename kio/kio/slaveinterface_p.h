@@ -34,33 +34,26 @@ class KUrl;
 
 namespace KIO {
 
-/**
- * Identifiers for KIO informational messages.
- */
-enum Info {
-   INF_TOTAL_SIZE = 10,
-   INF_PROCESSED_SIZE = 11,
-   INF_REDIRECTION = 20,
-   INF_WARNING = 23,
-   INF_INFOMESSAGE,
-   INF_META_DATA,
-   INF_MESSAGEBOX
-   // add new ones here once a release is done, to avoid breaking binary compatibility
-};
-
-/**
- * Identifiers for KIO data messages.
- */
-enum Message {
-   MSG_DATA = 100,
-   MSG_DATA_REQ,
-   MSG_ERROR,
-   MSG_FINISHED,
-   MSG_STAT_ENTRY,
-   MSG_LIST_ENTRIES,
-   MSG_RESUME,
-   MSG_CANRESUME
-   // add new ones here once a release is done, to avoid breaking binary compatibility
+enum SlaveMessage {
+    /**
+     * Identifiers for slave interface messages, used for communication between SlaveBase and
+     * SlaveInterface. Must not clash with job commands! Also zero is reserved for invalid command.
+     */
+    SI_TOTAL_SIZE = 1,
+    SI_PROCESSED_SIZE = 2,
+    SI_REDIRECTION = 3,
+    SI_WARNING = 4,
+    SI_INFOMESSAGE = 5,
+    SI_META_DATA = 6,
+    SI_MESSAGEBOX = 7,
+    SI_DATA = 8,
+    SI_DATA_REQ = 9,
+    SI_ERROR = 10,
+    SI_FINISHED = 11,
+    SI_STAT_ENTRY = 12,
+    SI_LIST_ENTRIES = 13,
+    SI_RESUME = 14,
+    SI_CANRESUME = 15
 };
 
 /**
@@ -126,8 +119,6 @@ public:
     static SlaveInterface* createSlave(const QString &protocol, const KUrl &url, int &error, QString &error_text);
 
     // == communication with connected kioslave ==
-    // whenever possible prefer these methods over the respective
-    // methods in connection()
     /**
      * Suspends the operation of the attached kioslave.
      */
@@ -171,8 +162,6 @@ public:
 
     /**
      * Sends our answer for the INF_MESSAGEBOX request.
-     *
-     * @since 4.11
      */
     void sendMessageBoxAnswer(int result);
 
