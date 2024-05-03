@@ -234,7 +234,6 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
         topitem->setText(0, collectionname);
         topitem->setIcon(0, KIcon(collectionicon));
     }
-    int rowcounter = 0;
     const bool addlocal = (d->actiontypes & KShortcutsEditor::LocalAction);
     const bool addglobal = (d->actiontypes & KShortcutsEditor::GlobalAction);
     foreach (QAction *action, collection->actions()) {
@@ -304,10 +303,6 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
             d->treewidget->setItemWidget(actionitem, 2, globalkswidget);
             d->keysequencewidgets.append(globalkswidget);
         }
-
-        if (actionitem) {
-            rowcounter++;
-        }
     }
     topitem->sortChildren(0, Qt::AscendingOrder);
     d->treewidget->addTopLevelItem(topitem);
@@ -321,8 +316,6 @@ void KShortcutsEditor::addCollection(KActionCollection *collection, const QStrin
     int globalcounter = 0;
     foreach (KKeySequenceWidget *kswidget, d->keysequencewidgets) {
         kswidget->setCheckActionCollections(d->actioncollections.keys());
-        QAction* action = qvariant_cast<QAction*>(kswidget->property("_k_action"));
-        Q_ASSERT(action != nullptr);
         const bool global = kswidget->property("_k_global").toBool();
         if (global) {
             globalcounter++;

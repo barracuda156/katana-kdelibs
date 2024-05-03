@@ -197,8 +197,8 @@ KKeySequenceWidgetPrivate::KKeySequenceWidgetPrivate(KKeySequenceWidget *q)
     modifierKeys(0),
     isRecording(false),
     multiKeyShortcutsAllowed(true),
-    associatedAction(nullptr),
-    checkAgainstShortcutTypes(KKeySequenceWidget::LocalShortcuts & KKeySequenceWidget::GlobalShortcuts)
+    checkAgainstShortcutTypes(KKeySequenceWidget::LocalShortcuts & KKeySequenceWidget::GlobalShortcuts),
+    associatedAction(nullptr)
 {
 }
 

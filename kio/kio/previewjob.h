@@ -150,7 +150,7 @@ namespace KIO {
 
         /**
          * Returns a list of all supported MIME types. The list can
-         * contain entries like text/* (i.e. globs).
+         * contain glob entries.
          * @return the list of mime types
          */
         static QStringList supportedMimeTypes();

@@ -75,7 +75,6 @@ protected:
 
 private:
     bool bDirty:1;
-    bool bLocaleInitialized:1;
     bool bReadDefaults:1;
     bool bFileImmutable:1;
     bool bForceGlobal:1;

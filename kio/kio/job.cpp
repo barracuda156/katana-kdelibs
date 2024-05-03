@@ -308,8 +308,6 @@ void SimpleJob::setRedirectionHandlingEnabled(bool handle)
 
 SimpleJob::~SimpleJob()
 {
-    Q_D(SimpleJob);
-    kDebug(7007) << "Killing job" << this << "in destructor!"  << kBacktrace();
     Scheduler::self()->cancelJob(this);
 }
 

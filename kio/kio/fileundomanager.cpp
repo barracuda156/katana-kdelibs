@@ -41,39 +41,6 @@ static const char* undoStateToString(UndoState state) {
     return s_undoStateToString[state];
 }
 
-QT_BEGIN_NAMESPACE
-static QDataStream &operator<<(QDataStream &stream, const KIO::BasicOperation &op)
-{
-    stream << op.m_valid << (qint8)op.m_type << op.m_renamed
-           << op.m_src << op.m_dst << op.m_target << (qint64)op.m_mtime;
-    return stream;
-}
-static QDataStream &operator>>(QDataStream &stream, BasicOperation &op)
-{
-    qint8 type;
-    qint64 mtime;
-    stream >> op.m_valid >> type >> op.m_renamed
-           >> op.m_src >> op.m_dst >> op.m_target >> mtime;
-    op.m_type = static_cast<BasicOperation::Type>(type);
-    op.m_mtime = mtime;
-    return stream;
-}
-
-static QDataStream &operator<<(QDataStream &stream, const UndoCommand &cmd)
-{
-    stream << cmd.m_valid << (qint8)cmd.m_type << cmd.m_opStack << cmd.m_src << cmd.m_dst;
-    return stream;
-}
-
-static QDataStream &operator>>(QDataStream &stream, UndoCommand &cmd)
-{
-    qint8 type;
-    stream >> cmd.m_valid >> type >> cmd.m_opStack >> cmd.m_src >> cmd.m_dst;
-    cmd.m_type = static_cast<FileUndoManager::CommandType>(type);
-    return stream;
-}
-QT_END_NAMESPACE
-
 /**
  * checklist:
  * copy dir -> overwrite -> works

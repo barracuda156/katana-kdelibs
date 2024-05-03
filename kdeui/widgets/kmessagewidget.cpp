@@ -101,8 +101,8 @@ KMessageWidgetPrivate::KMessageWidgetPrivate(KMessageWidget *_messagewidget)
     iconwidget(nullptr),
     textlabel(nullptr),
     closebutton(nullptr),
-    buttonslayout(nullptr),
-    messagetype(KMessageWidget::Information)
+    messagetype(KMessageWidget::Information),
+    buttonslayout(nullptr)
 {
 }
 
@@ -283,6 +283,9 @@ bool KMessageWidget::event(QEvent *event)
         case QEvent::ActionAdded:
         case QEvent::ActionRemoved: {
             d->updateLayout();
+            break;
+        }
+        default: {
             break;
         }
     }
