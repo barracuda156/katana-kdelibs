@@ -35,29 +35,29 @@ namespace KIO {
     class SlaveInterface;
 
     /**
-     * Commands that can be invoked by a job.
-     * @note protocol-specific commands shouldn't be added here, but should use special.
+     * Commands that can be invoked by a job and scheduler, must not clash with slave interface
+     * messages. Protocol-specific commands shouldn't be added here, but should use special.
      */
     enum Command {
-        CMD_NONE = '0', // 48
-        CMD_GET = '1',
-        CMD_PUT = '2',
-        CMD_STAT = 'A',
-        CMD_LISTDIR = 'B',
-        CMD_MKDIR = 'C',
-        CMD_RENAME = 'D',
-        CMD_COPY = 'E',
-        CMD_DEL = 'F',
-        CMD_CHMOD = 'G',
-        CMD_SPECIAL = 'H',
-        CMD_SETMODIFICATIONTIME = 'I',
-        CMD_REPARSECONFIGURATION = 'J',
-        CMD_META_DATA = 'K',
-        CMD_SYMLINK = 'L',
-        CMD_MESSAGEBOXANSWER = 'M',
-        CMD_RESUMEANSWER = 'N',
-        CMD_CONFIG = 'O',
-        CMD_CHOWN = 'P'
+        CMD_NONE = 50,
+        CMD_GET = 51,
+        CMD_PUT = 52,
+        CMD_STAT = 53,
+        CMD_LISTDIR = 54,
+        CMD_MKDIR = 55,
+        CMD_RENAME = 56,
+        CMD_COPY = 57,
+        CMD_DEL = 58,
+        CMD_CHMOD = 59,
+        CMD_SPECIAL = 60,
+        CMD_SETMODIFICATIONTIME = 61,
+        CMD_REPARSECONFIGURATION = 62,
+        CMD_META_DATA = 63,
+        CMD_SYMLINK = 64,
+        CMD_MESSAGEBOXANSWER = 65,
+        CMD_RESUMEANSWER = 66,
+        CMD_CONFIG = 67,
+        CMD_CHOWN = 68
     };
 
     class JobPrivate: public KCompositeJobPrivate
