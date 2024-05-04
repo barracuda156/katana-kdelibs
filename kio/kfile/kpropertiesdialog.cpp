@@ -3091,7 +3091,6 @@ KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *props)
     // was: d->w->filetypeList->setFullWidth(true);
     //  d->w->filetypeList->header()->setStretchEnabled(true, d->w->filetypeList->columns()-1);
 
-    KMimeType::Ptr defaultMimetype = KMimeType::defaultMimeTypePtr();
     for(QStringList::ConstIterator it = mimeTypes.begin(); it != mimeTypes.end(); ) {
         KMimeType::Ptr p = KMimeType::mimeType(*it, KMimeType::ResolveAliases);
         ++it;
