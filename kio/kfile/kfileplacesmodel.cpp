@@ -580,13 +580,19 @@ bool KFilePlacesModel::dropMimeData(const QMimeData *data, Qt::DropAction action
         KBookmarkGroup group = d->bookmarkManager->root();
 
         foreach (const KUrl &url, urls) {
-            KIO::UDSEntry statentry;
-            if (!KIO::NetAccess::stat(url, statentry, nullptr)) {
-                kWarning() << "URL not added to Places as it could not be reached!";
-                continue;
+            KMimeType::Ptr mimetype;
+            if (url.isLocalFile()) {
+                mimetype = KMimeType::findByUrl(url);
+            } else {
+                KIO::UDSEntry statentry;
+                if (!KIO::NetAccess::stat(url, statentry, nullptr)) {
+                    kWarning() << "URL not added to Places as it could not be reached!";
+                    continue;
+                }
+
+                mimetype = KMimeType::mimeType(statentry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE));
             }
 
-            KMimeType::Ptr mimetype = KMimeType::mimeType(statentry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE));
             if (!mimetype) {
                 kWarning() << "URL not added to Places as mimetype could not be determined!";
                 continue;

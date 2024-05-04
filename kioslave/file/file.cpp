@@ -74,7 +74,6 @@
 #include <kio/ioslave_defaults.h>
 #include <kde_file.h>
 #include <kglobal.h>
-#include <kmimetype.h>
 #include <kuser.h>
 
 using namespace KIO;
@@ -652,15 +651,18 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
 
  notype:
     if (details > 1) {
-        QString fullPath = QFile::decodeName(path);
-        if (!fullPath.startsWith(QDir::separator())) {
-            fullPath.prepend(QDir::currentPath() + QDir::separator());
-        }
-        // In real "remote" slaves, this usually depends on the protocol but not here - it can be
-        // determined from content, path or mode
-        KMimeType::Ptr mt = KMimeType::findByUrl(KUrl(fullPath), type);
-        if (!mt.isNull()) {
-            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, mt->name());
+        // In real "remote" slaves, this usually depends on the protocol but not here - it is
+        // determined only from the mode and only for non-regular files
+        if (S_ISDIR(type)) {
+            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
+        } else if (S_ISCHR(type)) {
+            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/chardevice"));
+        } else if (S_ISBLK(type)) {
+            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/blockdevice"));
+        } else if (S_ISFIFO(type)) {
+            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/fifo"));
+        } else if (S_ISSOCK(type)) {
+            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/socket"));
         }
     }
 

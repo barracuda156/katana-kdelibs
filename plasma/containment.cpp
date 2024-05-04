@@ -1244,12 +1244,10 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
         }
     } else if (KUrl::List::canDecode(mimeData)) {
         foreach (const KUrl &url, KUrl::List::fromMimeData(mimeData)) {
-            KMimeType::Ptr mime = KMimeType::findByUrl(url);
-            QString mimeName = mime->name();
             QRectF geom(pos, QSize());
             QVariantList args;
             args << url.url();
-            kDebug() << "can decode" << mimeName << args;
+            kDebug() << "can decode" << args;
 
             // It may be a directory or a file, let's stat
             KIO::StatJob *job = KIO::stat(url, KIO::HideProgressInfo);
@@ -1376,8 +1374,16 @@ void ContainmentPrivate::dropJobResult(KJob *job)
         return;
     }
 
-    const QString mimetype = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
-    kDebug() << "StatJob returns" << mimetype;
+    QString mimetype = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+    if (!mimetype.isEmpty()) {
+        kDebug() << "StatJob returns" << mimetype;
+    } else {
+        const KUrl staturl = statjob->url();
+        kDebug() << "StatJob returns empty" << staturl;
+        if (staturl.isLocalFile()) {
+            mimetype = KMimeType::findByUrl(staturl)->name();
+        }
+    }
 
     KPluginInfo::List appletList = Applet::listAppletInfoForUrl(statjob->url());
     if (mimetype.isEmpty() && !appletList.count()) {
@@ -1385,7 +1391,6 @@ void ContainmentPrivate::dropJobResult(KJob *job)
         kDebug() << "No applets found matching the url (" << statjob->url() << ") or the mimetype (" << mimetype << ")";
         return;
     } else {
-
         QPointF posi; // will be overwritten with the event's position
         if (dropPoints.keys().contains(statjob)) {
             posi = dropPoints[statjob];
