@@ -30,7 +30,6 @@
 #include <klocale.h>
 #include <kprotocolinfo.h>
 #include <kprotocolinfofactory.h>
-#include <kstandarddirs.h>
 #include <kurl.h>
 #include <kdesktopfile.h>
 #include <kconfiggroup.h>
@@ -83,9 +82,9 @@ static QString kFolderIconName(const KUrl &_url)
     u.addPath(QString::fromLatin1(".directory"));
 
     QString icon;
-    // using KStandardDirs as this one checks for path being
-    // a file instead of a directory
-    if (KGlobal::dirs()->exists(u.toLocalFile())) {
+    // .directory has to be a readable file
+    QFileInfo uinfo(u.toLocalFile());
+    if (uinfo.isFile() && uinfo.isReadable()) {
         KDesktopFile cfg(u.toLocalFile());
         KConfigGroup group = cfg.desktopGroup();
         icon = group.readEntry("Icon");
