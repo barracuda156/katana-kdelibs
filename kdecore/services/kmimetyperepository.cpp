@@ -95,10 +95,6 @@ KMimeTypeRepository::KMimeTypeRepository()
     connect(KSycoca::self(), SIGNAL(databaseChanged(QStringList)), this, SLOT(parseMimeData(QStringList)));
 }
 
-KMimeTypeRepository::~KMimeTypeRepository()
-{
-}
-
 void KMimeTypeRepository::parseMimeData(const QStringList &resources)
 {
     if (resources.contains(QLatin1String("xdgdata-mime"))) {
@@ -117,7 +113,7 @@ void KMimeTypeRepository::parseMimeData()
     const QStringList aliasFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QLatin1String("aliases"));
     Q_FOREACH(const QString& fileName, aliasFiles) {
         QFile qfile(fileName);
-        //kDebug(7021) << "Now parsing" << fileName;
+        // kDebug() << "Now parsing" << fileName;
         if (qfile.open(QIODevice::ReadOnly)) {
             while (!qfile.atEnd()) {
                 const QByteArray line = qfile.readLine().trimmed();
@@ -138,7 +134,7 @@ void KMimeTypeRepository::parseMimeData()
 
                 const KMimeType::Ptr realMimeType = findMimeTypeByName(aliasTypeNameStr, KMimeType::DontResolveAlias);
                 if (realMimeType) {
-                    // kDebug(servicesDebugArea()) << "Ignoring alias" << aliasTypeNameStr << "because also defined as a real mimetype";
+                    // kDebug() << "Ignoring alias" << aliasTypeNameStr << "because also defined as a real mimetype";
                 } else {
                     m_aliases.insert(aliasTypeNameStr, parentTypeNameStr);
                 }
@@ -151,7 +147,7 @@ void KMimeTypeRepository::parseMimeData()
     // kDebug() << subclassFiles;
     Q_FOREACH(const QString &fileName, subclassFiles) {
         QFile qfile(fileName);
-        // kDebug(7021) << "Now parsing" << fileName;
+        // kDebug() << "Now parsing" << fileName;
         if (qfile.open(QIODevice::ReadOnly)) {
             while (!qfile.atEnd()) {
                 const QByteArray line = qfile.readLine().trimmed();
@@ -167,9 +163,9 @@ void KMimeTypeRepository::parseMimeData()
                 const QString derivedTypeNameStr = QString::fromLatin1(derivedTypeName.constData(), derivedTypeName.size());
                 KMimeType::Ptr derivedType = findMimeTypeByName(derivedTypeNameStr, KMimeType::ResolveAliases);
                 if (!derivedType) {
-                    kWarning(7021) << fileName << " refers to unknown mimetype " << derivedTypeNameStr;
+                    kWarning() << fileName << " refers to unknown mimetype " << derivedTypeNameStr;
                 } else {
-                    const QByteArray parentTypeName = line.mid(pos+1);
+                    const QByteArray parentTypeName = line.mid(pos + 1);
                     const QString parentTypeNameStr = QString::fromLatin1(parentTypeName.constData(), parentTypeName.size());
                     Q_ASSERT(!parentTypeName.isEmpty());
                     //derivedType->setParentMimeType(parentTypeNameStr);
@@ -188,7 +184,7 @@ void KMimeTypeRepository::parseMimeData()
     while (magicIter.hasPrevious()) {
         const QString fileName = magicIter.previous();
         QFile magicFile(fileName);
-        // kDebug(servicesDebugArea()) << "Now parsing " << fileName;
+        // kDebug() << "Now parsing " << fileName;
         if (magicFile.open(QIODevice::ReadOnly)) {
             m_magicRules += parseMagicFile(&magicFile, fileName);
         }
@@ -306,8 +302,7 @@ QStringList KMimeTypeRepository::findFromFileName(const QString &fileName, QStri
             }
             if (lastMatchedWeight > 0 && glob.weight > lastMatchedWeight) {
                 // can't happen
-                kWarning(servicesDebugArea()) << "Assumption failed; globs2 weights not sorted correctly"
-                                              << glob.weight << ">" << lastMatchedWeight;
+                kWarning() << "Assumption failed; globs2 weights not sorted correctly" << glob.weight << ">" << lastMatchedWeight;
             }
             // Is this a shorter or a longer match than an existing one, or same length?
             if (glob.pattern.length() < matchingPatternLength) {
@@ -414,7 +409,7 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
     QList<KMimeMagicRule> rules;
     QByteArray header = file->read(12);
     if (header.size() != 12 || ::memcmp(header.constData(), "MIME-Magic\0\n", 12) != 0) {
-        kWarning(servicesDebugArea()) << "Invalid magic file " << fileName << " starts with " << header;
+        kWarning() << "Invalid magic file " << fileName << " starts with " << header;
         return rules;
     }
     QList<KMimeMagicMatch> matches; // toplevel matches (indent==0)
@@ -434,7 +429,7 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
                 // workaround for:
                 // https://gitlab.freedesktop.org/xdg/shared-mime-info/-/issues/144
                 if (sharedmimeinfover <= sharedmimeinfo200 && mimeTypeName == "audio/x-mod") {
-                    kDebug(servicesDebugArea()) << "Ignoring audio/x-mod magic rules";
+                    kDebug() << "Ignoring audio/x-mod magic rules";
                 } else {
                     const QString mimeTypeNameStr = QString::fromLatin1(mimeTypeName.constData(), mimeTypeName.size());
                     rules.append(KMimeMagicRule(mimeTypeNameStr, priority, matches));
@@ -450,15 +445,13 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
             const int pos = line.indexOf(':');
             if (pos == -1) {
                 // syntax error
-                kWarning(servicesDebugArea()) << "Syntax error in " << mimeTypeName
-                                              << " ':' not present in section name";
+                kWarning() << "Syntax error in " << mimeTypeName << " ':' not present in section name";
                 break;
             }
             priority = line.left(pos).toInt();
             mimeTypeName = line.mid(pos+1);
             mimeTypeName = mimeTypeName.left(mimeTypeName.length()-2); // remove ']\n'
-            // kDebug(servicesDebugArea()) << "New rule for " << mimeTypeName
-            //                             << " with priority " << priority;
+            // kDebug() << "New rule for " << mimeTypeName << " with priority " << priority;
         } else {
             // Parse line in the section
             // [ indent ] ">" start-offset "=" value
@@ -468,7 +461,7 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
                 indent = ch - '0';
                 ch = readNumber(indent, file);
                 if (ch != '>') {
-                    kWarning(servicesDebugArea()) << "Invalid magic file " << fileName << " '>' not found, got " << ch << " at pos " << file->pos();
+                    kWarning() << "Invalid magic file " << fileName << " '>' not found, got " << ch << " at pos " << file->pos();
                     break;
                 }
             }
@@ -477,7 +470,7 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
             match.m_rangeStart = 0;
             ch = readNumber(match.m_rangeStart, file);
             if (ch != '=') {
-                kWarning(servicesDebugArea()) << "Invalid magic file " << fileName << " '=' not found";
+                kWarning() << "Invalid magic file " << fileName << " '=' not found";
                 break;
             }
 
@@ -540,7 +533,7 @@ QList<KMimeMagicRule> KMimeTypeRepository::parseMagicFile(QIODevice *file, const
                             file->getChar(&ch);
                         }
                         invalidLine = true;
-                        kDebug(servicesDebugArea()) << "invalid line - garbage found - ch=" << ch;
+                        kDebug() << "invalid line - garbage found - ch=" << ch;
                         break;
                     }
                 }

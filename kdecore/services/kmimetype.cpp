@@ -227,7 +227,7 @@ KMimeType::Ptr KMimeType::findByUrl(const KUrl &url, mode_t mode,
             KMimeType::Ptr mime = KMimeTypeRepository::self()->findFromContent(&file, &magicAccuracy);
             // mime can't be 0, except in case of install problems.
             // However we get magicAccuracy==0 for octet-stream, i.e. no magic match found.
-            //kDebug(servicesDebugArea()) << "findFromContent said" << (mime?mime->name():QString()) << "with accuracy" << magicAccuracy;
+            // kDebug() << "findFromContent said" << (mime?mime->name():QString()) << "with accuracy" << magicAccuracy;
             if (mime && magicAccuracy > 0) {
                 // Disambiguate conflicting extensions (if magic found something and the magicrule was <80)
                 if (magicAccuracy < 80 && !mimeList.isEmpty()) {
@@ -236,7 +236,7 @@ KMimeType::Ptr KMimeType::findByUrl(const KUrl &url, mode_t mode,
                     const QString sniffedMime = mime->name();
                     foreach(const QString &m, mimeList) {
                         KMimeType::Ptr mimeFromPattern = KMimeType::mimeType(m);
-                        //kDebug(servicesDebugArea()) << "sniffedMime=" << sniffedMime << "mimeFromPattern=" << mimeFromPattern->name();
+                        // kDebug() << "sniffedMime=" << sniffedMime << "mimeFromPattern=" << mimeFromPattern->name();
                         if (mimeFromPattern && mimeFromPattern->is(sniffedMime)) {
                             // We have magic + pattern pointing to this, so it's a pretty good match
                             if (accuracy) {

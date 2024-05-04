@@ -116,7 +116,6 @@ private Q_SLOTS:
 
 private:
     KMimeTypeRepository();
-    ~KMimeTypeRepository();
 
     /**
      * @internal (re-)parses the glob, aliases, parents and magic file(s)
