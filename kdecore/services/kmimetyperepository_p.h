@@ -46,7 +46,7 @@ public:
     /**
      * Creates a KMimeType
      */
-    KMimeType::Ptr findMimeTypeByName(const QString &_name, KMimeType::FindByNameOption options = KMimeType::DontResolveAlias) const;
+    KMimeType::Ptr findMimeTypeByName(const QString &_name, KMimeType::FindByNameOption options) const;
 
     /**
      * Check if mime is an alias, and return the canonical name for it if it is, otherwise empty.

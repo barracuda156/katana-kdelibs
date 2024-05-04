@@ -314,7 +314,7 @@ KMimeType::Ptr KMimeTypeRepository::findFromContent(QIODevice* device, int* accu
         if (accuracy) {
             *accuracy = 100;
         }
-        return findMimeTypeByName(QLatin1String("application/x-zerosize"));
+        return findMimeTypeByName(QLatin1String("application/x-zerosize"), KMimeType::DontResolveAlias);
     }
     // provide enough data for most rules (there are exceptions which require twice as much tho)
     const qint64 dataNeeded = qMin(deviceSize, (qint64) 16384);
@@ -329,7 +329,7 @@ KMimeType::Ptr KMimeTypeRepository::findFromContent(QIODevice* device, int* accu
             if (accuracy) {
                 *accuracy = rule.priority();
             }
-            return findMimeTypeByName(rule.mimetype());
+            return findMimeTypeByName(rule.mimetype(), KMimeType::DontResolveAlias);
         }
     }
 
@@ -339,7 +339,7 @@ KMimeType::Ptr KMimeTypeRepository::findFromContent(QIODevice* device, int* accu
         if (accuracy) {
             *accuracy = 5;
         }
-        return findMimeTypeByName(QLatin1String("text/plain"));
+        return findMimeTypeByName(QLatin1String("text/plain"), KMimeType::DontResolveAlias);
     }
     if (accuracy) {
         *accuracy = 0;
@@ -615,7 +615,7 @@ KMimeType::Ptr KMimeTypeRepository::defaultMimeTypePtr()
 {
     if (!m_defaultMimeType) {
         // Try to find the default type
-        KMimeType::Ptr mime = findMimeTypeByName(KMimeType::defaultMimeType());
+        KMimeType::Ptr mime = findMimeTypeByName(KMimeType::defaultMimeType(), KMimeType::DontResolveAlias);
         if (mime) {
             m_defaultMimeType = mime;
         } else {
