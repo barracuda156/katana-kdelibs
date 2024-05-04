@@ -316,7 +316,7 @@ KMimeType::Ptr KMimeTypeRepository::findFromContent(QIODevice* device, int* accu
         }
         return findMimeTypeByName(QLatin1String("application/x-zerosize"));
     }
-    // check if we can really read the data; also provide enough data for most rules
+    // provide enough data for most rules (there are exceptions which require twice as much tho)
     const qint64 dataNeeded = qMin(deviceSize, (qint64) 16384);
     QByteArray beginning(dataNeeded, '\0');
     if (!device->seek(0) || device->read(beginning.data(), dataNeeded) == -1) {
