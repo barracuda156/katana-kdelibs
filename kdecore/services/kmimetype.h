@@ -26,9 +26,10 @@
 class KMimeTypePrivate;
 
 /**
- * Represent a mime type like "text/plain" and the data that is associated with it.
+ * Represent a mime type like "text/plain" and the data that is associated with it. The starting
+ * point is often the static methods.
  *
- * The starting point you need is often the static methods.
+ * @link https://specifications.freedesktop.org/shared-mime-info-spec/latest/
  */
 class KDECORE_EXPORT KMimeType : public QSharedData
 {
@@ -77,7 +78,7 @@ public:
      *
      * @param url the URL of the favicon
      * @return the name of the favicon, if unavailable returns QString().
-     * @see http://www.favicon.com
+     * @link https://en.wikipedia.org/wiki/Favicon
      */
     static QString favIconForUrl(const KUrl &url, bool download = false);
 
