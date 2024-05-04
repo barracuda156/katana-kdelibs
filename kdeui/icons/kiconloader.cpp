@@ -632,7 +632,7 @@ void KIconLoader::addExtraDesktopThemes()
         QStringList::ConstIterator it2;
         for (it2=lst.begin(); it2!=lst.end(); ++it2)
         {
-            if (!KGlobal::dirs()->exists(*it + *it2 + "/index.theme"))
+            if (!KStandardDirs::exists(*it + *it2 + "/index.theme"))
                 continue;
             r=readlink( QFile::encodeName(*it + *it2) , buf, sizeof(buf)-1);
             if ( r>0 )

@@ -137,10 +137,10 @@ KIconTheme::KIconTheme(const QString &name, const QString &appName)
 
     for (it=icnlibs.constBegin(); it!=icnlibs.constEnd(); ++it) {
         const QString cDir = *it + name + '/';
-        if (KGlobal::dirs()->exists(cDir)) {
+        if (KStandardDirs::exists(cDir)) {
             themeDirs += cDir;
             if (d->mDir.isEmpty()) {
-                if (KGlobal::dirs()->exists(cDir + "index.theme")) {
+                if (KStandardDirs::exists(cDir + "index.theme")) {
                     d->mDir = cDir;
                 }
             }
@@ -176,7 +176,7 @@ KIconTheme::KIconTheme(const QString &name, const QString &appName)
         KConfigGroup cg(sharedConfig, *it);
         for (itDir=themeDirs.constBegin(); itDir!=themeDirs.constEnd(); ++itDir) {
             const QString currentDir(*itDir + *it + '/');
-            if (!addedDirs.contains(currentDir) && KGlobal::dirs()->exists(currentDir)) {
+            if (!addedDirs.contains(currentDir) && KStandardDirs::exists(currentDir)) {
                 addedDirs.insert(currentDir);
                 KIconThemeDir *dir = new KIconThemeDir(*itDir, *it, cg);
                 if (!dir->isValid()) {
@@ -483,7 +483,7 @@ QStringList KIconTheme::list()
             if ((*it2).startsWith(QLatin1String("default.")) ) {
                 continue;
             }
-            if (!KGlobal::dirs()->exists(*it + *it2 + "/index.theme")) {
+            if (!KStandardDirs::exists(*it + *it2 + "/index.theme")) {
                 continue;
             }
             KIconTheme oink(*it2);

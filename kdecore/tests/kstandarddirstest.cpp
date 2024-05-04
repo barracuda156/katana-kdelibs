@@ -70,7 +70,7 @@ void KStandarddirsTest::testChangeSaveLocation()
     const QString newSaveLoc = m_kdehome + "/newconfigdir/";
     //cData.dirs()->addResourceDir("config", newSaveLoc); // can't be done, absolute paths have less priority than relative paths
     cData.dirs()->addResourceType("config", 0, "newconfigdir");
-    QCOMPARE_PATHS(KGlobal::dirs()->realPath(cData.dirs()->saveLocation("config")), newSaveLoc);
+    QCOMPARE_PATHS(KStandardDirs::realPath(cData.dirs()->saveLocation("config")), newSaveLoc);
 }
 
 static bool isKdelibsInstalled()
@@ -301,14 +301,14 @@ void KStandarddirsTest::testAddResourceDir()
 
     KGlobal::dirs()->addResourceDir("here", dir);
     ret = KStandardDirs::locate( "here", file );
-    QCOMPARE_PATHS(ret, KGlobal::dirs()->realPath(dir) + "kstandarddirstest.cpp");
+    QCOMPARE_PATHS(ret, KStandardDirs::realPath(dir) + "kstandarddirstest.cpp");
 }
 
 void KStandarddirsTest::testSetXdgDataDirs()
 {
     // By default we should have KDEDIR/share/applications in `kde4-config --path xdgdata-apps`
     const QStringList dirs = KGlobal::dirs()->resourceDirs("xdgdata-apps");
-    const QString kdeDataApps = KGlobal::dirs()->realPath(KDEDIR "/share/applications/");
+    const QString kdeDataApps = KStandardDirs::realPath(KDEDIR "/share/applications/");
     if (!dirs.contains(kdeDataApps)) {
         kDebug() << "ERROR:" << kdeDataApps << "not in" << dirs;
         kDebug() << "XDG_DATA_DIRS=" << qgetenv("XDG_DATA_DIRS");
@@ -350,7 +350,7 @@ void KStandarddirsTest::testSymlinkResolution()
     // The issue at this point is that saveLoc does not actually exist yet.
     QVERIFY(QDir(saveLoc).canonicalPath().isEmpty()); // this is why we can't use canonicalPath
     QVERIFY(!QFile::exists(saveLoc));
-    QCOMPARE(saveLoc, KGlobal::dirs()->realPath(saveLoc)); // must be resolved
+    QCOMPARE(saveLoc, KStandardDirs::realPath(saveLoc)); // must be resolved
     QCOMPARE(saveLoc, expected);
     QVERIFY(QDir(m_kdehome).mkpath("real/test")); // KConfig calls mkdir on its own, we simulate that here
     const QString sameSaveLoc = KGlobal::dirs()->resourceDirs("david").first();
@@ -358,10 +358,10 @@ void KStandarddirsTest::testSymlinkResolution()
     QCOMPARE(sameSaveLoc, KGlobal::dirs()->saveLocation("david"));
 
     // While we're here...
-    QCOMPARE(KGlobal::dirs()->realPath(QString()), QString());
-    QCOMPARE(KGlobal::dirs()->realPath(QString("/")), QString("/"));
+    QCOMPARE(KStandardDirs::realPath(QString()), QString());
+    QCOMPARE(KStandardDirs::realPath(QString("/")), QString("/"));
 
-    QCOMPARE(KGlobal::dirs()->realPath(QString("/does_not_exist/")), QString("/does_not_exist/"));
+    QCOMPARE(KStandardDirs::realPath(QString("/does_not_exist/")), QString("/does_not_exist/"));
 }
 
 // To find multithreading bugs: valgrind --tool=helgrind ./kstandarddirstest testThreads

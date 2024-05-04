@@ -538,7 +538,7 @@ void ThemePrivate::setThemeName(const QString &tempThemeName, bool writeSettings
     colorScheme = KColorScheme(QPalette::Active, KColorScheme::Window, colors);
     buttonColorScheme = KColorScheme(QPalette::Active, KColorScheme::Button, colors);
     viewColorScheme = KColorScheme(QPalette::Active, KColorScheme::View, colors);
-    hasWallpapers = KGlobal::dirs()->exists(KStandardDirs::locateLocal("data", QLatin1String("desktoptheme/") + theme + QLatin1String("/wallpapers/")));
+    hasWallpapers = KStandardDirs::exists(KStandardDirs::locateLocal("data", QLatin1String("desktoptheme/") + theme + QLatin1String("/wallpapers/")));
 
     if (realTheme && isDefault && writeSettings) {
         // we're the default theme, let's save our state
