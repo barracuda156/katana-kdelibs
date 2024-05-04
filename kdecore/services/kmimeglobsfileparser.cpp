@@ -118,16 +118,14 @@ bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, GlobList& globs)
             //    kDebug() << "Adding pattern" << pattern << "to mimetype" << mimeTypeName << "from globs file, with weight" << weight;
             //if (pattern.toLower() == "*.c")
             //    kDebug() << " Adding pattern" << pattern << "to mimetype" << mimeTypeName << "from globs file, with weight" << weight << "flags" << flags;
-            const bool caseSensitive = flagList.contains(QByteArray("cs"));
-            const QByteArray patternCs = (caseSensitive ? pattern : pattern.toLower());
-            const QString patternStr = QString::fromLatin1(patternCs.constData(), patternCs.size());
+            const QString patternStr = QString::fromLatin1(pattern.constData(), pattern.size());
             if (!globs.hasPattern(mimeTypeNameStr, patternStr)) {
                 globs.append(
                     Glob(
                         mimeTypeNameStr,
                         weight,
                         patternStr,
-                        caseSensitive
+                        flagList.contains(QByteArray("cs"))
                     )
                 );
             }

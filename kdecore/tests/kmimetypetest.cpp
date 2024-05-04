@@ -301,7 +301,7 @@ void KMimeTypeTest::testAdditionalGlobs()
     QFETCH(QString, pattern);
     QFETCH(bool, expected);
 
-    QCOMPARE(KMimeTypeRepository::matchFileName(filename, pattern), expected);
+    QCOMPARE(KMimeType::matchFileName(filename, pattern), expected);
 }
 
 // All the simple tests for findByPath are in testFindByPathUsingFileName_data.

@@ -80,7 +80,7 @@ public:
     /**
      * @internal
      */
-    static bool matchFileName(const QString &filename, const QString &pattern);
+    static bool matchFileName(const QString &filename, const QString &pattern, const Qt::CaseSensitivity cs);
 
 private: // only for KMimeType and unittests
     friend class KMimeType;

@@ -36,10 +36,18 @@ public:
     typedef QHash<QString, QStringList> PatternsMap; // mimetype -> patterns
 
     struct Glob {
-        Glob(const QString &mime, int w = 50, const QString &pat = QString(), bool cs = false)
-            : weight(w), casesensitive(cs), pattern(pat), mimeType(mime) {}
+        Glob()
+            : weight(50), casesensitive(Qt::CaseInsensitive)
+        {
+        }
+
+        Glob(const QString &mime, int w, const QString &pat, bool cs)
+            : weight(w), casesensitive(cs ? Qt::CaseSensitive : Qt::CaseInsensitive), pattern(pat), mimeType(mime)
+        {
+        }
+
         int weight;
-        bool casesensitive;
+        Qt::CaseSensitivity casesensitive;
         QString pattern;
         QString mimeType;
     };

@@ -228,7 +228,7 @@ QString KMimeTypeRepository::canonicalName(const QString& mime) const
     return c;
 }
 
-bool KMimeTypeRepository::matchFileName(const QString &filename, const QString &pattern)
+bool KMimeTypeRepository::matchFileName(const QString &filename, const QString &pattern, const Qt::CaseSensitivity cs)
 {
     const int pattern_len = pattern.length();
     if (!pattern_len) {
@@ -237,48 +237,31 @@ bool KMimeTypeRepository::matchFileName(const QString &filename, const QString &
 
     const int len = filename.length();
     const int starCount = pattern.count(QLatin1Char('*'));
-
-    // Patterns like "*~", "*.extension"
-    if (pattern[0] == QLatin1Char('*')  && pattern.indexOf(QLatin1Char('[')) == -1 && starCount == 1) {
-        if (len + 1 < pattern_len) {
-            return false;
-        }
-
-        const QChar *c1 = pattern.unicode() + pattern_len - 1;
-        const QChar *c2 = filename.unicode() + len - 1;
-        int cnt = 1;
-        while (cnt < pattern_len && *c1-- == *c2--) {
-            ++cnt;
-        }
-        return cnt == pattern_len;
-    }
-
-    // Patterns like "README*" (well this is currently the only one like that...)
-    if (starCount == 1 && pattern[pattern_len - 1] == QLatin1Char('*')) {
-        if (len + 1 < pattern_len) {
-            return false;
-        }
+    const int bracketIndex = pattern.indexOf(QLatin1Char('['));
+    const int questionIndex = pattern.indexOf(QLatin1Char('?'));
+    if (starCount == 1 && bracketIndex == -1 && questionIndex == -1) {
         if (pattern[0] == QLatin1Char('*')) {
-            return filename.indexOf(pattern.mid(1, pattern_len - 2)) != -1;
+            // Patterns like "*~", "*.extension"
+            if (len + 1 < pattern_len) {
+                return false;
+            }
+            return filename.endsWith(pattern.mid(1, pattern_len - 1), cs);
+        } else if (pattern[pattern_len - 1] == QLatin1Char('*')) {
+            // Patterns like "README*"
+            if (len + 1 < pattern_len) {
+                return false;
+            }
+            return filename.startsWith(pattern.mid(0, pattern_len - 1), cs);
         }
-
-        const QChar *c1 = pattern.unicode();
-        const QChar *c2 = filename.unicode();
-        int cnt = 1;
-        while (cnt < pattern_len && *c1++ == *c2++) {
-           ++cnt;
-        }
-        return cnt == pattern_len;
     }
 
     // Names without any wildcards like "README"
-    if (pattern.indexOf(QLatin1Char('[')) == -1 && starCount == 0 && pattern.indexOf(QLatin1Char('?'))) {
-        return (pattern == filename);
+    if (starCount == 0 && bracketIndex == -1 && questionIndex == -1) {
+        return filename.compare(pattern, cs) == 0;
     }
 
     // Other (quite rare) patterns, like "*.anim[1-9j]": use slow but correct method
-    QRegExp rx(pattern);
-    rx.setPatternSyntax(QRegExp::Wildcard);
+    QRegExp rx(pattern, cs, QRegExp::Wildcard);
     return rx.exactMatch(filename);
 }
 
@@ -289,13 +272,8 @@ QStringList KMimeTypeRepository::findFromFileName(const QString &fileName, QStri
     int matchingPatternLength = 0;
     qint32 lastMatchedWeight = 0;
 
-    // "Applications MUST match globs case-insensitively, except when the case-sensitive
-    // attribute is set to true."
-    // KMimeGlobsFileParser takes care of putting case-insensitive patterns in lowercase.
-    const QString lowerCaseFileName = fileName.toLower();
-
     foreach (const KMimeGlobsFileParser::Glob &glob, m_globs) {
-        if (matchFileName(glob.casesensitive ? fileName : lowerCaseFileName, glob.pattern)) {
+        if (matchFileName(fileName, glob.pattern, glob.casesensitive)) {
             // Is this a lower-weight pattern than the last match? Stop here then.
             if (glob.weight < lastMatchedWeight) {
                 break;

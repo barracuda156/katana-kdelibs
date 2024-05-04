@@ -52,10 +52,10 @@ private Q_SLOTS:
         QCOMPARE(textGlobs[0].pattern, ext1);
         QCOMPARE(textGlobs[0].mimeType, QString("text/plain"));
         QCOMPARE(textGlobs[0].weight, 40);
-        QCOMPARE(textGlobs[0].casesensitive, true);
+        QCOMPARE(textGlobs[0].casesensitive, Qt::CaseSensitive);
         QCOMPARE(textGlobs[1].pattern, ext2);
         QCOMPARE(textGlobs[1].weight, 20);
-        QCOMPARE(textGlobs[1].casesensitive, false);
+        QCOMPARE(textGlobs[1].casesensitive, Qt::CaseInsensitive);
         QCOMPARE(textGlobs[1].mimeType, QString("text/plain"));
     }
 
@@ -217,8 +217,6 @@ private:
     // Implementation of linear search, for comparison
     QString matchGlobHelper(const QString& fileName, bool verbose) const
     {
-        const QString lowerCaseFileName = fileName.toLower();
-
         QString mime;
         bool found = false;
         int numPatterns = 0;
@@ -227,7 +225,7 @@ private:
         for ( ; it != end; ++it ) {
             ++numPatterns;
             Q_FOREACH(const QString& pattern, it.value()) {
-                if (KMimeTypeRepository::matchFileName(/*(glob.flags & KMimeTypeRepository::CaseSensitive) ? fileName :*/ lowerCaseFileName, pattern)) {
+                if (KMimeType::matchFileName(fileName, pattern)) {
                     found = true;
                     mime = it.key();
                 }

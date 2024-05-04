@@ -614,5 +614,5 @@ QString KMimeType::mainExtension() const
 
 bool KMimeType::matchFileName(const QString &filename, const QString &pattern)
 {
-    return KMimeTypeRepository::matchFileName(filename, pattern);
+    return KMimeTypeRepository::matchFileName(filename, pattern, Qt::CaseInsensitive);
 }
