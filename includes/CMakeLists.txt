@@ -112,7 +112,6 @@ install(
     KDecompressor
     KFind
     KFindDialog
-    KFloatValidator
     KFontAction
     KFontRequester
     KFontSizeAction
