@@ -27,7 +27,8 @@
 
 #include <QTextCodec>
 
-static const int s_jobtimeout = 50; // ms
+// as little as possible but enough to return to the event loop and setup job connections
+static const int s_jobtimeout = 10; // ms
 static const int s_idletimeout = 5000; // ms
 // slaves may be idle for 10 seconds before they are killed
 static const int s_idleslavelifetime = 10000;
