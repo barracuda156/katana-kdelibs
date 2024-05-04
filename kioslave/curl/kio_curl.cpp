@@ -167,25 +167,6 @@ static inline long HTTPCode(CURL *curl)
     return curlresponsecode;
 }
 
-// this is for optimization purpose (for KFileItem to not have to determine it via KMimeType)
-static inline QString mimeFromMode(const mode_t mode)
-{
-    if (S_ISDIR(mode)) {
-        return QString::fromLatin1("inode/directory");
-    } else if (S_ISCHR(mode)) {
-        return QString::fromLatin1("inode/chardevice");
-    } else if (S_ISBLK(mode)) {
-        return QString::fromLatin1("inode/blockdevice");
-    } else if (S_ISFIFO(mode)) {
-        return QString::fromLatin1("inode/fifo");
-    } else if (S_ISSOCK(mode)) {
-        return QString::fromLatin1("inode/socket");
-    }
-    // for files either figure it out from the name or get() and probe the data, FTP and SFTP
-    // simply do not provide MIME type info
-    return QString();
-}
-
 // for reference:
 // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 static inline KIO::Error HTTPToKIOError(const long httpcode)
@@ -1210,9 +1191,24 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         kioudsentry.insert(KIO::UDSEntry::UDS_USER, QString::fromLatin1(ftpowner.constData(), ftpowner.size()));
         kioudsentry.insert(KIO::UDSEntry::UDS_GROUP, QString::fromLatin1(ftpgroup.constData(), ftpgroup.size()));
         kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, ftpmodtime);
-        const QString mimefrommode = mimeFromMode(stdmode & S_IFMT);
-        if (!mimefrommode.isEmpty()) {
-            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimefrommode);
+        if (S_ISDIR(stdmode & S_IFMT)) {
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
+        } else if (S_ISCHR(stdmode & S_IFMT)) {
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/chardevice"));
+        } else if (S_ISBLK(stdmode & S_IFMT)) {
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/blockdevice"));
+        } else if (S_ISFIFO(stdmode & S_IFMT)) {
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/fifo"));
+        } else if (S_ISSOCK(stdmode & S_IFMT)) {
+            kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/socket"));
+        } else {
+            // guesswork
+            KUrl ftpurl = p_url;
+            ftpurl.setFileName(ftpfilepath);
+            const KMimeType::Ptr kmimetype = KMimeType::findByUrl(ftpurl, stdmode & S_IFMT);
+            if (!kmimetype.isNull()) {
+                kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, kmimetype->name());
+            }
         }
         if (!ftplinkpath.isEmpty()) {
             // link paths to current path causes KIO to do strange things

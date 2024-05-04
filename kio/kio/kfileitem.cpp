@@ -128,10 +128,6 @@ public:
         init();
     }
 
-    ~KFileItemPrivate()
-    {
-    }
-
     /**
      * Computes the text and mode from the UDSEntry
      * Called by constructor, but can be called again later

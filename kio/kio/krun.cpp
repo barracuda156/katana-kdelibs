@@ -1338,7 +1338,7 @@ void KRun::slotScanFinished(KJob *job)
     const KIO::UDSEntry entry = statJob->statResult();
     const QString mimetype = entry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
     if (mimetype.isEmpty()) {
-        kWarning(7010) << "get() didn't emit a mimetype! Probably a kioslave bug, please check the implementation of" << url().protocol();
+        kWarning(7010) << "stat() does not provide a mimetype! Check the implementation of" << url().protocol();
     }
     mimeTypeDetermined(mimetype);
     d->m_job = 0;
