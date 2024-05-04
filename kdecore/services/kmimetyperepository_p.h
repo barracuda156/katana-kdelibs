@@ -128,20 +128,6 @@ private:
      */
     QList<KMimeMagicRule> parseMagicFile(QIODevice *file, const QString &fileName) const;
 
-    /**
-     * Look into either the high-weight patterns or the low-weight patterns.
-     * @param matchingMimeTypes in/out parameter. In: the already found mimetypes;
-     * this is only set when the fast pattern dict found matches (i.e. weight 50)
-     * and we want to check if there are other, longer, weight 50 matches.
-     * @param filename the filename we are trying to match
-     * @param foundExt in/out parameter, the recognized extension of the match
-     * @param highWeight whether to look into >50 or <=50 patterns.
-     */
-    void findFromOtherPatternList(QStringList &matchingMimeTypes,
-                                  const QString &filename,
-                                  QString &foundExt,
-                                  bool highWeight) const;
-
     typedef QHash<QString, QString> AliasesMap;
     AliasesMap m_aliases; // alias -> canonicalName
 
@@ -153,7 +139,7 @@ private:
     bool m_useFavIconsChecked;
     int m_sharedMimeInfoVersion;
     QList<KMimeMagicRule> m_magicRules;
-    KMimeGlobsFileParser::AllGlobs m_globs;
+    KMimeGlobsFileParser::GlobList m_globs;
     KMimeType::Ptr m_defaultMimeType;
     QMutex m_mutex;
 };

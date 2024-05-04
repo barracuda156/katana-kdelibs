@@ -110,8 +110,8 @@ void KMimeTypeRepository::parseMimeData()
 {
     QMutexLocker locker(&m_mutex);
 
-    KMimeGlobsFileParser parser;
-    m_globs = parser.parseGlobs();
+    const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QString::fromLatin1("globs2"));
+    m_globs = KMimeGlobsFileParser::parseGlobs(globFiles);
 
     m_aliases.clear();
     const QStringList aliasFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QLatin1String("aliases"));
@@ -286,31 +286,19 @@ bool KMimeTypeRepository::matchFileName(const QString &filename, const QString &
     return rx.exactMatch(filename);
 }
 
-// Helper for findFromFileName
-void KMimeTypeRepository::findFromOtherPatternList(QStringList &matchingMimeTypes,
-                                                   const QString &fileName,
-                                                   QString &foundExt,
-                                                   bool highWeight) const
+QStringList KMimeTypeRepository::findFromFileName(const QString &fileName, QString *pMatchingExtension) const
 {
-    const KMimeGlobsFileParser::GlobList patternList = highWeight ? m_globs.m_highWeightGlobs : m_globs.m_lowWeightGlobs;
-
+    QStringList matchingMimeTypes;
+    QString foundExt;
     int matchingPatternLength = 0;
     qint32 lastMatchedWeight = 0;
-    if (!highWeight && !matchingMimeTypes.isEmpty()) {
-        // We found matches in the fast pattern dict already:
-        matchingPatternLength = foundExt.length() + 2; // *.foo -> length=5
-        lastMatchedWeight = 50;
-    }
 
     // "Applications MUST match globs case-insensitively, except when the case-sensitive
     // attribute is set to true."
     // KMimeGlobsFileParser takes care of putting case-insensitive patterns in lowercase.
     const QString lowerCaseFileName = fileName.toLower();
 
-    KMimeGlobsFileParser::GlobList::const_iterator it = patternList.constBegin();
-    const KMimeGlobsFileParser::GlobList::const_iterator end = patternList.constEnd();
-    for ( ; it != end; ++it ) {
-        const KMimeGlobsFileParser::Glob& glob = *it;
+    foreach (const KMimeGlobsFileParser::Glob &glob, m_globs) {
         if (matchFileName(glob.casesensitive ? fileName : lowerCaseFileName, glob.pattern)) {
             // Is this a lower-weight pattern than the last match? Stop here then.
             if (glob.weight < lastMatchedWeight) {
@@ -331,24 +319,12 @@ void KMimeTypeRepository::findFromOtherPatternList(QStringList &matchingMimeType
                 // remember the new "longer" length
                 matchingPatternLength = glob.pattern.length();
             }
-            matchingMimeTypes.push_back(glob.mimeType);
+            matchingMimeTypes.append(glob.mimeType);
+            lastMatchedWeight = glob.weight;
             if (glob.pattern.startsWith(QLatin1String("*."))) {
                 foundExt = glob.pattern.mid(2);
             }
         }
-    }
-}
-
-QStringList KMimeTypeRepository::findFromFileName(const QString &fileName, QString *pMatchingExtension) const
-{
-    // First try the high weight matches (>=50), if any.
-    QStringList matchingMimeTypes;
-    QString foundExt;
-    findFromOtherPatternList(matchingMimeTypes, fileName, foundExt, true);
-
-    if (matchingMimeTypes.isEmpty() || foundExt.isEmpty()) {
-        // Try the low weight matches (<50)
-        findFromOtherPatternList(matchingMimeTypes, fileName, foundExt, false);
     }
 
     if (pMatchingExtension) {

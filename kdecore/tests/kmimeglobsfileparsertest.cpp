@@ -45,10 +45,9 @@ private Q_SLOTS:
                               "40:text/plain:*.kmimefileparserunittest\n"
                               "20:text/plain:*.kmimefileparserunittest2::futureextension";
         QBuffer buf(&testFile);
-        KMimeGlobsFileParser::AllGlobs mimeTypeGlobs;
-        QVERIFY(KMimeGlobsFileParser::parseGlobFile(&buf, mimeTypeGlobs));
-        //kDebug() << mimeTypeGlobs.keys();
-        const KMimeGlobsFileParser::GlobList textGlobs = mimeTypeGlobs.m_lowWeightGlobs;
+        KMimeGlobsFileParser::GlobList textGlobs;
+        QVERIFY(KMimeGlobsFileParser::parseGlobFile(&buf, textGlobs));
+        //kDebug() << textGlobs.keys();
         QCOMPARE(textGlobs.count(), 2);
         QCOMPARE(textGlobs[0].pattern, ext1);
         QCOMPARE(textGlobs[0].mimeType, QString("text/plain"));
@@ -74,7 +73,7 @@ private Q_SLOTS:
         const QString fileName = globTempFile.fileName();
         globTempFile.close();
 
-        KMimeGlobsFileParser::AllGlobs globs = parser.parseGlobs(QStringList() << fileName);
+        KMimeGlobsFileParser::GlobList globs = parser.parseGlobs(QStringList() << fileName);
 
         const QStringList textPlainPatterns = globs.patternsMap().value("text/plain");
         QVERIFY(textPlainPatterns.contains(ext1));
@@ -109,7 +108,7 @@ private Q_SLOTS:
         const QString fileName2 = globTempFile2.fileName();
         globTempFile2.close();
 
-        KMimeGlobsFileParser::AllGlobs globs = parser.parseGlobs(QStringList() << fileName1 << fileName2);
+        KMimeGlobsFileParser::GlobList globs = parser.parseGlobs(QStringList() << fileName1 << fileName2);
 
         const QStringList textPlainPatterns = globs.patternsMap().value("text/plain");
         kDebug() << textPlainPatterns;
@@ -144,7 +143,7 @@ private Q_SLOTS:
         const QString fileName2 = globTempFile2.fileName();
         globTempFile2.close();
 
-        KMimeGlobsFileParser::AllGlobs globs = parser.parseGlobs(QStringList() << fileName1 << fileName2);
+        KMimeGlobsFileParser::GlobList globs = parser.parseGlobs(QStringList() << fileName1 << fileName2);
 
         const QStringList textPlainPatterns = globs.patternsMap().value("text/plain");
         kDebug() << textPlainPatterns;
@@ -179,8 +178,7 @@ private Q_SLOTS:
         const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", "globs2");
         m_allGlobs = KMimeGlobsFileParser::parseGlobs(globFiles);
         m_patternsMap = m_allGlobs.patternsMap();
-        const int patCount = m_allGlobs.m_highWeightGlobs.count() + m_allGlobs.m_lowWeightGlobs.count();
-        qDebug() << m_patternsMap.count() << "mimetypes," << patCount << "patterns";
+        qDebug() << m_patternsMap.count() << "mimetypes," << m_allGlobs.count() << "patterns";
     }
 
     void testGlobMatchingPerformance()
@@ -244,7 +242,7 @@ private:
     }
 
 private:
-    KMimeGlobsFileParser::AllGlobs m_allGlobs;
+    KMimeGlobsFileParser::GlobList m_allGlobs;
     KMimeGlobsFileParser::PatternsMap m_patternsMap;
 };
 

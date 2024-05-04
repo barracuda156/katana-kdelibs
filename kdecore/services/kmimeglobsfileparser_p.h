@@ -25,6 +25,7 @@
 
 #include <QIODevice>
 #include <QString>
+#include <QStringList>
 
 /**
  * @internal
@@ -32,13 +33,7 @@
 class KMimeGlobsFileParser
 {
 public:
-    class AllGlobs;
-
-    // Read globs (patterns) files
-    static AllGlobs parseGlobs();
-
-    // Separate method, for unit test
-    static AllGlobs parseGlobs(const QStringList &globFiles);
+    typedef QHash<QString, QStringList> PatternsMap; // mimetype -> patterns
 
     struct Glob {
         Glob(const QString &mime, int w = 50, const QString &pat = QString(), bool cs = false)
@@ -52,7 +47,8 @@ public:
     class GlobList : public QList<Glob>
     {
     public:
-        bool hasPattern(const QString &mime, const QString &pattern) const {
+        bool hasPattern(const QString &mime, const QString &pattern) const
+        {
             const_iterator it = begin();
             const const_iterator myend = end();
             for (; it != myend; ++it)
@@ -61,37 +57,32 @@ public:
             return false;
         }
         // "noglobs" is very rare occurrence, so it's ok if it's slow
-        void removeMime(const QString& mime) {
+        void removeMime(const QString &mime)
+        {
             QMutableListIterator<Glob> it(*this);
             while (it.hasNext()) {
                 if (it.next().mimeType == mime)
                     it.remove();
             }
         }
+
+        // for tests
+        PatternsMap patternsMap() const
+        {
+            PatternsMap patMap;
+            patMap.reserve(this->size());
+            const_iterator it = begin();
+            const const_iterator myend = end();
+            for (; it != myend; ++it)
+                patMap[(*it).mimeType].append((*it).pattern);
+            return patMap;
+        }
     };
 
-    typedef QHash<QString, QStringList> PatternsMap; // mimetype -> patterns
+    // Read globs (patterns) files
+    static GlobList parseGlobs(const QStringList &globFiles);
 
-    /**
-     * Result of the globs parsing, as data structures ready for efficient mimetype matching.
-     * This contains:
-     * 1) a map of fast regular patterns (e.g. *.txt is stored as "txt" in a qhash's key)
-     * 2) a linear list of high-weight globs
-     * 3) a linear list of low-weight globs
-     * The mime-matching algorithms on top of these data structures are in KMimeTypeFactory.
-     */
-    class AllGlobs
-    {
-    public:
-        void addGlob(const Glob &glob);
-        void removeMime(const QString &mime);
-        PatternsMap patternsMap() const; // for KMimeTypeFactory
-
-        GlobList m_highWeightGlobs; // >= 50 patterns
-        GlobList m_lowWeightGlobs; // < 50 patterns
-    };
-
-    static bool parseGlobFile(QIODevice *file, AllGlobs &globs);
+    static bool parseGlobFile(QIODevice *file, GlobList &globs);
 };
 
 #endif /* KMIMEFILEPARSER_H */

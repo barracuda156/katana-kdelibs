@@ -18,25 +18,23 @@
  */
 
 #include "kmimeglobsfileparser_p.h"
-#include <kglobal.h>
-#include <kdeversion.h>
-#include <kmimetype.h>
-#include <kstandarddirs.h>
+#include "kglobal.h"
+#include "kdeversion.h"
+#include "kmimetype.h"
+#include "kstandarddirs.h"
 #include "kmimetyperepository_p.h"
-#include <kdebug.h>
-#include <QtCore/QTextStream>
-#include <QtCore/QFile>
+#include "kdebug.h"
 
-KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs()
+#include <QFile>
+
+static bool kGlobSort(const KMimeGlobsFileParser::Glob &first, const KMimeGlobsFileParser::Glob &second)
 {
-    const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QString::fromLatin1("globs2"));
-    //kDebug() << globFiles;
-    return parseGlobs(globFiles);
+    return (first.weight >= second.weight);
 }
 
-KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs(const QStringList &globFiles)
+KMimeGlobsFileParser::GlobList KMimeGlobsFileParser::parseGlobs(const QStringList &globFiles)
 {
-    KMimeGlobsFileParser::AllGlobs allGlobs;
+    KMimeGlobsFileParser::GlobList allGlobs;
     QListIterator<QString> globIter(globFiles);
     globIter.toBack();
     // At each level, we must be able to override (not just add to) the information that we read at higher levels
@@ -46,6 +44,10 @@ KMimeGlobsFileParser::AllGlobs KMimeGlobsFileParser::parseGlobs(const QStringLis
         QFile globFile(fileName);
         //kDebug() << "Now parsing" << fileName;
         parseGlobFile(&globFile, allGlobs);
+    }
+    // glob2 files are weight-sorted, manually sort only when more than one file is parsed
+    if (globFiles.size() > 1) {
+        qStableSort(allGlobs.begin(), allGlobs.end(), kGlobSort);
     }
     return allGlobs;
 }
@@ -63,7 +65,7 @@ static void filterEmptyFromList(QList<QByteArray>* bytelist)
 }
 
 // uses a QIODevice to make unit tests possible
-bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, AllGlobs& globs)
+bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, GlobList& globs)
 {
     Q_ASSERT(file);
     if (!file->open(QIODevice::ReadOnly)) {
@@ -106,8 +108,6 @@ bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, AllGlobs& globs)
             continue;
         }
 
-        bool caseSensitive = flagList.contains(QByteArray("cs"));
-
         const QString mimeTypeNameStr = QString::fromLatin1(mimeTypeName.constData(), mimeTypeName.size());
         if (pattern == "__NOGLOBS__") {
             // kDebug() << "removing" << mimeTypeName;
@@ -118,62 +118,22 @@ bool KMimeGlobsFileParser::parseGlobFile(QIODevice* file, AllGlobs& globs)
             //    kDebug() << "Adding pattern" << pattern << "to mimetype" << mimeTypeName << "from globs file, with weight" << weight;
             //if (pattern.toLower() == "*.c")
             //    kDebug() << " Adding pattern" << pattern << "to mimetype" << mimeTypeName << "from globs file, with weight" << weight << "flags" << flags;
-            const QString patternStr = QString::fromLatin1(pattern.constData(), pattern.size());
-            globs.addGlob(Glob(mimeTypeNameStr, weight, patternStr, caseSensitive));
+            const bool caseSensitive = flagList.contains(QByteArray("cs"));
+            const QByteArray patternCs = (caseSensitive ? pattern : pattern.toLower());
+            const QString patternStr = QString::fromLatin1(patternCs.constData(), patternCs.size());
+            if (!globs.hasPattern(mimeTypeNameStr, patternStr)) {
+                globs.append(
+                    Glob(
+                        mimeTypeNameStr,
+                        weight,
+                        patternStr,
+                        caseSensitive
+                    )
+                );
+            }
             lastMime = mimeTypeName;
             lastPattern = pattern;
         }
     }
     return true;
-}
-
-void KMimeGlobsFileParser::AllGlobs::addGlob(const Glob& glob)
-{
-    // Note that in each case, we check for duplicates to avoid inserting duplicated patterns.
-    // This can happen when installing kde.xml and freedesktop.org.xml
-    // in the same prefix, and they both have text/plain:*.txt
-
-    const QString &pattern = glob.pattern;
-    Q_ASSERT(!pattern.isEmpty());
-    Q_UNUSED(pattern);
-
-    //kDebug() << "pattern" << pattern << "glob.weight=" << glob.weight << glob.flags;
-
-    // Store each patterns into either m_fastPatternDict (*.txt, *.html etc. with default weight 50)
-    // or for the rest, like core.*, *.tar.bz2, *~, into highWeightPatternOffset (>50)
-    // or lowWeightPatternOffset (<=50)
-
-    Glob adjustedGlob(glob);
-    if (!adjustedGlob.casesensitive)
-        adjustedGlob.pattern = adjustedGlob.pattern.toLower();
-    if (adjustedGlob.weight >= 50) {
-        if (!m_highWeightGlobs.hasPattern(adjustedGlob.mimeType, adjustedGlob.pattern))
-            m_highWeightGlobs.append(adjustedGlob);
-    } else {
-        if (!m_lowWeightGlobs.hasPattern(adjustedGlob.mimeType, adjustedGlob.pattern))
-            m_lowWeightGlobs.append(adjustedGlob);
-    }
-}
-
-KMimeGlobsFileParser::PatternsMap KMimeGlobsFileParser::AllGlobs::patternsMap() const
-{
-    PatternsMap patMap;
-    patMap.reserve(m_highWeightGlobs.size() + m_lowWeightGlobs.size());
-
-    // This is just to fill in KMimeType::patterns. This has no real effect
-    // on the actual mimetype matching.
-
-    Q_FOREACH(const Glob& glob, m_highWeightGlobs)
-        patMap[glob.mimeType].append(glob.pattern);
-
-    Q_FOREACH(const Glob& glob, m_lowWeightGlobs)
-        patMap[glob.mimeType].append(glob.pattern);
-
-    return patMap;
-}
-
-void KMimeGlobsFileParser::AllGlobs::removeMime(const QString& mime)
-{
-    m_highWeightGlobs.removeMime(mime);
-    m_lowWeightGlobs.removeMime(mime);
 }
