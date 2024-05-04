@@ -652,9 +652,8 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
 
  notype:
     if (details > 1) {
-        // In real "remote" slaves, this is usually done using findByNameAndContent
-        // after receiving some data. But we don't know how much data the mimemagic rules
-        // need, so for local files, better use findByPath with mode.
+        // In real "remote" slaves, this usually depends on the protocol but not here - it can be
+        // determined from content, path or mode
         KMimeType::Ptr mt = KMimeType::findByPath(filename, buff.st_mode);
         entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, mt->name());
     }
