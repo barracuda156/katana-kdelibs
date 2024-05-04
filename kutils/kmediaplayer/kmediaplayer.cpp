@@ -477,7 +477,7 @@ bool KAbstractPlayer::isProtocolSupported(const QString &protocol) const
 
 bool KAbstractPlayer::isPathSupported(const QString &path) const
 {
-    const KMimeType::Ptr mime = KMimeType::findByPath(path);
+    const KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(path));
     if (mime && isMimeSupported(mime->name())) {
         return true;
     }

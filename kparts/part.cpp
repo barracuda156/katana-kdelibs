@@ -451,7 +451,7 @@ bool ReadOnlyPartPrivate::openLocalFile()
     // set the mimetype only if it was not already set (for example, by the host application)
     if (m_arguments.mimeType().isEmpty()) {
         // get the mimetype of the file using findByUrl() to avoid another string -> url conversion
-        KMimeType::Ptr mime = KMimeType::findByUrl(m_url, 0, true /* local file*/);
+        KMimeType::Ptr mime = KMimeType::findByUrl(m_url);
         if (mime) {
             m_arguments.setMimeType(mime->name());
             m_bAutoDetectedMime = true;

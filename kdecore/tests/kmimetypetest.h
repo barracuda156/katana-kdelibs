@@ -38,10 +38,9 @@ private Q_SLOTS:
     void testAdditionalGlobs_data();
     void testAdditionalGlobs();
     void testFindByPathWithContent();
-    void testFindByNameAndContent();
     void testFindByContent();
     void testFindByContent_data();
-    void testFindByFileContent();
+    void testFindByName();
     void testAllMimeTypes();
     void testAlias();
     void testMimeTypeParent();

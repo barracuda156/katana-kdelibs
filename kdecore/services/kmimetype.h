@@ -84,9 +84,8 @@ public:
     static QString favIconForUrl(const KUrl &url, bool download = false);
 
     /**
-     * Returns the descriptive comment associated with the MIME type.
-     * The url argument is unused, but provided so that KMimeType derived classes
-     * can use it.
+     * Returns the descriptive comment associated with the MIME type. The url argument is used for
+     * folders.
      *
      * @return The descriptive comment associated with the MIME type, if any.
      */
@@ -114,83 +113,39 @@ public:
      *
      * @param name the name of the mime type
      * @param options controls how the mime type is searched for
-     * @return the pointer to the KMimeType with the given @p name, or
-     *         0 if not found
+     * @return the pointer to the KMimeType with the given @p name or null if not found
      * @see KServiceType::serviceType
      */
     static Ptr mimeType(const QString &name, FindByNameOption options = ResolveAliases);
 
     /**
-     * Finds a KMimeType with the given @p url.
-     * This function looks at mode_t first.
-     * If that does not help it looks at the extension (and the contents, for local files).
-     * This method is fine for many protocols like ftp, file, fish, zip etc.,
-     * but is not for http (e.g. cgi scripts
-     * make extension-based checking unreliable).
-     * For HTTP you should use KRun instead (to open the URL, in an app
-     * or internally), or a KIO::mimetype() job (to find the mimetype without
-     * downloading), or a KIO::get() job (to find the mimetype and then download).
-     * In fact KRun is the most complete solution, but deriving from it just
-     * for this is a bit cumbersome.
-     *
-     * If no extension matches, then the file contents will be examined if the URL is a local file, or
-     * "application/octet-stream" is returned otherwise.
-     *
-     * @param url Is the right most URL with a filesystem protocol. It
-     *        is up to you to find out about that if you have a nested
-     *        URL.  For example
-     *        "http://localhost/mist.gz#gzip:/decompress" would have to
-     *        pass the "http://..." URL part, while
-     *        "file:/tmp/x.tar#tar:/src/test.gz#gzip:/decompress" would
-     *        have to pass the "tar:/..." part of the URL, since gzip is
-     *        a filter protocol and not a filesystem protocol.
-     * @param mode the mode of the file (used, for example, to identify
-     *              executables)
-     * @param is_local_file true if the file is local; false if not, or if you don't know.
-     * @param fast_mode If set to true no disk access is allowed to
-     *        find out the mimetype. The result may be suboptimal, but
-     *        it is @em fast.
-     * @param accuracy if set, the accuracy of the result, between 0 and 100.
-     *        For instance, when the extension was used to determine the mimetype,
-     *        the accuracy is set to 80, as per the shared-mime spec.
-     *        Some 'magic' rules (used when !fast_mode) have an accuracy > 80
-     *        (and have priority over the filename, others are < 80).
-     *
-     * @return A pointer to the matching mimetype. 0 is never returned.
-     * @em Very @em Important: Don't store the result in a KMimeType* !
-     */
-    static Ptr findByUrl(const KUrl &url, mode_t mode = 0,
-                         bool is_local_file = false, bool fast_mode = false,
-                         int *accuracy = 0);
-    /**
-     * Finds a KMimeType with the given @p url.
-     * This function looks at mode_t first.
-     * If that does not help it
-     * looks at the extension.  This is fine for FTP, FILE, TAR and
-     * friends, but is not for HTTP ( cgi scripts! ). You should use
-     * KRun instead, but this function returns immediately while
-     * KRun is async. If no extension matches, then
-     * the file contents will be examined if the URL is a local file, or
-     * "application/octet-stream" is returned otherwise.
-     *
-     * Equivalent to
-     * \code
-     * KUrl u(path);
-     * return findByUrl( u, mode, true, fast_mode );
-     * \endcode
+     * Finds a KMimeType with the given @p url. This function looks at mode_t first, if that does
+     * not help it looks at the name. If no extension matches, then the file contents will be
+     * examined if the URL is a local file. If nothing matches "application/octet-stream" is
+     * returned.
      *
      * @param path the path to the file (a file name is enough, in fast mode)
-     * @param mode the mode of the file (used, for example, to identify
-     *              executables)
-     * @param fast_mode If set to true no disk access is allowed to
-     *        find out the mimetype. The result may be suboptimal, but
-     *        it is @em fast.
+     * @param mode the mode of the file (used, for example, to identify executables)
+     * @param fast_mode If set to true no disk access is allowed to find out the mimetype. The
+     *        result may be suboptimal but it is @em fast.
+     * @param accuracy If not a null pointer accuracy is set to the accuracy of the match (which is
+     *                 in the range 0..100)
+     * @return A pointer to the matching mimetype. null is never returned.
+     */
+    static Ptr findByUrl(const KUrl &url, mode_t mode = 0,
+                          bool fast_mode = false, int* accuracy = 0);
+
+    /**
+     * Tries to find out the MIME type of a file by matching its name to MIME type rules. Note that
+     * the file's contents is not used.
+     *
+     * @param fileName the path to the file
      * @param accuracy If not a null pointer, *accuracy is set to the
      *          accuracy of the match (which is in the range 0..100)
-     * @return A pointer to the matching mimetype. 0 is never returned.
+     * @return a pointer to the KMimeType, or the default mimetype
+     *         (application/octet-stream) if the file cannot be opened.
      */
-    static Ptr findByPath(const QString &path, mode_t mode = 0,
-                          bool fast_mode = false, int* accuracy = 0);
+    static Ptr findByName(const QString &fileName, int *accuracy = 0);
 
     /**
      * Tries to find out the MIME type of a data chunk by looking for
@@ -202,74 +157,7 @@ public:
      * @return a pointer to the KMimeType. "application/octet-stream" is
      *          returned if the type can not be found this way.
      */
-    static Ptr findByContent(const QByteArray &data, int *accuracy=0);
-
-    /**
-     * Tries to find out the MIME type of filename/url and a data chunk.
-     * Whether to trust the extension or the data depends on the results of both approaches,
-     * and is determined automatically.
-     *
-     * This method is useful for instance in the get() method of kioslaves, and anywhere else
-     * where a filename is associated with some data which is available immediately.
-     *
-     * @param name the filename or url representing this data.
-     * Only used for the extension, not used as a local filename.
-     * @param data the data to examine when the extension isn't conclusive in itself
-     * @param mode the mode of the file (used, for example, to identify executables)
-     * @param accuracy If not a null pointer, *accuracy is set to the
-     *          accuracy of the match (which is in the range 0..100)
-     */
-    static Ptr findByNameAndContent(const QString &name, const QByteArray &data,
-                                    mode_t mode = 0, int *accuracy = 0);
-
-    /**
-     * Tries to find out the MIME type of a data chunk by looking for
-     * certain magic numbers and characteristic strings in it.
-     *
-     * @param device the IO device providing the data to examine
-     * @param accuracy If not a null pointer, *accuracy is set to the
-     *          accuracy of the match (which is in the range 0..100)
-     * @return a pointer to the KMimeType. "application/octet-stream" is
-     *          returned if the type can not be found this way.
-     * @since 4.4
-     */
-    static Ptr findByContent(QIODevice* device, int* accuracy = 0);
-
-    /**
-     * Tries to find out the MIME type of filename/url and a data chunk.
-     * Whether to trust the extension or the data depends on the results of both approaches,
-     * and is determined automatically.
-     *
-     * This method is useful for instance in the get() method of kioslaves, and anywhere else
-     * where a filename is associated with some data which is available immediately.
-     *
-     * @param name the filename or url representing this data.
-     * Only used for the extension, not used as a local filename.
-     * @param device the IO device providing the data to examine when the extension isn't conclusive in itself
-     * @param mode the mode of the file (used, for example, to identify executables)
-     * @param accuracy If not a null pointer, *accuracy is set to the
-     *          accuracy of the match (which is in the range 0..100)
-     * @return a pointer to the KMimeType. "application/octet-stream" is
-     *          returned if the type can not be found this way.
-     * @since 4.4
-     */
-    static Ptr findByNameAndContent(const QString &name, QIODevice *device,
-                                    mode_t mode = 0, int* accuracy = 0);
-
-    /**
-     * Tries to find out the MIME type of a file by looking for
-     * certain magic numbers and characteristic strings in it.
-     * This function is similar to the previous one. Note that the
-     * file name is not used for determining the file type, it is just
-     * used for loading the file's contents.
-     *
-     * @param fileName the path to the file
-     * @param accuracy If not a null pointer, *accuracy is set to the
-     *          accuracy of the match (which is in the range 0..100)
-     * @return a pointer to the KMimeType, or the default mimetype
-     *         (application/octet-stream) if the file cannot be opened.
-     */
-    static Ptr findByFileContent(const QString &fileName, int *accuracy = 0);
+    static Ptr findByContent(const QByteArray &data, int *accuracy = 0);
 
     /**
      * Returns whether a file has an internal format that is not human readable.
@@ -414,9 +302,6 @@ protected:
 
 private:
     KMimeTypePrivate* d_ptr;
-
-    static KMimeType::Ptr findByUrlHelper(const KUrl &url, mode_t mode,
-                                          bool is_local_file, QIODevice* device, int* accuracy);
 };
 
 #endif // KMIMETYPE_H

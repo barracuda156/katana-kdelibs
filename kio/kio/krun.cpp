@@ -1071,7 +1071,7 @@ void KRun::init()
             d->m_mode = buff.st_mode;
         }
 
-        KMimeType::Ptr mime = KMimeType::findByUrl(d->m_strURL, d->m_mode, true /*local*/);
+        KMimeType::Ptr mime = KMimeType::findByUrl(d->m_strURL, d->m_mode);
         assert(mime);
         kDebug(7010) << "MIME TYPE is " << mime->name();
         if (mime->isDefault() && !QFileInfo(d->m_strURL.toLocalFile()).isReadable()) {

@@ -652,9 +652,13 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
 
  notype:
     if (details > 1) {
+        QString fullPath = QFile::decodeName(path);
+        if (!fullPath.startsWith(QDir::separator())) {
+            fullPath.prepend(QDir::currentPath() + QDir::separator());
+        }
         // In real "remote" slaves, this usually depends on the protocol but not here - it can be
         // determined from content, path or mode
-        KMimeType::Ptr mt = KMimeType::findByPath(QFile::decodeName(path), buff.st_mode);
+        KMimeType::Ptr mt = KMimeType::findByUrl(KUrl(fullPath), type);
         if (!mt.isNull()) {
             entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, mt->name());
         }

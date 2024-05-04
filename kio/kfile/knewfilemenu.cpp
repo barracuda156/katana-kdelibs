@@ -527,7 +527,10 @@ void KNewFileMenuPrivate::executeStrategy()
             QFile srcFile(uSrc.toLocalFile());
             if (srcFile.open(QIODevice::ReadOnly)) {
                 KMimeType::Ptr wantedMime = KMimeType::findByUrl(uSrc);
-                KMimeType::Ptr mime = KMimeType::findByNameAndContent(m_copyData.m_chosenFileName, &srcFile);
+                KMimeType::Ptr mime = KMimeType::findByName(m_copyData.m_chosenFileName);
+                if (mime && mime->isDefault()) {
+                    mime = wantedMime;
+                }
                 // kDebug() << "mime=" << mime->name() << "wantedMime=" << wantedMime->name();
                 if (!mime->is(wantedMime->name()))
                     chosenFileName += wantedMime->mainExtension();
@@ -633,7 +636,7 @@ void KNewFileMenuPrivate::fillMenu()
                             // Determine mimetype on demand
                             KMimeType::Ptr mime;
                             if (entry.mimeType.isEmpty()) {
-                                mime = KMimeType::findByPath(entry.templatePath);
+                                mime = KMimeType::findByUrl(KUrl(entry.templatePath));
                                 if (mime) {
                                     // kDebug() << entry.templatePath << "is" << mime->name();
                                     entry.mimeType = mime->name();

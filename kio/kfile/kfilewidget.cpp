@@ -2246,7 +2246,7 @@ void KFileWidgetPrivate::updateFilter()
             return;
 
         if( filterWidget->isMimeFilter()) {
-            KMimeType::Ptr mime = KMimeType::findByPath(urlStr, 0, true);
+            KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(urlStr));
             if (mime && mime->name() != KMimeType::defaultMimeType()) {
                 if (filterWidget->currentFilter() != mime->name() &&
                     filterWidget->filters().indexOf(mime->name()) != -1)

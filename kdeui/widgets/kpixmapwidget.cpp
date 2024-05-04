@@ -35,7 +35,7 @@ static bool kCheckMimeData(const QMimeData *mimedata)
         return true;
     } else if (mimedata->hasUrls()) {
         foreach (const QUrl &mimedataurl, mimedata->urls()) {
-            const KMimeType::Ptr mimetype = KMimeType::findByPath(mimedataurl.toLocalFile());
+            const KMimeType::Ptr mimetype = KMimeType::findByUrl(mimedataurl);
             if (mimetype && KImageIO::isSupported(mimetype->name())) {
                 // atleast one supported image
                 return true;
@@ -191,10 +191,9 @@ void KPixmapWidget::dropEvent(QDropEvent *event)
         setPixmap(qvariant_cast<QPixmap>(mimedata->imageData()));
     } else if (mimedata->hasUrls()) {
         foreach (const QUrl &mimedataurl, mimedata->urls()) {
-            const QString mimedataurlpath = mimedataurl.toLocalFile();
-            const KMimeType::Ptr mimetype = KMimeType::findByPath(mimedataurlpath);
+            const KMimeType::Ptr mimetype = KMimeType::findByUrl(mimedataurl);
             if (mimetype && KImageIO::isSupported(mimetype->name())) {
-                const QPixmap mimedataurlpixmap = QPixmap(mimedataurlpath);
+                const QPixmap mimedataurlpixmap = QPixmap(mimedataurl.toLocalFile());
                 if (!mimedataurlpixmap.isNull()) {
                     // the last pixmap wins
                     setPixmap(mimedataurlpixmap.scaled(QWidget::size(), Qt::KeepAspectRatio));

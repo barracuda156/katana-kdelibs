@@ -64,7 +64,7 @@ public:
         @note By default the type is none (i.e. @p KCompressorType::TypeUnknown). The type must be
         set before processing data and can determined via @p KCompressor::typeForMime or
         @p KCompressor::typeForFile depending if the input is file or data in memory
-        @see KMimeType::findByPath, KMimeType::findByContent
+        @see KMimeType::findByUrl, KMimeType::findByContent
     */
     bool setType(const KCompressorType type);
     /*!

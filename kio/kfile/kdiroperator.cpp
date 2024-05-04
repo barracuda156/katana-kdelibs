@@ -1323,7 +1323,7 @@ bool KDirOperator::Private::checkPreviewInternal() const
                 return true;
             }
 
-            KMimeType::Ptr mt = KMimeType::findByPath(it1, 0, true /*fast mode, no file contents exist*/);
+            KMimeType::Ptr mt = KMimeType::findByUrl(KUrl(it1), 0, true /*fast mode, no file contents exist*/);
             if (!mt)
                 continue;
             const QString mime = mt->name();

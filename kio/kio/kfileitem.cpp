@@ -603,7 +603,7 @@ KMimeType::Ptr KFileItem::determineMimeType() const
     if (!d->m_pMimeType || !d->m_bMimeTypeKnown) {
         bool isLocalUrl = false;
         KUrl url = mostLocalUrl(isLocalUrl);
-        d->m_pMimeType = KMimeType::findByUrl(url, d->m_fileMode, isLocalUrl);
+        d->m_pMimeType = KMimeType::findByUrl(url, d->m_fileMode, !isLocalUrl);
         Q_ASSERT(d->m_pMimeType);
         // kDebug() << d << "finding final mimetype for" << url << ":" << d->m_pMimeType->name();
         d->m_bMimeTypeKnown = true;
@@ -871,7 +871,7 @@ QPixmap KFileItem::pixmap(int _size, int _state) const
         KUrl sf;
         sf.setPath(d->m_url.path().left( d->m_url.path().length() - 3));
         // kDebug() << "subFileName=" << subFileName;
-        mime = KMimeType::findByUrl(sf, 0, d->m_bIsLocalUrl);
+        mime = KMimeType::findByUrl(sf, 0, !d->m_bIsLocalUrl);
     }
 
     KUrl url = mostLocalUrl();
@@ -1316,13 +1316,12 @@ KMimeType::Ptr KFileItem::mimeTypePtr() const
         Q_ASSERT(!d->m_url.isEmpty());
         bool isLocalUrl = false;
         KUrl url = mostLocalUrl(isLocalUrl);
-        int accuracy;
         d->m_pMimeType = KMimeType::findByUrl(
-            url, d->m_fileMode, isLocalUrl,
+            url, d->m_fileMode,
             // use fast mode if delayed mimetype determination can refine it later
-            d->m_delayedMimeTypes, &accuracy
+            d->m_delayedMimeTypes
         );
-        // If we didn't get a perfect (glob and content-based) match,
+        // If it was not a perfect (glob and content-based) match,
         // then determineMimeType will be able to do better for readable URLs.
         const bool canDoBetter = d->m_delayedMimeTypes;
         //kDebug() << "finding mimetype for" << url << ":" << d->m_pMimeType->name() << "canDoBetter=" << canDoBetter;

@@ -174,7 +174,7 @@ void Frame::setImage(const QString &path)
         return;
     }
 
-    KMimeType::Ptr mime = KMimeType::findByPath(d->absImagePath);
+    KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(d->absImagePath));
 
     if (!mime->is("image/svg+xml") && !mime->is("application/x-gzip")) {
         d->pixmap = new QPixmap(d->absImagePath);

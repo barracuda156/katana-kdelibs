@@ -267,7 +267,7 @@ KCompressor::KCompressorType KCompressor::typeForMime(const QString &mime)
 
 KCompressor::KCompressorType KCompressor::typeForFile(const QString &filepath)
 {
-    const KMimeType::Ptr kmimetype = KMimeType::findByPath(filepath);
+    const KMimeType::Ptr kmimetype = KMimeType::findByUrl(KUrl(filepath));
     if (kmimetype) {
         return KCompressor::typeForMime(kmimetype->name());
     }

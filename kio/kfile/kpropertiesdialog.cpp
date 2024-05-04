@@ -698,7 +698,7 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
     KIO::filesize_t totalSize = item.size();
     QString magicMimeComment;
     if (isLocal) {
-        KMimeType::Ptr magicMimeType = KMimeType::findByFileContent(url.toLocalFile());
+        KMimeType::Ptr magicMimeType = KMimeType::findByUrl(url);
         if (magicMimeType->name() != KMimeType::defaultMimeType()) {
             magicMimeComment = magicMimeType->comment();
         }
@@ -800,7 +800,7 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
                 mimeComment.clear();
             }
             if (isLocal && !magicMimeComment.isNull()) {
-                KMimeType::Ptr magicMimeType = KMimeType::findByFileContent(url.toLocalFile());
+                KMimeType::Ptr magicMimeType = KMimeType::findByUrl(url);
                 if (magicMimeType->comment() != magicMimeComment) {
                     magicMimeComment.clear();
                 }
@@ -1421,9 +1421,7 @@ void KFilePropsPlugin::applyIconChanges()
         }
 
         // Get the default image
-        QString str = KMimeType::findByUrl(url,
-                                           properties->item().mode(),
-                                           true )->iconName();
+        QString str = KMimeType::findByUrl(url, properties->item().mode())->iconName();
         // Is it another one than the default ?
         QString sIcon;
         if (str != iconButton->icon()) {

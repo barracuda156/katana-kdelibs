@@ -54,7 +54,7 @@ public:
             return;
         }
 
-        KMimeType::Ptr mime = KMimeType::findByPath(absImagePath);
+        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(absImagePath));
         QPixmap pm(q->size().toSize());
 
         if (mime->is("image/svg+xml") || mime->is("image/svg+xml-compressed")) {

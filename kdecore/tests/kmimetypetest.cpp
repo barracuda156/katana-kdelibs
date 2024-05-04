@@ -274,7 +274,7 @@ void KMimeTypeTest::testFindByPathUsingFileName()
 {
     QFETCH(QString, fileName);
     QFETCH(QString, expectedMimeType);
-    KMimeType::Ptr mime = KMimeType::findByPath(fileName);
+    KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(fileName));
     QVERIFY( mime );
     QCOMPARE(mime->name(), expectedMimeType);
 
@@ -314,14 +314,14 @@ void KMimeTypeTest::testFindByPathWithContent()
     // If we find x-matlab because it starts with '%' then we are not ordering by priority.
     KTemporaryFile tempFile;
     QVERIFY(tempFile.open());
-    QString tempFileName = tempFile.fileName();
+    KUrl tempFileName = tempFile.fileName();
     tempFile.write("%PDF-");
     tempFile.close();
-    mime = KMimeType::findByPath( tempFileName );
+    mime = KMimeType::findByUrl( tempFileName );
     QVERIFY( mime );
     QCOMPARE( mime->name(), QString::fromLatin1( "application/pdf" ) );
     // fast mode cannot find the mimetype
-    mime = KMimeType::findByPath( tempFileName, 0, true );
+    mime = KMimeType::findByUrl( tempFileName, 0, true );
     QVERIFY( mime );
     QCOMPARE(mime->name(), QString::fromLatin1("application/octet-stream"));
 
@@ -331,13 +331,13 @@ void KMimeTypeTest::testFindByPathWithContent()
         txtTempFile.setSuffix(".txt");
         QVERIFY(txtTempFile.open());
         txtTempFile.write("%PDF-");
-        QString txtTempFileName = txtTempFile.fileName();
+        KUrl txtTempFileName = txtTempFile.fileName();
         txtTempFile.close();
-        mime = KMimeType::findByPath( txtTempFileName );
+        mime = KMimeType::findByUrl( txtTempFileName );
         QVERIFY( mime );
         QCOMPARE( mime->name(), QString::fromLatin1( "text/plain" ) );
         // fast mode finds the same
-        mime = KMimeType::findByPath( txtTempFileName, 0, true );
+        mime = KMimeType::findByUrl( txtTempFileName, 0, true );
         QVERIFY( mime );
         QCOMPARE( mime->name(), QString::fromLatin1( "text/plain" ) );
     }
@@ -350,9 +350,9 @@ void KMimeTypeTest::testFindByPathWithContent()
         txtTempFile.setSuffix(".txt");
         QVERIFY(txtTempFile.open());
         txtTempFile.write("<smil");
-        QString txtTempFileName = txtTempFile.fileName();
+        KUrl txtTempFileName = txtTempFile.fileName();
         txtTempFile.close();
-        mime = KMimeType::findByPath( txtTempFileName );
+        mime = KMimeType::findByUrl( txtTempFileName );
         QVERIFY( mime );
         QCOMPARE( mime->name(), QString::fromLatin1( "text/plain" ) );
     }
@@ -372,63 +372,6 @@ void KMimeTypeTest::testFindByUrl()
 
     mime = KMimeType::findByUrl(KUrl("http://foo/s0/"));
     QCOMPARE( mime->name(), QString::fromLatin1( "application/octet-stream" ) ); // HTTP can't know before downloading
-}
-
-void KMimeTypeTest::testFindByNameAndContent()
-{
-    KMimeType::Ptr mime;
-
-    QByteArray textData = "Hello world";
-    // textfile -> text/plain. No extension -> mimetype is found from the contents.
-    mime = KMimeType::findByNameAndContent("textfile", textData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("text/plain") );
-
-    // textfile.foo -> text/plain. Unknown extension -> mimetype is found from the contents.
-    mime = KMimeType::findByNameAndContent("textfile.foo", textData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("text/plain") );
-
-    // mswordfile.doc -> application/msword. Found by glob.
-    mime = KMimeType::findByNameAndContent("textfile.doc", textData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("application/msword") );
-
-    // mswordfile.doc -> application/msword. Found by contents.
-    // Note that it's application/msword, not application/vnd.ms-word, since it's the former that is registered to IANA.
-    QByteArray mswordData = "\320\317\021\340\241\261\032\341";
-    mime = KMimeType::findByNameAndContent("mswordfile.doc", mswordData);
-    QVERIFY( mime );
-    // If you get powerpoint instead, then you're hit by https://bugs.freedesktop.org/show_bug.cgi?id=435 - upgrade to shared-mime-info >= 0.22
-    QCOMPARE( mime->name(), QString::fromLatin1("application/msword") );
-
-    // excelfile.xls -> application/vnd.ms-excel. Found by extension.
-    mime = KMimeType::findByNameAndContent("excelfile.xls", mswordData /*same magic*/);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("application/vnd.ms-excel") );
-
-    // textfile.xls -> application/vnd.ms-excel. Found by extension. User shouldn't rename a text file to .xls ;)
-    mime = KMimeType::findByNameAndContent("textfile.xls", textData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("application/vnd.ms-excel") );
-
-#if 0   // needs shared-mime-info >= 0.20
-    QByteArray tnefData = "\x78\x9f\x3e\x22";
-    mime = KMimeType::findByNameAndContent("tneffile", mswordData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("application/vnd.ms-tnef") );
-#endif
-
-    QByteArray pdfData = "%PDF-";
-    mime = KMimeType::findByNameAndContent("foo", pdfData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("application/pdf") );
-
-    // High-priority rule (80)
-    QByteArray phpData = "<?php";
-    mime = KMimeType::findByNameAndContent("foo", phpData);
-    QVERIFY( mime );
-    QCOMPARE( mime->name(), QString::fromLatin1("application/x-php") );
 }
 
 void KMimeTypeTest::testFindByContent_data()
@@ -464,20 +407,20 @@ void KMimeTypeTest::testFindByContent()
     QCOMPARE( mime->name(), expectedMimeType );
 }
 
-void KMimeTypeTest::testFindByFileContent()
+void KMimeTypeTest::testFindByName()
 {
     KMimeType::Ptr mime;
     int accuracy = 0;
 
-    // Calling findByContent on a directory
-    mime = KMimeType::findByFileContent("/", &accuracy);
+    // Calling findByName on a directory
+    mime = KMimeType::findByName("/", &accuracy);
     QVERIFY(mime);
     QCOMPARE(mime->name(), QString::fromLatin1("inode/directory"));
     QCOMPARE(accuracy, 100);
 
-    // Albert calls findByFileContent with a URL instead of a path and gets 11021 as accuracy :)
-    // It was not set inside findByFileContent -> fixed.
-    mime = KMimeType::findByFileContent("file:///etc/passwd" /*bad example code, use a path instead*/, &accuracy);
+    // Albert calls findByName with a URL instead of a path and gets 11021 as accuracy :)
+    // It was not set inside findByName -> fixed.
+    mime = KMimeType::findByName("file:///etc/passwd" /*bad example code, use a path instead*/, &accuracy);
     QVERIFY(mime);
     QCOMPARE(mime->name(), QString::fromLatin1("application/octet-stream"));
     QCOMPARE(accuracy, 0);
@@ -954,15 +897,14 @@ void KMimeTypeTest::testThreads()
 {
     // Note that data-based tests cannot be used here (QTest::fetchData asserts).
     std::future<void> future1 = std::async(std::launch::async, &KMimeTypeTest::testFindByUrl, this);
-    std::future<void> future2 = std::async(std::launch::async, &KMimeTypeTest::testFindByFileContent, this);
-    std::future<void> future3 = std::async(std::launch::async, &KMimeTypeTest::testFindByNameAndContent, this);
-    std::future<void> future4 = std::async(std::launch::async, &KMimeTypeTest::testFindByPathWithContent, this);
-    std::future<void> future5 = std::async(std::launch::async, &KMimeTypeTest::testAllMimeTypes, this);
-    std::future<void> future6 = std::async(std::launch::async, &KMimeTypeTest::testAlias, this);
-    std::future<void> future7 = std::async(std::launch::async, &KMimeTypeTest::testMimeTypeParent, this);
-    std::future<void> future8 = std::async(std::launch::async, &KMimeTypeTest::testPreferredService, this);
-    std::future<void> future9 = std::async(std::launch::async, &KMimeTypeTest::testFromThread, this);
-    std::future<void> future10 = std::async(std::launch::async, &KMimeTypeTest::testHelperProtocols, this);
+    std::future<void> future2 = std::async(std::launch::async, &KMimeTypeTest::testFindByName, this);
+    std::future<void> future3 = std::async(std::launch::async, &KMimeTypeTest::testFindByPathWithContent, this);
+    std::future<void> future4 = std::async(std::launch::async, &KMimeTypeTest::testAllMimeTypes, this);
+    std::future<void> future5 = std::async(std::launch::async, &KMimeTypeTest::testAlias, this);
+    std::future<void> future6 = std::async(std::launch::async, &KMimeTypeTest::testMimeTypeParent, this);
+    std::future<void> future7 = std::async(std::launch::async, &KMimeTypeTest::testPreferredService, this);
+    std::future<void> future8 = std::async(std::launch::async, &KMimeTypeTest::testFromThread, this);
+    std::future<void> future9 = std::async(std::launch::async, &KMimeTypeTest::testHelperProtocols, this);
     kDebug() << "Joining all threads";
     future1.wait();
     future2.wait();
@@ -973,7 +915,6 @@ void KMimeTypeTest::testThreads()
     future7.wait();
     future8.wait();
     future9.wait();
-    future10.wait();
 }
 
 #include "moc_kmimetypetest.cpp"

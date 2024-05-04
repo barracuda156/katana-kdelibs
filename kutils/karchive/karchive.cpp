@@ -458,7 +458,7 @@ KArchive::KArchive(const QString &path, QObject *parent)
         return;
     }
 
-    const KMimeType::Ptr kmimetype = KMimeType::findByPath(path);
+    const KMimeType::Ptr kmimetype = KMimeType::findByUrl(KUrl(path));
     if (kmimetype) {
         foreach (const QString &mime, KArchive::writableMimeTypes()) {
             if (kmimetype->is(mime)) {
