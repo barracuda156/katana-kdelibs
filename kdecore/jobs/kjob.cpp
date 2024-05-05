@@ -70,10 +70,6 @@ KJobPrivate::KJobPrivate()
     totalAmount.fill(0);
 }
 
-KJobPrivate::~KJobPrivate()
-{
-}
-
 KJob::KJob(QObject *parent)
     : QObject(parent), d_ptr(new KJobPrivate)
 {
