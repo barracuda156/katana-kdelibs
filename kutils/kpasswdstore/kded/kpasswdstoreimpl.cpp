@@ -91,6 +91,11 @@ QString KPasswdStoreImpl::storeID() const
     return m_storeid;
 }
 
+bool KPasswdStoreImpl::isOpen() const
+{
+    return (m_passwdtimer.elapsed() < m_timeout);
+}
+
 bool KPasswdStoreImpl::openStore(const qlonglong windowid)
 {
     if (m_cacheonly) {

@@ -35,6 +35,7 @@ public:
 
     QString storeID() const;
 
+    bool isOpen() const;
     bool openStore(const qlonglong windowid);
     bool closeStore();
 

@@ -303,7 +303,7 @@ void SlaveBase::dispatchLoop()
         int ret = -1;
         if (d->appConnection.hasTaskAvailable() || d->appConnection.waitForIncomingTask(ms)) {
             // dispatch application messages
-            int cmd;
+            int cmd = 0;
             QByteArray data;
             ret = d->appConnection.read(&cmd, data);
 
@@ -578,6 +578,14 @@ void SlaveBase::reparseConfiguration()
 
 bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
 {
+    KPasswdStore* passwdstore = d->passwdStore();
+    Q_ASSERT(passwdstore);
+
+    passwdstore->openStore();
+    if (checkCachedAuthentication(info)) {
+        return true;
+    }
+
     if (metaData(QLatin1String("no-auth-prompt")).compare(QLatin1String("true"), Qt::CaseInsensitive) == 0) {
         return false;
     }
@@ -586,9 +594,6 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     QWidget *windowWidget = QWidget::find(windowId);
 
     AuthInfo dlgInfo(info);
-
-    KPasswdStore* passwdstore = d->passwdStore();
-    Q_ASSERT(passwdstore);
 
     // assemble dialog-flags
     KPasswordDialog::KPasswordDialogFlags dialogFlags;
@@ -605,9 +610,8 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
         dialogFlags |= KPasswordDialog::ShowUsernameLine;
     }
 
-    // If store is not enabled and the caller explicitly requested for it,
-    // do not show the keep password checkbox.
-    if (dlgInfo.keepPassword && !passwdstore->cacheOnly()) {
+    // If the caller explicitly requested for it do not show the keep password checkbox.
+    if (dlgInfo.keepPassword) {
         dialogFlags |= KPasswordDialog::ShowKeepPassword;
     }
 
@@ -636,9 +640,8 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
         dlg->setUsernameReadOnly(true);
     }
 
-    if (!passwdstore->cacheOnly()) {
-        dlg->setKeepPassword(true);
-    }
+    // even if the store is not open passwords can be temporary stored
+    dlg->setKeepPassword(true);
 
     if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_DOMAIN).isValid()) {
         dlg->setDomain(dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_DOMAIN).toString());
@@ -948,16 +951,21 @@ bool SlaveBase::checkCachedAuthentication(AuthInfo &info)
 {
     KPasswdStore* passwdstore = d->passwdStore();
     Q_ASSERT(passwdstore);
+    if (!passwdstore->isOpen() && !passwdstore->cacheOnly()) {
+        // let it fail the first time, if authorization is really required openPasswordDialog()
+        // will open the store and call this method
+        return false;
+    }
     const qlonglong windowId = metaData(QLatin1String("window-id")).toLongLong();
     QByteArray authkey = authInfoKey(info);
-    if (passwdstore->hasPasswd(authkey, windowId)) {
-        const QString passwd = passwdstore->getPasswd(authkey, windowId);
+    QString passwd = passwdstore->getPasswd(authkey, windowId);
+    if (!passwd.isEmpty()) {
         info = authInfoFromData(passwd.toLatin1());
         return true;
     }
     authkey = authInfoKey2(info);
-    if (passwdstore->hasPasswd(authkey, windowId)) {
-        const QString passwd = passwdstore->getPasswd(authkey, windowId);
+    passwd = passwdstore->getPasswd(authkey, windowId);
+    if (!passwd.isEmpty()) {
         info = authInfoFromData(passwd.toLatin1());
         return true;
     }

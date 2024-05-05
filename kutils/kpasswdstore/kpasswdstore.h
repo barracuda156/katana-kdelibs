@@ -71,6 +71,11 @@ public:
     void setStoreID(const QString &id);
 
     /*!
+        @brief Returns true if the store is open, false otherwise
+    */
+    bool isOpen() const;
+
+    /*!
         @brief Opens the store by asking for the password for it and returns
         @p true if the store is open, @p false otherwise
     */
@@ -88,11 +93,6 @@ public:
     */
     bool cacheOnly() const;
 
-    /*!
-        @brief Returns @p true if there is password for the given @p key in the
-        password store, @p false otherwise
-    */
-    bool hasPasswd(const QByteArray &key, const qlonglong windowid = 0);
     /*!
         @brief Retrieves password for the given @p key from the password store
     */

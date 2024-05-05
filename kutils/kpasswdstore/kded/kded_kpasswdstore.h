@@ -34,6 +34,7 @@ public:
     ~KPasswdStoreModule();
 
 public Q_SLOTS:
+    Q_SCRIPTABLE bool isOpen(const QByteArray &cookie, const QString &storeid);
     Q_SCRIPTABLE bool openStore(const QByteArray &cookie, const QString &storeid, const qlonglong windowid = 0);
     Q_SCRIPTABLE bool closeStore(const QByteArray &cookie, const QString &storeid, const qlonglong windowid = 0);
 

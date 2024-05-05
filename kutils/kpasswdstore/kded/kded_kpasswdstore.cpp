@@ -32,6 +32,23 @@ KPasswdStoreModule::~KPasswdStoreModule()
     qDeleteAll(m_stores);
 }
 
+bool KPasswdStoreModule::isOpen(const QByteArray &cookie, const QString &storeid)
+{
+   KPasswdStoreMap::const_iterator it = m_stores.begin();
+    while (it != m_stores.end()) {
+        if (it.key() != cookie) {
+            it++;
+            continue;
+        }
+        KPasswdStoreImpl *store = it.value();
+        if (store->storeID() == storeid) {
+            return store->isOpen();
+        }
+        it++;
+    }
+    return false;
+}
+
 bool KPasswdStoreModule::openStore(const QByteArray &cookie, const QString &storeid, const qlonglong windowid)
 {
     KPasswdStoreMap::iterator it = m_stores.begin();
