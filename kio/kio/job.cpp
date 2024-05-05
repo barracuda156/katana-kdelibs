@@ -903,12 +903,6 @@ void TransferJob::slotDataReq()
         KIO::filesize_t size = processedAmount(KJob::Bytes)+dataForSlave.size();
         setProcessedAmount(KJob::Bytes, size);
     }
-
-    if (d->m_subJob) {
-        // Bitburger protocol in action
-        d->internalSuspend(); // Wait for more data from subJob.
-        d->m_subJob->d_func()->internalResume(); // Ask for more!
-    }
 }
 
 void TransferJobPrivate::internalSuspend()
@@ -979,20 +973,6 @@ void TransferJobPrivate::slotCanResume(KIO::filesize_t offset)
 {
     Q_Q(TransferJob);
     emit q->canResume(q, offset);
-}
-
-void TransferJob::slotResult(KJob *job)
-{
-    Q_D(TransferJob);
-    // This can only be our subjob.
-    Q_ASSERT(job == d->m_subJob);
-
-   SimpleJob::slotResult(job);
-
-   if (!error() && job == d->m_subJob) {
-      d->m_subJob = 0; // No action required
-      d->internalResume(); // Make sure we get the remaining data.
-   }
 }
 
 void TransferJob::setModificationTime(const QDateTime &mtime)

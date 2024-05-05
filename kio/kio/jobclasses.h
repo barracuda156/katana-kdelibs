@@ -486,12 +486,6 @@ namespace KIO {
 
     protected:
         /**
-         * Called when m_subJob finishes.
-         * @param job the job that finished
-         */
-        virtual void slotResult( KJob *job );
-
-        /**
          * Reimplemented for internal reasons
          */
         virtual bool doResume();

@@ -233,16 +233,15 @@ namespace KIO {
     class TransferJobPrivate: public SimpleJobPrivate
     {
     public:
-        inline TransferJobPrivate(const KUrl& url, int command, const QByteArray &packedArgs)
+        TransferJobPrivate(const KUrl& url, int command, const QByteArray &packedArgs)
             : SimpleJobPrivate(url, command, packedArgs),
-              m_internalSuspended(false),
-              m_subJob(0)
-            { }
+            m_internalSuspended(false)
+        {
+        }
 
         bool m_internalSuspended;
         KUrl m_redirectionURL;
         KUrl::List m_redirectionList;
-        TransferJob *m_subJob;
 
         /**
          * Flow control. Suspend data processing from the slave.
