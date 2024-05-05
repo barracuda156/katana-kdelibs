@@ -98,7 +98,7 @@ bool KPasswdStoreImpl::isOpen() const
 
 bool KPasswdStoreImpl::openStore(const qlonglong windowid)
 {
-    if (m_cacheonly) {
+    if (m_cacheonly && m_passwdtimer.elapsed() < m_timeout) {
         return false;
     }
 
@@ -111,9 +111,14 @@ bool KPasswdStoreImpl::openStore(const qlonglong windowid)
         }
     }
     if (!hasPasswd()) {
-        KMessageBox::error(widgetForWindowID(windowid), i18n("The storage could not be open, no passwords will be permanently stored"));
+        KMessageBox::error(
+            widgetForWindowID(windowid),
+            i18n("The storage could not be open, passwords will not be permanently stored until the store is open")
+        );
         setCacheOnly(true);
         return false;
+    } else {
+        setCacheOnly(false);
     }
     return true;
 }
@@ -188,7 +193,7 @@ bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerr
     if (!m_passwd.isEmpty() && m_passwdtimer.elapsed() >= m_timeout) {
         m_passwd.clear();
     }
-    m_passwdtimer.restart();
+    m_passwdtimer.start();
 
     if (m_passwd.isEmpty()) {
         QByteArray kpasswddialogpass;
