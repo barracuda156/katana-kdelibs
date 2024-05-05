@@ -1053,34 +1053,31 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
 // password part
 CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
 {
-    CURLcode curlresult = curl_easy_perform(m_curl);
-    const QString urlusername = url.userName();
+    CURLcode curlresult = CURLE_OK;
     KIO::AuthInfo kioauthinfo;
     kioauthinfo.url = url;
-    kioauthinfo.username = urlusername;
+    kioauthinfo.username = url.userName();
     kioauthinfo.password = url.password();
-    if (curlresult != CURLE_OK) {
-        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
-            kDebug(7103) << "Authorizing from cache" << url.prettyUrl();
-            if (checkCachedAuthentication(kioauthinfo)) {
-                curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
-                if (curlresult != CURLE_OK) {
-                    return curlresult;
-                }
-                curlresult = curl_easy_perform(m_curl);
-                if (curlresult != CURLE_OK) {
-                    kioerror = curlToKIOError(curlresult, m_curl);
-                    if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
-                        kDebug(7103) << "Going to redirect for cache authorization";
-                        KUrl newurl(url);
-                        newurl.setUserName(kioauthinfo.username);
-                        newurl.setPassword(kioauthinfo.password);
-                        *redirecturl = newurl;
-                    }
-                }
+    if (checkCachedAuthentication(kioauthinfo)) {
+        kDebug(7103) << "Authorizing from cache" << url.prettyUrl();
+        curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
+        if (curlresult != CURLE_OK) {
+            return curlresult;
+        }
+        curlresult = curl_easy_perform(m_curl);
+        if (curlresult != CURLE_OK) {
+            KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+            if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
+                kDebug(7103) << "Going to redirect for cached authorization";
+                KUrl newurl(url);
+                newurl.setUserName(kioauthinfo.username);
+                newurl.setPassword(kioauthinfo.password);
+                *redirecturl = newurl;
             }
         }
+    } else {
+        kDebug(7103) << "No cached authorization" << url.prettyUrl();
+        curlresult = curl_easy_perform(m_curl);
     }
 
     if (curlresult != CURLE_OK) {
