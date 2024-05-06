@@ -3,7 +3,6 @@ MACRO(PLASMA_UNIT_TESTS)
         kde4_add_test(plasma-${_testname} ${_testname}.cpp)
         target_link_libraries(plasma-${_testname}
             ${QT_QTTEST_LIBRARY}
-            ${QT_QTDECLARATIVE_LIBRARY}
             kio
             kdeui
             plasma
