@@ -212,7 +212,7 @@ bool KGlobalAccelPrivate::doRegister(KAction *action)
             shortcut.keyModX = keyModX;
             shortcut.keyCodeX = keyCodeX;
             filter->shortcuts.append(shortcut);
-            kDebug(s_kglobalaccelarea) << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+            kDebug(s_kglobalaccelarea) << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX;
             // grabbed one, that is success
             result = true;
         } else {
@@ -232,11 +232,11 @@ bool KGlobalAccelPrivate::remove(KAction *action)
         if (shortcut.action == action) {
             found = true;
             if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
-                kDebug(s_kglobalaccelarea) << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+                kDebug(s_kglobalaccelarea) << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX;
                 iter.remove();
                 result = true;
             } else {
-                kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX << shortcut.action;
+                kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX;
             }
         }
     }
