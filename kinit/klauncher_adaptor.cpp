@@ -368,6 +368,7 @@ void KLauncherAdaptor::slotProcessFinished(int exitcode)
     KLauncherProcess* process = qobject_cast<KLauncherProcess*>(sender());
     kDebug() << "process finished" << process << exitcode;
     m_processes.removeAll(process);
+    process->deleteLater();
 }
 
 QString KLauncherAdaptor::findExe(const QString &app) const
