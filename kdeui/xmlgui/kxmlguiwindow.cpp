@@ -31,7 +31,6 @@
 #include "kxmlguifactory.h"
 #include "kcmdlineargs.h"
 #include "ktoggleaction.h"
-#include "ksessionmanager.h"
 #include "kstandardaction.h"
 
 #include <config.h>

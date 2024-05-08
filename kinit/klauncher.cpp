@@ -45,17 +45,6 @@ KLauncher::~KLauncher()
     session.unregisterService("org.kde.klauncher");
 }
 
-void KLauncher::setSessionManager(const QByteArray &sessionmanager)
-{
-    const int equalindex = sessionmanager.indexOf('=');
-    kDebug() << "SESSION_MANAGER" << sessionmanager;
-    if (equalindex > 0) {
-        const QByteArray sessionmanagervalue = sessionmanager.mid(equalindex + 1, sessionmanager.size() - equalindex - 1);
-        kDebug() << "SESSION_MANAGER" << sessionmanager << sessionmanagervalue;
-        m_adaptor->setLaunchEnv(QString::fromLatin1("SESSION_MANAGER"), sessionmanagervalue);
-    }
-}
-
 int main(int argc, char *argv[])
 {
     KAboutData aboutData(
@@ -66,15 +55,8 @@ int main(int argc, char *argv[])
 
     KCmdLineArgs::init(argc, argv, &aboutData);
 
-    const QByteArray sessionmanager = qgetenv("SESSION_MANAGER");
-
-    // NOTE: disables session manager entirely, for reference:
-    // https://www.x.org/releases/X11R7.7/doc/libSM/xsmp.html
-    ::unsetenv("SESSION_MANAGER");
-
     KApplication app;
     app.setQuitOnLastWindowClosed(false);
-    app.disableSessionManagement();
     
     QDBusConnection session = QDBusConnection::sessionBus();
     if (!session.isConnected()) {
@@ -88,8 +70,6 @@ int main(int argc, char *argv[])
     }
 
     KLauncher klauncher(&app);
-    klauncher.setSessionManager(sessionmanager);
-
     return app.exec(); // keep running
 }
 

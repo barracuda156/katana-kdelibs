@@ -63,7 +63,6 @@ class KApplicationPrivate;
 class KDEUI_EXPORT KApplication : public QApplication
 {
   Q_OBJECT
-  Q_CLASSINFO("D-Bus Interface", "org.kde.KApplication")
 public:
   /**
    * This constructor is the one you should use.
@@ -138,7 +137,6 @@ public:
    */
   KConfig* sessionConfig();
 
-
   /**
    * Disables session management for this application.
    *
@@ -155,20 +153,6 @@ public:
    */
   void enableSessionManagement();
 
-    /**
-     * Reimplemented for internal purposes, mainly the highlevel
-     *  handling of session management with KSessionManager.
-     * @internal
-     */
-  void commitData( QSessionManager& sm );
-
-    /**
-     * Reimplemented for internal purposes, mainly the highlevel
-     *  handling of session management with KSessionManager.
-     * @internal
-     */
-  void saveState( QSessionManager& sm );
-
   /**
    * Returns true if the application is currently saving its session
    * data (most probably before KDE logout). This is intended for use
@@ -178,6 +162,12 @@ public:
    */
   bool sessionSaving() const;
 
+  /**
+   * Returns true if the application is currently restoring its session
+   *
+   * @see KMainWindow::queryClose
+   */
+  bool isSessionRestored() const;
 
   /**
    *  Sets the top widget of the application.
@@ -237,15 +227,6 @@ public:
   unsigned long userTimestamp() const;
 
   /**
-   * Updates the last user action timestamp in the application registered to DBUS with id service
-   * to the given time, or to this application's user time, if 0 is given.
-   * Use before causing user interaction in the remote application, e.g. invoking a dialog
-   * in the application using a DCOP call.
-   * Consult focus stealing prevention section in kdebase/kwin/README.
-   */
-  void updateRemoteUserTimestamp( const QString& service, int time = 0 );
-
-  /**
    * Setups signal handler for SIGTERM, SIGHUP and SIGINT to call QApplication::quit() when such
    * signal is received.
    * @note By default KApplication constructor calls this static method, unless QCoreApplication
@@ -270,15 +251,18 @@ public:
 
 public Q_SLOTS:
   /**
-   * Updates the last user action timestamp to the given time, or to the current time,
-   * if 0 is given. Do not use unless you're really sure what you're doing.
-   * Consult focus stealing prevention section in kdebase/kwin/README.
+   * Updates the last user action timestamp to the given time, or to the current time, if 0 is
+   * given. Do not use unless you're really sure what you're doing. Consult focus stealing
+   * prevention section in kdebase/kwin/README.
    */
-  Q_SCRIPTABLE void updateUserTimestamp( int time = 0 );
-
-  // D-Bus slots:
-  Q_SCRIPTABLE void reparseConfiguration();
-  Q_SCRIPTABLE void quit();
+  void updateUserTimestamp(int time = 0);
+  /**
+   * Saves the state of the application for the current session, the state will be restored on the
+   * next login
+   */
+  virtual bool saveSession();
+  void reparseConfiguration();
+  void quit();
 
 protected:
   /**
@@ -290,8 +274,7 @@ protected:
   /**
    * @internal Used by KUniqueApplication
    */
-  KApplication(Display *display, Qt::HANDLE visual, Qt::HANDLE colormap,
-          const KComponentData &cData);
+  KApplication(Display *display, Qt::HANDLE visual, Qt::HANDLE colormap, const KComponentData &cData);
 
   /**
    * Used to catch X11 events
@@ -313,7 +296,7 @@ private:
 
   Q_PRIVATE_SLOT(d, void _k_x11FilterDestroyed())
   Q_PRIVATE_SLOT(d, void _k_checkAppStartedSlot())
-  Q_PRIVATE_SLOT(d, void _k_disableAutorestartSlot())
+  Q_PRIVATE_SLOT(d, void _k_aboutToQuitSlot())
 };
 
 #endif

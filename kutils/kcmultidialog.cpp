@@ -327,7 +327,7 @@ void KCMultiDialog::slotHelpClicked()
     }
 
     moduleService = moduleService.replace(QLatin1String(".desktop"), QString());
-    KToolInvocation::invokeHelp(QString(), moduleService);
+    KToolInvocation::self()->invokeHelp(QString(), moduleService);
 }
 
 

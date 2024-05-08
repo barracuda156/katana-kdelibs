@@ -1,5 +1,6 @@
-/*  This file is part of the KDE libraries
-    Copyright (C) 2022 Ivailo Monev <xakepa10@gmail.com>
+/*
+    This file is part of the KDE libraries
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -16,22 +17,32 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef KLAUNCHER_H
-#define KLAUNCHER_H
+#ifndef KAPPLICATION_ADAPTOR_H
+#define KAPPLICATION_ADAPTOR_H
 
-#include "klauncher_adaptor.h"
+#include <QDBusAbstractAdaptor>
 
-#include <QObject>
-
-class KLauncher : public QObject
+class KApplicationAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.kde.KApplication")
 public:
-    KLauncher(QObject *parent = nullptr);
-    ~KLauncher();
+    KApplicationAdaptor(QObject *parent);
+
+Q_SIGNALS:
+    void sessionSaved();
+    void sessionSaveCanceled();
+
+public Q_SLOTS:
+    QStringList restartCommand() const;
+    void updateUserTimestamp(int time = 0);
+    void saveSession();
+    void reparseConfiguration();
+    void quit();
 
 private:
-    KLauncherAdaptor* m_adaptor;
+    Q_DISABLE_COPY(KApplicationAdaptor);
 };
 
-#endif // KLAUNCHER_H
+#endif // KAPPLICATION_ADAPTOR_H
+

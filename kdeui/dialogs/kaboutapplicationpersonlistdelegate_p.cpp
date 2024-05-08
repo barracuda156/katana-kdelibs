@@ -141,9 +141,9 @@ void KAboutApplicationPersonListDelegate::launchUrl( QAction *action ) const
     QString url = action->data().toString();
     if( !url.isEmpty() ) {
         if( url.startsWith( "mailto:" ) )
-            KToolInvocation::invokeMailer( KUrl( url ) );
+            KToolInvocation::self()->invokeMailer( KUrl( url ) );
         else
-            KToolInvocation::invokeBrowser( url );
+            KToolInvocation::self()->invokeBrowser( url );
     }
 }
 

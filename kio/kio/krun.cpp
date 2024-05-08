@@ -941,7 +941,7 @@ bool KRun::run(const KService& _service, const KUrl::List& _urls, QWidget* windo
 
     QString error;
 
-    int i = KToolInvocation::startServiceByDesktopPath(
+    int i = KToolInvocation::self()->startServiceByDesktopPath(
         _service.entryPath(), urls.toStringList(), &error, asn
     );
 
@@ -1100,7 +1100,7 @@ void KRun::init()
         if (service) {
             kDebug(7010) << "Helper protocol service is" << service->name() << service->entryPath();
             QString errorstr;
-            if (KToolInvocation::startServiceByDesktopPath(service->entryPath(), d->m_strURL.url(), &errorstr, d->m_asn) == 0) {
+            if (KToolInvocation::self()->startServiceByDesktopPath(service->entryPath(), d->m_strURL.url(), &errorstr, d->m_asn) == 0) {
                 d->m_bFinished = true;
                 d->startTimer();
                 return;

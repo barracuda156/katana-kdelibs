@@ -66,20 +66,22 @@ static inline QString getKLauncherError(const int result, const QString &app)
 
 static inline void printError(const QString &text, QString *error)
 {
-    if (error)
+    if (error) {
         *error = text;
-    else
+    } else {
         kError() << text;
+    }
 }
 
-KToolInvocation *KToolInvocation::self()
+K_GLOBAL_STATIC(KToolInvocation, kToolInvocation)
+
+KToolInvocation* KToolInvocation::self()
 {
-    K_GLOBAL_STATIC(KToolInvocation, s_self)
-    return s_self;
+    return kToolInvocation;
 }
 
-KToolInvocation::KToolInvocation()
-    : QObject(0),
+KToolInvocation::KToolInvocation(QObject *parent)
+    : QObject(parent),
     klauncherIface(nullptr)
 {
     klauncherIface = new QDBusInterface(
@@ -89,16 +91,17 @@ KToolInvocation::KToolInvocation()
         QDBusConnection::sessionBus(),
         this
     );
+    qAddPostRoutine(kToolInvocation.destroy);
 }
 
 KToolInvocation::~KToolInvocation()
 {
-    delete klauncherIface;
+    qRemovePostRoutine(kToolInvocation.destroy);
 }
 
 void KToolInvocation::setLaunchEnv(const QString &name, const QString &value)
 {
-    self()->klauncherIface->asyncCall(QString::fromLatin1("setLaunchEnv"), name, value);
+    klauncherIface->asyncCall(QString::fromLatin1("setLaunchEnv"), name, value);
 }
 
 int KToolInvocation::startServiceInternal(const char *_function,
@@ -161,58 +164,48 @@ int KToolInvocation::startServiceInternal(const char *_function,
 }
 
 int KToolInvocation::startServiceByDesktopPath(const QString &name, const QString &URL,
-                                               QString *error,
-                                               const QByteArray &startup_id)
+                                               QString *error, const QByteArray &startup_id)
 {
     QStringList URLs;
-    if (!URL.isEmpty())
+    if (!URL.isEmpty()) {
         URLs.append(URL);
-    return self()->startServiceInternal("start_service_by_desktop_path",
-                                        name, URLs, error, startup_id);
+    }
+    return startServiceInternal("start_service_by_desktop_path", name, URLs, error, startup_id);
 }
 
 int KToolInvocation::startServiceByDesktopPath(const QString &name, const QStringList &URLs,
-                                               QString *error,
-                                               const QByteArray &startup_id)
+                                               QString *error, const QByteArray &startup_id)
 {
-    return self()->startServiceInternal("start_service_by_desktop_path",
-                                        name, URLs, error, startup_id);
+    return startServiceInternal("start_service_by_desktop_path", name, URLs, error, startup_id);
 }
 
 int KToolInvocation::startServiceByDesktopName(const QString &name, const QString &URL,
-                                               QString *error,
-                                               const QByteArray &startup_id)
+                                               QString *error, const QByteArray &startup_id)
 {
     QStringList URLs;
-    if (!URL.isEmpty())
+    if (!URL.isEmpty()) {
         URLs.append(URL);
-    return self()->startServiceInternal("start_service_by_desktop_name",
-                                        name, URLs, error, startup_id);
+    }
+    return startServiceInternal("start_service_by_desktop_name", name, URLs, error, startup_id);
 }
 
 int KToolInvocation::startServiceByDesktopName(const QString &name, const QStringList &URLs,
-                                               QString *error,
-                                               const QByteArray &startup_id)
+                                               QString *error, const QByteArray &startup_id)
 {
-    return self()->startServiceInternal("start_service_by_desktop_name",
-                                        name, URLs, error, startup_id);
+    return startServiceInternal("start_service_by_desktop_name", name, URLs, error, startup_id);
 }
 
-int KToolInvocation::kdeinitExec(const QString &name, const QStringList &args,
-                                 QString *error,
+int KToolInvocation::kdeinitExec(const QString &name, const QStringList &args, QString *error,
                                  const QByteArray &startup_id)
 {
-    return self()->startServiceInternal("kdeinit_exec",
-                                        name, args, error, startup_id);
+    return startServiceInternal("kdeinit_exec", name, args, error, startup_id);
 }
 
 
-int KToolInvocation::kdeinitExecWait(const QString &name, const QStringList &args,
-                                     QString *error,
+int KToolInvocation::kdeinitExecWait(const QString &name, const QStringList &args, QString *error,
                                      const QByteArray &startup_id)
 {
-    return self()->startServiceInternal("kdeinit_exec_wait",
-                                        name, args, error, startup_id);
+    return startServiceInternal("kdeinit_exec_wait", name, args, error, startup_id);
 }
 
 void KToolInvocation::invokeHelp(const QString &anchor,
@@ -227,31 +220,29 @@ void KToolInvocation::invokeHelp(const QString &anchor,
     } else {
         appname = _appname;
     }
-
     KService::Ptr service(KService::serviceByDesktopName(appname));
     if (service) {
         docPath = service->docPath();
     }
-
     if (!docPath.isEmpty()) {
         url = KUrl(KUrl(QString::fromLatin1(KDE_HELP_URL)), docPath);
     } else {
         url = QString::fromLatin1(KDE_HELP_URL);
     }
-
     if (!anchor.isEmpty()) {
         url.addQueryItem(QString::fromLatin1("anchor"), anchor);
     }
-
     invokeBrowser(url.url());
 }
 
-void KToolInvocation::invokeMailer(const QString &address, const QString &subject, const QByteArray &startup_id)
+void KToolInvocation::invokeMailer(const QString &address, const QString &subject,
+                                   const QByteArray &startup_id)
 {
-    invokeMailer(address, QString(), subject, QString(), QStringList(), startup_id );
+    invokeMailer(address, QString(), subject, QString(), QStringList(), startup_id);
 }
 
-void KToolInvocation::invokeMailer(const KUrl &mailtoURL, const QByteArray& startup_id, bool allowAttachments)
+void KToolInvocation::invokeMailer(const KUrl &mailtoURL, const QByteArray &startup_id,
+                                   bool allowAttachments)
 {
     QString address = mailtoURL.path();
     QString subject;

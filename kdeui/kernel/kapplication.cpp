@@ -28,7 +28,6 @@
 #include <QtCore/QTimer>
 #include <QtCore/QList>
 #include <QtCore/QMetaType>
-#include <QtGui/QSessionManager>
 #include <QtGui/QStyleFactory>
 #include <QtGui/QWidget>
 #include <QtGui/QCloseEvent>
@@ -46,7 +45,6 @@
 #include "kicon.h"
 #include "kiconloader.h"
 #include "klocale.h"
-#include "ksessionmanager.h"
 #include "kstandarddirs.h"
 #include "kstandardshortcut.h"
 #include "kurl.h"
@@ -59,6 +57,7 @@
 #include "kconfiggroup.h"
 #include "kactioncollection.h"
 #include "kdebugger.h"
+#include "kapplication_adaptor.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -114,58 +113,78 @@ static void quit_handler(int sig)
     qApp->quit();
 }
 
+static void kRegisterSessionClient(const bool enable, const QString &serviceName)
+{
+    if (serviceName.isEmpty()) {
+        return;
+    }
+    QDBusInterface sessionManager(
+        "org.kde.plasma-desktop", "/App", "local.PlasmaApp",
+        QDBusConnection::sessionBus()
+    );
+    if (sessionManager.isValid()) {
+        sessionManager.call(enable ? "registerClient" : "unregisterClient", serviceName);
+    } else {
+        kWarning() << "org.kde.plasma-desktop is not valid interface";
+    }
+}
+
 /*
-  Private data to make keeping binary compatibility easier
+  Private data
  */
 class KApplicationPrivate
 {
 public:
   KApplicationPrivate(KApplication* q, const QByteArray &cName)
       : q(q)
+      , adaptor(nullptr)
       , componentData(cName)
       , startup_id("0")
       , app_started_timer(nullptr)
       , session_save(false)
       , pSessionConfig(nullptr)
-      , bSessionManagement(true)
+      , bSessionManagement(false)
       , debugger(nullptr)
   {
   }
 
   KApplicationPrivate(KApplication* q, const KComponentData &cData)
       : q(q)
+      , adaptor(nullptr)
       , componentData(cData)
       , startup_id("0")
       , app_started_timer(nullptr)
       , session_save(false)
       , pSessionConfig(nullptr)
-      , bSessionManagement(true)
+      , bSessionManagement(false)
       , debugger(nullptr)
   {
   }
 
   KApplicationPrivate(KApplication *q)
       : q(q)
+      , adaptor(nullptr)
       , componentData(KCmdLineArgs::aboutData())
       , startup_id("0")
       , app_started_timer(nullptr)
       , session_save(false)
       , pSessionConfig(nullptr)
-      , bSessionManagement(true)
+      , bSessionManagement(false)
       , debugger(nullptr)
   {
   }
 
   void _k_x11FilterDestroyed();
   void _k_checkAppStartedSlot();
-  void _k_disableAutorestartSlot();
+  void _k_aboutToQuitSlot();
 
-  QString sessionConfigName() const;
   void init();
   void parseCommandLine( ); // Handle KDE arguments (Using KCmdLineArgs)
 
   KApplication *q;
 
+  KApplicationAdaptor* adaptor;
+  QString serviceName;
   KComponentData componentData;
   QByteArray startup_id;
   QTimer* app_started_timer;
@@ -271,29 +290,6 @@ void KApplicationPrivate::_k_checkAppStartedSlot()
     }
 }
 
-/*
-  Auxiliary function to calculate a a session config name used for the
-  instance specific config object.
-  Syntax:  "session/<appname>_<sessionId>"
- */
-QString KApplicationPrivate::sessionConfigName() const
-{
-#ifdef QT_NO_SESSIONMANAGER
-#error QT_NO_SESSIONMANAGER was set, this will not compile. Reconfigure Qt with Session management support.
-#endif
-    QString sessKey = q->sessionKey();
-    if ( sessKey.isEmpty() && !sessionKey.isEmpty() )
-        sessKey = sessionKey;
-    return QString::fromLatin1("session/%1_%2_%3").arg(QCoreApplication::applicationName()).arg(q->sessionId()).arg(sessKey);
-}
-
-#ifdef Q_WS_X11
-static SmcConn mySmcConnection = 0;
-#else
-// FIXME(E): Implement for Qt Embedded
-// Possibly "steal" XFree86's libSM?
-#endif
-
 KApplication::KApplication()
     : QApplication(KCmdLineArgs::qtArgc(), KCmdLineArgs::qtArgv()),
     d(new KApplicationPrivate(this))
@@ -398,12 +394,13 @@ void KApplicationPrivate::init()
               reversedDomain.prepend(s);
           }
       const QString pidSuffix = QString::number( getpid() ).prepend( QLatin1String("-") );
-      const QString serviceName = reversedDomain + QCoreApplication::applicationName() + pidSuffix;
+      serviceName = reversedDomain + QCoreApplication::applicationName() + pidSuffix;
       if ( bus->registerService(serviceName) == QDBusConnectionInterface::ServiceNotRegistered ) {
           kError() << "Couldn't register name '" << serviceName << "' with DBUS - another process owns it already!";
           ::exit(126);
       }
   }
+  adaptor = new KApplicationAdaptor(q);
   sessionBus.registerObject(QLatin1String("/MainApplication"), q,
                             QDBusConnection::ExportScriptableSlots |
                             QDBusConnection::ExportScriptableProperties |
@@ -434,7 +431,7 @@ void KApplicationPrivate::init()
 
   // too late to restart if the application is about to quit (e.g. if QApplication::quit() was
   // called or SIGTERM was received)
-  q->connect(q, SIGNAL(aboutToQuit()), SLOT(_k_disableAutorestartSlot()));
+  q->connect(q, SIGNAL(aboutToQuit()), SLOT(_k_aboutToQuitSlot()));
 
   KApplication::quitOnSignal();
   KApplication::quitOnDisconnected();
@@ -450,9 +447,61 @@ KApplication* KApplication::kApplication()
 
 KConfig* KApplication::sessionConfig()
 {
-    if (!d->pSessionConfig) // create an instance specific config object
-        d->pSessionConfig = new KConfig( d->sessionConfigName(), KConfig::SimpleConfig );
+    if (!d->pSessionConfig) {
+        // create an instance specific config object
+        QString configName = d->sessionKey;
+        if (configName.isEmpty()) {
+            configName = QString::fromLatin1("%1_%2").arg(QCoreApplication::applicationName()).arg(QCoreApplication::applicationPid());
+        }
+        d->pSessionConfig = new KConfig(
+            QString::fromLatin1("session/%1").arg(configName),
+            KConfig::SimpleConfig
+        );
+    }
     return d->pSessionConfig;
+}
+
+bool KApplication::saveSession()
+{
+    foreach (KMainWindow *window, KMainWindow::memberList()) {
+        if (!window->testAttribute(Qt::WA_WState_Hidden)) {
+            QCloseEvent e;
+            QApplication::sendEvent(window, &e);
+            if (!e.isAccepted()) {
+                return false;
+            }
+       }
+    }
+    foreach (QWidget* widget, QApplication::topLevelWidgets()) {
+        if (!widget || widget->isHidden() || widget->inherits("QMainWindow")) {
+            continue;
+        }
+        QCloseEvent e;
+        QApplication::sendEvent(widget, &e);
+        if (!e.isAccepted()) {
+            return false;
+        }
+    }
+
+    d->session_save = true;
+    KConfig* config = KApplication::kApplication()->sessionConfig();
+    if ( KMainWindow::memberList().count() ){
+        // According to Jochen Wilhelmy <digisnap@cs.tu-berlin.de>, this
+        // hook is useful for better document orientation
+        KMainWindow::memberList().first()->saveGlobalProperties(config);
+    }
+    int n = 0;
+    foreach (KMainWindow* mw, KMainWindow::memberList()) {
+        n++;
+        mw->savePropertiesInternal(config, n);
+    }
+    KConfigGroup group( config, "Number" );
+    group.writeEntry("NumberOfWindows", n );
+    if ( d->pSessionConfig ) {
+        d->pSessionConfig->sync();
+    }
+    d->session_save = false;
+    return true;
 }
 
 void KApplication::reparseConfiguration()
@@ -465,138 +514,28 @@ void KApplication::quit()
     QApplication::quit();
 }
 
-void KApplication::disableSessionManagement() {
-  d->bSessionManagement = false;
-}
-
-void KApplication::enableSessionManagement() {
-  d->bSessionManagement = true;
-#ifdef Q_WS_X11
-  // Session management support in Qt/KDE is awfully broken.
-  // If konqueror disables session management right after its startup,
-  // and enables it later (preloading stuff), it won't be properly
-  // saved on session shutdown.
-  // I'm not actually sure why it doesn't work, but saveState()
-  // doesn't seem to be called on session shutdown, possibly
-  // because disabling session management after konqueror startup
-  // disabled it somehow. Forcing saveState() here for this application
-  // seems to fix it.
-  if( mySmcConnection ) {
-        SmcRequestSaveYourself( mySmcConnection, SmSaveLocal, False,
-                SmInteractStyleAny,
-                False, False );
-
-    // flush the request
-    IceFlush(SmcGetIceConnection(mySmcConnection));
-  }
-#endif
-}
-
-void KApplication::commitData( QSessionManager& sm )
+void KApplication::disableSessionManagement()
 {
-    d->session_save = true;
-    bool canceled = false;
-
-    foreach (KSessionManager *it, KSessionManager::sessionClients()) {
-        if ( ( canceled = !it->commitData( sm ) ) )
-            break;
+    if (d->bSessionManagement) {
+        kRegisterSessionClient(false, d->serviceName);
     }
-
-    if ( canceled )
-        sm.cancel();
-
-    if ( sm.allowsInteraction() ) {
-        QWidgetList donelist, todolist;
-        QWidget* w;
-
-commitDataRestart:
-        todolist = QApplication::topLevelWidgets();
-
-        for ( int i = 0; i < todolist.size(); ++i ) {
-            w = todolist.at( i );
-            if( !w )
-                break;
-
-            if ( donelist.contains( w ) )
-                continue;
-
-            if ( !w->isHidden() && !w->inherits( "KMainWindow" ) ) {
-                QCloseEvent e;
-                sendEvent( w, &e );
-                if ( !e.isAccepted() )
-                    break; //canceled
-
-                donelist.append( w );
-
-                //grab the new list that was just modified by our closeevent
-                goto commitDataRestart;
-            }
-        }
-    }
-
-    if ( !d->bSessionManagement )
-        sm.setRestartHint( QSessionManager::RestartNever );
-    else
-        sm.setRestartHint( QSessionManager::RestartIfRunning );
-    d->session_save = false;
+    d->bSessionManagement = false;
 }
 
-void KApplication::saveState( QSessionManager& sm )
+void KApplication::enableSessionManagement()
 {
-    d->session_save = true;
-#ifdef Q_WS_X11
-    static bool firstTime = true;
-    mySmcConnection = (SmcConn) sm.handle();
-
-    if ( !d->bSessionManagement ) {
-        sm.setRestartHint( QSessionManager::RestartNever );
-        d->session_save = false;
-        return;
-    } else {
-        sm.setRestartHint( QSessionManager::RestartIfRunning );
-    }
-
-    if ( firstTime ) {
-        firstTime = false;
-        d->session_save = false;
-        return; // no need to save the state.
-    }
-
-    // remove former session config if still existing, we want a new
-    // and fresh one. Note that we do not delete the config file here,
-    // this is done by the session manager when it executes the
-    // discard commands. In fact it would be harmful to remove the
-    // file here, as the session might be stored under a different
-    // name, meaning the user still might need it eventually.
-    delete d->pSessionConfig;
-    d->pSessionConfig = 0;
-
-    // finally: do session management
-    bool canceled = false;
-    foreach(KSessionManager* it, KSessionManager::sessionClients()) {
-      if(canceled) break;
-      canceled = !it->saveState( sm );
-    }
-
-    // if we created a new session config object, register a proper discard command
-    if ( d->pSessionConfig ) {
-        d->pSessionConfig->sync();
-        QStringList discard;
-        discard  << QLatin1String("rm") << KStandardDirs::locateLocal("config", d->sessionConfigName());
-        sm.setDiscardCommand( discard );
-    } else {
-        sm.setDiscardCommand( QStringList( QLatin1String("") ) );
-    }
-
-    if ( canceled )
-        sm.cancel();
-#endif
-    d->session_save = false;
+    kRegisterSessionClient(true, d->serviceName);
+    d->bSessionManagement = true;
 }
 
 bool KApplication::sessionSaving() const
 {
     return d->session_save;
+}
+
+bool KApplication::isSessionRestored() const
+{
+    return !d->sessionKey.isEmpty();
 }
 
 void KApplicationPrivate::parseCommandLine( )
@@ -655,8 +594,8 @@ void KApplicationPrivate::parseCommandLine( )
     }
 #endif
 
-    if (args->isSet("smkey")) {
-        sessionKey = args->getOption("smkey");
+    if (args->isSet("session")) {
+        sessionKey = args->getOption("session");
     }
 
     if (args->isSet("debugger")) {
@@ -671,12 +610,12 @@ KApplication::~KApplication()
         delete d->debugger;
     }
 
+    if (d->pSessionConfig) {
+        delete d->pSessionConfig;
+    }
+
     delete d;
     KApp = 0;
-
-#ifdef Q_WS_X11
-    mySmcConnection = 0;
-#endif
 }
 
 
@@ -737,18 +676,6 @@ unsigned long KApplication::userTimestamp() const
     return QX11Info::appUserTime();
 #else
     return 0;
-#endif
-}
-
-void KApplication::updateRemoteUserTimestamp( const QString& service, int time )
-{
-#if defined Q_WS_X11
-    Q_ASSERT(service.contains('.'));
-    if( time == 0 )
-        time = QX11Info::appUserTime();
-    QDBusInterface(service, QLatin1String("/MainApplication"),
-            QString(QLatin1String("org.kde.KApplication")))
-        .call(QLatin1String("updateUserTimestamp"), time);
 #endif
 }
 
@@ -829,9 +756,12 @@ void KApplication::clearStartupId()
     d->startup_id = "0";
 }
 
-void KApplicationPrivate::_k_disableAutorestartSlot()
+void KApplicationPrivate::_k_aboutToQuitSlot()
 {
     KCrash::setFlags(KCrash::flags() & ~KCrash::AutoRestart);
+    if (bSessionManagement) {
+        kRegisterSessionClient(false, serviceName);
+    }
 }
 
 #include "moc_kapplication.cpp"

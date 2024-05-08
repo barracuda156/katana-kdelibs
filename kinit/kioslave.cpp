@@ -32,7 +32,6 @@ int main(int argc, char **argv)
      }
 
      ::setlocale(LC_ALL, "");
-     ::unsetenv("SESSION_MANAGER");
 
      if (!argv[1])
      {

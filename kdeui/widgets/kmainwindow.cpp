@@ -30,7 +30,6 @@
 #include "ktoolbarhandler_p.h"
 #include "kcmdlineargs.h"
 #include "ktoggleaction.h"
-#include "ksessionmanager.h"
 #include "kstandardaction.h"
 
 #include <QtCore/QList>
@@ -40,7 +39,6 @@
 #include <QtGui/QDesktopWidget>
 #include <QtGui/QDockWidget>
 #include <QtGui/QLayout>
-#include <QtGui/QSessionManager>
 #include <QtGui/QStyle>
 #include <QtGui/QWidget>
 #include <QtGui/QMenuBar>
@@ -101,76 +99,6 @@ bool DockResizeListener::eventFilter(QObject *watched, QEvent *event)
     return QObject::eventFilter(watched, event);
 }
 
-class KMWSessionManager : public KSessionManager
-{
-public:
-    KMWSessionManager()
-    {
-    }
-
-    bool dummyInit() { return true; }
-    bool saveState( QSessionManager& )
-    {
-        KConfig* config = KApplication::kApplication()->sessionConfig();
-        if ( KMainWindow::memberList().count() ){
-            // According to Jochen Wilhelmy <digisnap@cs.tu-berlin.de>, this
-            // hook is useful for better document orientation
-            KMainWindow::memberList().first()->saveGlobalProperties(config);
-        }
-
-        int n = 0;
-        foreach (KMainWindow* mw, KMainWindow::memberList()) {
-            n++;
-            mw->savePropertiesInternal(config, n);
-        }
-
-        KConfigGroup group( config, "Number" );
-        group.writeEntry("NumberOfWindows", n );
-        return true;
-    }
-
-    bool commitData( QSessionManager& sm )
-    {
-        // not really a fast method but the only compatible one
-        if ( sm.allowsInteraction() ) {
-            bool canceled = false;
-
-            foreach (KMainWindow *window, KMainWindow::memberList()) {
-                if ( !window->testAttribute( Qt::WA_WState_Hidden ) ) {
-                    QCloseEvent e;
-                    QApplication::sendEvent( window, &e );
-                    canceled = !e.isAccepted();
-                    if (canceled)
-                        break;
-                    /* Don't even think_about deleting widgets with
-                       Qt::WDestructiveClose flag set at this point. We
-                       are faking a close event, but we are *not*_
-                       closing the window. The purpose of the faked
-                       close event is to prepare the application so it
-                       can safely be quit without the user losing data
-                       (possibly showing a message box "do you want to
-                       save this or that?"). It is possible that the
-                       session manager quits the application later
-                       (emitting QApplication::aboutToQuit() when this
-                       happens), but it is also possible that the user
-                       cancels the shutdown, so the application will
-                       continue to run.
-                    */
-                }
-            }
-            if (canceled)
-               return false;
-
-            // else
-            return true;
-        }
-
-        // the user wants it, the user gets it
-        return true;
-    }
-};
-
-K_GLOBAL_STATIC(KMWSessionManager, ksm)
 K_GLOBAL_STATIC(QList<KMainWindow*>, sMemberList)
 static bool being_first = true;
 
@@ -207,17 +135,14 @@ void KMainWindowPrivate::init(KMainWindow *_q)
     // So don't let the default Qt mechanism allow any toplevel widget to just quit the app on us.
     // Setting WA_QuitOnClose to false for all KMainWindows is not enough, any progress widget
     // or dialog box would still quit the app...
-    if (qApp)
-        qApp->setQuitOnLastWindowClosed(false);
+    if (kapp)
+        kapp->setQuitOnLastWindowClosed(false);
 
     helpMenu = 0;
 
     //actionCollection()->setWidget( this );
     QObject::connect(KGlobalSettings::self(), SIGNAL(kdisplayStyleChanged()),
                      q, SLOT(_k_slotStyleChanged()));
-
-    // force KMWSessionManager creation - someone a better idea?
-    ksm->dummyInit();
 
     sMemberList->append( q );
 
@@ -460,7 +385,7 @@ KMenu* KMainWindow::customHelpMenu( bool showWhatsThis )
 
 bool KMainWindow::canBeRestored( int number )
 {
-    if ( !qApp->isSessionRestored() )
+    if ( !kapp->isSessionRestored() )
         return false;
     KConfig *config = kapp->sessionConfig();
     if ( !config )
@@ -473,7 +398,7 @@ bool KMainWindow::canBeRestored( int number )
 
 const QString KMainWindow::classNameOfToplevel( int number )
 {
-    if ( !qApp->isSessionRestored() )
+    if ( !kapp->isSessionRestored() )
         return QString();
     KConfig *config = kapp->sessionConfig();
     if ( !config )

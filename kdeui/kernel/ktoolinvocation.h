@@ -37,230 +37,193 @@ class KUrl;
  */
 class KDECORE_EXPORT KToolInvocation : public QObject
 {
-
-  Q_OBJECT
+    Q_OBJECT
 private:
-    KToolInvocation();
 public:
-    // @internal
+    KToolInvocation(QObject *parent = nullptr);
     ~KToolInvocation();
+
     static KToolInvocation *self();
 
 public Q_SLOTS:
-  /**
-   * Invokes the KHelpCenter HTML help viewer from docbook sources.
-   *
-   * @param anchor      This has to be a defined anchor in your
-   *                    docbook sources. If empty the main index
-   *                    is loaded
-   * @param appname     This allows you to show the help of another
-   *                    application. If empty the current name() is
-   *                    used
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   */
+   /**
+     * Invokes the KHelpCenter HTML help viewer from docbook sources.
+     *
+     * @param anchor      This has to be a defined anchor in your docbook sources. If empty the
+     *                    main index is loaded
+     * @param appname     This allows you to show the help of another application. If empty the
+     *                    current name() is used
+     * @param startup_id  For app startup notification, "0" for none
+     */
+    void invokeHelp(const QString &anchor = QString(), const QString &appname = QString(),
+                    const QByteArray &startup_id = QByteArray());
 
-  static void invokeHelp(const QString &anchor = QString(),
-                         const QString &appname = QString(),
-                         const QByteArray &startup_id = QByteArray());
+    /**
+     * Convenience method; invokes the standard email application.
+     *
+     * @param address     The destination address
+     * @param subject     Subject string. Can be QString().
+     * @param startup_id  Ffor app startup notification, "0" for none
+     */
+    void invokeMailer(const QString &address, const QString &subject,
+                      const QByteArray &startup_id = QByteArray());
 
-  /**
-   * Convenience method; invokes the standard email application.
-   *
-   * @param address The destination address
-   * @param subject Subject string. Can be QString().
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   */
-  static void invokeMailer(const QString &address, const QString &subject,
-                           const QByteArray &startup_id = QByteArray());
+    /**
+     * Invokes the standard email application.
+     *
+     * @param mailtoURL         A mailto URL.
+     * @param startup_id        For app startup notification, "0" for none
+     * @param allowAttachments  Whether attachments specified in mailtoURL should be honoured. The
+     *                          default is false; do not honor requests for attachments.
+     */
+    void invokeMailer(const KUrl &mailtoURL, const QByteArray &startup_id = QByteArray(),
+                      bool allowAttachments = false);
 
-  /**
-   * Invokes the standard email application.
-   *
-   * @param mailtoURL A mailto URL.
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @param allowAttachments whether attachments specified in mailtoURL should be honoured.
-               The default is false; do not honor requests for attachments.
-   */
-  static void invokeMailer(const KUrl &mailtoURL, const QByteArray &startup_id = QByteArray(),
-                           bool allowAttachments = false);
+    /**
+     * Convenience method; invokes the standard email application.
+     *
+     * All parameters are optional.
+     *
+     * @param to          The destination address.
+     * @param cc          The Cc field
+     * @param subject     Subject string
+     * @param body        A string containing the body of the mail
+     * @param attachURLs  List of URLs to be attached to the mail.
+     * @param startup_id  For app startup notification, "0" for none
+     */
+    void invokeMailer(const QString &to, const QString &cc, const QString &subject,
+                      const QString &body, const QStringList &attachURLs = QStringList(),
+                      const QByteArray &startup_id = QByteArray());
 
-  /**
-   * Convenience method; invokes the standard email application.
-   *
-   * All parameters are optional.
-   *
-   * @param to          The destination address.
-   * @param cc          The Cc field
-   * @param subject     Subject string
-   * @param body        A string containing the body of the mail
-   * @param attachURLs  List of URLs to be attached to the mail.
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   */
-  static void invokeMailer(const QString &to, const QString &cc,
-                           const QString &subject, const QString &body,
-                           const QStringList &attachURLs = QStringList(),
-                           const QByteArray &startup_id = QByteArray());
+    /**
+     * Invokes the user's preferred browser. Note that you should only do this when you know for
+     * sure that the browser can handle the URL (i.e. its mimetype). In doubt, if the URL can point
+     * to an image or anything else than HTML, prefer to use KRun.
+     *
+     * @param url         The destination address
+     * @param startup_id  For app startup notification, "0" for none
+     */
+    void invokeBrowser(const QString &url, const QByteArray &startup_id = QByteArray());
 
-  /**
-   * Invokes the user's preferred browser.
-   * Note that you should only do this when you know for sure that the browser can
-   * handle the URL (i.e. its mimetype). In doubt, if the URL can point to an image
-   * or anything else than HTML, prefer to use new KRun( url ).
-   *
-   * See also <a
-   * href="http://techbase.kde.org/Development/Architecture/KDE4/Starting_Other_Programs#KToolInvocation::invokeBrowser>techbase</a>
-   * for a discussion of invokeBrowser vs KRun.
-   *
-   * @param url The destination address
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   */
-  static void invokeBrowser(const QString &url,
-                            const QByteArray &startup_id = QByteArray());
-
-  /**
-   * Invokes the standard terminal application.
-   *
-   * @param command the command to execute, can be empty.
-   * @param workdir the initial working directory, can be empty.
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   *
-   * @since 4.1
-   */
-  static void invokeTerminal(const QString &command,
-                             const QString &workdir = QString(),
-                             const QByteArray &startup_id = "");
+    /**
+     * Invokes the standard terminal application.
+     *
+     * @param command     The command to execute, can be empty.
+     * @param workdir     The initial working directory, can be empty.
+     * @param startup_id  For app startup notification, "0" for none
+     *
+     * @since 4.1
+     */
+    void invokeTerminal(const QString &command, const QString &workdir = QString(),
+                        const QByteArray &startup_id = QByteArray());
 
 public:
-  /**
-   * Set environment variable of the launcher.
-   * E.g. "SESSION_MANAGER"
-   *
-   * @param name the environment variable name
-   * @param value the environment variable value
-   */
-  static void setLaunchEnv(const QString &name, const QString &value);
+    /**
+     * Set environment variable of the launcher, e.g. "SESSION_MANAGER"
+     *
+     * @param name   The environment variable name
+     * @param value  The environment variable value
+     */
+    void setLaunchEnv(const QString &name, const QString &value);
+
+    /**
+     * Starts a service based on the desktop path of the service, e.g.
+     * "Applications/konqueror.desktop" or "/home/user/bla/myfile.desktop"
+     *
+     * @param name        The path of the desktop file
+     * @param URL         If not empty this URL is passed to the service
+     * @param error       On failure, @p error contains a description of the error that occurred.
+     *                    If the pointer is null, the argument will be ignored
+     * @param startup_id  For app startup notification, "0" for none
+     * @return an error code indicating success (== 0) or failure (> 0).
+     */
+    int startServiceByDesktopPath(const QString &name, const QString &URL,
+                                  QString *error = nullptr,
+                                  const QByteArray &startup_id = QByteArray());
+
+    /**
+     * Starts a service based on the desktop path of the service, e..g.
+     * "Applications/konqueror.desktop" or "/home/user/bla/myfile.desktop"
+     *
+     * @param name        The path of the desktop file
+     * @param URLs        If not empty these URLs will be passed to the service
+     * @param error       On failure, @p error contains a description of the error that occurred.
+     *                    If the pointer is null, the argument will be ignored
+     * @param startup_id  For app startup notification, "0" for none
+     * @return an error code indicating success (== 0) or failure (> 0).
+     */
+    int startServiceByDesktopPath(const QString &name, const QStringList &URLs = QStringList(),
+                                  QString *error = nullptr,
+                                  const QByteArray &startup_id = QByteArray());
 
   /**
-   * Starts a service based on the desktop path of the service.
-   * E.g. "Applications/konqueror.desktop" or "/home/user/bla/myfile.desktop"
+   * Starts a service based on the desktop name of the service, e.g. "konqueror"
    *
-   * @param name the path of the desktop file
-   * @param URL if not empty this URL is passed to the service
-   * @param error On failure, @p error contains a description of the error
-   *         that occurred. If the pointer is 0, the argument will be
-   *         ignored
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @return an error code indicating success (== 0) or failure (> 0).
+   * @param name        The desktop name of the service
+   * @param URL         If not empty this URL is passed to the service
+   * @param error       On failure, @p error contains a description of the error that occurred.
+   *                    If the pointer is null, the argument will be ignored
+   * @param startup_id  For app startup notification, "0" for none
+   * @return an error code indicating success (== 0) or failure (> 0)
    */
-  static int startServiceByDesktopPath(const QString &name, const QString &URL,
-                                       QString *error = 0,
-                                       const QByteArray &startup_id = QByteArray());
+    int startServiceByDesktopName(const QString &name, const QString &URL,
+                                  QString *error = nullptr,
+                                  const QByteArray &startup_id = QByteArray());
 
-  /**
-   * Starts a service based on the desktop path of the service.
-   * E.g. "Applications/konqueror.desktop" or "/home/user/bla/myfile.desktop"
-   *
-   * @param name the path of the desktop file
-   * @param URLs if not empty these URLs will be passed to the service
-   * @param error On failure, @p error contains a description of the error
-   *         that occurred. If the pointer is 0, the argument will be
-   *         ignored
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @return an error code indicating success (== 0) or failure (> 0).
-   */
-  static int startServiceByDesktopPath(const QString &name, const QStringList &URLs = QStringList(),
-                                       QString *error = 0,
-                                       const QByteArray &startup_id = QByteArray());
+    /**
+     * Starts a service based on the desktop name of the service, e.g. "konqueror"
+     *
+     * @param name        The desktop name of the service
+     * @param URLs        If not empty these URLs will be passed to the service
+     * @param error       On failure, @p error contains a description of the error that occurred.
+     *                    If the pointer is null, the argument will be ignored
+     * @param startup_id  For app startup notification, "0" for none
+     * @return an error code indicating success (== 0) or failure (> 0)
+     */
+    int startServiceByDesktopName(const QString &name, const QStringList &URLs = QStringList(),
+                                  QString *error = nullptr,
+                                  const QByteArray &startup_id = QByteArray());
 
-  /**
-   * Starts a service based on the desktop name of the service.
-   * E.g. "konqueror"
-   *
-   * @param name the desktop name of the service
-   * @param URL if not empty this URL is passed to the service
-   * @param error On failure, @p error contains a description of the error
-   *         that occurred. If the pointer is 0, the argument will be
-   *         ignored
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @return an error code indicating success (== 0) or failure (> 0).
-   */
-  static int startServiceByDesktopName(const QString &name, const QString &URL,
-                                       QString *error = 0,
-                                       const QByteArray &startup_id = QByteArray());
+    /**
+     * Starts a program via kdeinit.
+     *
+     * @param name        Name of the program to start
+     * @param args        Arguments to pass to the program
+     * @param error       On failure, @p error contains a description of the error that occurred
+     *                    If the pointer is null, the argument will be ignored
+     * @param startup_id  For app startup notification, "0" for none
+     * @return an error code indicating success (== 0) or failure (> 0)
+     */
+    int kdeinitExec(const QString &name, const QStringList &args = QStringList(),
+                    QString *error = nullptr, const QByteArray &startup_id = QByteArray());
 
-  /**
-   * Starts a service based on the desktop name of the service.
-   * E.g. "konqueror"
-   *
-   * @param name the desktop name of the service
-   * @param URLs if not empty these URLs will be passed to the service
-   * @param error On failure, @p error contains a description of the error
-   *         that occurred. If the pointer is 0, the argument will be
-   *         ignored
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @return an error code indicating success (== 0) or failure (> 0).
-   */
-  static int startServiceByDesktopName(const QString &name, const QStringList &URLs = QStringList(),
-                                       QString *error = 0,
-                                       const QByteArray &startup_id = QByteArray());
-
-  /**
-   * Starts a program via kdeinit.
-   *
-   * program name and arguments are converted to according to the
-   * local encoding and passed as is to kdeinit.
-   *
-   * @param name Name of the program to start
-   * @param args Arguments to pass to the program
-   * @param error On failure, @p error contains a description of the error
-   *         that occurred. If the pointer is 0, the argument will be
-   *         ignored
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @return an error code indicating success (== 0) or failure (> 0).
-   */
-  static int kdeinitExec(const QString &name, const QStringList &args = QStringList(),
-                         QString *error = 0, const QByteArray &startup_id = QByteArray());
-
-  /**
-   * Starts a program via kdeinit and wait for it to finish.
-   *
-   * Like kdeinitExec(), but it waits till the program is finished.
-   * As such it behaves similar to the system(...) function.
-   *
-   * @param name Name of the program to start
-   * @param args Arguments to pass to the program
-   * @param error On failure, @p error contains a description of the error
-   *         that occurred. If the pointer is 0, the argument will be
-   *         ignored
-   * @param startup_id for app startup notification, "0" for none,
-   *           "" ( empty string ) is the default
-   * @return an error code indicating success (== 0) or failure (> 0).
-   */
-  static int kdeinitExecWait(const QString &name, const QStringList &args = QStringList(),
-                             QString *error = 0, const QByteArray &startup_id = QByteArray());
+    /**
+     * Starts a program via kdeinit and wait for it to finish, it behaves similar to the system()
+     * function.
+     *
+     * @param name        Name of the program to start
+     * @param args        Arguments to pass to the program
+     * @param error       On failure, @p error contains a description of the error that occurred
+     *                    If the pointer is null, the argument will be ignored
+     * @param startup_id  For app startup notification, "0" for none
+     * @return an error code indicating success (== 0) or failure (> 0)
+     */
+    int kdeinitExecWait(const QString &name, const QStringList &args = QStringList(),
+                        QString *error = nullptr, const QByteArray &startup_id = QByteArray());
 
 private:
-  /**
-   * @internal
-   */
-  int startServiceInternal(const char *_function,
-                           const QString &name, const QStringList &URLs,
-                           QString *error,
-                           const QByteArray &startup_id,
-                           const QString &workdir = QString());
+    Q_DISABLE_COPY(KToolInvocation);
 
-  QDBusInterface *klauncherIface;
+    /**
+     * @internal
+     */
+    int startServiceInternal(const char *_function,
+                             const QString &name, const QStringList &URLs,
+                             QString *error,
+                             const QByteArray &startup_id,
+                             const QString &workdir = QString());
+
+    QDBusInterface *klauncherIface;
 };
 
 #endif

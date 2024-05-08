@@ -213,7 +213,6 @@ install(
     KServiceGroup
     KServiceType
     KServiceTypeTrader
-    KSessionManager
     KSharedConfig
     KSharedPtr
     KShell

@@ -929,7 +929,7 @@ void KDialog::slotButtonClicked(int button)
         case KDialog::Help: {
             emit helpClicked();
             if (!d->mAnchor.isEmpty() || !d->mHelpApp.isEmpty()) {
-                KToolInvocation::invokeHelp( d->mAnchor, d->mHelpApp);
+                KToolInvocation::self()->invokeHelp( d->mAnchor, d->mHelpApp);
             }
             break;
         }

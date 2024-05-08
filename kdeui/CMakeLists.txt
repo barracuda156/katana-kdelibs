@@ -128,7 +128,6 @@ set(kdeui_LIB_SRCS
     jobs/kdynamicjobtracker.cpp
     kernel/kapplication.cpp
     kernel/kuniqueapplication.cpp
-    kernel/ksessionmanager.cpp
     kernel/kstyle.cpp
     kernel/kstartupinfo.cpp
     kernel/kglobalsettings.cpp
@@ -219,6 +218,9 @@ set(kdeui_LIB_SRCS
     windowmanagement/kwindowsystem_x11.cpp
     windowmanagement/kwindowinfo_x11.cpp
     windowmanagement/netwm.cpp
+    kernel/kapplication_adaptor.cpp
+    # just so that it gets generated
+    ${CMAKE_CURRENT_BINARY_DIR}/org.kde.KApplication.xml
 )
 
 if (X11_Xkb_FOUND AND X11_Xkbfile_FOUND)
@@ -232,6 +234,8 @@ if (X11_Xkb_FOUND AND X11_Xkbfile_FOUND)
         ${X11_Xkbfile_LIB}
     )
 endif()
+
+qt4_generate_dbus_interface(kernel/kapplication_adaptor.h org.kde.KApplication.xml)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/kdeui/kernel/kapplication.cpp
@@ -373,7 +377,6 @@ install(
     jobs/kdynamicjobtracker.h
     kernel/kapplication.h
     kernel/kuniqueapplication.h
-    kernel/ksessionmanager.h
     kernel/kstyle.h
     kernel/kstartupinfo.h
     kernel/kglobalsettings.h
@@ -460,7 +463,6 @@ install(
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}
 )
 
-# KDE 5 remove this
 install(
     FILES
     widgets/kratingpainter.h
@@ -471,4 +473,9 @@ install(
 install(
     PROGRAMS preparetips
     DESTINATION ${KDE4_BIN_INSTALL_DIR}
+)
+
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/org.kde.KApplication.xml
+    DESTINATION ${KDE4_DBUS_INTERFACES_INSTALL_DIR}
 )

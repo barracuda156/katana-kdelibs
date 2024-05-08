@@ -236,7 +236,7 @@ QAction *KHelpMenu::action(MenuId id) const
 
 void KHelpMenu::appHelpActivated()
 {
-    KToolInvocation::invokeHelp();
+    KToolInvocation::self()->invokeHelp();
 }
 
 void KHelpMenu::aboutApplication()
@@ -288,7 +288,7 @@ void KHelpMenu::aboutKDE()
 
 void KHelpMenu::reportBug()
 {
-    KToolInvocation::invokeBrowser(KDE_BUG_REPORT_URL);
+    KToolInvocation::self()->invokeBrowser(KDE_BUG_REPORT_URL);
 }
 
 

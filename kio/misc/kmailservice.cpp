@@ -38,7 +38,7 @@ int main( int argc, char **argv )
     if ( args->count() != 1 )
         return 1;
 
-    KToolInvocation::invokeMailer(KUrl(args->arg(0)), QByteArray(), true);
+    KToolInvocation::self()->invokeMailer(KUrl(args->arg(0)), QByteArray(), true);
 
     return 0;
 }
