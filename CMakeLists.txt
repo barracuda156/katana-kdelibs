@@ -145,11 +145,6 @@ set_package_properties(CURL PROPERTIES
     PURPOSE "E-mail library and KIO slave"
 )
 
-# X11 Session Management (SM) is required, X11_SM_FOUND is set in FindX11
-if(NOT X11_SM_FOUND)
-    message(FATAL_ERROR "The X11 Session Management (SM) development package could not be found")
-endif()
-
 if(NOT X11_XSync_FOUND AND NOT X11_Xscreensaver_FOUND)
     message(FATAL_ERROR "Neither the XSync (libXext) nor XScreensaver (libXss) development package was found")
 endif()
