@@ -149,6 +149,9 @@ KDNSSDPrivate::~KDNSSDPrivate()
 bool KDNSSDPrivate::publishService(const QByteArray &servicetype, const uint serviceport, const QString &servicename)
 {
 #if defined(HAVE_AVAHI)
+    if (!m_avahiclient) {
+        return false;
+    }
     if (m_avahigroup) {
         avahi_entry_group_reset(m_avahigroup);
     }
@@ -158,7 +161,6 @@ bool KDNSSDPrivate::publishService(const QByteArray &servicetype, const uint ser
         return false;
     }
     const QByteArray servicenamebytes = servicename.toUtf8();
-    // qDebug() << Q_FUNC_INFO << servicenamebytes << servicetype;
     int avahiresult = avahi_entry_group_add_service(
         m_avahigroup,
         AVAHI_IF_UNSPEC, s_avahiproto,
@@ -201,8 +203,9 @@ bool KDNSSDPrivate::unpublishService()
 bool KDNSSDPrivate::startBrowse(const QByteArray &servicetype)
 {
 #if defined(HAVE_AVAHI)
-    // qDebug() << Q_FUNC_INFO << servicetype;
-
+    if (!m_avahiclient) {
+        return false;
+    }
     m_pollcounter = 0;
     QList<QByteArray> servicetypes;
     if (servicetype.isEmpty()) {
@@ -220,7 +223,6 @@ bool KDNSSDPrivate::startBrowse(const QByteArray &servicetype)
         m_pollcounter++;
         m_servicetypes.clear();
         while (m_pollcounter) {
-            // qDebug() << Q_FUNC_INFO << m_pollcounter;
             avahi_simple_poll_iterate(m_avahipoll, 0);
         }
 
@@ -247,7 +249,6 @@ bool KDNSSDPrivate::startBrowse(const QByteArray &servicetype)
 
         m_pollcounter++;
         while (m_pollcounter) {
-            // qDebug() << Q_FUNC_INFO << m_pollcounter;
             avahi_simple_poll_iterate(m_avahipoll, 0);
         }
 
@@ -277,8 +278,6 @@ QString KDNSSDPrivate::errorString() const
 #if defined(HAVE_AVAHI)
 void KDNSSDPrivate::groupCallback(AvahiEntryGroup *avahigroup, AvahiEntryGroupState avahistate, void *userdata)
 {
-    // qDebug() << Q_FUNC_INFO << avahigroup << avahistate << userdata;
-
     if (avahistate == AVAHI_ENTRY_GROUP_FAILURE) {
         KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
         kdnssdprivate->m_errorstring = getAvahiClientError(avahi_entry_group_get_client(avahigroup));
@@ -287,8 +286,6 @@ void KDNSSDPrivate::groupCallback(AvahiEntryGroup *avahigroup, AvahiEntryGroupSt
 
 void KDNSSDPrivate::clientCallback(AvahiClient *avahiclient, AvahiClientState avahistate, void *userdata)
 {
-    // qDebug() << Q_FUNC_INFO << avahistate << userdata;
-
     if (avahistate == AVAHI_CLIENT_FAILURE) {
         KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
         kdnssdprivate->m_errorstring = getAvahiClientError(avahiclient);
@@ -302,8 +299,6 @@ void KDNSSDPrivate::browseCallback(AvahiServiceBrowser *avahibrowser, AvahiIfInd
                                    void* userdata)
 {
     Q_UNUSED(avahiflags);
-
-    // qDebug() << Q_FUNC_INFO << avahievent << avahiname << avahitype << avahidomain << userdata;
 
     KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
     AvahiClient *avahiclient = avahi_service_browser_get_client(avahibrowser);
@@ -356,8 +351,6 @@ void KDNSSDPrivate::resolveCallback(AvahiServiceResolver *avahiresolver, AvahiIf
     Q_UNUSED(avahitxt);
     Q_UNUSED(avahiflags);
     Q_UNUSED(avahiflags);
-
-    // qDebug() << Q_FUNC_INFO << avahievent << avahiname << avahitype << avahidomain << userdata;
 
     KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
     switch (avahievent) {
@@ -428,8 +421,6 @@ void KDNSSDPrivate::serviceCallback(AvahiServiceTypeBrowser *avahiservice,
     Q_UNUSED(avahiinterface);
     Q_UNUSED(avahiprotocol);
     Q_UNUSED(avahiflags);
-
-    // qDebug() << Q_FUNC_INFO << avahievent << avahitype << avahidomain << userdata;
 
     KDNSSDPrivate *kdnssdprivate = static_cast<KDNSSDPrivate*>(userdata);
     AvahiClient *avahiclient = avahi_service_type_browser_get_client(avahiservice);
