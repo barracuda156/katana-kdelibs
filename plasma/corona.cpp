@@ -795,7 +795,7 @@ void CoronaPrivate::init()
     // fake containment/applet actions
     KActionCollection *containmentActions = AppletPrivate::defaultActions(q); //containment has to start with applet stuff
     ContainmentPrivate::addDefaultActions(containmentActions); //now it's really containment
-    actionCollections << &actions << AppletPrivate::defaultActions(q) << containmentActions;
+    actionCollections << &actions << containmentActions;
     q->updateShortcuts();
 }
 
