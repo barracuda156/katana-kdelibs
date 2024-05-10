@@ -24,8 +24,11 @@
 #include <QtCore/QObject>
 
 #define return_SOLID_CALL(Type, Object, Default, Method) \
+    if (Object == nullptr) { \
+        return Default; \
+    } \
     Type t = qobject_cast<Type>(Object); \
-    if (t!=0) \
+    if (t != nullptr) \
     { \
          return t->Method; \
     } \
