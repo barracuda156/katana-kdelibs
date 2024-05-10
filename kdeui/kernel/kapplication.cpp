@@ -134,6 +134,11 @@ static void kRegisterSessionClient(const bool enable, const QString &serviceName
     }
 }
 
+static QString kSessionConfigName()
+{
+    return QString::fromLatin1("%1_%2").arg(QCoreApplication::applicationName()).arg(QCoreApplication::applicationPid());
+}
+
 /*
   Private data
  */
@@ -456,7 +461,7 @@ KConfig* KApplication::sessionConfig()
         // create an instance specific config object
         QString configName = d->sessionKey;
         if (configName.isEmpty()) {
-            configName = QString::fromLatin1("%1_%2").arg(QCoreApplication::applicationName()).arg(QCoreApplication::applicationPid());
+            configName = kSessionConfigName();
         }
         d->pSessionConfig = new KConfig(
             QString::fromLatin1("session/%1").arg(configName),
@@ -480,6 +485,15 @@ bool KApplication::saveSession()
             return false;
         }
         s_asked.append(topwidget);
+    }
+
+    if (d->pSessionConfig) {
+        // the config is used for restoring and saving, set it up for saving
+        delete d->pSessionConfig;
+        d->pSessionConfig = new KConfig(
+            QString::fromLatin1("session/%1").arg(kSessionConfigName()),
+            KConfig::SimpleConfig
+        );
     }
 
     d->session_save = true;

@@ -257,8 +257,11 @@ public Q_SLOTS:
    */
   void updateUserTimestamp(int time = 0);
   /**
-   * Saves the state of the application for the current session, the state will be restored on the
+   * Saves the state of the application for the current session, the state may be restored on the
    * next login
+   *
+   * @warning when reimplementing call this method first! also sessionSaving() will not return true
+   * outside the scope of the implementation
    */
   virtual bool saveSession();
   void reparseConfiguration();

@@ -471,7 +471,10 @@ void KMainWindow::closeEvent ( QCloseEvent *e )
 
     if (queryClose()) {
         e->accept();
-    } else e->ignore(); //if the window should not be closed, don't close it
+    } else {
+         // if the window should not be closed, don't close it
+        e->ignore();
+    }
 }
 
 bool KMainWindow::queryClose()
