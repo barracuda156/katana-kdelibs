@@ -57,7 +57,7 @@ FatalOutput=2
 
 # kdnssd warning, error and fatal to syslog
 [51006]
-InfoOutput=4
-WarnOutput=3
-ErrorOutput=3
-FatalOutput=3
+InfoOutput=3
+WarnOutput=2
+ErrorOutput=2
+FatalOutput=2
