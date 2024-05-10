@@ -254,7 +254,6 @@ public:
      * <i>Note that you don't need to deal with this function. Use the
      * kRestoreMainWindows() convenience template function instead!</i>
      * @see kRestoreMainWindows()
-     * @see #RESTORE
      * @see readProperties()
      * @see canBeRestored()
      */
@@ -630,38 +629,6 @@ private:
 };
 
 /**
- * @def RESTORE
- * @ingroup KDEUIMacros
- * Restores the last session. (To be used in your main function).
- *
- * If your client has only one kind of toplevel widgets (which
- * should be pretty usual) then you can use this macro,
- * which is provided for backwards compatibility with 3.1 and 3.0
- * branches:
- *
- * \code
- * if (qApp->isSessionRestored())
- *   RESTORE(childMW)
- * else {
- *   // create default application as usual
- * }
- * \endcode
- *
- * The macro expects the type of your toplevel widget as argument.
- *
- * Since KDE4, you can also use kRestoreMainWindows(), which
- * supports also clients with more than one kind of toplevel
- * widgets.
- *
- * @see KMainWindow::restore()
- * @see kRestoreMainWindows()
- **/
-#define RESTORE(type) { int n = 1;\
-    while (KMainWindow::canBeRestored(n)){\
-      (new type)->restore(n);\
-      n++;}}
-
-/**
  * Restores the last session. (To be used in your main function).
  *
  * These functions work also if you have more than one kind of toplevel
@@ -683,12 +650,7 @@ private:
  * call KMainWindow::restore() with the correct arguments. Note that
  * also QWidget::show() is called implicitly.
  *
- * The global convenience function is a replacement for the #RESTORE
- * macro provided in earlier versions of KDE. The old #RESTORE macro
- * is still provided for backwards compatibility.
- *
  * @see KMainWindow::restore()
- * @see #RESTORE
  * @see KMainWindow::classNameOfToplevel()
  **/
 template <typename T>
