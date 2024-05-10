@@ -43,9 +43,9 @@ QString Input::driver() const
 Solid::Input::InputType Input::inputType() const
 {
     const QByteArray devicename = m_device->deviceProperty(DevinfoDevice::DeviceName);
-    if (devicename.contains("/atkbd")) {
+    if (devicename.contains("atkbd")) {
         return Solid::Input::Keyboard;
-    } else if (devicename.contains("/psm")) {
+    } else if (devicename.contains("psm")) {
         return Solid::Input::Mouse;
     }
     return Solid::Input::UnknownInput;
