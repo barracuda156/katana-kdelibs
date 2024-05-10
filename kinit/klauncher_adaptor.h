@@ -33,9 +33,10 @@ class KLauncherProcess : public QProcess
     Q_OBJECT
 public:
     explicit KLauncherProcess(QObject *parent);
+    ~KLauncherProcess();
 
-    void setupStartup(const QByteArray &startup_id, const QString &appexe,
-                      const KService::Ptr kservice, const qint64 timeout);
+    void setupStartup(const QString &appexe, const KService::Ptr kservice, const qint64 timeout,
+                      const bool temp, const QStringList &args);
 
 private Q_SLOTS:
     void slotProcessStateChanged(QProcess::ProcessState state);
@@ -53,6 +54,8 @@ private:
     QTimer* m_startuptimer;
     KStartupInfoId m_kstartupinfoid;
     KStartupInfoData m_kstartupinfodata;
+    bool m_temp;
+    QStringList m_args;
 };
 
 // Adaptor class for interface org.kde.KLauncher
@@ -61,14 +64,6 @@ class KLauncherAdaptor: public QDBusAbstractAdaptor
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.kde.KLauncher")
 public:
-    enum KLauncherError {
-        NoError = 0,
-        ServiceError = -1,
-        FindError = -2,
-        ArgumentsError = -3,
-        ExecError = -4
-    };
-
     KLauncherAdaptor(QObject *parent);
     ~KLauncherAdaptor();
 
@@ -83,11 +78,15 @@ public Q_SLOTS:
 
     // used by KToolInvocation
     void setLaunchEnv(const QString &name, const QString &value);
-    int kdeinit_exec(const QString &app, const QStringList &args, const QStringList &envs, const QString &startup_id);
-    int kdeinit_exec_wait(const QString &app, const QStringList &args, const QStringList &envs, const QString &startup_id);
-    int kdeinit_exec_with_workdir(const QString &app, const QStringList &args, const QStringList &envs, const QString &startup_id, const QString &workdir);
-    int start_service_by_desktop_name(const QString &serviceName, const QStringList &urls, const QStringList &envs, const QString &startup_id);
-    int start_service_by_desktop_path(const QString &serviceName, const QStringList &urls, const QStringList &envs, const QString &startup_id);
+    bool start_program(const QString &app, const QStringList &args, const QStringList &envs,
+                       quint64 window, bool temp);
+    bool start_program_with_workdir(const QString &app, const QStringList &args,
+                                    const QStringList &envs, quint64 window, bool temp,
+                                    const QString &workdir);
+    bool start_service_by_storage_id(const QString &serviceName, const QStringList &urls,
+                                     const QStringList &envs, quint64 window, bool temp);
+    bool start_service_by_url(const QString &url, const QStringList &envs, quint64 window,
+                              bool temp);
 
     // for debugging
 #ifdef KLAUNCHER_DEBUG
@@ -104,9 +103,9 @@ private Q_SLOTS:
 
 private:
     QString findExe(const QString &app) const;
-    int startProgram(const QString &app, const QStringList &args, const QStringList &envs,
-                     const QString &startup_id, const QString &workdir, qint64 &pid,
-                     const qint64 timeout, const KService::Ptr kservice = KService::Ptr(nullptr));
+    bool startProgram(const QString &app, const QStringList &args, const QStringList &envs,
+                      const quint64 window, const bool temp, const QString &workdir, qint64 &pid,
+                      const qint64 timeout, const KService::Ptr kservice = KService::Ptr(nullptr));
 
     QProcessEnvironment m_environment;
     qint64 m_startuptimeout;

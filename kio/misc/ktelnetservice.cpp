@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         cmd << QString::number(url.port());
     }
 
-    KToolInvocation::self()->kdeinitExec(terminal, cmd);
+    KToolInvocation::self()->startProgram(terminal, cmd);
 
     return 0;
 }

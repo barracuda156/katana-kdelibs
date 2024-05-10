@@ -90,7 +90,7 @@ namespace KDesktopFileActions
      * @param _url the url to run
      * @param _is_local true if the URL is local, false otherwise
      * @return true on success and false on failure.
-     * @see KRun::runUrl
+     * @see KRun, KToolInvocation
      */
     KIO_EXPORT bool run( const KUrl& _url, bool _is_local );
 }

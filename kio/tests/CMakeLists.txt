@@ -16,7 +16,6 @@ ENDMACRO(KIO_UNIT_TESTS)
 # jobtest seems to trigger a ctest problem; jobtest finishes and ctest waits for ever
 
 KIO_UNIT_TESTS(
-    krununittest
     kprotocolinfotest
     jobtest
     jobguitest

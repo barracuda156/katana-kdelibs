@@ -78,6 +78,7 @@
 #include "kpreviewprops.h"
 #include "kmetaprops.h"
 #include "krun.h"
+#include "ktoolinvocation.h"
 #include "kvbox.h"
 #include "kacl.h"
 #include "kconfiggroup.h"
@@ -1100,14 +1101,11 @@ void KFilePropsPlugin::slotEditFileType()
     } else {
         mime = d->mimeType;
     }
-    QString keditfiletype = QString::fromLatin1("keditfiletype");
-    KRun::runCommand(keditfiletype
-#ifdef Q_WS_X11
-                     + " --parent " + QString::number( (ulong)properties->window()->winId())
-#endif
-                     + " --caption " + KShell::quoteArg(KGlobal::caption())
-                     + ' ' + KShell::quoteArg(mime),
-                     keditfiletype, keditfiletype /*unused*/, properties->window());
+    QStringList args;
+    args << "--parent" << QString::number( (ulong)properties->window()->winId());
+    args << "--caption" << KGlobal::caption();
+    args << mime;
+    KToolInvocation::self()->startProgram(QLatin1String("keditfiletype"), args, properties->window());
 }
 
 void KFilePropsPlugin::slotIconChanged()
@@ -3256,9 +3254,7 @@ void KDesktopPropsPlugin::slotBrowseExec()
         return;
     }
 
-    QString path = f.toLocalFile();
-    path = KShell::quoteArg(path);
-    d->w->commandEdit->setText(path);
+    d->w->commandEdit->setText(KShell::quoteArg(f.toLocalFile()));
 }
 
 void KDesktopPropsPlugin::slotAdvanced()

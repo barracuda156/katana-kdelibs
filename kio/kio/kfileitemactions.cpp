@@ -23,7 +23,6 @@
 #include <kaction.h>
 #include <krun.h>
 #include <kmimetypetrader.h>
-#include <kdebug.h>
 #include <kdesktopfileactions.h>
 #include <kmenu.h>
 #include <klocale.h>
@@ -33,6 +32,8 @@
 #include <kicon.h>
 #include <kstandarddirs.h>
 #include <kservicetypetrader.h>
+#include <ktoolinvocation.h>
+#include <kdebug.h>
 
 #include <QFile>
 #include <QtCore/qalgorithms.h>
@@ -577,7 +578,7 @@ void KFileItemActionsPrivate::slotRunPreferredApplications()
     const QStringList mimeTypeList = listMimeTypes(fileItems);
     const QStringList serviceIdList = listPreferredServiceIds(mimeTypeList, m_traderConstraint);
 
-    foreach (const QString serviceId, serviceIdList) {
+    foreach (const QString &serviceId, serviceIdList) {
         KFileItemList serviceItems;
         foreach (const KFileItem& item, fileItems) {
             const KService::Ptr serv = preferredService(item.mimetype(), m_traderConstraint);
@@ -597,7 +598,9 @@ void KFileItemActionsPrivate::slotRunPreferredApplications()
             KRun::displayOpenWithDialog(serviceItems.urlList(), m_parentWidget);
             continue;
         }
-        KRun::run(*servicePtr, serviceItems.urlList(), m_parentWidget);
+        KToolInvocation::self()->startServiceByStorageId(
+            servicePtr->entryPath(), serviceItems.urlList().toStringList(), m_parentWidget
+        );
     }
 }
 
@@ -628,7 +631,9 @@ void KFileItemActionsPrivate::slotRunApplication(QAction* act)
     KService::Ptr app = act->data().value<KService::Ptr>();
     Q_ASSERT(app);
     if (app) {
-        KRun::run(*app, m_props.urlList(), m_parentWidget);
+        KToolInvocation::self()->startServiceByStorageId(
+            app->entryPath(), m_props.urlList().toStringList(), m_parentWidget
+        );
     }
 }
 

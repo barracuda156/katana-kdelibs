@@ -18,10 +18,11 @@
 
 #include "kautomount.h"
 
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <kdirnotify.h>
 #include <kmessagebox.h>
 #include <klocale.h>
+#include <kurl.h>
 #include <kdebug.h>
 
 #include <QDBusInterface>
@@ -112,10 +113,9 @@ void KAutoMountPrivate::slotFinished(QDBusPendingCallWatcher *watcher)
         return;
     }
 
-    const KUrl url(m_mountPoint);
     // kDebug(7015) << "KAutoMount: m_strDevice=" << m_strDevice << " -> mountpoint=" << m_mountPoint;
     if (m_bShowFilemanagerWindow) {
-        KRun::runUrl(url, "inode/directory", nullptr /*TODO - window*/);
+        KToolInvocation::self()->startServiceForUrl(m_mountPoint);
     }
 
     // Update the desktop file which is used for mount/unmount (icon change)

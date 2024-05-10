@@ -42,6 +42,7 @@
 #include <kmountpoint.h>
 #include <kconfiggroup.h>
 #include <kuser.h>
+#include <ktoolinvocation.h>
 #include <kfilesystemtype_p.h>
 
 static bool isKDirShare(const QString &dirpath)
@@ -993,7 +994,7 @@ void KFileItem::run(QWidget *parentWidget) const
         kWarning() << "null item";
         return;
     }
-    (void) new KRun(targetUrl(), parentWidget, d->m_fileMode, d->m_bIsLocalUrl);
+    KToolInvocation::self()->startServiceForUrl(targetUrl().url(), parentWidget);
 }
 
 bool KFileItem::cmp(const KFileItem &item) const

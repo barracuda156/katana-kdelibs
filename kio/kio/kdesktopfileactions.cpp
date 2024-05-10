@@ -21,24 +21,24 @@
 
 #include "krun.h"
 #include "kautomount.h"
+#include "kmimetype.h"
+#include "kmessagebox.h"
+#include "kdirnotify.h"
+#include "kmountpoint.h"
+#include "kstandarddirs.h"
+#include "kdesktopfile.h"
+#include "kconfiggroup.h"
+#include "ktoolinvocation.h"
+#include "klocale.h"
+#include "kservice.h"
+#include "kdebug.h"
 
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 
-#include <kmessagebox.h>
-#include <kdirnotify.h>
-#include <kmountpoint.h>
-#include <kstandarddirs.h>
-#include <kdesktopfile.h>
-#include <kconfiggroup.h>
-#include <klocale.h>
-#include <kservice.h>
-#include <kdebug.h>
-
 enum BuiltinServiceType { ST_MOUNT = 0x0E1B05B0, ST_UNMOUNT = 0x0E1B05B1 }; // random numbers
 
 static bool runFSDevice( const KUrl& _url, const KDesktopFile &cfg );
-static bool runApplication( const KUrl& _url, const QString & _serviceFile );
 static bool runLink( const KUrl& _url, const KDesktopFile &cfg );
 
 bool KDesktopFileActions::run( const KUrl& u, bool _is_local )
@@ -64,7 +64,7 @@ bool KDesktopFileActions::run( const KUrl& u, bool _is_local )
         return runFSDevice( u, cfg );
     else if ( cfg.hasApplicationType()
               || (cfg.readType() == "Service" && !cfg.desktopGroup().readEntry("Exec").isEmpty())) // for kio_settings
-        return runApplication( u, u.toLocalFile() );
+        return KToolInvocation::self()->startServiceByStorageId( u.toLocalFile() );
     else if ( cfg.hasLinkType() )
         return runLink( u, cfg );
 
@@ -94,9 +94,8 @@ static bool runFSDevice( const KUrl& _url, const KDesktopFile &cfg )
     KMountPoint::Ptr mp = KMountPoint::currentMountPoints().findByDevice( dev );
     // Is the device already mounted ?
     if (mp) {
-        KUrl mpURL(mp->mountPoint());
         // Open a new window
-        retval = KRun::runUrl( mpURL, QLatin1String("inode/directory"), 0 /*TODO - window*/ );
+        retval = KToolInvocation::self()->startServiceForUrl(mp->mountPoint());
     } else {
         KConfigGroup cg = cfg.desktopGroup();
         bool ro = cg.readEntry("ReadOnly", false);
@@ -106,18 +105,6 @@ static bool runFSDevice( const KUrl& _url, const KDesktopFile &cfg )
     }
 
     return retval;
-}
-
-static bool runApplication( const KUrl& , const QString & _serviceFile )
-{
-    KService s( _serviceFile );
-    if ( !s.isValid() )
-        // The error message was already displayed, so we can just quit here
-        // ### KDE4: is this still the case?
-        return false;
-
-    KUrl::List lst;
-    return KRun::run( s, lst, 0 /*TODO - window*/ );
 }
 
 static bool runLink( const KUrl& _url, const KDesktopFile &cfg )
@@ -132,17 +119,19 @@ static bool runLink( const KUrl& _url, const KDesktopFile &cfg )
         return false;
     }
 
-    KUrl url ( u );
-    KRun* run = new KRun(url,(QWidget*)0);
-
     // X-KDE-LastOpenedWith holds the service desktop entry name that
-    // was should be preferred for opening this URL if possible.
+    // should be preferred for opening this URL if possible.
     // This is used by the Recent Documents menu for instance.
     QString lastOpenedWidth = cfg.desktopGroup().readEntry( "X-KDE-LastOpenedWith" );
-    if ( !lastOpenedWidth.isEmpty() )
-        run->setPreferredService( lastOpenedWidth );
-
-    return false;
+    if ( !lastOpenedWidth.isEmpty() ) {
+        KService::Ptr service = KService::serviceByStorageId(lastOpenedWidth);
+        if (!service.isNull()) {
+            return KToolInvocation::self()->startServiceByStorageId(service->entryPath(), QStringList() << u, nullptr);
+        } else {
+            kWarning() << "Last opened with service is not valid" << lastOpenedWidth;
+        }
+    }
+    return KToolInvocation::self()->startServiceForUrl(u, nullptr);
 }
 
 QList<KServiceAction> KDesktopFileActions::builtinServices( const KUrl& _url )
@@ -291,7 +280,14 @@ void KDesktopFileActions::executeService( const KUrl::List& urls, const KService
         }
     } else {
         kDebug() << action.name() << "first url's path=" << urls.first().toLocalFile() << "exec=" << action.exec();
-        KRun::run( action.exec(), urls, 0, action.text(), action.icon());
+        KService actionService(action.text(), action.exec(), action.icon());
+        QStringList actionArgs = KRun::processDesktopExec(actionService, urls);
+        if (actionArgs.isEmpty()) {
+            kWarning() << "empty service command" << action.text() << action.exec();
+        } else {
+            const QString actionProgram = actionArgs.takeFirst();
+            KToolInvocation::self()->startProgram(actionProgram, actionArgs);
+        }
         // The action may update the desktop file. Example: eject unmounts (#5129).
         org::kde::KDirNotify::emitFilesChanged( urls.toStringList() );
     }

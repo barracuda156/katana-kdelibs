@@ -43,36 +43,6 @@
 
 #define KTOOLINVOCATION_TIMEOUT 250
 
-// NOTE: keep in sync with:
-// kdelibs/kinit/klauncher_adaptor.h
-static inline QString getKLauncherError(const int result, const QString &app)
-{
-    switch (result) {
-        case -1: {
-            return i18n("Application service is not valid or does not support multiple files: %1.", app);
-        }
-        case -2: {
-            return i18n("Application not found: %1.", app);
-        }
-        case -3: {
-            return i18n("Application could not be processed: %1.", app);
-        }
-        case -4: {
-            return i18n("Application failed to start: %1.", app);
-        }
-    }
-    return i18n("Unknown KLauncher error for application: %1.", app);
-}
-
-static inline void printError(const QString &text, QString *error)
-{
-    if (error) {
-        *error = text;
-    } else {
-        kError() << text;
-    }
-}
-
 K_GLOBAL_STATIC(KToolInvocation, kToolInvocation)
 
 KToolInvocation* KToolInvocation::self()
@@ -104,113 +74,27 @@ void KToolInvocation::setLaunchEnv(const QString &name, const QString &value)
     klauncherIface->asyncCall(QString::fromLatin1("setLaunchEnv"), name, value);
 }
 
-int KToolInvocation::startServiceInternal(const char *_function,
-                                          const QString &name, const QStringList &URLs,
-                                          QString *error,
-                                          const QByteArray &startup_id,
-                                          const QString &workdir)
+bool KToolInvocation::startServiceForUrl(const QString &url, QWidget *window, bool temp)
 {
-    QString function = QString::fromLatin1(_function);
-    // make sure there is id, so that user timestamp exists
-    QStringList envs;
-    if (QX11Info::display()) {
-        const QString dpystring = QString::fromLatin1(XDisplayString(QX11Info::display()));
-        envs << QLatin1String("DISPLAY=") + dpystring;
-    } else {
-        const QString dpystring = QString::fromLocal8Bit(qgetenv("DISPLAY"));
-        if (!dpystring.isEmpty()) {
-            envs << QLatin1String("DISPLAY=") + dpystring;
-        }
-    }
-
-    QDBusPendingReply<int> reply;
-    if (qstrcmp(_function, "kdeinit_exec_with_workdir") == 0) {
-        reply = klauncherIface->asyncCall(
-            function, name, URLs, envs, QString::fromLatin1(startup_id, startup_id.size()), workdir
-        );
-    } else {
-        reply = klauncherIface->asyncCall(
-            function, name, URLs, envs, QString::fromLatin1(startup_id, startup_id.size())
-        );
-    }
-    kDebug() << "Waiting for klauncher call to finish" << function;
-    while (!reply.isFinished()) {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, KTOOLINVOCATION_TIMEOUT);
-    }
-    kDebug() << "Done waiting for klauncher call to finish" << function;
-    if (!reply.isValid()) {
-        printError(
-            i18n("KLauncher error: %1.", reply.error().message()),
-            error
-        );
-        return EINVAL;
-    }
-
-    const int result = reply.value();
-    if (result < 0) {
-        printError(
-            getKLauncherError(result, name),
-            error
-        );
-        // compat
-        return -result;
-    } else if (result != 0) {
-        printError(
-            i18n("Application failed to start: %1.", name),
-            error
-        );
-    }
-    return result;
+    return startServiceInternal(
+        "start_service_by_url", QString(), QStringList() << url, window, temp
+    );
 }
 
-int KToolInvocation::startServiceByDesktopPath(const QString &name, const QString &URL,
-                                               QString *error, const QByteArray &startup_id)
+bool KToolInvocation::startServiceByStorageId(const QString &name, const QStringList &URLs,
+                                               QWidget *window, bool temp)
 {
-    QStringList URLs;
-    if (!URL.isEmpty()) {
-        URLs.append(URL);
-    }
-    return startServiceInternal("start_service_by_desktop_path", name, URLs, error, startup_id);
+    return startServiceInternal("start_service_by_storage_id", name, URLs, window, temp);
 }
 
-int KToolInvocation::startServiceByDesktopPath(const QString &name, const QStringList &URLs,
-                                               QString *error, const QByteArray &startup_id)
+bool KToolInvocation::startProgram(const QString &name, const QStringList &args, QWidget *window,
+                                   bool temp)
 {
-    return startServiceInternal("start_service_by_desktop_path", name, URLs, error, startup_id);
-}
-
-int KToolInvocation::startServiceByDesktopName(const QString &name, const QString &URL,
-                                               QString *error, const QByteArray &startup_id)
-{
-    QStringList URLs;
-    if (!URL.isEmpty()) {
-        URLs.append(URL);
-    }
-    return startServiceInternal("start_service_by_desktop_name", name, URLs, error, startup_id);
-}
-
-int KToolInvocation::startServiceByDesktopName(const QString &name, const QStringList &URLs,
-                                               QString *error, const QByteArray &startup_id)
-{
-    return startServiceInternal("start_service_by_desktop_name", name, URLs, error, startup_id);
-}
-
-int KToolInvocation::kdeinitExec(const QString &name, const QStringList &args, QString *error,
-                                 const QByteArray &startup_id)
-{
-    return startServiceInternal("kdeinit_exec", name, args, error, startup_id);
-}
-
-
-int KToolInvocation::kdeinitExecWait(const QString &name, const QStringList &args, QString *error,
-                                     const QByteArray &startup_id)
-{
-    return startServiceInternal("kdeinit_exec_wait", name, args, error, startup_id);
+    return startServiceInternal("start_program", name, args, window, temp);
 }
 
 void KToolInvocation::invokeHelp(const QString &anchor,
-                                 const QString &_appname,
-                                 const QByteArray &startup_id)
+                                 const QString &_appname)
 {
     KUrl url;
     QString appname;
@@ -235,14 +119,12 @@ void KToolInvocation::invokeHelp(const QString &anchor,
     invokeBrowser(url.url());
 }
 
-void KToolInvocation::invokeMailer(const QString &address, const QString &subject,
-                                   const QByteArray &startup_id)
+void KToolInvocation::invokeMailer(const QString &address, const QString &subject)
 {
-    invokeMailer(address, QString(), subject, QString(), QStringList(), startup_id);
+    invokeMailer(address, QString(), subject, QString(), QStringList());
 }
 
-void KToolInvocation::invokeMailer(const KUrl &mailtoURL, const QByteArray &startup_id,
-                                   bool allowAttachments)
+void KToolInvocation::invokeMailer(const KUrl &mailtoURL, bool allowAttachments)
 {
     QString address = mailtoURL.path();
     QString subject;
@@ -274,7 +156,50 @@ void KToolInvocation::invokeMailer(const KUrl &mailtoURL, const QByteArray &star
                                 address = address.isEmpty()? KUrl::fromPercentEncoding((*it).mid(3).toLatin1()): address + comma + KUrl::fromPercentEncoding((*it).mid(3).toLatin1());
     }
 
-    invokeMailer(address, cc, subject, body, attachURLs, startup_id);
+    invokeMailer(address, cc, subject, body, attachURLs);
+}
+
+bool KToolInvocation::startServiceInternal(const char *_function,
+                                          const QString &name, const QStringList &URLs,
+                                          QWidget *window, bool temp, const QString &workdir)
+{
+    QString function = QString::fromLatin1(_function);
+    // make sure there is id, so that user timestamp exists
+    QStringList envs;
+    if (QX11Info::display()) {
+        const QString dpystring = QString::fromLatin1(XDisplayString(QX11Info::display()));
+        envs << QLatin1String("DISPLAY=") + dpystring;
+    } else {
+        const QString dpystring = QString::fromLocal8Bit(qgetenv("DISPLAY"));
+        if (!dpystring.isEmpty()) {
+            envs << QLatin1String("DISPLAY=") + dpystring;
+        }
+    }
+
+    QDBusPendingReply<bool> reply;
+    if (qstrcmp(_function, "start_service_by_url") == 0) {
+        reply = klauncherIface->asyncCall(
+            function, URLs.first(), envs, window ? quint64(window->winId()) : 0, temp
+        );
+    } else if (qstrcmp(_function, "start_program_with_workdir") == 0) {
+        reply = klauncherIface->asyncCall(
+            function, name, URLs, envs, window ? quint64(window->winId()) : 0, temp, workdir
+        );
+    } else {
+        reply = klauncherIface->asyncCall(
+            function, name, URLs, envs, window ? quint64(window->winId()) : 0, temp
+        );
+    }
+    kDebug() << "Waiting for klauncher call to finish" << function;
+    while (!reply.isFinished()) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, KTOOLINVOCATION_TIMEOUT);
+    }
+    kDebug() << "Done waiting for klauncher call to finish" << function;
+    if (!reply.isValid()) {
+        kError() << "KLauncher error" << reply.error().message();
+        return false;
+    }
+    return reply.value();
 }
 
 #include "moc_ktoolinvocation.cpp"

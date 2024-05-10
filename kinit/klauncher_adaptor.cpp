@@ -22,15 +22,17 @@
 #include "kautostart.h"
 #include "kshell.h"
 #include "kconfiggroup.h"
+#include "kmessagebox.h"
+#include "kmimetype.h"
+#include "kmimetypetrader.h"
+#include "kprotocolmanager.h"
+#include "kio/netaccess.h"
+#include "kio/udsentry.h"
 #include "kdebug.h"
 
 #include <QDir>
 #include <QApplication>
 #include <QThread>
-
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <signal.h>
 
 static const int s_eventstime = 250;
 static const int s_sleeptime = 50;
@@ -38,31 +40,32 @@ static const int s_sleeptime = 50;
 // kde-workspace/kwin/effects/startupfeedback/startupfeedback.cpp
 // kde-workspace/kcontrol/launch/kcmlaunch.cpp
 static const qint64 s_startuptimeout = 10; // 10sec
-// klauncher is the last process to quit in a session (see kde-workspace/startkde.cmake) so 5sec
-// for each child process is more than enough
+// klauncher is the last process to quit in a session so 5sec for each child process is more than
+// enough
 static const qint64 s_processtimeout = 5000; // 5sec
 
-static inline bool isPIDAlive(const pid_t pid)
+static inline void removeTemp(const bool temp, const QStringList &args)
 {
-    return (::kill(pid, 0) >= 0);
+    if (temp) {
+        foreach (const QString &arg, args) {
+            if (QFile::exists(arg)) {
+                kDebug() << "removing temporary file" << arg;
+                QFile::remove(arg);
+            }
+        }
+    }
 }
 
-static inline int getExitStatus(const pid_t pid)
+static inline void showError(const QString &error, const quint64 window)
 {
-    int pidstate = 0;
-    ::waitpid(pid, &pidstate, WNOHANG);
-    return WEXITSTATUS(pidstate);
-}
-
-static inline bool isASNValid(const QByteArray &asn)
-{
-    return (!asn.isEmpty() && asn != "0");
+    KMessageBox::errorWId(static_cast<WId>(window), error);
 }
 
 KLauncherProcess::KLauncherProcess(QObject *parent)
     : QProcess(parent),
     m_kstartupinfo(nullptr),
-    m_startuptimer(nullptr)
+    m_startuptimer(nullptr),
+    m_temp(false)
 {
     connect(
         this, SIGNAL(stateChanged(QProcess::ProcessState)),
@@ -70,13 +73,18 @@ KLauncherProcess::KLauncherProcess(QObject *parent)
     );
 }
 
-void KLauncherProcess::setupStartup(const QByteArray &startup_id, const QString &appexe,
-                                    const KService::Ptr kservice, const qint64 timeout)
+KLauncherProcess::~KLauncherProcess()
+{
+    removeTemp(m_temp, m_args);
+}
+
+void KLauncherProcess::setupStartup(const QString &appexe, const KService::Ptr kservice,
+                                    const qint64 timeout, const bool temp, const QStringList &args)
 {
     Q_ASSERT(m_kstartupinfoid.none() == true);
     QByteArray startupwmclass;
     if (KRun::checkStartupNotify(kservice.data(), &startupwmclass)) {
-        m_kstartupinfoid.initId(!isASNValid(startup_id) ? KStartupInfo::createNewStartupId() : startup_id);
+        m_kstartupinfoid.initId(KStartupInfo::createNewStartupId());
         kDebug() << "setting up ASN for" << kservice->entryPath() << m_kstartupinfoid.id();
         m_kstartupinfodata.setHostname();
         m_kstartupinfodata.setBin(QFileInfo(appexe).fileName());
@@ -88,19 +96,11 @@ void KLauncherProcess::setupStartup(const QByteArray &startup_id, const QString 
         processenv.insert(QString::fromLatin1("DESKTOP_STARTUP_ID"), m_kstartupinfoid.id());
         QProcess::setProcessEnvironment(processenv);
         sendSIStart(timeout);
-    } else if (isASNValid(startup_id)) {
-        kDebug() << "setting up ASN for" << startup_id;
-        m_kstartupinfoid.initId(startup_id);
-        m_kstartupinfodata.setHostname();
-        m_kstartupinfodata.setBin(QFileInfo(appexe).fileName());
-        m_kstartupinfodata.setDescription(i18n("Launching %1", m_kstartupinfodata.bin()));
-        QProcessEnvironment processenv = QProcess::processEnvironment();
-        processenv.insert(QString::fromLatin1("DESKTOP_STARTUP_ID"), QString::fromLatin1(startup_id.constData(), startup_id.size()));
-        QProcess::setProcessEnvironment(processenv);
-        sendSIStart(timeout);
     } else {
         kDebug() << "no ASN for" << appexe;
     }
+    m_temp = temp;
+    m_args = args;
 }
 
 void KLauncherProcess::slotProcessStateChanged(QProcess::ProcessState state)
@@ -282,32 +282,18 @@ void KLauncherAdaptor::cleanup()
     }
 }
 
-int KLauncherAdaptor::kdeinit_exec(const QString &app, const QStringList &args, const QStringList &envs, const QString& startup_id)
+bool KLauncherAdaptor::start_program(const QString &app, const QStringList &args,
+                                    const QStringList &envs, quint64 window, bool temp)
 {
-    return kdeinit_exec_with_workdir(app, args, envs, startup_id, QDir::currentPath());
+    return start_program_with_workdir(app, args, envs, window, temp, QDir::currentPath());
 }
 
-int KLauncherAdaptor::kdeinit_exec_wait(const QString &app, const QStringList &args, const QStringList &envs, const QString &startup_id)
+bool KLauncherAdaptor::start_program_with_workdir(const QString &app, const QStringList &args,
+                                                 const QStringList &envs, quint64 window,
+                                                 bool temp, const QString &workdir)
 {
     qint64 pid = 0;
-    int result = startProgram(app, args, envs, startup_id, QDir::currentPath(), pid, m_startuptimeout);
-    if (result != KLauncherAdaptor::NoError) {
-        return result;
-    }
-    kDebug() << "waiting for" << pid;
-    while (isPIDAlive(pid)) {
-        QApplication::processEvents(QEventLoop::AllEvents, s_eventstime);
-        QThread::msleep(s_sleeptime);
-    }
-    result = getExitStatus(pid);
-    kDebug() << "done waiting for" << pid << ", exit status" << result;
-    return result;
-}
-
-int KLauncherAdaptor::kdeinit_exec_with_workdir(const QString &app, const QStringList &args, const QStringList &envs, const QString &startup_id, const QString &workdir)
-{
-    qint64 pid = 0;
-    return startProgram(app, args, envs, startup_id, workdir, pid, m_startuptimeout);
+    return startProgram(app, args, envs, window, temp, workdir, pid, m_startuptimeout);
 }
 
 void KLauncherAdaptor::setLaunchEnv(const QString &name, const QString &value)
@@ -320,31 +306,31 @@ void KLauncherAdaptor::setLaunchEnv(const QString &name, const QString &value)
     m_environment.insert(name, value);
 }
 
-int KLauncherAdaptor::start_service_by_desktop_name(const QString &serviceName, const QStringList &urls, const QStringList &envs, const QString &startup_id)
-{
-    KService::Ptr kservice = KService::serviceByDesktopName(serviceName);
-    if (!kservice) {
-        kWarning() << "invalid service name" << serviceName;
-        return KLauncherAdaptor::ServiceError;
-    }
-    return start_service_by_desktop_path(kservice->entryPath(), urls, envs, startup_id);
-}
-
-int KLauncherAdaptor::start_service_by_desktop_path(const QString &serviceName, const QStringList &urls, const QStringList &envs, const QString &startup_id)
+bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
+                                                   const QStringList &urls,
+                                                   const QStringList &envs, quint64 window,
+                                                   bool temp)
 {
     KService::Ptr kservice = KService::serviceByStorageId(serviceName);
     if (!kservice) {
-        kWarning() << "invalid service path" << serviceName;
-        return KLauncherAdaptor::ServiceError;
+        kError() << "invalid service path" << serviceName;
+        showError(i18n("Invalid service: %1", serviceName), window);
+        removeTemp(temp, urls);
+        return false;
     }
+    // TODO: start one service for each
     if (urls.size() > 1 && !kservice->allowMultipleFiles()) {
-        kWarning() << "service does not support multiple files" << serviceName;
-        return KLauncherAdaptor::ServiceError;
+        kError() << "service does not support multiple files" << serviceName;
+        showError(i18n("Service does not support multiple files: %1", serviceName), window);
+        return false;
     }
+    // TODO: for applications which do not support URLs - download
     QStringList programandargs = KRun::processDesktopExec(*kservice, urls);
     if (programandargs.isEmpty()) {
-        kWarning() << "could not process service" << kservice->entryPath();
-        return KLauncherAdaptor::ArgumentsError;
+        kError() << "could not process service" << kservice->entryPath();
+        showError(i18n("Could not process service: %1", serviceName), window);
+        removeTemp(temp, urls);
+        return false;
     }
     QString programworkdir = kservice->path();
     if (programworkdir.isEmpty()) {
@@ -353,7 +339,52 @@ int KLauncherAdaptor::start_service_by_desktop_path(const QString &serviceName, 
     kDebug() << "starting" << kservice->entryPath() << urls;
     const QString program = programandargs.takeFirst();
     qint64 pid = 0;
-    return startProgram(program, programandargs, envs, QString(), programworkdir, pid, m_startuptimeout, kservice);
+    return startProgram(program, programandargs, envs, window, temp, programworkdir, pid, m_startuptimeout, kservice);
+}
+
+bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringList &envs,
+                                            quint64 window, bool temp)
+{
+    const KUrl realurl = KUrl(url);
+    QString urlmimetype;
+    if (realurl.isLocalFile()) {
+        KMimeType::Ptr kmimetype = KMimeType::findByUrl(realurl);
+        if (kmimetype) {
+            urlmimetype = kmimetype->name();
+        }
+    } else {
+        KIO::UDSEntry kioudsentry;
+        // TODO: unless WId is passed around QWidget::find() will not find external windows
+        if (!KIO::NetAccess::stat(realurl, kioudsentry, QWidget::find(static_cast<WId>(window)))) {
+            kWarning() << "could not stat URL for MIME type" << url;
+            urlmimetype = KProtocolManager::defaultMimetype(realurl);
+        } else {
+            urlmimetype = kioudsentry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+        }
+    }
+    if (urlmimetype.isEmpty()) {
+        kError() << "invalid MIME type for path" << url;
+        showError(i18n("Could not determine the MIME type of: %1", url), window);
+        removeTemp(temp, QStringList() << url);
+        return false;
+    }
+    kDebug() << "MIME type of" << url << "is" << urlmimetype;
+    if (KRun::isExecutableFile(realurl, urlmimetype)) {
+        kDebug() << "execuable file" << url;
+        KMessageBox::sorryWId(
+            static_cast<WId>(window),
+            i18n("The file <tt>%1</tt> is an executable program.<br/>For safety it will not be started.", Qt::escape(realurl.prettyUrl()))
+        );
+        return false;
+    }
+    KService::Ptr kservice = KMimeTypeTrader::self()->preferredService(urlmimetype);
+    if (!kservice) {
+        kError() << "invalid service for MIME type" << urlmimetype;
+        showError(i18n("No service can handle: %1", urlmimetype), window);
+        removeTemp(temp, QStringList() << url);
+        return false;
+    }
+    return start_service_by_storage_id(kservice->entryPath(), QStringList() << url, envs, window, temp);
 }
 
 #ifdef KLAUNCHER_DEBUG
@@ -384,14 +415,16 @@ QString KLauncherAdaptor::findExe(const QString &app) const
     return KStandardDirs::findExe(app, environmentpath);
 }
 
-int KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, const QStringList &envs,
-                                   const QString &startup_id, const QString &workdir, qint64 &pid,
-                                   const qint64 timeout, const KService::Ptr kservice)
+bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, const QStringList &envs,
+                                    const quint64 window, const bool temp, const QString &workdir,
+                                    qint64 &pid, const qint64 timeout, const KService::Ptr kservice)
 {
     const QString appexe = findExe(app);
     if (appexe.isEmpty()) {
-        kWarning() << "could not find" << app;
-        return KLauncherAdaptor::FindError;
+        kError() << "could not find" << app;
+        showError(i18n("Could not find the application: %1", app), window);
+        removeTemp(temp, args);
+        return false;
     }
 
     KLauncherProcess* process = new KLauncherProcess(this);
@@ -411,7 +444,7 @@ int KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, 
     }
     process->setProcessEnvironment(processenv);
     process->setWorkingDirectory(workdir);
-    process->setupStartup(startup_id.toLatin1(), appexe, kservice, timeout);
+    process->setupStartup(appexe, kservice, timeout, temp, args);
     kDebug() << "starting" << appexe << args << envs << workdir;
     process->start(appexe, args);
     while (process->state() == QProcess::Starting) {
@@ -420,11 +453,11 @@ int KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, 
     }
     if (process->error() == QProcess::FailedToStart || process->error() == QProcess::Crashed) {
         kWarning() << "could not start" << appexe;
-        return KLauncherAdaptor::ExecError;
+        return false;
     }
 
     pid = process->pid();
-    return KLauncherAdaptor::NoError;
+    return true;
 }
 
 #include "moc_klauncher_adaptor.cpp"

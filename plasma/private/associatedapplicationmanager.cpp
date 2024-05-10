@@ -25,7 +25,7 @@
 
 #include <kstandarddirs.h>
 #include <kicon.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 
 namespace Plasma
 {
@@ -79,7 +79,7 @@ AssociatedApplicationManager *AssociatedApplicationManager::self()
 
 void AssociatedApplicationManager::setApplication(Plasma::Applet *applet, const QString &application)
 {
-    KService::Ptr service = KService::serviceByDesktopName(application);
+    KService::Ptr service = KService::serviceByStorageId(application);
     if (service || !KStandardDirs::findExe(application).isNull() || QFile::exists(application)) {
         d->applicationNames[applet] = application;
         if (!d->urlLists.contains(applet)) {
@@ -106,14 +106,15 @@ KUrl::List AssociatedApplicationManager::urls(const Plasma::Applet *applet) cons
 void AssociatedApplicationManager::run(Plasma::Applet *applet)
 {
     if (d->applicationNames.contains(applet)) {
-        bool success = KRun::run(d->applicationNames.value(applet), d->urlLists.value(applet), 0);
+        bool success = KToolInvocation::self()->startServiceByStorageId(
+            d->applicationNames.value(applet), d->urlLists.value(applet).toStringList()
+        );
         if (!success) {
             applet->showMessage(KIcon("application-exit"), i18n("There was an error attempting to exec the associated application with this widget."), ButtonOk);
         }
 
     } else if (d->urlLists.contains(applet) && !d->urlLists.value(applet).isEmpty()) {
-        KRun *krun = new KRun(d->urlLists.value(applet).first(), 0);
-        krun->setAutoDelete(true);
+        KToolInvocation::self()->startServiceForUrl(d->urlLists.value(applet).first().url());
     }
 }
 

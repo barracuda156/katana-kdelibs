@@ -35,7 +35,7 @@
 #include <kmenu.h>
 #include <kstandardshortcut.h>
 #include <kstandardaction.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <kactioncollection.h>
 
 /********************************************************************/
@@ -638,7 +638,7 @@ KBookmarkAction::KBookmarkAction(const KBookmark &bk, KBookmarkOwner *owner, QOb
 void KBookmarkAction::slotSelected(Qt::MouseButtons mb, Qt::KeyboardModifiers km)
 {
     if (!m_pOwner) {
-        new KRun(bookmark().url(), (QWidget*)0);
+        KToolInvocation::self()->startServiceForUrl(bookmark().url().url());
     } else {
         m_pOwner->openBookmark(bookmark(), mb, km);
     }

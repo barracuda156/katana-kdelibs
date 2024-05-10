@@ -21,7 +21,7 @@
 #include <klocale.h>
 #include <kmimetype.h>
 #include <kshell.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <ksycoca.h>
 
 #include <QLabel>
@@ -201,14 +201,13 @@ void KMimeTypeChooserPrivate::_k_editMimeType()
         return;
     QString mt = (item->parent())->text(0) + '/' + item->text(0);
     // thanks to libkonq/konq_operations.cc
-    q->connect( KSycoca::self(), SIGNAL(databaseChanged(QStringList)),
-                q, SLOT(_k_slotSycocaDatabaseChanged(QStringList)) );
-    QString keditfiletype = QString::fromLatin1("keditfiletype");
-    KRun::runCommand( keditfiletype
-                      + " --parent " + QString::number( (ulong)q->window()->winId())
-                      + " --caption " + KShell::quoteArg(KGlobal::caption())
-                      + ' ' + KShell::quoteArg(mt),
-                      keditfiletype, keditfiletype /*unused*/, q->window());
+    q->connect(KSycoca::self(), SIGNAL(databaseChanged(QStringList)),
+               q, SLOT(_k_slotSycocaDatabaseChanged(QStringList)));
+    QStringList args;
+    args << "--parent" << QString::number((ulong)q->window()->winId());
+    args << "--caption" << KGlobal::caption();
+    args << mt;
+    KToolInvocation::self()->startProgram(QLatin1String("keditfiletype"), args, q->window());
 }
 
 void KMimeTypeChooserPrivate::_k_slotCurrentChanged(QTreeWidgetItem* item)

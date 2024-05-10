@@ -110,8 +110,7 @@ static QStringList splitEmailAddressList( const QString & aStr )
 
 void KToolInvocation::invokeMailer(const QString &to, const QString &cc,
                                    const QString &subject, const QString &body,
-                                   const QStringList &attachURLs,
-                                   const QByteArray &startup_id)
+                                   const QStringList &attachURLs)
 {
     KConfig config(QString::fromLatin1("emaildefaults"));
     KConfigGroup profileGrp(&config, "General");
@@ -202,90 +201,43 @@ void KToolInvocation::invokeMailer(const QString &to, const QString &cc,
         }
     }
 
-    QString error;
-    // TODO this should check if cmd has a .desktop file, and use data from it, together
-    // with sending more ASN data
-    if (kdeinitExec(cmd, cmdTokens, &error, startup_id) != 0) {
-        KMessageBox::queuedMessageBox(
-            nullptr, KMessageBox::Error,
-            i18n("Could not launch the mail client:\n\n%1", error),
-            i18n("Could not launch Mail Client")
-        );
-    }
+    startProgram(cmd, cmdTokens);
 }
 
-void KToolInvocation::invokeBrowser(const QString &url, const QByteArray& startup_id)
+void KToolInvocation::invokeBrowser(const QString &url)
 {
-    QStringList args;
-    args << url;
-    QString error;
-
     // This method should launch a webbrowser, preferably without doing a mimetype
-    // check first, like KRun (i.e. kde-open) would do.
+    // check first like kde-open would do.
     const KService::Ptr htmlApp = KMimeTypeTrader::self()->preferredService(QLatin1String("text/html"));
     if (htmlApp) {
-        QString error;
-        const int err = startServiceByDesktopPath(htmlApp->entryPath(), url, &error, startup_id);
-        if (err != 0) {
-            KMessageBox::queuedMessageBox(
-                nullptr, KMessageBox::Error,
-                // TODO: i18n("Could not launch %1:\n\n%2", htmlApp->exec(), error),
-                i18n("Could not launch the browser:\n\n%1", error),
-                i18n("Could not launch Browser")
-            );
-        }
+        startServiceByStorageId(htmlApp->entryPath(), QStringList() << url);
         return;
     }
 
-    QString exe = KStandardDirs::findExe(QString::fromLatin1("kde-open"));
-    if (exe.isEmpty()) {
-        exe = KStandardDirs::findExe(QString::fromLatin1("xdg-open"));
-    }
-
-    if (kdeinitExec(exe, args, &error, startup_id) != 0) {
-        KMessageBox::queuedMessageBox(
-            nullptr, KMessageBox::Error,
-            // TODO: i18n("Could not launch %1:\n\n%2", exe, error),
-            i18n("Could not launch the browser:\n\n%1", error),
-            i18n("Could not launch Browser")
-        );
-    }
+    // if one cannot be found then launch the service for the URL MIME type
+    startServiceForUrl(url);
 }
 
 void KToolInvocation::invokeTerminal(const QString &command,
-                                     const QString &workdir,
-                                     const QByteArray &startup_id)
+                                     const QString &workdir)
 {
     KConfigGroup confGroup( KGlobal::config(), "General" );
     QString exec = confGroup.readPathEntry("TerminalApplication", QString::fromLatin1("konsole"));
-
+    QStringList cmdTokens = KShell::splitArgs(exec);
     if (!command.isEmpty()) {
         if (exec == QLatin1String("konsole")) {
-            exec += QString::fromLatin1(" --noclose");
-        } else if (exec == QLatin1String("xterm")) {
-            exec += QString::fromLatin1(" -hold");
+            cmdTokens << QString::fromLatin1("--noclose");
+        } else if (exec.startsWith(QLatin1String("xterm"))) {
+            cmdTokens << QString::fromLatin1("-hold");
         }
 
-        exec += QString::fromLatin1(" -e ") + command;
+        cmdTokens << QString::fromLatin1("-e") << command;
     }
 
-    QStringList cmdTokens = KShell::splitArgs(exec);
+
     QString cmd = cmdTokens.takeFirst();
 
-    if (exec == QLatin1String("konsole") && !workdir.isEmpty()) {
-        cmdTokens << QString::fromLatin1("--workdir");
-        cmdTokens << workdir;
-        // For other terminals like xterm, we'll simply change the working
-        // directory before launching them, see below.
-    }
-
-    QString error;
-    if (self()->startServiceInternal("kdeinit_exec_with_workdir",
-                                     cmd, cmdTokens, &error, startup_id, workdir)) {
-        KMessageBox::queuedMessageBox(
-            nullptr, KMessageBox::Error,
-            i18n("Could not launch the terminal client:\n\n%1", error),
-            i18n("Could not launch Terminal Client")
-        );
-    }
+    startServiceInternal(
+        "start_program_with_workdir", cmd, cmdTokens, nullptr, false, workdir
+    );
 }

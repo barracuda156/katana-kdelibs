@@ -693,11 +693,11 @@ QString KService::docPath() const
     return it->toString();
 }
 
-bool KService::allowMultipleFiles() const {
+bool KService::allowMultipleFiles() const
+{
     Q_D(const KService);
     // Can we pass multiple files on the command line or do we have to start the application for every single file ?
-    return (d->m_strExec.contains( QLatin1String("%F") ) || d->m_strExec.contains( QLatin1String("%U") ) ||
-            d->m_strExec.contains( QLatin1String("%N") ) || d->m_strExec.contains( QLatin1String("%D") ));
+    return (d->m_strExec.contains( QLatin1String("%F") ) || d->m_strExec.contains( QLatin1String("%U") ));
 }
 
 QStringList KService::categories() const

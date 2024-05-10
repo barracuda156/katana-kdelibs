@@ -26,6 +26,7 @@
 #include "kfileitem.h"
 #include "kimagefilepreview.h"
 #include "knewfilemenu.h"
+#include "ktoolinvocation.h"
 
 #include <config-kfile.h>
 
@@ -71,7 +72,6 @@
 #include <kio/previewjob.h>
 #include <kio/renamedialog.h>
 #include <kfilepreviewgenerator.h>
-#include <krun.h>
 #include <kpropertiesdialog.h>
 #include <kstandardshortcut.h>
 #include <kde_file.h>
@@ -649,7 +649,7 @@ void KDirOperator::Private::_k_toggleInlinePreviews(bool show)
 
 void KDirOperator::Private::_k_slotOpenFileManager()
 {
-    new KRun(currUrl, parent);
+    KToolInvocation::self()->startServiceForUrl(currUrl.url(), parent);
 }
 
 void KDirOperator::Private::_k_slotSortByName()
