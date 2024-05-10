@@ -173,7 +173,6 @@ install(
     FILES
     application.desktop
     kcmodule.desktop
-    kcmoduleinit.desktop
     kfilemetadataplugin.desktop
     kurifilterplugin.desktop
     kfile/kpropertiesdialogplugin.desktop
