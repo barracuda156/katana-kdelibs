@@ -60,7 +60,7 @@ Corona::Corona(QObject *parent)
     : QGraphicsScene(parent),
       d(new CoronaPrivate(this))
 {
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Corona ctor start";
+    kDebug() << "Corona ctor start";
     d->init();
     ToolTipManager::self()->m_corona = this;
     //setViewport(new QGLWidget(QGLFormat(QGL::StencilBuffer | QGL::AlphaChannel)));
@@ -1003,7 +1003,7 @@ QList<Plasma::Containment *> CoronaPrivate::importLayout(const KConfigBase &conf
         }
 
         //kDebug() << "got a containment in the config, trying to make a" << containmentConfig.readEntry("plugin", QString()) << "from" << group;
-        kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Adding Containment" << containmentConfig.readEntry("plugin", QString());
+        kDebug() << "Adding Containment" << containmentConfig.readEntry("plugin", QString());
         Containment *c = addContainment(containmentConfig.readEntry("plugin", QString()), QVariantList(), cid, true);
         if (!c) {
             continue;
@@ -1013,16 +1013,16 @@ QList<Plasma::Containment *> CoronaPrivate::importLayout(const KConfigBase &conf
         containmentsIds.insert(c->id());
 
         c->init();
-        kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Init Containment" << c->pluginName();
+        kDebug() << "Init Containment" << c->pluginName();
         c->restore(containmentConfig);
-        kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Restored Containment" << c->pluginName();
+        kDebug() << "Restored Containment" << c->pluginName();
     }
 
     foreach (Containment *containment, newContainments) {
         containment->updateConstraints(Plasma::StartupCompletedConstraint);
         containment->d->initApplets();
         emit q->containmentAdded(containment);
-        kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Containment" << containment->name();
+        kDebug() << "Containment" << containment->name();
     }
 
     return newContainments;
