@@ -42,7 +42,7 @@ QString Input::driver() const
 
 Solid::Input::InputType Input::inputType() const
 {
-    const QByteArray devicename = device->deviceProperty(DevinfoDevice::DeviceName);
+    const QByteArray devicename = m_device->deviceProperty(DevinfoDevice::DeviceName);
     if (devicename.contains("/atkbd")) {
         return Solid::Input::Keyboard;
     } else if (devicename.contains("/psm")) {
