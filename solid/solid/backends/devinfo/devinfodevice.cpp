@@ -23,6 +23,7 @@
 #include "devinfoprocessor.h"
 #include "devinfonetworkinterface.h"
 #include "devinfographic.h"
+#include "devinfoinput.h"
 
 #include "kdevicedatabase.h"
 #include "klocale.h"
@@ -191,6 +192,18 @@ QString DevinfoDevice::icon() const
         return QLatin1String("network-wired");
     } else if (queryDeviceInterface(Solid::DeviceInterface::Graphic)) {
         return QLatin1String("video-display");
+    } else if (queryDeviceInterface(Solid::DeviceInterface::Input)) {
+        const Input inputIface(const_cast<DevinfoDevice *>(this));
+        switch (inputIface.inputType()) {
+        case Solid::Input::UnknownInput:
+            return QString();
+        case Solid::Input::Mouse:
+            return QLatin1String("input-mouse");
+        case Solid::Input::Keyboard:
+            return QLatin1String("input-keyboard");
+        case Solid::Input::Joystick:
+            return QLatin1String("input-gaming");
+        }
     }
     return QString();
 }
@@ -215,6 +228,19 @@ QString DevinfoDevice::description() const
         return i18n("Networking Interface");
     } else if (queryDeviceInterface(Solid::DeviceInterface::Graphic)) {
         return i18n("Graphic display");
+    } else if (queryDeviceInterface(Solid::DeviceInterface::Input)) {
+        const Input inputIface(const_cast<DevinfoDevice *>(this));
+        switch (inputIface.inputType()) {
+            case Solid::Input::UnknownInput:
+                return i18n("Unknown Input");
+            case Solid::Input::Mouse:
+                return i18n("Mouse");
+            case Solid::Input::Keyboard:
+                return i18n("Keyboard");
+            case Solid::Input::Joystick:
+                return i18n("Joystick");
+        }
+        return QString();
     }
     return deviceProperty(DevinfoDevice::DeviceDescription);
 }
@@ -230,6 +256,9 @@ bool DevinfoDevice::queryDeviceInterface(const Solid::DeviceInterface::Type &typ
         }
         case Solid::DeviceInterface::Graphic: {
             return (devicePnP(DevinfoDevice::PnPClass) == "0x030000"); // VGA controller
+        }
+        case Solid::DeviceInterface::Input: {
+            return (m_device.indexOf("/atkbd") >= 0 || m_device.indexOf("/psm") >= 0);
         }
         default: {
             return false;
@@ -251,6 +280,9 @@ QObject *DevinfoDevice::createDeviceInterface(const Solid::DeviceInterface::Type
         }
         case Solid::DeviceInterface::Graphic: {
             return new Graphic(this);
+        }
+        case Solid::DeviceInterface::Input: {
+            return new Input(this);
         }
         default: {
             Q_ASSERT(false);

@@ -79,7 +79,8 @@ DevinfoManager::DevinfoManager(QObject *parent)
     d->m_supportedInterfaces
         << Solid::DeviceInterface::Processor
         << Solid::DeviceInterface::NetworkInterface
-        << Solid::DeviceInterface::Graphic;
+        << Solid::DeviceInterface::Graphic
+        << Solid::DeviceInterface::Input;
 }
 
 DevinfoManager::~DevinfoManager()

@@ -176,6 +176,7 @@ if(DEVINFO_FOUND)
         backends/devinfo/devinfoprocessor.cpp
         backends/devinfo/devinfonetworkinterface.cpp
         backends/devinfo/devinfographic.cpp
+        backends/devinfo/devinfoinput.cpp
         backends/devinfo/devdqt.cpp
     )
 
