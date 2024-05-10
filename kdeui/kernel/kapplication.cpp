@@ -84,6 +84,8 @@ static const int s_quit_signals[] = {
     0
 };
 
+static QWidgetList s_asked;
+
 static void quit_handler(int sig)
 {
     if (!qApp) {
@@ -97,6 +99,10 @@ static void quit_handler(int sig)
             kDebug() << "closing top-level main windows";
             foreach (QWidget* topwidget, toplevelwidgets) {
                 if (!topwidget || !topwidget->isWindow() || !topwidget->inherits("QMainWindow")) {
+                    continue;
+                }
+                if (s_asked.contains(topwidget)) {
+                    kDebug() << "already asked" << topwidget;
                     continue;
                 }
                 kDebug() << "closing" << topwidget;
@@ -462,24 +468,18 @@ KConfig* KApplication::sessionConfig()
 
 bool KApplication::saveSession()
 {
-    foreach (KMainWindow *window, KMainWindow::memberList()) {
-        if (!window->testAttribute(Qt::WA_WState_Hidden)) {
-            QCloseEvent e;
-            QApplication::sendEvent(window, &e);
-            if (!e.isAccepted()) {
-                return false;
-            }
-       }
-    }
-    foreach (QWidget* widget, QApplication::topLevelWidgets()) {
-        if (!widget || widget->isHidden() || widget->inherits("QMainWindow")) {
+    s_asked.clear();
+    foreach (QWidget* topwidget, QApplication::topLevelWidgets()) {
+        if (!topwidget || !topwidget->isWindow() || !topwidget->inherits("QMainWindow")) {
             continue;
         }
         QCloseEvent e;
-        QApplication::sendEvent(widget, &e);
+        QApplication::sendEvent(topwidget, &e);
         if (!e.isAccepted()) {
+            s_asked.clear();
             return false;
         }
+        s_asked.append(topwidget);
     }
 
     d->session_save = true;
