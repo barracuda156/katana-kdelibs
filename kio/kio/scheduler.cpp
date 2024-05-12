@@ -61,6 +61,15 @@ Scheduler::~Scheduler()
     const int slavescount = m_slaves.size();
     if (slavescount > 0) {
         kWarning(7006) << "there are slaves" << slavescount;
+        QMutableListIterator<KIO::SlaveInterface*> iter(m_slaves);
+        while (iter.hasNext()) {
+            KIO::SlaveInterface* slave = iter.next();
+            kDebug(7006) << "killing slave" << slave->pid() << slave->protocol();
+            iter.remove();
+            disconnect(slave, 0, this, 0);
+            slave->kill();
+            slave->deref();
+        }
     }
 }
 
@@ -190,7 +199,7 @@ void Scheduler::slotStartJob()
             m_slaves.append(slave);
             QObject::connect(
                 slave, SIGNAL(slaveDied(KIO::SlaveInterface*)),
-                Scheduler::self(), SLOT(slotSlaveDied(KIO::SlaveInterface*))
+                this, SLOT(slotSlaveDied(KIO::SlaveInterface*))
             );
         } else {
             kDebug(7006) << "using exisitng slave" << slave->pid();
