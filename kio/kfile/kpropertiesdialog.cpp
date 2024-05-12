@@ -836,7 +836,7 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
         iconButton->setFixedSize(bsize, bsize);
         iconButton->setIconSize(48);
         iconButton->setStrictIconSize(false);
-        QString iconStr = KMimeType::findByUrl(url, mode)->iconName(url);
+        iconStr = KMimeType::findByUrl(url, mode)->iconName(url);
         if (bDesktopFile && isLocal) {
             KDesktopFile config(url.toLocalFile());
             KConfigGroup group = config.desktopGroup();

@@ -61,13 +61,11 @@ QStringList KRun::processDesktopExec(const KService &service, const QStringList 
                 iter.remove();
             }
         } else if (arg.contains(QLatin1String("%F")) || arg.contains(QLatin1String("%U"))) {
+            iter.remove();
             if (!urls.isEmpty()) {
-                iter.remove();
                 foreach (const QString &url, urls) {
                     iter.insert(url);
                 }
-            } else {
-                iter.remove();
             }
         } else if (arg.contains(QLatin1String("%i"))) {
             arg = service.icon();
