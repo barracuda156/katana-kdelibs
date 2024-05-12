@@ -295,8 +295,7 @@ bool NetAccess::statInternal( const KUrl & url, int details, StatSide side,
                               QWidget* window )
 {
   d->bJobOK = true; // success unless further error occurs
-  KIO::JobFlags flags = url.isLocalFile() ? KIO::HideProgressInfo : KIO::DefaultFlags;
-  KIO::StatJob * job = KIO::stat( url, flags );
+  KIO::StatJob * job = KIO::stat( url, KIO::HideProgressInfo );
   job->ui()->setWindow (window);
   job->setDetails( details );
   job->setSide( side == SourceSide ? StatJob::SourceSide : StatJob::DestinationSide );
