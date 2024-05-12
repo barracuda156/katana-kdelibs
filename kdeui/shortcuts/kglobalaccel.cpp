@@ -201,22 +201,24 @@ KGlobalAccelPrivate::~KGlobalAccelPrivate()
 
 bool KGlobalAccelPrivate::doRegister(KAction *action)
 {
-    const QKeySequence keysequence = action->globalShortcut();
     bool result = false;
-    for (int i = 0; i < keysequence.count(); i++) {
-        uint keyModX = 0;
-        int keyCodeX = 0;
-        if (kGrabKey(keysequence[i], keyModX, keyCodeX)) {
-            KGlobalAccelStruct shortcut;
-            shortcut.action = action;
-            shortcut.keyModX = keyModX;
-            shortcut.keyCodeX = keyCodeX;
-            filter->shortcuts.append(shortcut);
-            kDebug(s_kglobalaccelarea) << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX;
-            // grabbed one, that is success
-            result = true;
-        } else {
-            kWarning(s_kglobalaccelarea) << "could not grab shortcut" << keysequence[i] << action;
+    if (filter) {
+        const QKeySequence keysequence = action->globalShortcut();
+        for (int i = 0; i < keysequence.count(); i++) {
+            uint keyModX = 0;
+            int keyCodeX = 0;
+            if (kGrabKey(keysequence[i], keyModX, keyCodeX)) {
+                KGlobalAccelStruct shortcut;
+                shortcut.action = action;
+                shortcut.keyModX = keyModX;
+                shortcut.keyCodeX = keyCodeX;
+                filter->shortcuts.append(shortcut);
+                kDebug(s_kglobalaccelarea) << "grabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX;
+                // grabbed one, that is success
+                result = true;
+            } else {
+                kWarning(s_kglobalaccelarea) << "could not grab shortcut" << keysequence[i] << action;
+            }
         }
     }
     return result;
@@ -226,17 +228,19 @@ bool KGlobalAccelPrivate::remove(KAction *action)
 {
     bool result = false;
     bool found = false;
-    QMutableListIterator<KGlobalAccelStruct> iter(filter->shortcuts);
-    while (iter.hasNext()) {
-        const KGlobalAccelStruct shortcut = iter.next();
-        if (shortcut.action == action) {
-            found = true;
-            if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
-                kDebug(s_kglobalaccelarea) << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX;
-                iter.remove();
-                result = true;
-            } else {
-                kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX;
+    if (filter) {
+        QMutableListIterator<KGlobalAccelStruct> iter(filter->shortcuts);
+        while (iter.hasNext()) {
+            const KGlobalAccelStruct shortcut = iter.next();
+            if (shortcut.action == action) {
+                found = true;
+                if (kUngrabKey(shortcut.keyModX, shortcut.keyCodeX)) {
+                    kDebug(s_kglobalaccelarea) << "ungrabbed shortcut" << shortcut.keyModX << shortcut.keyCodeX;
+                    iter.remove();
+                    result = true;
+                } else {
+                    kWarning(s_kglobalaccelarea) << "could not ungrab shortcut" << shortcut.keyModX << shortcut.keyCodeX;
+                }
             }
         }
     }
@@ -262,13 +266,15 @@ KGlobalAccel* KGlobalAccel::self()
 QList<KGlobalShortcutInfo> KGlobalAccel::getGlobalShortcutsByKey(const QKeySequence &seq)
 {
     QList<KGlobalShortcutInfo> result;
-    foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
-        if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
-            KGlobalShortcutInfo globalshortcutinfo;
-            globalshortcutinfo.componentFriendlyName = shortcut.action->d->componentData.aboutData()->programName();
-            globalshortcutinfo.friendlyName = KGlobal::locale()->removeAcceleratorMarker(shortcut.action->text());
-            globalshortcutinfo.contextFriendlyName = shortcut.action->objectName();
-            result.append(globalshortcutinfo);
+    if (d->filter) {
+        foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+            if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
+                KGlobalShortcutInfo globalshortcutinfo;
+                globalshortcutinfo.componentFriendlyName = shortcut.action->d->componentData.aboutData()->programName();
+                globalshortcutinfo.friendlyName = KGlobal::locale()->removeAcceleratorMarker(shortcut.action->text());
+                globalshortcutinfo.contextFriendlyName = shortcut.action->objectName();
+                result.append(globalshortcutinfo);
+            }
         }
     }
     return result;
@@ -276,12 +282,14 @@ QList<KGlobalShortcutInfo> KGlobalAccel::getGlobalShortcutsByKey(const QKeySeque
 
 bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QAction *exception)
 {
-    foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
-        if (shortcut.action == exception) {
-            continue;
-        }
-        if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
-            return false;
+    if (d->filter) {
+        foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
+            if (shortcut.action == exception) {
+                continue;
+            }
+            if (shortcut.action->globalShortcut().matches(seq) != QKeySequence::NoMatch) {
+                return false;
+            }
         }
     }
     return true;
@@ -289,6 +297,9 @@ bool KGlobalAccel::isGlobalShortcutAvailable(const QKeySequence &seq, const QAct
 
 void KGlobalAccel::stealShortcutSystemwide(const QKeySequence &seq, const QAction *exception)
 {
+    if (!d->filter) {
+        return;
+    }
     foreach (const KGlobalAccelStruct &shortcut, d->filter->shortcuts) {
         if (shortcut.action == exception) {
             continue;
