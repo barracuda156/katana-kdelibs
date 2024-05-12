@@ -226,13 +226,13 @@ void ContainmentPrivate::addDefaultActions(KActionCollection *actions, Containme
 
     KAction *action = actions->addAction("next applet");
     action->setText(i18n("Next Widget"));
-    //no icon
+    action->setIcon(KIcon("go-next"));
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_N));
     action->setData(AbstractToolBox::ControlTool);
 
     action = actions->addAction("previous applet");
     action->setText(i18n("Previous Widget"));
-    //no icon
+    action->setIcon(KIcon("go-previous"));
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_P));
     action->setData(AbstractToolBox::ControlTool);
 }
