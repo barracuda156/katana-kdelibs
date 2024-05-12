@@ -113,7 +113,7 @@ void KUrlComboBox::KUrlComboBoxPrivate::init( Mode mode )
 
 QStringList KUrlComboBox::urls() const
 {
-    kDebug(250) << "::urls()";
+    kDebug() << "::urls()";
     //static const QString fileProt = QString::fromLatin1("file:");
     QStringList list;
     QString url;
@@ -284,7 +284,7 @@ void KUrlComboBox::setUrl( const KUrl& url )
     item->text = url.pathOrUrl(d->myMode == Directories
                                ? KUrl::AddTrailingSlash
                                : KUrl::RemoveTrailingSlash);
-     kDebug(250) << "setURL: text=" << item->text;
+     kDebug() << "setURL: text=" << item->text;
 
     int id = count();
     QString text = /*isEditable() ? item->url.prettyUrl( (KUrl::AdjustPathOption)myMode ) : */ item->text;
@@ -319,7 +319,7 @@ void KUrlComboBox::KUrlComboBoxPrivate::insertUrlItem( const KUrlComboBoxPrivate
 {
     Q_ASSERT( item );
 
-// kDebug(250) << "insertURLItem " << item->text;
+// kDebug() << "insertURLItem " << item->text;
     int id = m_parent->count();
     m_parent->KComboBox::insertItem(id, item->icon, item->text);
     itemMapper.insert( id, item );
