@@ -18,6 +18,7 @@
 */
 
 #include "krun.h"
+#include "kstandarddirs.h"
 #include "kopenwithdialog.h"
 #include "ktoolinvocation.h"
 #include "kmimetypetrader.h"
@@ -51,6 +52,33 @@ QStringList KRun::processDesktopExec(const KService &service, const QStringList 
     if (args.isEmpty()) {
         return args;
     }
+
+    if (service.terminal()) {
+        KConfigGroup generalgroup(KGlobal::config(), "General");
+        const QString terminal = generalgroup.readPathEntry("TerminalApplication", QLatin1String("konsole"));
+        const QString terminalexe = KStandardDirs::findExe(terminal);
+        if (terminalexe.isEmpty()) {
+            return QStringList();
+        }
+        args.prepend(QLatin1String("-e"));
+        const QStringList terminalargs = KShell::splitArgs(service.terminalOptions());
+        foreach (const QString &terminalarg, terminalargs) {
+            args.prepend(terminalarg);
+        }
+        args.prepend(terminalexe);
+    }
+
+    if (service.substituteUid()) {
+        const QString kdesudoexe = KStandardDirs::findExe("kdesudo");
+        if (kdesudoexe.isEmpty()) {
+            return QStringList();
+        }
+        args.prepend(QLatin1String("--"));
+        args.prepend(service.username());
+        args.prepend(QLatin1String("-u"));
+        args.prepend(kdesudoexe);
+    }
+
     QMutableListIterator<QString> iter(args);
     while (iter.hasNext()) {
         QString &arg = iter.next();
@@ -62,10 +90,8 @@ QStringList KRun::processDesktopExec(const KService &service, const QStringList 
             }
         } else if (arg.contains(QLatin1String("%F")) || arg.contains(QLatin1String("%U"))) {
             iter.remove();
-            if (!urls.isEmpty()) {
-                foreach (const QString &url, urls) {
-                    iter.insert(url);
-                }
+            foreach (const QString &url, urls) {
+                iter.insert(url);
             }
         } else if (arg.contains(QLatin1String("%i"))) {
             arg = service.icon();
