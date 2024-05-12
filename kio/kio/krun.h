@@ -29,72 +29,47 @@
 class KRunPrivate;
 
 /**
- * To open files with their associated applications in KDE, use KRun.
- *
- * It can execute any desktop entry, as well as any file, using
- * the default application or another application "bound" to the file type
- * (or URL protocol).
- *
- * In that example, the mimetype of the file is not known by the application,
- * so a KRun instance must be created. It will determine the mimetype by itself.
- * If the mimetype is known, or if you even know the service (application) to
- * use for this file, use one of the static methods.
- *
- * By default KRun uses auto deletion. It causes the KRun instance to delete
- * itself when the it finished its task. If you allocate the KRun
- * object on the stack you must disable auto deletion, otherwise it will crash.
- *
- * @short Opens files with their associated applications in KDE
+ * KRun provides utility methods for running services and applications
  */
 class KIO_EXPORT KRun
 {
 public:
     /**
-     * Display the Open-With dialog for those URLs, and run the chosen application.
-     * @param urls the list of applications to run
-     * @param window The top-level widget of the app that invoked this object.
-     * @param tempFiles if true and lst are local files, they will be deleted
-     *        when the application exits.
+     * Display the Open-With dialog for URLs and run the chosen application
+     *
+     * @param urls the list of URLs to run
+     * @param window the top-level widget of the application, if any
+     * @param temp if true any local file URL will be deleted when the application exits
      * @return false if the dialog was canceled
      */
-    static bool displayOpenWithDialog(const KUrl::List &urls, QWidget* window,
-                                      bool tempFiles = false);
+    static bool displayOpenWithDialog(const KUrl::List &urls, QWidget *window, bool temp = false);
 
     /**
-     * Processes a Exec= line as found in .desktop files.
-     * @param service the service to extract information from.
-     * @param urls The urls the service should open.
+     * Processes a Exec= line as found in .desktop files
      *
-     * @return a list of arguments suitable for KProcess::setProgram().
+     * @param service the service to extract information from
+     * @param urls the urls the service should open
+     * @return a list of arguments suitable for KProcess::setProgram()
      */
     static QStringList processDesktopExec(const KService &service, const KUrl::List &urls);
 
     /**
-     * Given a full command line (e.g. the Exec= line from a .desktop file),
-     * extract the name of the binary being run.
+     * Given a full command line (e.g. the Exec= line from a .desktop file), extracts the name of
+     * the binary being run.
+     *
      * @param execLine the full command line
-     * @param removePath if true, remove a (relative or absolute) path. E.g. /usr/bin/ls becomes ls.
+     * @param removePath if true, remove a (relative or absolute) path. e.g. /usr/bin/ls becomes ls
      * @return the name of the binary to run
      */
     static QString binaryName(const QString &execLine, bool removePath);
 
     /**
-     * Returns whether @p serviceType refers to an executable program instead
-     * of a data file.
+     * Returns whether @p mimeType refers to an executable program
      */
-    static bool isExecutable(const QString &serviceType);
+    static bool isExecutable(const QString &mimeType);
 
     /**
-     * Returns whether the @p url of @p mimetype is executable.
-     * To be executable the file must pass the following rules:
-     * -# Must reside on the local filesystem.
-     * -# Must be marked as executable for the user by the filesystem.
-     * -# The mime type must inherit application/x-executable or application/x-executable-script.
-     * To allow a script to run when the above rules are satisfied add the entry
-     * @code
-     * X-KDE-IsAlso=application/x-executable-script
-     * @endcode
-     * to the mimetype's desktop file.
+     * Returns whether the @p url of @p mimetype is executable
      */
     static bool isExecutableFile(const KUrl &url, const QString &mimetype);
 
