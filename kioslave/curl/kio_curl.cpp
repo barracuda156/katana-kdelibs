@@ -228,7 +228,8 @@ static inline KIO::Error curlToKIOError(const CURLcode curlcode, CURL *curl)
         case CURLE_READ_ERROR: {
             return KIO::ERR_COULD_NOT_READ;
         }
-        case CURLE_WRITE_ERROR: {
+        case CURLE_WRITE_ERROR:
+        case CURLE_UPLOAD_FAILED: {
             return KIO::ERR_COULD_NOT_WRITE;
         }
         case CURLE_OUT_OF_MEMORY: {
