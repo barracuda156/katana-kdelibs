@@ -120,31 +120,38 @@ bool KPasswdStore::openStore(const qlonglong windowid)
 void KPasswdStore::setCacheOnly(const bool cacheonly)
 {
     d->ensureInterface();
+    KLockFile klockfile(getLockName(d->cookie, d->storeid));
+    klockfile.lock();
     d->interface->call("setCacheOnly", d->cookie, d->storeid, cacheonly);
+    klockfile.unlock();
 }
 
 bool KPasswdStore::cacheOnly() const
 {
     d->ensureInterface();
+    KLockFile klockfile(getLockName(d->cookie, d->storeid));
+    klockfile.lock();
     QDBusReply<bool> result = d->interface->call("cacheOnly", d->cookie, d->storeid);
+    klockfile.unlock();
     return result.value();
 }
 
 QString KPasswdStore::getPasswd(const QByteArray &key, const qlonglong windowid)
 {
-    if (!openStore(windowid) && !cacheOnly()) {
-        return QString();
-    }
+    d->ensureInterface();
+    KLockFile klockfile(getLockName(d->cookie, d->storeid));
+    klockfile.lock();
     QDBusReply<QString> result = d->interface->call("getPasswd", d->cookie, d->storeid, key, windowid);
     return result.value();
 }
 
 bool KPasswdStore::storePasswd(const QByteArray &key, const QString &passwd, const qlonglong windowid)
 {
-    if (!openStore(windowid) && !cacheOnly()) {
-        return false;
-    }
+    d->ensureInterface();
+    KLockFile klockfile(getLockName(d->cookie, d->storeid));
+    klockfile.lock();
     QDBusReply<bool> result = d->interface->call("storePasswd", d->cookie, d->storeid, key, passwd, windowid);
+    klockfile.unlock();
     return result.value();
 }
 
