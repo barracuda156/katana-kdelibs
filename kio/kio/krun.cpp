@@ -45,29 +45,36 @@ bool KRun::displayOpenWithDialog(const KUrl::List &urls, QWidget *window, bool t
 }
 
 // TODO: this needs a complete rewrite to handle remote URLs
-QStringList KRun::processDesktopExec(const KService &service, const KUrl::List &urls)
+QStringList KRun::processDesktopExec(const KService &service, const QStringList &urls)
 {
     QStringList args = KShell::splitArgs(service.exec());
     if (args.isEmpty()) {
         return args;
     }
-    const QStringList urlsstrings = urls.toStringList();
-    for (int i = 0; i < args.size(); i++) {
-        const QString arg = args.at(i);
+    QMutableListIterator<QString> iter(args);
+    while (iter.hasNext()) {
+        QString &arg = iter.next();
         if (arg.contains(QLatin1String("%f")) || arg.contains(QLatin1String("%u"))) {
-            if (!urlsstrings.isEmpty()) {
-                args.replace(i, urlsstrings.first());
+            if (!urls.isEmpty()) {
+                arg = urls.first();
             } else {
-                args.replace(i, QString());
+                iter.remove();
             }
         } else if (arg.contains(QLatin1String("%F")) || arg.contains(QLatin1String("%U"))) {
-            args.replace(i, urlsstrings.join(QLatin1String(" ")));
+            if (!urls.isEmpty()) {
+                iter.remove();
+                foreach (const QString &url, urls) {
+                    iter.insert(url);
+                }
+            } else {
+                iter.remove();
+            }
         } else if (arg.contains(QLatin1String("%i"))) {
-            args.replace(i, service.icon());
+            arg = service.icon();
         } else if (arg.contains(QLatin1String("%c"))) {
-            args.replace(i, service.name());
+            arg = service.name();
         } else if (arg.contains(QLatin1String("%k"))) {
-            args.replace(i, service.entryPath());
+            arg = service.entryPath();
         }
     }
     return args;

@@ -51,7 +51,7 @@ public:
      * @param urls the urls the service should open
      * @return a list of arguments suitable for KProcess::setProgram()
      */
-    static QStringList processDesktopExec(const KService &service, const KUrl::List &urls);
+    static QStringList processDesktopExec(const KService &service, const QStringList &urls);
 
     /**
      * Given a full command line (e.g. the Exec= line from a .desktop file), extracts the name of

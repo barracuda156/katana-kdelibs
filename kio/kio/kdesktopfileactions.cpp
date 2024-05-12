@@ -281,7 +281,8 @@ void KDesktopFileActions::executeService( const KUrl::List& urls, const KService
     } else {
         kDebug() << action.name() << "first url's path=" << urls.first().toLocalFile() << "exec=" << action.exec();
         KService actionService(action.text(), action.exec(), action.icon());
-        QStringList actionArgs = KRun::processDesktopExec(actionService, urls);
+        const QStringList urlStrings = urls.toStringList();
+        QStringList actionArgs = KRun::processDesktopExec(actionService, urlStrings);
         if (actionArgs.isEmpty()) {
             kWarning() << "empty service command" << action.text() << action.exec();
         } else {
@@ -289,7 +290,7 @@ void KDesktopFileActions::executeService( const KUrl::List& urls, const KService
             KToolInvocation::self()->startProgram(actionProgram, actionArgs);
         }
         // The action may update the desktop file. Example: eject unmounts (#5129).
-        org::kde::KDirNotify::emitFilesChanged( urls.toStringList() );
+        org::kde::KDirNotify::emitFilesChanged(urlStrings);
     }
 }
 
