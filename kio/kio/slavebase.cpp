@@ -124,7 +124,7 @@ static AuthInfo authInfoFromData(const QByteArray &authdata)
 static QTextConverter* textConverter(const QByteArray &name)
 {
     if (name.isEmpty()) {
-        return new QTextConverter("UTF-8");
+        return new QTextConverter(QTextCodec::codecForLocale()->name());
     }
     return new QTextConverter(name);
 }
