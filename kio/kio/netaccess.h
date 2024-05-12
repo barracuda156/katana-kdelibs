@@ -379,6 +379,7 @@ private Q_SLOTS:
     void slotResult( KJob * job );
     void slotData( KIO::Job*, const QByteArray& );
     void slotRedirection( KIO::Job*, const KUrl& );
+    void slotShowProgress();
 
 private:
     NetAccessPrivate * const d;

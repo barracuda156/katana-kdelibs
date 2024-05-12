@@ -29,11 +29,12 @@
 
 #include <cstring>
 
-#include <QtCore/QString>
-#include <QtCore/QFileInfo>
-#include <QtCore/QMetaObject>
-#include <QtCore/QTextStream>
-#include <QtGui/QApplication>
+#include <QString>
+#include <QFileInfo>
+#include <QMetaObject>
+#include <QTextStream>
+#include <QApplication>
+#include <QTimer>
 
 #include <klocale.h>
 #include <ktemporaryfile.h>
@@ -42,9 +43,11 @@
 #include <kstandarddirs.h>
 
 #include "job.h"
+#include "job_p.h"
 #include "copyjob.h"
 #include "deletejob.h"
 #include "jobuidelegate.h"
+#include "kjobtrackerinterface.h"
 
 namespace KIO
 {
@@ -52,13 +55,18 @@ namespace KIO
     {
     public:
         NetAccessPrivate()
-            : m_metaData(0)
+            : m_metaData(nullptr)
+            , m_statJob(nullptr)
             , bJobOK(true)
-        {}
+        {
+        }
+
         UDSEntry m_entry;
         QByteArray m_data;
         KUrl m_url;
-        MetaData *m_metaData;
+        MetaData* m_metaData;
+
+        KIO::StatJob* m_statJob;
 
         /**
          * Whether the download succeeded or not
@@ -295,12 +303,15 @@ bool NetAccess::statInternal( const KUrl & url, int details, StatSide side,
                               QWidget* window )
 {
   d->bJobOK = true; // success unless further error occurs
-  KIO::StatJob * job = KIO::stat( url, KIO::HideProgressInfo );
-  job->ui()->setWindow (window);
-  job->setDetails( details );
-  job->setSide( side == SourceSide ? StatJob::SourceSide : StatJob::DestinationSide );
-  connect( job, SIGNAL(result(KJob*)),
+  d->m_statJob = KIO::stat( url, KIO::HideProgressInfo );
+  d->m_statJob->ui()->setWindow (window);
+  d->m_statJob->setDetails( details );
+  d->m_statJob->setSide( side == SourceSide ? StatJob::SourceSide : StatJob::DestinationSide );
+  connect( d->m_statJob, SIGNAL(result(KJob*)),
            this, SLOT(slotResult(KJob*)) );
+  if (!url.isLocalFile()) {
+    QTimer::singleShot(3000, this, SLOT(slotShowProgress()));
+  }
   enter_loop();
   return d->bJobOK;
 }
@@ -413,7 +424,14 @@ void NetAccess::slotData( KIO::Job*, const QByteArray& data )
 
 void NetAccess::slotRedirection( KIO::Job*, const KUrl& url )
 {
-  d->m_url = url;
+    d->m_url = url;
+}
+
+void NetAccess::slotShowProgress()
+{
+    Q_ASSERT(d->m_statJob != nullptr);
+    KIO::getJobTracker()->registerJob(d->m_statJob);
+    KIO::JobPrivate::emitStating(d->m_statJob, d->m_statJob->url());
 }
 
 #include "moc_netaccess.cpp"
