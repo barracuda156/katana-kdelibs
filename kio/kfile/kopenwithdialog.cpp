@@ -222,7 +222,7 @@ QVariant KApplicationModel::data(const QModelIndex &index, int role) const
             break;
         }
         default: {
-            ;
+            break;
         }
     }
     return QVariant();
@@ -595,11 +595,9 @@ void KOpenWithDialogPrivate::init(const QString &text, const QString &value)
             "%F - a list of files; use for applications that can open several local files at once\n"
             "%u - a single URL\n"
             "%U - a list of URLs\n"
-            "%d - the directory of the file to open\n"
-            "%D - a list of directories\n"
             "%i - the icon\n"
-            "%m - the mini-icon\n"
-            "%c - the comment"
+            "%c - the comment\n"
+            "%k - the location of the desktop file"
         )
     );
 
