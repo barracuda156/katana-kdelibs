@@ -330,11 +330,16 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
         removeTemp(temp, urls);
         return false;
     }
-    // TODO: start one service for each
     if (urls.size() > 1 && !kservice->allowMultipleFiles()) {
-        kError() << "service does not support multiple files" << serviceName;
-        showError(i18n("Service does not support multiple files: %1", serviceName), window);
-        return false;
+        kWarning() << "service does not support multiple files" << serviceName;
+        bool result = true;
+        foreach (const QString &url, urls) {
+            if (!start_service_by_storage_id(serviceName, QStringList() << url, envs, window, temp)) {
+                // if one fails then it is not exactly a success
+                result = false;
+            }
+        }
+        return result;
     }
     // TODO: for applications which do not support URLs - download
     QStringList programandargs = KRun::processDesktopExec(*kservice, urls);
