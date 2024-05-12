@@ -73,7 +73,7 @@ public Q_SLOTS:
     void autoStart(int phase);
 
     // used by plasma-desktop and klauncher itself
-    void exec_blind(const QString &name, const QStringList &arg_list);
+    void exec_blind(const QString &name, const QStringList &args);
     void cleanup();
 
     // used by KToolInvocation

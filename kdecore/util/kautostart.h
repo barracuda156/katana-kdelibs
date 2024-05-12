@@ -85,11 +85,6 @@ class KDECORE_EXPORT KAutostart : public QObject
              */
             CheckCommand = 0x1,
             /**
-             * autostart condition will be checked too (KDE-specific)
-             * @since 4.3
-             */
-            CheckCondition = 0x2,
-            /**
              * all necessary conditions will be checked
              * @since 4.3
              */
@@ -271,7 +266,6 @@ class KDECORE_EXPORT KAutostart : public QObject
         bool checkAllowedEnvironment( const QString& environment ) const;
 
     private:
-        bool checkStartCondition() const;
         class Private;
         Private* const d;
 };

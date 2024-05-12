@@ -130,33 +130,7 @@ bool KAutostart::autostarts(const QString& environment, Conditions check) const
         starts = starts && d->df->tryExec();
     }
 
-    if (check & CheckCondition) {
-        starts = starts && checkStartCondition();
-    }
-
     return starts;
-}
-
-bool KAutostart::checkStartCondition() const
-{
-    QString condition = d->df->desktopGroup().readEntry("X-KDE-autostart-condition");
-    if (condition.isEmpty())
-        return true;
-
-    const QStringList list = condition.split(QLatin1Char(':'));
-    if (list.count() < 4) {
-        return true;
-    }
-
-    if (list[0].isEmpty() || list[2].isEmpty()) {
-        return true;
-    }
-
-    KConfig config(list[0], KConfig::NoGlobals);
-    KConfigGroup cg(&config, list[1]);
-
-    const bool defaultValue = (list[3].toLower() == QLatin1String("true"));
-    return cg.readEntry(list[2], defaultValue);
 }
 
 bool KAutostart::checkAllowedEnvironment(const QString& environment) const

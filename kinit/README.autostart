@@ -15,19 +15,6 @@ application's .desktop file must be located in a KDE autostart directory such
 as $KDEDIR/share/autostart or $KDEHOME/share/autostart. The .desktop file can
 contain the following optional entries to control its autostart:
 
-   X-KDE-autostart-condition = rcfile:group:entry:default
-
-         rcfile   = name of a config file (including path if necessary)
-         group    = name of a group within the config file
-         entry    = name of a boolean entry within the group
-         default  = true or false
-
-      Starts the application only if the specified boolean entry in the
-      specified config file has the value 'true'. If the specified entry is
-      missing from the config file, the application will only be started if
-      'default' is 'true'.
-      If the entry is not within a group, the group entry can be left empty.
-
    X-KDE-autostart-phase = phase
 
          phase  = 1 or 2
