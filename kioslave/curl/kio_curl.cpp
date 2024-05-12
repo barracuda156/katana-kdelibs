@@ -235,6 +235,7 @@ static inline KIO::Error curlToKIOError(const CURLcode curlcode, CURL *curl)
         case CURLE_OUT_OF_MEMORY: {
             return KIO::ERR_OUT_OF_MEMORY;
         }
+        case CURLE_RANGE_ERROR:
         case CURLE_BAD_DOWNLOAD_RESUME: {
             return KIO::ERR_CANNOT_RESUME;
         }
