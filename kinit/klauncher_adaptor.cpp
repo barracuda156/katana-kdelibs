@@ -370,12 +370,21 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
             urlmimetype = kmimetype->name();
         }
     } else {
-        KIO::UDSEntry kioudsentry;
-        if (!KIO::NetAccess::stat(realurl, kioudsentry, findWindow(window))) {
-            kWarning() << "could not stat URL for MIME type" << url;
-            urlmimetype = KProtocolManager::defaultMimetype(realurl);
+        // NOTE: scheme handlers are not valid MIME type but are used as such (e.g. in .desktop
+        // files) despite the fact that none of the scheme handlers actually has a entry in the
+        // shared MIME database
+        const QString servicemime = QString::fromLatin1("x-scheme-handler/") + realurl.protocol();
+        KService::Ptr schemeservice = KMimeTypeTrader::self()->preferredService(servicemime);
+        if (schemeservice) {
+            urlmimetype = servicemime;
         } else {
-            urlmimetype = kioudsentry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+            KIO::UDSEntry kioudsentry;
+            if (!KIO::NetAccess::stat(realurl, kioudsentry, findWindow(window))) {
+                kWarning() << "could not stat URL for MIME type" << url;
+                urlmimetype = KProtocolManager::defaultMimetype(realurl);
+            } else {
+                urlmimetype = kioudsentry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+            }
         }
     }
     if (urlmimetype.isEmpty()) {
