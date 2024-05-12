@@ -119,46 +119,6 @@ void KToolInvocation::invokeHelp(const QString &anchor,
     invokeBrowser(url.url());
 }
 
-void KToolInvocation::invokeMailer(const QString &address, const QString &subject)
-{
-    invokeMailer(address, QString(), subject, QString(), QStringList());
-}
-
-void KToolInvocation::invokeMailer(const KUrl &mailtoURL, bool allowAttachments)
-{
-    QString address = mailtoURL.path();
-    QString subject;
-    QString cc;
-    QString body;
-
-    const QStringList queries = mailtoURL.query().mid(1).split(QLatin1Char('&'));
-    const QChar comma = QChar::fromLatin1(',');
-    QStringList attachURLs;
-    for (QStringList::ConstIterator it = queries.begin(); it != queries.end(); ++it)
-    {
-        QString q = (*it).toLower();
-        if (q.startsWith(QLatin1String("subject=")))
-            subject = KUrl::fromPercentEncoding((*it).mid(8).toLatin1());
-        else
-            if (q.startsWith(QLatin1String("cc=")))
-                cc = cc.isEmpty()? KUrl::fromPercentEncoding((*it).mid(3).toLatin1()): cc + comma + KUrl::fromPercentEncoding((*it).mid(3).toLatin1());
-            else
-                if (q.startsWith(QLatin1String("body=")))
-                    body = KUrl::fromPercentEncoding((*it).mid(5).toLatin1());
-                else
-                    if (allowAttachments && q.startsWith(QLatin1String("attach=")))
-                        attachURLs.push_back(KUrl::fromPercentEncoding((*it).mid(7).toLatin1()));
-                    else
-                        if (allowAttachments && q.startsWith(QLatin1String("attachment=")))
-                            attachURLs.push_back(KUrl::fromPercentEncoding((*it).mid(11).toLatin1()));
-                        else
-                            if (q.startsWith(QLatin1String("to=")))
-                                address = address.isEmpty()? KUrl::fromPercentEncoding((*it).mid(3).toLatin1()): address + comma + KUrl::fromPercentEncoding((*it).mid(3).toLatin1());
-    }
-
-    invokeMailer(address, cc, subject, body, attachURLs);
-}
-
 bool KToolInvocation::startServiceInternal(const char *_function,
                                           const QString &name, const QStringList &URLs,
                                           QWidget *window, bool temp, const QString &workdir)

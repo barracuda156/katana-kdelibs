@@ -60,33 +60,8 @@ public Q_SLOTS:
      * Convenience method; invokes the standard email application.
      *
      * @param address     The destination address
-     * @param subject     Subject string. Can be QString().
-     * @param startup_id  Ffor app startup notification, "0" for none
      */
-    void invokeMailer(const QString &address, const QString &subject);
-
-    /**
-     * Invokes the standard email application.
-     *
-     * @param mailtoURL         A mailto URL.
-     * @param allowAttachments  Whether attachments specified in mailtoURL should be honoured. The
-     *                          default is false; do not honor requests for attachments.
-     */
-    void invokeMailer(const KUrl &mailtoURL, bool allowAttachments = false);
-
-    /**
-     * Convenience method; invokes the standard email application.
-     *
-     * All parameters are optional.
-     *
-     * @param to          The destination address.
-     * @param cc          The Cc field
-     * @param subject     Subject string
-     * @param body        A string containing the body of the mail
-     * @param attachURLs  List of URLs to be attached to the mail.
-     */
-    void invokeMailer(const QString &to, const QString &cc, const QString &subject,
-                      const QString &body, const QStringList &attachURLs = QStringList());
+    void invokeMailer(const QString &address);
 
     /**
      * Invokes the user's preferred browser. Note that you should only do this when you know for
@@ -145,7 +120,7 @@ public:
      * @param name    Name of the program to start
      * @param args    Arguments to pass to the program
      * @param window  Window to use for error reporting and job delegation
-     * @param temp    Whether argument is temporary file or not
+     * @param temp    Whether any of the arguments is temporary file or not
      * @return an error code indicating success (== 0) or failure (> 0)
      */
     bool startProgram(const QString &name, const QStringList &args = QStringList(),
