@@ -22,22 +22,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include <config.h>
-
 #include "ktoolinvocation.h"
-#include "kcmdlineargs.h"
 #include "kconfig.h"
-#include "kdebug.h"
 #include "kglobal.h"
 #include "kshell.h"
-#include "kmacroexpander.h"
-#include "klocale.h"
-#include "kstandarddirs.h"
 #include "kservice.h"
 #include "kconfiggroup.h"
-#include "kmessagebox.h"
 #include "kmimetypetrader.h"
 #include "kurl.h"
+#include "kdebug.h"
 
 void KToolInvocation::invokeMailer(const QString &address)
 {

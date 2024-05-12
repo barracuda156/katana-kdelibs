@@ -29,17 +29,13 @@
 #include "kglobalsettings.h"
 #include "kstartupinfo.h"
 
-#include <QtCore/QThread>
-#include <QtCore/QProcess>
-#include <QtCore/QCoreApplication>
-#include <QtDBus/QDBusInterface>
-#include <QtDBus/QDBusConnectionInterface>
-#include <QtGui/QX11Info>
+#include <QCoreApplication>
+#include <QDBusInterface>
+#include <QDBusConnectionInterface>
+#include <QX11Info>
 
-#ifdef Q_WS_X11
-#  include <X11/Xlib.h>
-#  include <fixx11h.h>
-#endif
+#include <X11/Xlib.h>
+#include <fixx11h.h>
 
 #define KTOOLINVOCATION_TIMEOUT 250
 

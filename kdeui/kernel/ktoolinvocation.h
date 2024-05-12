@@ -47,28 +47,24 @@ public:
 
 public Q_SLOTS:
    /**
-     * Invokes the help viewer.
+     * Invokes the help viewer
      *
-     * @param anchor      This has to be a defined anchor in your docbook sources. If empty the
-     *                    main index is loaded
-     * @param appname     This allows you to show the help of another application. If empty the
-     *                    current name() is used
+     * @param anchor      This can be a defined anchor in the help document
+     * @param appname     Application name, if empty the current application name is used
      */
     void invokeHelp(const QString &anchor = QString(), const QString &appname = QString());
 
     /**
-     * Convenience method; invokes the standard email application.
+     * Invokes the standard email application.
      *
-     * @param address     The destination address
+     * @param address     The mail address
      */
     void invokeMailer(const QString &address);
 
     /**
-     * Invokes the user's preferred browser. Note that you should only do this when you know for
-     * sure that the browser can handle the URL (i.e. its mimetype). In doubt, if the URL can point
-     * to an image or anything else than HTML, prefer to use KRun.
+     * Invokes the browser. If in doubt use startServiceForUrl() instead
      *
-     * @param url         The destination address
+     * @param url         The address to browse
      */
     void invokeBrowser(const QString &url);
 
@@ -84,7 +80,7 @@ public Q_SLOTS:
 
 public:
     /**
-     * Set environment variable of the launcher, e.g. "SESSION_MANAGER"
+     * Set environment variable of the launcher
      *
      * @param name   The environment variable name
      * @param value  The environment variable value
@@ -98,18 +94,18 @@ public:
      * @param url     The URL to start service for
      * @param window  Window to use for error reporting and job delegation
      * @param temp    Whether the URL is temporary file or not
-     * @return an error code indicating success (== 0) or failure (> 0).
+     * @return        True on success false otherwise
      */
     bool startServiceForUrl(const QString &url, QWidget *window = nullptr, bool temp = false);
 
     /**
-     * Starts a service based on the desktop name or entry path of the service, e.g. "konqueror"
+     * Starts a service based on the desktop name or entry path of the service
      *
      * @param name    The desktop name of the service
      * @param urls    If not empty these URLs will be passed to the service
      * @param window  Window to use for error reporting and job delegation
      * @param temp    Whether any of the URLs is temporary file or not
-     * @return an error code indicating success (== 0) or failure (> 0)
+     * @return        True on success false otherwise
      */
     bool startServiceByStorageId(const QString &name, const QStringList &urls = QStringList(),
                                  QWidget *window = nullptr, bool temp = false);
@@ -121,7 +117,7 @@ public:
      * @param args    Arguments to pass to the program
      * @param window  Window to use for error reporting and job delegation
      * @param temp    Whether any of the arguments is temporary file or not
-     * @return an error code indicating success (== 0) or failure (> 0)
+     * @return        True on success false otherwise
      */
     bool startProgram(const QString &name, const QStringList &args = QStringList(),
                       QWidget *window = nullptr, bool temp = false);
@@ -140,5 +136,5 @@ private:
     QDBusInterface *klauncherIface;
 };
 
-#endif
+#endif // KTOOLINVOCATION_H
 
