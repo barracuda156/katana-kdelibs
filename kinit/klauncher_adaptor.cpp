@@ -304,7 +304,7 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
 {
     KService::Ptr kservice = KService::serviceByStorageId(serviceName);
     if (!kservice) {
-        kError() << "invalid service path" << serviceName;
+        kError() << "invalid service" << serviceName;
         showError(i18n("Invalid service: %1", serviceName), window);
         removeTemp(temp, urls);
         return false;
@@ -373,7 +373,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
         return false;
     }
     kDebug() << "MIME type of" << url << "is" << urlmimetype;
-    if (KRun::isExecutableFile(realurl, urlmimetype)) {
+    if (KRun::isExecutable(urlmimetype)) {
         kDebug() << "execuable file" << url;
         KMessageBox::sorryWId(
             static_cast<WId>(window),
