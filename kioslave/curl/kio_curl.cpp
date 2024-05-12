@@ -224,8 +224,8 @@ static inline KIO::Error curlToKIOError(const CURLcode curlcode, CURL *curl)
         case CURLE_REMOTE_ACCESS_DENIED: {
             return KIO::ERR_ACCESS_DENIED;
         }
-        case CURLE_FILE_COULDNT_READ_FILE:
-        case CURLE_READ_ERROR: {
+        case CURLE_READ_ERROR:
+        case CURLE_FILE_COULDNT_READ_FILE: {
             return KIO::ERR_COULD_NOT_READ;
         }
         case CURLE_WRITE_ERROR:
@@ -408,12 +408,21 @@ void CurlProtocol::stat(const KUrl &url)
         return;
     }
 
-    if (m_isftp) {
+    CURLcode curlresult = CURLE_OK;
+    if (m_ishttp) {
+        // NOTE: it is known that some servers do not send some headers on HEAD, contact the server
+        // maintainer(s) if you encounter such case - it is not an issue that needs a fix here
+        curlresult = curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
+        if (curlresult != CURLE_OK) {
+            KIO_CURL_ERROR(curlresult);
+            return;
+        }
+    } else {
         m_collectdata = true;
     }
 
     KUrl redirecturl;
-    CURLcode curlresult = performCurl(url, &redirecturl);
+    curlresult = performCurl(url, &redirecturl);
     kDebug(7103) << "Stat result" << curlresult;
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
