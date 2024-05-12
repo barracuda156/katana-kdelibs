@@ -101,8 +101,8 @@ bool KRun::isExecutableFile(const KUrl &url, const QString &mimetype)
     if (!url.isLocalFile()) {
         return false;
     }
-    QFileInfo file(url.toLocalFile());
-    if (file.isExecutable()) {
+    QFileInfo fileinfo(url.toLocalFile());
+    if (!fileinfo.isDir() && fileinfo.isExecutable()) {
         return true;
     }
     return false;
