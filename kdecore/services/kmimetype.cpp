@@ -264,6 +264,14 @@ KMimeType::Ptr KMimeType::findByUrl(const KUrl &url, mode_t mode,
             }
             return KMimeType::mimeType(protmime);
         }
+        // Assume inode/directory if the protocol supports listing and it looks like directory
+        const QString path = (is_local ? localfile : url.path());
+        if (prot->supportsListing() && (path.endsWith(QLatin1Char('/')) || path.isEmpty())) {
+            if (accuracy) {
+                *accuracy = 10;
+            }
+            return KMimeType::mimeType(QLatin1String("inode/directory"));
+        }
     }
 
     if (accuracy) {
