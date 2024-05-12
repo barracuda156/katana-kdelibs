@@ -257,9 +257,9 @@ void KMimeTypeTest::testFindByPathUsingFileName_data()
         QTest::newRow("png image") << fh << "image/png";
     }
 
-    QString exePath = KStandardDirs::findExe( "kioexec" );
+    QString exePath = KStandardDirs::findExe( "kioslave" );
     if ( exePath.isEmpty() ) {
-        kWarning() << "kioexec not found";
+        kWarning() << "kioslave not found";
     } else {
         QString executableType = QString::fromLatin1( "application/x-executable" );
         // https://gitlab.freedesktop.org/xdg/shared-mime-info/-/issues/11
