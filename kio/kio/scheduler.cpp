@@ -180,6 +180,8 @@ void Scheduler::slotStartJob()
             slave = SlaveInterface::createSlave(protocol, url, error, errortext);
             if (!slave) {
                 kError(7006) << "could not create slave" << errortext;
+                iter.remove();
+                locker.unlock();
                 job->slotError(error, errortext);
                 return;
             }
