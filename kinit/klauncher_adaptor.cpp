@@ -396,10 +396,10 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
     }
     KService::Ptr kservice = KMimeTypeTrader::self()->preferredService(urlmimetype);
     if (!kservice) {
-        kError() << "invalid service for MIME type" << urlmimetype;
-        showError(i18n("No service can handle: %1", urlmimetype), window);
-        removeTemp(temp, QStringList() << url);
-        return false;
+        kDebug() << "invalid service for MIME type" << urlmimetype;
+        KUrl::List urllist;
+        urllist << realurl;
+        return KRun::displayOpenWithDialog(urllist, findWindow(window), temp);
     }
     return start_service_by_storage_id(kservice->entryPath(), QStringList() << url, envs, window, temp);
 }
