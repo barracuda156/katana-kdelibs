@@ -813,7 +813,7 @@ void CurlProtocol::slotData(const char* curldata, const size_t curldatasize)
         m_firstchunk = false;
 
         if (m_ishttp) {
-            // if it's HTTP error do not send data and MIME, abort transfer
+            // if it's HTTP error do not send data, abort transfer
             const long httpcode = HTTPCode(m_curl);
             if (httpcode >= 400) {
                 p_aborttransfer = true;
