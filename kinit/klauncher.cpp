@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
         KDE_VERSION_STRING,
         ki18n("KDE launcher - launches and autostarts applications")
     );
+    aboutData.setProgramIconName("system-run");
 
     KCmdLineArgs::init(argc, argv, &aboutData);
 
