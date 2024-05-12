@@ -301,15 +301,14 @@ void KLauncherAdaptor::cleanup()
 bool KLauncherAdaptor::start_program(const QString &app, const QStringList &args,
                                     const QStringList &envs, quint64 window, bool temp)
 {
-    return start_program_with_workdir(app, args, envs, window, temp, QDir::currentPath());
+    return start_program_with_workdir(app, args, envs, window, temp, QDir::homePath());
 }
 
 bool KLauncherAdaptor::start_program_with_workdir(const QString &app, const QStringList &args,
                                                  const QStringList &envs, quint64 window,
                                                  bool temp, const QString &workdir)
 {
-    qint64 pid = 0;
-    return startProgram(app, args, envs, window, temp, workdir, pid, m_startuptimeout);
+    return startProgram(app, args, envs, window, temp, workdir, m_startuptimeout);
 }
 
 void KLauncherAdaptor::setLaunchEnv(const QString &name, const QString &value)
@@ -355,12 +354,11 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
     }
     QString programworkdir = kservice->path();
     if (programworkdir.isEmpty()) {
-        programworkdir = QDir::currentPath();
+        programworkdir = QDir::homePath();
     }
     kDebug() << "starting" << kservice->entryPath() << urls;
     const QString program = programandargs.takeFirst();
-    qint64 pid = 0;
-    return startProgram(program, programandargs, envs, window, temp, programworkdir, pid, m_startuptimeout, kservice);
+    return startProgram(program, programandargs, envs, window, temp, programworkdir, m_startuptimeout, kservice);
 }
 
 bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringList &envs,
@@ -447,7 +445,7 @@ QString KLauncherAdaptor::findExe(const QString &app) const
 
 bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, const QStringList &envs,
                                     const quint64 window, const bool temp, const QString &workdir,
-                                    qint64 &pid, const qint64 timeout, const KService::Ptr kservice)
+                                    const qint64 timeout, const KService::Ptr kservice)
 {
     const QString appexe = findExe(app);
     if (appexe.isEmpty()) {
@@ -486,7 +484,6 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
         return false;
     }
 
-    pid = process->pid();
     return true;
 }
 

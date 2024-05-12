@@ -104,7 +104,7 @@ private Q_SLOTS:
 private:
     QString findExe(const QString &app) const;
     bool startProgram(const QString &app, const QStringList &args, const QStringList &envs,
-                      const quint64 window, const bool temp, const QString &workdir, qint64 &pid,
+                      const quint64 window, const bool temp, const QString &workdir,
                       const qint64 timeout, const KService::Ptr kservice = KService::Ptr(nullptr));
 
     QProcessEnvironment m_environment;
