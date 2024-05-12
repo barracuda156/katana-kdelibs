@@ -237,8 +237,7 @@ void KLauncherAdaptor::autoStart(int phase)
             continue;
         }
         const QString program = programandargs.takeFirst();
-        const QStringList programargs = programandargs;
-        exec_blind(program, programargs);
+        startDetached(program, programandargs);
     }
     switch (phase) {
         case 0: {
@@ -258,29 +257,6 @@ void KLauncherAdaptor::autoStart(int phase)
             break;
         }
     }
-}
-
-void KLauncherAdaptor::exec_blind(const QString &name, const QStringList &args)
-{
-    const QString appexe = findExe(name);
-    if (appexe.isEmpty()) {
-        kWarning() << "could not find" << name;
-        return;
-    }
-
-    const QStringList envlist = m_environment.toStringList();
-    kDebug() << "blind starting" << appexe << args << envlist;
-    const QString envexe = findExe("env");
-    if (envexe.isEmpty()) {
-        kWarning() << "env program not found";
-        QProcess::startDetached(appexe, args);
-        return;
-    }
-
-    QStringList envargs = envlist;
-    envargs += appexe;
-    envargs += args;
-    QProcess::startDetached(envexe, envargs);
 }
 
 void KLauncherAdaptor::cleanup()
@@ -442,6 +418,29 @@ QString KLauncherAdaptor::findExe(const QString &app) const
     }
     const QString environmentpath = m_environment.value(QString::fromLatin1("PATH"), QString());
     return KStandardDirs::findExe(app, environmentpath);
+}
+
+void KLauncherAdaptor::startDetached(const QString &name, const QStringList &args)
+{
+    const QString appexe = findExe(name);
+    if (appexe.isEmpty()) {
+        kWarning() << "could not find" << name;
+        return;
+    }
+
+    const QStringList envlist = m_environment.toStringList();
+    kDebug() << "blind starting" << appexe << args << envlist;
+    const QString envexe = findExe("env");
+    if (envexe.isEmpty()) {
+        kWarning() << "env program not found";
+        QProcess::startDetached(appexe, args);
+        return;
+    }
+
+    QStringList envargs = envlist;
+    envargs += appexe;
+    envargs += args;
+    QProcess::startDetached(envexe, envargs);
 }
 
 bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, const QStringList &envs,
