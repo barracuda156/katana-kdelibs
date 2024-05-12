@@ -55,14 +55,11 @@
 
 static QString simplifiedExecLineFromService(const QString& fullExec)
 {
-    QString exec = fullExec;
-    exec.remove("%u", Qt::CaseInsensitive);
-    exec.remove("%f", Qt::CaseInsensitive);
-    exec.remove("-caption %c");
-    exec.remove("-caption \"%c\"");
-    exec.remove("%i");
-    exec.remove("%m");
-    return exec.simplified();
+    QStringList args = KShell::splitArgs(fullExec);
+    if (args.isEmpty()) {
+        return QString();
+    }
+    return args.first().simplified();
 }
 
 namespace KDEPrivate {
