@@ -253,6 +253,10 @@ void KLauncherAdaptor::autoStart(int phase)
             emit autoStart2Done();
             break;
         }
+        default: {
+            kWarning() << "invalid startup phase";
+            break;
+        }
     }
 }
 
