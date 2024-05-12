@@ -34,6 +34,9 @@
 #include <QApplication>
 #include <QThread>
 
+// for reference:
+// https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+
 static const int s_eventstime = 250;
 static const int s_sleeptime = 50;
 // NOTE: keep in sync with:
@@ -59,6 +62,15 @@ static inline void removeTemp(const bool temp, const QStringList &args)
 static inline void showError(const QString &error, const quint64 window)
 {
     KMessageBox::errorWId(static_cast<WId>(window), error);
+}
+
+// TODO: QWidget::find() does not find external windows
+static inline QWidget* findWindow(const quint64 window)
+{
+    if (!window) {
+        return nullptr;
+    }
+    return QWidget::find(static_cast<WId>(window));
 }
 
 KLauncherProcess::KLauncherProcess(QObject *parent)
@@ -354,8 +366,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
         }
     } else {
         KIO::UDSEntry kioudsentry;
-        // TODO: unless WId is passed around QWidget::find() will not find external windows
-        if (!KIO::NetAccess::stat(realurl, kioudsentry, QWidget::find(static_cast<WId>(window)))) {
+        if (!KIO::NetAccess::stat(realurl, kioudsentry, findWindow(window))) {
             kWarning() << "could not stat URL for MIME type" << url;
             urlmimetype = KProtocolManager::defaultMimetype(realurl);
         } else {
@@ -375,6 +386,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
             static_cast<WId>(window),
             i18n("The file <tt>%1</tt> is an executable program.<br/>For safety it will not be started.", Qt::escape(realurl.prettyUrl()))
         );
+        removeTemp(temp, QStringList() << url);
         return false;
     }
     KService::Ptr kservice = KMimeTypeTrader::self()->preferredService(urlmimetype);
