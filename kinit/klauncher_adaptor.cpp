@@ -414,7 +414,7 @@ void KLauncherAdaptor::slotProcessFinished(int exitcode)
 {
     KLauncherProcess* process = qobject_cast<KLauncherProcess*>(sender());
     kDebug() << "process finished" << process << exitcode;
-    m_processes.removeAll(process);
+    m_processes.removeOne(process);
     process->deleteLater();
 }
 
@@ -467,7 +467,6 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
     }
 
     KLauncherProcess* process = new KLauncherProcess(this);
-    connect(process, SIGNAL(finished(int)), this, SLOT(slotProcessFinished(int)));
     m_processes.append(process);
     QProcessEnvironment processenv = m_environment;
     foreach (const QString &env, envs) {
@@ -492,9 +491,29 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
     }
     if (process->error() == QProcess::FailedToStart || process->error() == QProcess::Crashed) {
         kWarning() << "could not start" << appexe;
+        m_processes.removeOne(process);
+        process->deleteLater();
+        showError(i18n("Could not start the application: %1", app), window);
         return false;
     }
-
+    if (process->state() == QProcess::NotRunning && process->exitCode() != 0) {
+        kWarning() << "started but finished with error" << appexe;
+        const QByteArray processerror = process->readAllStandardError();
+        m_processes.removeOne(process);
+        process->deleteLater();
+        if (processerror.isEmpty()) {
+            showError(i18n("Application exited abnormally: %1", app), window);
+        } else {
+            KMessageBox::detailedErrorWId(
+                static_cast<WId>(window),
+                i18n("Application exited abnormally: %1", app),
+                QString::fromLocal8Bit(processerror.constData(), processerror.size())
+            );
+        }
+        return false;
+    }
+    kDebug() << "started" << appexe;
+    connect(process, SIGNAL(finished(int)), this, SLOT(slotProcessFinished(int)));
     return true;
 }
 
