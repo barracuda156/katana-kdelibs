@@ -99,28 +99,34 @@ NetAccess::~NetAccess()
 
 bool NetAccess::download(const KUrl& u, QString & target, QWidget* window)
 {
-  if (u.isLocalFile()) {
-    // file protocol. We do not need the network
-    target = u.toLocalFile();
-    bool accessible = KStandardDirs::checkAccess(target, R_OK);
-    if(!accessible)
-    {
-        lastErrorMsg = i18n("File '%1' is not readable", target);
-        lastErrorCode = ERR_COULD_NOT_READ;
+    if (u.isLocalFile()) {
+        // file protocol, do not need the network
+        target = u.toLocalFile();
+        bool accessible = KStandardDirs::checkAccess(target, R_OK);
+        if(!accessible) {
+            lastErrorMsg = i18n("File '%1' is not readable", target);
+            lastErrorCode = ERR_COULD_NOT_READ;
+        }
+        return accessible;
     }
-    return accessible;
-  }
 
-  if (target.isEmpty())
-  {
-      target = KTemporaryFile::filePath();
-      tmpfiles.append(target);
-  }
+    if (target.isEmpty()) {
+        // same bits as in kparts/part.cpp
+        QFileInfo fileInfo(u.fileName());
+        QString ext = fileInfo.completeSuffix();
+        QString extension;
+        if (!ext.isEmpty() && u.query().isEmpty()) {
+            // not if the URL has a query
+            extension = '.' + ext;
+        }
+        target = KTemporaryFile::filePath(QString::fromLatin1("XXXXXXXXXX%1").arg(extension));
+        tmpfiles.append(target);
+    }
 
-  NetAccess kioNet;
-  KUrl dest;
-  dest.setPath( target );
-  return kioNet.filecopyInternal( u, dest, -1, KIO::Overwrite, window, false /*copy*/);
+    NetAccess kioNet;
+    KUrl dest;
+    dest.setPath( target );
+    return kioNet.filecopyInternal( u, dest, -1, KIO::Overwrite, window, false /*copy*/);
 }
 
 bool NetAccess::upload(const QString& src, const KUrl& target, QWidget* window)
