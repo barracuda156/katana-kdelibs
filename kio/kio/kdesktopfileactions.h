@@ -37,7 +37,7 @@ namespace KDesktopFileActions
      * by kio itself. Namely mount/unmount for FSDevice files.
      * @return the list of services
      */
-    KIO_EXPORT QList<KServiceAction> builtinServices( const KUrl& url );
+    KIO_EXPORT QList<KServiceAction> builtinServices(const KUrl &url);
 
     /**
      * Returns a list of services defined by the user as possible actions
@@ -47,16 +47,13 @@ namespace KDesktopFileActions
      * @param path the path to the desktop file describing the services
      * @param bLocalFiles true if those services are to be applied to local files only
      * (if false, services that don't have %u or %U in the Exec line won't be taken into account).
+     * @param file_list list of urls; this allows for the menu to be changed depending on the exact files via
+     * the X-KDE-GetActionMenu extension.
+     *
      * @return the list of user defined actions
      */
-    KIO_EXPORT QList<KServiceAction> userDefinedServices( const QString& path, bool bLocalFiles );
-
-    /**
-     * Overload of userDefinedServices but also allows you to pass a list of urls for this file.
-     * This allows for the menu to be changed depending on the exact files via
-     * the X-KDE-GetActionMenu extension.
-     */
-    KIO_EXPORT QList<KServiceAction> userDefinedServices( const KDesktopFile& desktopFile, bool bLocalFiles, const KUrl::List & file_list = KUrl::List());
+    KIO_EXPORT QList<KServiceAction> userDefinedServices(const KDesktopFile &desktopFile, bool bLocalFiles,
+                                                         const KUrl::List &file_list = KUrl::List());
 
     /**
      * Returns a list of services defined by the user as possible actions
@@ -72,14 +69,15 @@ namespace KDesktopFileActions
      *
      * @return the list of user defined actions
      */
-    KIO_EXPORT QList<KServiceAction> userDefinedServices( const KService& service, bool bLocalFiles, const KUrl::List & file_list = KUrl::List() );
+    KIO_EXPORT QList<KServiceAction> userDefinedServices(const KService &service, bool bLocalFiles,
+                                                         const KUrl::List &file_list = KUrl::List());
 
    /**
      * Execute @p service on the list of @p urls.
      * @param urls the list of urls
      * @param service the service to execute
      */
-    KIO_EXPORT void executeService( const KUrl::List& urls, const KServiceAction& service );
+    KIO_EXPORT void executeService(const KUrl::List &urls, const KServiceAction &service);
 
     /**
      * Invokes the default action for the desktop entry. If the desktop
@@ -87,12 +85,12 @@ namespace KDesktopFileActions
      * would create a security problem. Only types Link and Mimetype
      * could be followed.
      *
-     * @param _url the url to run
-     * @param _is_local true if the URL is local, false otherwise
+     * @param url the url to run
+     * @param is_local true if the URL is local, false otherwise
      * @return true on success and false on failure.
      * @see KRun, KToolInvocation
      */
-    KIO_EXPORT bool run( const KUrl& _url, bool _is_local );
+    KIO_EXPORT bool run(const KUrl &url, bool is_local);
 }
 
 #endif

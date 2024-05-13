@@ -41,32 +41,32 @@ enum BuiltinServiceType { ST_MOUNT = 0x0E1B05B0, ST_UNMOUNT = 0x0E1B05B1 }; // r
 static bool runFSDevice( const KUrl& _url, const KDesktopFile &cfg );
 static bool runLink( const KUrl& _url, const KDesktopFile &cfg );
 
-bool KDesktopFileActions::run( const KUrl& u, bool _is_local )
+bool KDesktopFileActions::run(const KUrl &url, bool is_local)
 {
     // It might be a security problem to run external untrusted desktop
     // entry files
-    if ( !_is_local )
+    if (!is_local)
         return false;
 
-    KDesktopFile cfg(u.toLocalFile());
+    KDesktopFile cfg(url.toLocalFile());
     if ( !cfg.desktopGroup().hasKey("Type") )
     {
         KMessageBox::error(
             nullptr,
-            i18n("The desktop entry file %1 has no Type=... entry.", u.toLocalFile())
+            i18n("The desktop entry file %1 has no Type=... entry.", url.toLocalFile())
         );
         return false;
     }
 
     // kDebug() << "TYPE = " << type.data();
 
-    if ( cfg.hasDeviceType() )
-        return runFSDevice( u, cfg );
-    else if ( cfg.hasApplicationType()
+    if (cfg.hasDeviceType())
+        return runFSDevice(url, cfg);
+    else if (cfg.hasApplicationType()
               || (cfg.readType() == "Service" && !cfg.desktopGroup().readEntry("Exec").isEmpty())) // for kio_settings
-        return KToolInvocation::self()->startServiceByStorageId( u.toLocalFile() );
-    else if ( cfg.hasLinkType() )
-        return runLink( u, cfg );
+        return KToolInvocation::self()->startServiceByStorageId(url.toLocalFile());
+    else if (cfg.hasLinkType())
+        return runLink(url, cfg);
 
     KMessageBox::error(
         nullptr,
@@ -179,19 +179,17 @@ QList<KServiceAction> KDesktopFileActions::builtinServices( const KUrl& _url )
     return result;
 }
 
-QList<KServiceAction> KDesktopFileActions::userDefinedServices( const QString& path, bool bLocalFiles )
-{
-    KDesktopFile cfg( path );
-    return userDefinedServices( cfg, bLocalFiles );
-}
-
-QList<KServiceAction> KDesktopFileActions::userDefinedServices( const KDesktopFile& cfg, bool bLocalFiles, const KUrl::List & file_list )
+QList<KServiceAction> KDesktopFileActions::userDefinedServices(const KDesktopFile& cfg,
+                                                               bool bLocalFiles,
+                                                               const KUrl::List &file_list)
 {
     KService service(&cfg);
     return userDefinedServices(service, bLocalFiles, file_list);
 }
 
-QList<KServiceAction> KDesktopFileActions::userDefinedServices( const KService& service, bool bLocalFiles, const KUrl::List & file_list )
+QList<KServiceAction> KDesktopFileActions::userDefinedServices(const KService &service,
+                                                               bool bLocalFiles,
+                                                               const KUrl::List &file_list)
 {
     QList<KServiceAction> result;
 
