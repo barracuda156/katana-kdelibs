@@ -48,7 +48,7 @@ public:
      * Processes a Exec= line as found in .desktop files
      *
      * @param service the service to extract information from
-     * @param urls the urls the service should open
+     * @param urls the URLs the service should open
      * @return a list of arguments suitable for KProcess::setProgram()
      * @warning caller is responsible for handling services which do not support remote URLs
      */
