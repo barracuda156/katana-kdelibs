@@ -309,6 +309,17 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
         removeTemp(temp, urls);
         return false;
     }
+    const QString kserviceexec = kservice->exec();
+    if (!kserviceexec.contains(QLatin1String("%u")) && !kserviceexec.contains(QLatin1String("%U"))) {
+        foreach (const QString &url, urls) {
+            if (!KUrl(url).isLocalFile()) {
+                kError() << "service does not support remote" << serviceName;
+                showError(i18n("Service does not support remote URLs: %1", serviceName), window);
+                removeTemp(temp, urls);
+                return false;
+            }
+        }
+    }
     if (urls.size() > 1 && !kservice->allowMultipleFiles()) {
         kWarning() << "service does not support multiple files" << serviceName;
         bool result = true;
