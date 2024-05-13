@@ -92,13 +92,13 @@ NetAccess::~NetAccess()
     delete d;
 }
 
-bool NetAccess::download(const KUrl &u, QString &target, QWidget *window)
+bool NetAccess::download(const KUrl &url, QString &target, QWidget *window)
 {
-    if (u.isLocalFile()) {
+    if (url.isLocalFile()) {
         // file protocol, do not need the network
-        target = u.toLocalFile();
+        target = url.toLocalFile();
         bool accessible = KStandardDirs::checkAccess(target, R_OK);
-        if(!accessible) {
+        if (!accessible) {
             lastErrorMsg = i18n("File '%1' is not readable", target);
             lastErrorCode = ERR_COULD_NOT_READ;
         }
@@ -106,14 +106,14 @@ bool NetAccess::download(const KUrl &u, QString &target, QWidget *window)
     }
 
     if (target.isEmpty()) {
-        target = KTemporaryFile::urlPath(u);
+        target = KTemporaryFile::urlPath(url);
         tmpfiles.append(target);
     }
 
     NetAccess kioNet;
     KUrl dest;
-    dest.setPath( target );
-    return kioNet.filecopyInternal( u, dest, -1, KIO::Overwrite, window, false /*copy*/);
+    dest.setPath(target);
+    return kioNet.filecopyInternal(url, dest, -1, KIO::Overwrite, window, false /*copy*/);
 }
 
 bool NetAccess::upload(const QString &src, const KUrl &target, QWidget *window)
@@ -260,7 +260,7 @@ bool NetAccess::dircopyInternal(const KUrl::List &src, const KUrl &target,
     d->bJobOK = true; // success unless further error occurs
     KIO::Job * job = move ? KIO::move(src, target) : KIO::copy(src, target);
     job->ui()->setWindow(window);
-    connect(job, SIGNAL(result(KJob*)), this, SLOT(slotResult(KJob*)) );
+    connect(job, SIGNAL(result(KJob*)), this, SLOT(slotResult(KJob*)));
     enter_loop();
     return d->bJobOK;
 }
@@ -269,8 +269,8 @@ bool NetAccess::statInternal(const KUrl &url, int details, StatSide side, QWidge
 {
     d->bJobOK = true; // success unless further error occurs
     d->m_statJob = KIO::stat(url, KIO::HideProgressInfo);
-    d->m_statJob->ui()->setWindow (window);
-    d->m_statJob->setDetails( details );
+    d->m_statJob->ui()->setWindow(window);
+    d->m_statJob->setDetails(details);
     d->m_statJob->setSide(side == SourceSide ? StatJob::SourceSide : StatJob::DestinationSide);
     connect(d->m_statJob, SIGNAL(result(KJob*)), this, SLOT(slotResult(KJob*)));
     if (!url.isLocalFile()) {

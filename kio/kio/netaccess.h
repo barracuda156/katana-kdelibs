@@ -40,20 +40,15 @@ class NetAccessPrivate;
 /**
  * Net Transparency.
  *
- * NetAccess allows you to do simple file operation (load, save,
- * copy, delete...) without working with KIO::Job directly.
- * Whereas a KIO::Job is asynchronous, meaning that the
- * developer has to connect slots for it, KIO::NetAccess provides
- * synchronous downloads and uploads, as well as temporary file
- * creation and removal. The functions appear to be blocking,
- * but the Qt event loop continues running while the operations
- * are handled. More precisely, the GUI will still repaint, but no user
- * interaction will be possible. If you can, please use async KIO jobs instead!
+ * NetAccess allows you to do simple file operation (load, save, copy, delete...) without working
+ * with KIO::Job directly. Whereas a KIO::Job is asynchronous, meaning that the developer has to
+ * connect slots for it, KIO::NetAccess provides synchronous downloads and uploads, as well as
+ * temporary file creation and removal. The functions appear to be blocking, but the event loop
+ * continues running while the operations are handled. If possible, use async KIO jobs instead!
  * See the documentation of KJob::exec() for more about the dangers of NetAccess.
  *
- * This class isn't meant to be used as a class but only as a simple
- * namespace for static functions, though an instance of the class
- * is built for internal purposes.
+ * This class isn't meant to be used as a class but only as a simple namespace for static
+ * functions, though an instance of the class is built for internal purposes.
  *
  * Port to kio done by David Faure, faure@kde.org
  *
@@ -70,23 +65,20 @@ public:
     };
 
     /**
-     * Downloads a file from an arbitrary URL (@p src) to a
-     * temporary file on the local filesystem (@p target).
+     * Downloads a file from an arbitrary URL (@p src) to a temporary file on the local filesystem
+     * (@p target).
      *
-     * If the argument
-     * for @p target is an empty string, download will generate a
-     * unique temporary filename in /tmp. Since @p target is a reference
-     * to QString you can access this filename easily. Download will
-     * return true if the download was successful, otherwise false.
+     * If the argument for @p target is an empty string, download will generate a unique temporary
+     * filename in /tmp. Since @p target is a reference to QString you can access this filename
+     * easily. Download will return true if the download was successful, otherwise false.
      *
      * Special case:
-     * If the URL is of kind file:, then no downloading is
-     * processed but the full filename is returned in @p target.
-     * That means you @em have to take care about the @p target argument.
+     * If the URL is of kind file:, then no downloading is processed but the full filename is
+     * returned in @p target. That means you @em have to take care about the @p target argument.
      * (This is very easy to do, please see the example below.)
      *
-     * Download is synchronous. That means you can use it like this:
-     * (assuming your application has a loadFile() function)
+     * Download is synchronous. That means it can be used like this (assuming the application has
+     * a loadFile() function):
      *
      * \code
      * QString tmpFile;
@@ -98,12 +90,10 @@ public:
      * }
      * \endcode
      *
-     * Of course, your user interface will still process exposure/repaint
-     * events during the download.
+     * Of course, user interface will still process events during the download. If the download
+     * fails lastError() and lastErrorString() will be set.
      *
-     * If the download fails, lastError() and lastErrorString() will be set.
-     *
-     * If the url is always remote, then you could also just write the more usual way:
+     * If the url is always remote, then it can be used the more usual way:
      * \code
      * KTemporaryFile tmpFile;
      * if (tmpFile.open()) {
@@ -118,68 +108,50 @@ public:
      * \endcode
      *
      * @param src URL Reference to the file to download.
-     * @param target String containing the final local location of the
-     *               file.  If you insert an empty string, it will
-     *               return a location in a temporary spot. <B>Note:</B>
-     *               you are responsible for the removal of this file when
-     *               you are finished reading it using removeTempFile.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
-     * @return true if successful, false for failure.  Use lastErrorString() to
-     *         get the reason it failed.
+     * @param target String containing the final local location of the file.  If you insert an
+     *               empty string, it will return a location in a temporary spot. <B>Note:</B>
+     *               you are responsible for the removal of this file when you are finished reading
+     *               it using removeTempFile.
+     * @param window main window associated with this job. This is used to show message boxes.
+     *
+     * @return true if successful, false for failure.  Use lastErrorString() to get the reason it
+     *         failed.
      *
      * @see lastErrorString()
      */
     static bool download(const KUrl &src, QString &target, QWidget *window);
 
     /**
-     * Removes the specified file if and only if it was created
-     * by KIO::NetAccess as a temporary file for a former download.
+     * Removes the specified file if and only if it was created by KIO::NetAccess as a temporary
+     * file for a former download.
      *
-     * Note: This means that if you created your temporary with KTempFile,
-     * use KTempFile::unlink() or KTempFile::setAutoDelete() to have
-     * it removed.
-     *
-     * @param name Path to temporary file to remove.  May not be empty.
+     * @param name Path to temporary file to remove, may not be empty.
      */
     static void removeTempFile(const QString &name);
 
     /**
      * Uploads file @p src to URL @p target.
      *
-     * Both must be specified, unlike download.
-     * Note that this is assumed to be used for saving a file over
-     * the network, so overwriting is set to true. This is not the
-     * case with copy.
+     * Both must be specified, unlike download. Note that this is assumed to be used for saving a
+     * file over the network, so overwriting is set to true. This is not the case with copy.
      *
      * @param src URL Referencing the file to upload.
      * @param target URL containing the final location of the file.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be cached
-     *               only for a short duration after which the user will again be
-     *               prompted for passwords as needed.
+     * @param window main window associated with this job. This is used to show message boxes.
      *
      * @return true if successful, false for failure
      */
     static bool upload(const QString &src, const KUrl &target, QWidget *window);
 
     /**
-     * Alternative to upload for copying over the network.
-     * Overwrite is false, so this will fail if @p target exists.
+     * Alternative to upload for copying over the network. Overwrite is false, so this will fail
+     * if @p target exists.
      *
      * This one takes two URLs and is a direct equivalent of KIO::file_copy.
      *
      * @param src URL Referencing the file to upload.
      * @param target URL containing the final location of the file.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be cached
-     *               only for a short duration after which the user will again be
-     *               prompted for passwords as needed.
+     * @param window main window associated with this job. This is used to show message boxes.
      *
      * @return true if successful, false for failure
      */
@@ -188,21 +160,16 @@ public:
     /**
      * Alternative method for copying over the network.
      *
-     * This one takes two URLs and is a direct equivalent
-     * of KIO::copy!.
-     * This means that it can copy files and directories alike
-     * (it should have been named copy()).
+     * This one takes two URLs and is a direct equivalent of KIO::copy!. This means that it can
+     * copy files and directories alike (it should have been named copy()).
      *
      * This method will bring up a dialog if the destination already exists.
      *
      * @param src URL Referencing the file to upload.
      * @param target URL containing the final location of the
      *               file.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be cached
-     *               only for a short duration after which the user will again be
-     *               prompted for passwords as needed.
+     * @param window main window associated with this job. This is used to show message boxes.
+     *
      * @return true if successful, false for failure
      */
     // TODO deprecate in favor of KIO::copy + synchronousRun (or job->exec())
@@ -219,65 +186,50 @@ public:
      *
      * @param url the URL we are testing
      * @param statSide determines if we want to read or write.
-     * IMPORTANT: see documentation for KIO::stat for more details about this.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
-     * @return true if the URL exists and we can do the operation specified by
-     *              @p source, false otherwise
+     * @param window main window associated with this job. This is used to show message boxes.
+     *
+     * @return true if the URL exists and we can do the operation specified by @p source, false
+     *         otherwise
+     *
+     * @see KIO::stat()
      */
     static bool exists(const KUrl &url, StatSide statSide, QWidget *window);
 
     /**
      * Tests whether a URL exists and return information on it.
      *
-     * This is a convenience function for KIO::stat
-     * (it saves creating a slot and testing for the job result).
+     * This is a convenience function for KIO::stat().
      *
      * @param url The URL we are testing.
-     * @param entry The result of the stat. Iterate over the list
-     * of atoms to get hold of name, type, size, etc., or use KFileItem.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
+     * @param entry The result of the stat. Iterate over the list of atoms to get hold of name,
+     *              type, size, etc., or use KFileItem.
+     * @param window main window associated with this job. This is used to show message boxes.
+     *
      * @return true if successful, false for failure
      */
     static bool stat(const KUrl &url, KIO::UDSEntry &entry, QWidget *window);
 
-
     /**
      * Tries to map a local URL for the given URL.
      *
-     * This is a convenience function for KIO::stat + parsing the
-     * resulting UDSEntry.
+     * This is a convenience function for KIO::stat() + parsing the resulting UDSEntry.
      *
      * @param url The URL we are testing.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
-     * @return a local URL corresponding to the same resource than the
-     *         original URL, or the original URL if no local URL can be mapped
+     * @param window main window associated with this job. This is used to show message boxes.
+     *
+     * @return a local URL corresponding to the same resource than the original URL, or the
+     *         original URL if no local URL can be mapped
      */
     static KUrl mostLocalUrl(const KUrl &url, QWidget *window);
 
     /**
      * Deletes a file or a directory in a synchronous way.
      *
-     * This is a convenience function for KIO::del
-     * (it saves creating a slot and testing for the job result).
+     * This is a convenience function for KIO::del().
      *
      * @param url The file or directory to delete.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
+     * @param window main window associated with this job. This is used to show message boxes.
+     *
      * @return true on success, false on failure.
      */
     static bool del(const KUrl &url, QWidget *window);
@@ -285,48 +237,40 @@ public:
     /**
      * Creates a directory in a synchronous way.
      *
-     * This is a convenience function for @p KIO::mkdir
-     * (it saves creating a slot and testing for the job result).
+     * This is a convenience function for KIO::mkdir().
      *
      * @param url The directory to create.
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
+     * @param window main window associated with this job. This is used to show message boxes.
      * @param permissions directory permissions.
+     *
      * @return true on success, false on failure.
      */
     static bool mkdir(const KUrl &url, QWidget *window, int permissions = -1);
 
     /**
      * This function executes a job in a synchronous way.
+     *
      * If a job fetches some data, pass a QByteArray pointer as data parameter to this function
      * and after the function returns it will contain all the data fetched by this job.
      *
      * @code
-     * KIO::Job *job = KIO::get( url );
+     * KIO::Job *job = KIO::get(url);
      * KIO::MetaData metaData;
-     * metaData.insert( "no-auth", "yes" );
-     * if ( NetAccess::synchronousRun( job, 0, &data, &url, &metaData ) ) {
-     *   kDebug()<<"Success";
+     * metaData.insert("no-auth", "yes");
+     * if (NetAccess::synchronousRun(job, 0, &data, &url, &metaData)) {
+     *     kDebug()<<"Success";
      * }
      * @endcode
      *
-     * @param job job which the function will run. Note that after this function
-     *            finishes running, job is deleted and you can't access it anymore!
-     * @param window main window associated with this job. This is used to
-     *               automatically cache and discard authentication information
-     *               as needed. If NULL, authentication information will be
-     *               cached only for a short duration after which the user will
-     *               again be prompted for passwords as needed.
-     * @param data if passed and relevant to this job then it will contain the data
-     *               that was fetched by the job
-     * @param finalURL if passed will contain the final url of this job (it might differ
-     *                 from the one it was created with if there was a redirection)
-     * @param metaData you can pass a pointer to the map with meta data you wish to
-     *                 set on the job. After the job finishes this map will hold all the
-     *                 meta data from the job.
+     * @param job job which the function will run. Note that after this function finishes running,
+     *            job is deleted and you can't access it anymore!
+     * @param window main window associated with this job. This is used to show message boxes.
+     * @param data if passed and relevant to this job then it will contain the data that was
+     *             fetched by the job
+     * @param finalURL if passed will contain the final url of this job (it might differ from the
+     *                 one it was created with if there was a redirection)
+     * @param metaData you can pass a pointer to the map with meta data you wish to set on the job.
+     *                 After the job finishes this map will hold all the meta data from the job.
      *
      * @return true on success, false on failure.
      */
@@ -334,34 +278,27 @@ public:
                                 KUrl* finalURL = nullptr, MetaData *metaData = nullptr);
 
     /**
-     * Returns the error string for the last job, in case it failed.
-     * Note that this is already translated.
+     * Returns the error string for the last job, in case it failed. Note that the error is already
+     * translated.
+     *
      * @return the last error string, or QString()
      */
     static QString lastErrorString();
 
     /**
      * Returns the error code for the last job, in case it failed.
+     *
      * @return the last error code
      */
     static int lastError();
 
 Q_SIGNALS:
     void leaveModality();
-private:
-    /**
-     * Private constructor
-     */
-    NetAccess();
 
-    /**
-     * Private destructor
-     */
+private:
+    NetAccess();
     ~NetAccess();
 
-    /**
-     * Internal methods
-     */
     bool filecopyInternal(const KUrl &src, const KUrl &target, int permissions,
                           KIO::JobFlags flags, QWidget *window, bool move);
     bool dircopyInternal(const KUrl::List &src, const KUrl &target,
