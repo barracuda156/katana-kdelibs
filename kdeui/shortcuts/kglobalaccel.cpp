@@ -74,18 +74,11 @@ static bool kGrabKey(const int keyQt, uint &keyModX, int &keyCodeX)
         return false;
     }
 
-    uint keySymX = 0;
     if (!KKeyServer::keyQtToModX(keyQt, &keyModX)) {
         kWarning(s_kglobalaccelarea) << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 modifier";
         return false;
     }
-    if (!KKeyServer::keyQtToSymX(keyQt, (int *)&keySymX) ) {
-        kWarning(s_kglobalaccelarea) << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") failed to resolve to x11 keycode";
-        return false;
-    }
-
-    keyCodeX = XKeysymToKeycode(display, keySymX);
-    if (!keyCodeX) {
+    if (!KKeyServer::keyQtToCodeX(keyQt, &keyCodeX)) {
         kWarning(s_kglobalaccelarea) << "keyQt (0x" << QByteArray::number(keyQt, 16) << ") was resolved to x11 keycode 0";
         return false;
     }
