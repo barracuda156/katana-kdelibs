@@ -335,9 +335,9 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
     const QString kserviceexec = kservice->exec();
     if (!kserviceexec.contains(QLatin1String("%u")) && !kserviceexec.contains(QLatin1String("%U"))) {
         kDebug() << "service does not support remote" << serviceName;
+        // TODO: upload? spec says nothing
         QStringList downloaded;
-        for (int i = 0; i < programandargs.size(); i++) {
-            const QString url = programandargs.at(i);
+        foreach (const QString &url, urls) {
             const KUrl realurl = KUrl(url);
             if (!realurl.isLocalFile()) {
                 // remote URLs should not be passed along with temporary files
@@ -354,7 +354,12 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
                 }
                 kDebug() << "downloaded" << prettyurl << "to" << urldestination;
                 downloaded.append(urldestination);
-                programandargs[i] = urldestination;
+                // URLs may not be unique
+                int indexofurl = programandargs.indexOf(url);
+                while (indexofurl != -1) {
+                    programandargs.replace(indexofurl, urldestination);
+                    indexofurl = programandargs.indexOf(url);
+                }
             }
         }
         temp = (temp || !downloaded.isEmpty());
