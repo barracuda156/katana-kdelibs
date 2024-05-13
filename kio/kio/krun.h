@@ -50,6 +50,7 @@ public:
      * @param service the service to extract information from
      * @param urls the urls the service should open
      * @return a list of arguments suitable for KProcess::setProgram()
+     * @warning caller is responsible for handling services which do not support remote URLs
      */
     static QStringList processDesktopExec(const KService &service, const QStringList &urls);
 

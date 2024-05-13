@@ -45,7 +45,6 @@ bool KRun::displayOpenWithDialog(const KUrl::List &urls, QWidget *window, bool t
     return false;
 }
 
-// TODO: this needs a complete rewrite to handle remote URLs
 QStringList KRun::processDesktopExec(const KService &service, const QStringList &urls)
 {
     QStringList args = KShell::splitArgs(service.exec());

@@ -309,17 +309,6 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
         removeTemp(temp, urls);
         return false;
     }
-    const QString kserviceexec = kservice->exec();
-    if (!kserviceexec.contains(QLatin1String("%u")) && !kserviceexec.contains(QLatin1String("%U"))) {
-        foreach (const QString &url, urls) {
-            if (!KUrl(url).isLocalFile()) {
-                kError() << "service does not support remote" << serviceName;
-                showError(i18n("Service does not support remote URLs: %1", serviceName), window);
-                removeTemp(temp, urls);
-                return false;
-            }
-        }
-    }
     if (urls.size() > 1 && !kservice->allowMultipleFiles()) {
         kWarning() << "service does not support multiple files" << serviceName;
         bool result = true;
@@ -331,7 +320,6 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
         }
         return result;
     }
-    // TODO: for applications which do not support URLs - download
     QStringList programandargs = KRun::processDesktopExec(*kservice, urls);
     if (programandargs.isEmpty()) {
         kError() << "could not process service" << kservice->entryPath();
@@ -343,8 +331,36 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
     if (programworkdir.isEmpty()) {
         programworkdir = QDir::homePath();
     }
-    kDebug() << "starting" << kservice->entryPath() << urls;
     const QString program = programandargs.takeFirst();
+    const QString kserviceexec = kservice->exec();
+    if (!kserviceexec.contains(QLatin1String("%u")) && !kserviceexec.contains(QLatin1String("%U"))) {
+        kDebug() << "service does not support remote" << serviceName;
+        QStringList downloaded;
+        for (int i = 0; i < programandargs.size(); i++) {
+            const QString url = programandargs.at(i);
+            const KUrl realurl = KUrl(url);
+            if (!realurl.isLocalFile()) {
+                // remote URLs should not be passed along with temporary files
+                Q_ASSERT(!temp);
+                kDebug() << "downloading" << url;
+                QString urldestination;
+                const QString prettyurl = realurl.prettyUrl();
+                if (!KIO::NetAccess::download(realurl, urldestination, findWindow(window))) {
+                    kError() << "could not download" << prettyurl;
+                    showError(i18n("Could not download URL: %1", Qt::escape(prettyurl)), window);
+                    removeTemp(temp, urls);
+                    removeTemp(true, downloaded);
+                    return false;
+                }
+                kDebug() << "downloaded" << prettyurl << "to" << urldestination;
+                downloaded.append(urldestination);
+                programandargs[i] = urldestination;
+            }
+        }
+        kDebug() << "starting" << kservice->entryPath() << urls;
+        return startProgram(program, programandargs, envs, window, true, programworkdir, m_startuptimeout, kservice);
+    }
+    kDebug() << "starting" << kservice->entryPath() << urls;
     return startProgram(program, programandargs, envs, window, temp, programworkdir, m_startuptimeout, kservice);
 }
 
