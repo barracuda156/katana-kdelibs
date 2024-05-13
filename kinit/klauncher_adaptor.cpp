@@ -357,8 +357,7 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
                 programandargs[i] = urldestination;
             }
         }
-        kDebug() << "starting" << kservice->entryPath() << urls;
-        return startProgram(program, programandargs, envs, window, true, programworkdir, m_startuptimeout, kservice);
+        temp = (temp || !downloaded.isEmpty());
     }
     kDebug() << "starting" << kservice->entryPath() << urls;
     return startProgram(program, programandargs, envs, window, temp, programworkdir, m_startuptimeout, kservice);
@@ -506,14 +505,14 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
         QThread::msleep(s_sleeptime);
     }
     if (process->error() == QProcess::FailedToStart || process->error() == QProcess::Crashed) {
-        kWarning() << "could not start" << appexe;
+        kError() << "could not start" << appexe;
         m_processes.removeOne(process);
         process->deleteLater();
         showError(i18n("Could not start the application: %1", app), window);
         return false;
     }
     if (process->state() == QProcess::NotRunning && process->exitCode() != 0) {
-        kWarning() << "started but finished with error" << appexe;
+        kError() << "started but finished with error" << appexe;
         const QByteArray processerror = process->readAllStandardError();
         m_processes.removeOne(process);
         process->deleteLater();
