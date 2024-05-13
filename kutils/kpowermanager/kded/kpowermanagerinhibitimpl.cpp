@@ -169,7 +169,7 @@ uint KPowerManagerInhibitImpl::Inhibit(const QString &application, const QString
         m_cookies.insert(cookiecounter, inhibitfd);
         return cookiecounter;
     }
-    kWarning() << "Invalid reply";
+    kWarning() << "Invalid inhibit reply";
     return 0;
 }
 
