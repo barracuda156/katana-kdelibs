@@ -23,46 +23,45 @@
 #ifndef KIO_NETACCESS_H
 #define KIO_NETACCESS_H
 
-#include <QtCore/QObject>
+#include <QObject>
 #include <QStringList>
 #include <QWidget>
 #include <kio/global.h>
 #include <kio/udsentry.h>
 #include <kurl.h>
-#include <kio/jobclasses.h> // for KIO::JobFlags
+#include <kio/jobclasses.h>
 
 class KJob;
 namespace KIO {
 
-  class Job;
+class Job;
+class NetAccessPrivate;
 
-  class NetAccessPrivate;
-  /**
-   * Net Transparency.
-   *
-   * NetAccess allows you to do simple file operation (load, save,
-   * copy, delete...) without working with KIO::Job directly.
-   * Whereas a KIO::Job is asynchronous, meaning that the
-   * developer has to connect slots for it, KIO::NetAccess provides
-   * synchronous downloads and uploads, as well as temporary file
-   * creation and removal. The functions appear to be blocking,
-   * but the Qt event loop continues running while the operations
-   * are handled. More precisely, the GUI will still repaint, but no user
-   * interaction will be possible. If you can, please use async KIO jobs instead!
-   * See the documentation of KJob::exec() for more about the dangers of NetAccess.
-   *
-   * This class isn't meant to be used as a class but only as a simple
-   * namespace for static functions, though an instance of the class
-   * is built for internal purposes. TODO KDE5: turn into namespace,
-   * and make the qobject class private.
-   *
-   * Port to kio done by David Faure, faure@kde.org
-   *
-   * @short Provides a blocking interface to KIO file operations.
-   */
+/**
+ * Net Transparency.
+ *
+ * NetAccess allows you to do simple file operation (load, save,
+ * copy, delete...) without working with KIO::Job directly.
+ * Whereas a KIO::Job is asynchronous, meaning that the
+ * developer has to connect slots for it, KIO::NetAccess provides
+ * synchronous downloads and uploads, as well as temporary file
+ * creation and removal. The functions appear to be blocking,
+ * but the Qt event loop continues running while the operations
+ * are handled. More precisely, the GUI will still repaint, but no user
+ * interaction will be possible. If you can, please use async KIO jobs instead!
+ * See the documentation of KJob::exec() for more about the dangers of NetAccess.
+ *
+ * This class isn't meant to be used as a class but only as a simple
+ * namespace for static functions, though an instance of the class
+ * is built for internal purposes.
+ *
+ * Port to kio done by David Faure, faure@kde.org
+ *
+ * @short Provides a blocking interface to KIO file operations.
+ */
 class KIO_EXPORT NetAccess : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
     enum StatSide {
@@ -134,7 +133,7 @@ public:
      *
      * @see lastErrorString()
      */
-    static bool download(const KUrl& src, QString & target, QWidget* window);
+    static bool download(const KUrl &src, QString &target, QWidget *window);
 
     /**
      * Removes the specified file if and only if it was created
@@ -144,10 +143,9 @@ public:
      * use KTempFile::unlink() or KTempFile::setAutoDelete() to have
      * it removed.
      *
-     * @param name Path to temporary file to remove.  May not be
-     *             empty.
+     * @param name Path to temporary file to remove.  May not be empty.
      */
-    static void removeTempFile(const QString& name);
+    static void removeTempFile(const QString &name);
 
     /**
      * Uploads file @p src to URL @p target.
@@ -167,7 +165,7 @@ public:
      *
      * @return true if successful, false for failure
      */
-    static bool upload(const QString& src, const KUrl& target, QWidget* window);
+    static bool upload(const QString &src, const KUrl &target, QWidget *window);
 
     /**
      * Alternative to upload for copying over the network.
@@ -185,7 +183,7 @@ public:
      *
      * @return true if successful, false for failure
      */
-    static bool file_copy( const KUrl& src, const KUrl& target, QWidget* window = 0 );
+    static bool file_copy(const KUrl &src, const KUrl &target, QWidget* window = nullptr);
 
     /**
      * Alternative method for copying over the network.
@@ -207,12 +205,14 @@ public:
      *               prompted for passwords as needed.
      * @return true if successful, false for failure
      */
-    static bool dircopy( const KUrl& src, const KUrl& target, QWidget* window ); // TODO deprecate in favor of KIO::copy + synchronousRun (or job->exec())
+    // TODO deprecate in favor of KIO::copy + synchronousRun (or job->exec())
+    static bool dircopy(const KUrl &src, const KUrl &target, QWidget *window);
 
     /**
      * Overloaded method, which takes a list of source URLs
      */
-    static bool dircopy( const KUrl::List& src, const KUrl& target, QWidget* window = 0L ); // TODO deprecate in favor of KIO::copy + synchronousRun (or job->exec())
+    // TODO deprecate in favor of KIO::copy + synchronousRun (or job->exec())
+    static bool dircopy(const KUrl::List &src, const KUrl &target, QWidget *window = nullptr);
 
     /**
      * Tests whether a URL exists.
@@ -228,7 +228,7 @@ public:
      * @return true if the URL exists and we can do the operation specified by
      *              @p source, false otherwise
      */
-    static bool exists(const KUrl& url, StatSide statSide, QWidget* window);
+    static bool exists(const KUrl &url, StatSide statSide, QWidget *window);
 
     /**
      * Tests whether a URL exists and return information on it.
@@ -246,7 +246,7 @@ public:
      *               again be prompted for passwords as needed.
      * @return true if successful, false for failure
      */
-    static bool stat(const KUrl& url, KIO::UDSEntry & entry, QWidget* window);
+    static bool stat(const KUrl &url, KIO::UDSEntry &entry, QWidget *window);
 
 
     /**
@@ -264,7 +264,7 @@ public:
      * @return a local URL corresponding to the same resource than the
      *         original URL, or the original URL if no local URL can be mapped
      */
-    static KUrl mostLocalUrl(const KUrl& url, QWidget* window);
+    static KUrl mostLocalUrl(const KUrl &url, QWidget *window);
 
     /**
      * Deletes a file or a directory in a synchronous way.
@@ -280,7 +280,7 @@ public:
      *               again be prompted for passwords as needed.
      * @return true on success, false on failure.
      */
-    static bool del( const KUrl & url, QWidget* window );
+    static bool del(const KUrl &url, QWidget* window);
 
     /**
      * Creates a directory in a synchronous way.
@@ -297,7 +297,7 @@ public:
      * @param permissions directory permissions.
      * @return true on success, false on failure.
      */
-    static bool mkdir( const KUrl & url, QWidget* window, int permissions = -1 );
+    static bool mkdir(const KUrl &url, QWidget *window, int permissions = -1);
 
     /**
      * This function executes a job in a synchronous way.
@@ -330,8 +330,8 @@ public:
      *
      * @return true on success, false on failure.
      */
-    static bool synchronousRun( Job* job, QWidget* window, QByteArray* data=0,
-                                KUrl* finalURL=0, MetaData* metaData=0 );
+    static bool synchronousRun(Job *job, QWidget *window, QByteArray *data = nullptr,
+                                KUrl* finalURL = nullptr, MetaData *metaData = nullptr);
 
     /**
      * Returns the error string for the last job, in case it failed.
@@ -362,23 +362,23 @@ private:
     /**
      * Internal methods
      */
-    bool filecopyInternal(const KUrl& src, const KUrl& target, int permissions,
-                          KIO::JobFlags flags, QWidget* window, bool move);
-    bool dircopyInternal(const KUrl::List& src, const KUrl& target,
-                         QWidget* window, bool move);
-    bool statInternal(const KUrl & url, int details, StatSide side, QWidget* window = 0);
+    bool filecopyInternal(const KUrl &src, const KUrl &target, int permissions,
+                          KIO::JobFlags flags, QWidget *window, bool move);
+    bool dircopyInternal(const KUrl::List &src, const KUrl &target,
+                         QWidget *window, bool move);
+    bool statInternal(const KUrl & url, int details, StatSide side, QWidget* window);
 
-    bool delInternal(const KUrl & url, QWidget* window = 0);
-    bool mkdirInternal(const KUrl & url, int permissions, QWidget* window = 0);
-    bool synchronousRunInternal( Job* job, QWidget* window, QByteArray* data,
-                                 KUrl* finalURL, MetaData* metaData );
+    bool delInternal(const KUrl &url, QWidget *window);
+    bool mkdirInternal(const KUrl &url, int permissions, QWidget *window);
+    bool synchronousRunInternal(Job *job, QWidget *window, QByteArray *data,
+                                KUrl *finalURL, MetaData* metaData);
 
     void enter_loop();
 
 private Q_SLOTS:
-    void slotResult( KJob * job );
-    void slotData( KIO::Job*, const QByteArray& );
-    void slotRedirection( KIO::Job*, const KUrl& );
+    void slotResult(KJob *job);
+    void slotData(KIO::Job *job, const QByteArray &data);
+    void slotRedirection(KIO::Job *job, const KUrl &url);
     void slotShowProgress();
 
 private:
@@ -387,4 +387,4 @@ private:
 
 }
 
-#endif
+#endif // KIO_NETACCESS_H
