@@ -57,6 +57,7 @@ QStringList KRun::processDesktopExec(const KService &service, const QStringList 
         const QString terminal = generalgroup.readPathEntry("TerminalApplication", QLatin1String("konsole"));
         const QString terminalexe = KStandardDirs::findExe(terminal);
         if (terminalexe.isEmpty()) {
+            kDebug(7010) << "terminal not found" << terminal;
             return QStringList();
         }
         args.prepend(QLatin1String("-e"));
@@ -70,6 +71,7 @@ QStringList KRun::processDesktopExec(const KService &service, const QStringList 
     if (service.substituteUid()) {
         const QString kdesudoexe = KStandardDirs::findExe("kdesudo");
         if (kdesudoexe.isEmpty()) {
+            kDebug(7010) << "kdesudo not found";
             return QStringList();
         }
         args.prepend(QLatin1String("--"));
