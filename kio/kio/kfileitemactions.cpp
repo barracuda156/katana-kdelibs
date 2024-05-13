@@ -213,7 +213,7 @@ int KFileItemActions::addServiceActionsTo(QMenu* mainMenu)
         }
 #endif
         ServiceList& list = s.selectList(priority, submenuName);
-        list = KDesktopFileActions::userDefinedServices(path, desktopFile, true /*isLocal*/);
+        list = KDesktopFileActions::userDefinedServices(desktopFile, true /*isLocal*/);
     }
 
     // 2 - Look for "servicemenus" bindings (user-defined services)
@@ -228,7 +228,7 @@ int KFileItemActions::addServiceActionsTo(QMenu* mainMenu)
             const QString priority = cfg.readEntry("X-KDE-Priority");
             const QString submenuName = cfg.readEntry("X-KDE-Submenu");
             ServiceList& list = s.selectList(priority, submenuName);
-            list += KDesktopFileActions::userDefinedServices(dotDirectoryFile, desktopFile, true);
+            list += KDesktopFileActions::userDefinedServices(desktopFile, true);
         }
     }
 
