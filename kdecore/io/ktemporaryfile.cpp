@@ -90,3 +90,17 @@ QString KTemporaryFile::filePath(const QString &pathtemplate)
     }
     return result;
 }
+
+QString KTemporaryFile::urlPath(const KUrl &url)
+{
+    // use same extension as remote file, this is important for MIME type determination
+    QFileInfo fileinfo(url.fileName());
+    const QString filesuffix = fileinfo.completeSuffix();
+    QString urltemplate = QLatin1String("XXXXXXXXXX");
+    // but not if the extension is empty or the URL has a query
+    if (!filesuffix.isEmpty() && url.query().isEmpty()) {
+        urltemplate.append(QLatin1Char('.'));
+        urltemplate.append(filesuffix);
+    }
+    return KTemporaryFile::filePath(urltemplate);
+}

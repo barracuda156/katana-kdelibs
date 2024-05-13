@@ -471,16 +471,7 @@ void ReadOnlyPartPrivate::openRemoteFile()
 {
     Q_Q(ReadOnlyPart);
     m_bTemp = true;
-    // Use same extension as remote file. This is important for mimetype-determination
-    QString fileName = m_url.fileName();
-    QFileInfo fileInfo(fileName);
-    QString ext = fileInfo.completeSuffix();
-    QString extension;
-    if (!ext.isEmpty() && m_url.query().isNull()) {
-         // not if the URL has a query, e.g. cgi.pl?something. keep the '.'
-        extension = '.' + ext;
-    }
-    m_file = KTemporaryFile::filePath(QString::fromLatin1("XXXXXXXXXX%1").arg(extension));
+    m_file = KTemporaryFile::urlPath(m_url);
 
     KUrl destURL;
     destURL.setPath(m_file);

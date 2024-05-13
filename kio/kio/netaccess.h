@@ -183,7 +183,7 @@ public:
      *
      * @return true if successful, false for failure
      */
-    static bool file_copy(const KUrl &src, const KUrl &target, QWidget* window = nullptr);
+    static bool file_copy(const KUrl &src, const KUrl &target, QWidget *window = nullptr);
 
     /**
      * Alternative method for copying over the network.
@@ -280,7 +280,7 @@ public:
      *               again be prompted for passwords as needed.
      * @return true on success, false on failure.
      */
-    static bool del(const KUrl &url, QWidget* window);
+    static bool del(const KUrl &url, QWidget *window);
 
     /**
      * Creates a directory in a synchronous way.

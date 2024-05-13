@@ -82,8 +82,8 @@ static QStringList tmpfiles;
 static QString lastErrorMsg;
 static int lastErrorCode = 0;
 
-NetAccess::NetAccess() :
-    d( new NetAccessPrivate )
+NetAccess::NetAccess()
+    : d(new NetAccessPrivate())
 {
 }
 
@@ -92,7 +92,7 @@ NetAccess::~NetAccess()
     delete d;
 }
 
-bool NetAccess::download(const KUrl& u, QString & target, QWidget* window)
+bool NetAccess::download(const KUrl &u, QString &target, QWidget *window)
 {
     if (u.isLocalFile()) {
         // file protocol, do not need the network
@@ -106,15 +106,7 @@ bool NetAccess::download(const KUrl& u, QString & target, QWidget* window)
     }
 
     if (target.isEmpty()) {
-        // same bits as in kparts/part.cpp
-        QFileInfo fileInfo(u.fileName());
-        QString ext = fileInfo.completeSuffix();
-        QString extension;
-        if (!ext.isEmpty() && u.query().isEmpty()) {
-            // not if the URL has a query
-            extension = '.' + ext;
-        }
-        target = KTemporaryFile::filePath(QString::fromLatin1("XXXXXXXXXX%1").arg(extension));
+        target = KTemporaryFile::urlPath(u);
         tmpfiles.append(target);
     }
 

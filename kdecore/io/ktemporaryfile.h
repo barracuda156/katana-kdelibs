@@ -24,8 +24,7 @@
 #include <kglobal.h>
 
 #include <qtemporaryfile.h>
-
-class KTemporaryFilePrivate;
+#include <kurl.h>
 
 /**
  * \class KTemporaryFile ktemporaryfile.h <KTemporaryFile>
@@ -139,6 +138,11 @@ public:
      * @param pathtemplate The template to use when generating filepath.
      */
     static QString filePath(const QString &pathtemplate = QString());
+
+    /**
+     * @brief Generates a filepath to be used as temporary file for the given URL.
+     */
+    static QString urlPath(const KUrl &url);
 };
 
 #endif
