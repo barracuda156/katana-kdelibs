@@ -113,13 +113,13 @@ QString KRun::binaryName(const QString &execLine, bool removePath)
     return QString();
 }
 
-bool KRun::isExecutable(const QString &serviceType)
+bool KRun::isExecutable(const QString &mimeType)
 {
     return (
-        serviceType == QLatin1String("application/x-desktop") ||
-        serviceType == QLatin1String("application/x-executable") ||
-        serviceType == QLatin1String("application/x-ms-dos-executable") ||
-        serviceType == QLatin1String("application/x-shellscript")
+        mimeType == QLatin1String("application/x-desktop") ||
+        mimeType == QLatin1String("application/x-executable") ||
+        mimeType == QLatin1String("application/x-ms-dos-executable") ||
+        mimeType == QLatin1String("application/x-shellscript")
     );
 }
 
