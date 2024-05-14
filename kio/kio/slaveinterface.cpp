@@ -161,11 +161,13 @@ void SlaveInterface::send(int cmd, const QByteArray &arr)
 void SlaveInterface::kill()
 {
     m_dead = true; // OO can be such simple.
-    kDebug(7002) << "killing slave pid" << m_pid
-                 << "(" << m_protocol << m_host << ")";
+    kDebug(7002) << "killing slave pid" << m_pid << "(" << m_protocol << m_host << ")";
     if (m_pid) {
-       ::kill(m_pid, SIGTERM);
-       m_pid = 0;
+        // wake up the slave for SIGTERM
+        ::kill(m_pid, SIGCONT);
+        // and then terminate
+        ::kill(m_pid, SIGTERM);
+        m_pid = 0;
     }
 }
 
