@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+#define KIO_DATA QByteArray data; QDataStream stream(&data, QIODevice::WriteOnly); stream
+#define KIO_FILESIZE_T(x) quint64(x)
+
 class KUrl;
 
 namespace KIO {

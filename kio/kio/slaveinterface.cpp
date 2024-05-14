@@ -171,9 +171,7 @@ void SlaveInterface::kill()
 
 void SlaveInterface::setConfig(const MetaData &config)
 {
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly);
-    stream << config;
+    KIO_DATA << config;
     m_connection->send(CMD_CONFIG, data);
 }
 

@@ -60,9 +60,6 @@ extern "C" {
 
 using namespace KIO;
 
-#define KIO_DATA QByteArray data; QDataStream stream( &data, QIODevice::WriteOnly ); stream
-#define KIO_FILESIZE_T(x) quint64(x)
-
 namespace KIO {
 
 static const int s_quit_signals[] = {

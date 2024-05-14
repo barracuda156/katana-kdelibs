@@ -29,7 +29,7 @@
 #include "jobuidelegate.h"
 #include "kjobtrackerinterface.h"
 
-#define KIO_ARGS QByteArray packedArgs; QDataStream stream( &packedArgs, QIODevice::WriteOnly ); stream
+#define KIO_ARGS QByteArray packedArgs; QDataStream stream(&packedArgs, QIODevice::WriteOnly); stream
 
 namespace KIO {
     class SlaveInterface;
