@@ -348,7 +348,7 @@ bool SlaveInterface::dispatch(int cmd, const QByteArray &rawdata)
             kDebug(7007) << "needs a msg box";
             QDataStream stream(rawdata);
             QString text, caption, buttonYes, buttonNo, dontAskAgainName;
-            qint32 type = 0;
+            qint8 type = 0;
             stream >> type >> text >> caption >> buttonYes >> buttonNo >> dontAskAgainName;
             messageBox(type, text, caption, buttonYes, buttonNo, dontAskAgainName);
             break;

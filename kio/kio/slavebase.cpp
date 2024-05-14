@@ -674,11 +674,11 @@ int SlaveBase::messageBox(MessageBoxType type, const QString &text, const QStrin
                           const QString &dontAskAgainName)
 {
     kDebug(7019) << "messageBox " << type << " " << text << " - " << caption << buttonYes << buttonNo;
-    KIO_DATA << (qint32)type << text << caption << buttonYes << buttonNo << dontAskAgainName;
+    KIO_DATA << (qint8)type << text << caption << buttonYes << buttonNo << dontAskAgainName;
     send(SI_MESSAGEBOX, data);
     if (waitForAnswer(CMD_MESSAGEBOXANSWER, 0, data) != -1) {
         QDataStream stream(data);
-        int answer;
+        int answer = 0;
         stream >> answer;
         kDebug(7019) << "got messagebox answer" << answer;
         return answer;
@@ -881,7 +881,7 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         }
         case CMD_DEL: {
             KUrl url;
-            qint8 isFile;
+            qint8 isFile = 0;
             stream >> url >> isFile;
             d->m_state = SlaveBasePrivate::InsideMethod;
             del(url, isFile != 0);
@@ -891,10 +891,10 @@ void SlaveBase::dispatch(int command, const QByteArray &data)
         }
         case CMD_CHMOD: {
             KUrl url;
-            int i = 0;
-            stream >> url >> i;
+            int permissions = 0;
+            stream >> url >> permissions;
             d->m_state = SlaveBasePrivate::InsideMethod;
-            chmod(url, i);
+            chmod(url, permissions);
             d->verifyState("chmod()");
             d->m_state = SlaveBasePrivate::Idle;
             break;
