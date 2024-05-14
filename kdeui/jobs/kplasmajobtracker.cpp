@@ -104,10 +104,7 @@ void KPlasmaJobTracker::registerJob(KJob *job)
     }
 
     const KComponentData componentData = KGlobal::mainComponent();
-    QString appIconName = job->property("appIconName").toString();
-    if (appIconName.isEmpty()) {
-        appIconName = componentData.aboutData()->programIconName();
-    }
+    QString appIconName = componentData.aboutData()->programIconName();
     if (appIconName.isEmpty()) {
         appIconName = componentData.aboutData()->appName();
     }
