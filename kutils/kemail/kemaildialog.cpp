@@ -19,15 +19,14 @@
 #include "kemaildialog.h"
 #include "kemailsettings.h"
 #include "klocale.h"
-#include "kstandarddirs.h"
 #include "kmessagebox.h"
+#include "ktoolinvocation.h"
 #include "kurlrequester.h"
 #include "kdebug.h"
 
 #include "ui_kemaildialog.h"
 
 #include <QThread>
-#include <QProcess>
 
 class KEMailDialogPrivate : public QThread
 {
@@ -249,15 +248,7 @@ void KEMailDialog::slotButtonClicked(int button)
 
 void KEMailDialog::_slotSettings()
 {
-    const QString kcmshell4exe = KStandardDirs::findExe(QString::fromLatin1("kcmshell4"));
-    if (kcmshell4exe.isEmpty()) {
-        KMessageBox::error(this, i18n("kcmshell4 not found"));
-        return;
-    }
-    QProcess::startDetached(
-        kcmshell4exe,
-        QStringList() << QString::fromLatin1("useraccount")
-    );
+    KToolInvocation::self()->startProgram("kcmshell4", QStringList() << "useraccount", this);
 }
 
 void KEMailDialog::_slotSent()
