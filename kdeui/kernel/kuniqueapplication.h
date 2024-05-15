@@ -39,10 +39,6 @@
  * your application can only be opened once per user or once per host, you
  * need to ensure this independently of KUniqueApplication.
  *
- * If your application is used to open files, it should also support the --tempfile
- * option (see KCmdLineArgs::addTempFileOption()), to delete tempfiles after use.
- * Add X-KDE-HasTempFileOption=true to the .desktop file to indicate this.
- *
  * @see KApplication
  * @author Preston Brown <pbrown@kde.org>
  */

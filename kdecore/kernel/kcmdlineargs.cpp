@@ -1522,27 +1522,12 @@ KUrl KCmdLineArgs::makeURL(const QByteArray &_urlArg)
     return KUrl(urlArg); // Argument is a URL
 }
 
-void
-KCmdLineArgsPrivate::addArgument(const QByteArray &argument)
+void KCmdLineArgsPrivate::addArgument(const QByteArray &argument)
 {
    if (!parsedArgList)
       parsedArgList = new KCmdLineParsedArgs;
 
    parsedArgList->append(argument);
-}
-
-void
-KCmdLineArgs::addTempFileOption()
-{
-    KCmdLineOptions tmpopt;
-    tmpopt.add( "tempfile", ki18n("The files/URLs opened by the application will be deleted after use") );
-    KCmdLineArgs::addCmdLineOptions( tmpopt, ki18n("KDE-tempfile"), "kde-tempfile" );
-}
-
-bool KCmdLineArgs::isTempFileSet()
-{
-    KCmdLineArgs* args = KCmdLineArgs::parsedArgs( "kde-tempfile" );
-    return args && args->isSet( "tempfile" );
 }
 
 QStringList KCmdLineArgs::allArguments()
