@@ -80,6 +80,7 @@ protected Q_SLOTS:
 
 protected:
     virtual void createShellGUI(bool create = true);
+    virtual bool queryClose();
 
 private:
     MainWindowPrivate* const d;

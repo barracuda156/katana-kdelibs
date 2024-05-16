@@ -159,6 +159,17 @@ void MainWindow::createShellGUI(bool create)
     }
 }
 
+bool MainWindow::queryClose()
+{
+    // query part first
+    ReadWritePart* rwpart = qobject_cast<ReadWritePart*>(d->m_activePart);
+    if (rwpart && !rwpart->queryClose()) {
+        return false;
+    }
+    // then KXmlGuiWindow
+    return KXmlGuiWindow::queryClose();
+}
+
 void KParts::MainWindow::saveNewToolbarConfig()
 {
     createGUI(d->m_activePart);

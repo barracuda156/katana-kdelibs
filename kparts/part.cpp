@@ -662,7 +662,7 @@ bool ReadWritePart::queryClose()
 
     switch(res) {
         case KMessageBox::Yes: {
-            sigQueryClose(&handled,&abortClose);
+            sigQueryClose(&handled, &abortClose);
             if (!handled) {
                 if (d->m_url.isEmpty()) {
                     KUrl url = KFileDialog::getSaveUrl(KUrl(), QString(), parentWidget);
