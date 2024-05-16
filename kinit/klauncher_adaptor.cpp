@@ -77,6 +77,7 @@ KLauncherProcess::KLauncherProcess(QObject *parent)
     : QProcess(parent),
     m_kstartupinfo(nullptr),
     m_startuptimer(nullptr),
+    m_window(0),
     m_temp(false)
 {
     connect(
@@ -90,16 +91,21 @@ KLauncherProcess::~KLauncherProcess()
     removeTemp(m_temp, m_args);
 }
 
-void KLauncherProcess::setupStartup(const QString &appexe, const KService::Ptr kservice,
-                                    const qint64 timeout, const bool temp, const QStringList &args)
+void KLauncherProcess::setupProcess(const QString &appexe, const QStringList &args,
+                                    const quint64 window, const KService::Ptr kservice,
+                                    const qint64 timeout, const bool temp)
 {
     Q_ASSERT(m_kstartupinfoid.none() == true);
+    m_appexe = appexe;
+    m_args = args;
+    m_window = window;
+    m_temp = temp;
     QByteArray startupwmclass;
     if (KRun::checkStartupNotify(kservice.data(), &startupwmclass)) {
         m_kstartupinfoid.initId(KStartupInfo::createNewStartupId());
         kDebug() << "setting up ASN for" << kservice->entryPath() << m_kstartupinfoid.id();
         m_kstartupinfodata.setHostname();
-        m_kstartupinfodata.setBin(QFileInfo(appexe).fileName());
+        m_kstartupinfodata.setBin(QFileInfo(m_appexe).fileName());
         m_kstartupinfodata.setDescription(i18n("Launching %1", kservice->name()));
         m_kstartupinfodata.setIcon(kservice->icon());
         m_kstartupinfodata.setApplicationId(kservice->entryPath());
@@ -109,20 +115,34 @@ void KLauncherProcess::setupStartup(const QString &appexe, const KService::Ptr k
         QProcess::setProcessEnvironment(processenv);
         sendSIStart(timeout);
     } else {
-        kDebug() << "no ASN for" << appexe;
+        kDebug() << "no ASN for" << m_appexe;
     }
-    m_temp = temp;
-    m_args = args;
 }
 
 void KLauncherProcess::slotProcessStateChanged(QProcess::ProcessState state)
 {
-    kDebug() << "process state changed" << this << state;
+    kDebug() << "process state changed" << m_appexe << state;
     if (state == QProcess::Starting && !m_kstartupinfoid.none()) {
         m_kstartupinfodata.addPid(QProcess::pid());
         sendSIChange();
-    } else if (state == QProcess::NotRunning && !m_kstartupinfoid.none()) {
-        sendSIFinish();
+    } else if (state == QProcess::NotRunning) {
+        if (!m_kstartupinfoid.none()) {
+            sendSIFinish();
+        }
+        if (exitCode() != 0) {
+            kError() << "finished with error" << m_appexe;
+            const QByteArray processerror = readAllStandardError();
+            if (processerror.isEmpty()) {
+                showError(i18n("Application exited abnormally: %1", m_appexe), m_window);
+            } else {
+                KMessageBox::detailedErrorWId(
+                    static_cast<WId>(m_window),
+                    i18n("Application exited abnormally: %1", m_appexe),
+                    QString::fromLocal8Bit(processerror.constData(), processerror.size())
+                );
+            }
+        }
+        deleteLater();
     }
 }
 
@@ -135,14 +155,14 @@ void KLauncherProcess::slotStartupRemoved(const KStartupInfoId &kstartupinfoid,
 
     kDebug() << "startup removed" << kstartupinfoid.id() << m_kstartupinfoid.id();
     if (kstartupinfoid.id() == m_kstartupinfoid.id() || kstartupinfodata.is_pid(QProcess::pid())) {
-        kDebug() << "startup done for process" << this;
+        kDebug() << "startup done for process" << m_appexe;
         sendSIFinish();
     }
 }
 
 void KLauncherProcess::slotStartupTimeout()
 {
-    kWarning() << "timed out while waiting for process" << this;
+    kWarning() << "timed out while waiting for process" << m_appexe;
     sendSIFinish();
 }
 
@@ -173,7 +193,7 @@ void KLauncherProcess::sendSIChange()
     if (m_kstartupinfoid.none()) {
         return;
     }
-    kDebug() << "sending ASN change for" << m_kstartupinfodata.bin();
+    kDebug() << "sending ASN change for" << m_appexe;
     KStartupInfo::sendChange(m_kstartupinfoid, m_kstartupinfodata);
 }
 
@@ -182,7 +202,7 @@ void KLauncherProcess::sendSIFinish()
     if (m_kstartupinfoid.none()) {
         return;
     }
-    kDebug() << "sending ASN finish for" << m_kstartupinfodata.bin();
+    kDebug() << "sending ASN finish for" << m_appexe;
     KStartupInfo::sendFinish(m_kstartupinfoid, m_kstartupinfodata);
     m_kstartupinfoid = KStartupInfoId();
     m_kstartupinfodata = KStartupInfoData();
@@ -435,7 +455,6 @@ void KLauncherAdaptor::slotProcessFinished(int exitcode)
     KLauncherProcess* process = qobject_cast<KLauncherProcess*>(sender());
     kDebug() << "process finished" << process << exitcode;
     m_processes.removeOne(process);
-    process->deleteLater();
 }
 
 QString KLauncherAdaptor::findExe(const QString &app) const
@@ -502,7 +521,7 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
     }
     process->setProcessEnvironment(processenv);
     process->setWorkingDirectory(workdir);
-    process->setupStartup(appexe, kservice, timeout, temp, args);
+    process->setupProcess(appexe, args, window, kservice, timeout, temp);
     kDebug() << "starting" << appexe << args << envs << workdir;
     process->start(appexe, args);
     while (process->state() == QProcess::Starting) {
@@ -514,22 +533,6 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
         m_processes.removeOne(process);
         process->deleteLater();
         showError(i18n("Could not start the application: %1", app), window);
-        return false;
-    }
-    if (process->state() == QProcess::NotRunning && process->exitCode() != 0) {
-        kError() << "started but finished with error" << appexe;
-        const QByteArray processerror = process->readAllStandardError();
-        m_processes.removeOne(process);
-        process->deleteLater();
-        if (processerror.isEmpty()) {
-            showError(i18n("Application exited abnormally: %1", app), window);
-        } else {
-            KMessageBox::detailedErrorWId(
-                static_cast<WId>(window),
-                i18n("Application exited abnormally: %1", app),
-                QString::fromLocal8Bit(processerror.constData(), processerror.size())
-            );
-        }
         return false;
     }
     kDebug() << "started" << appexe;

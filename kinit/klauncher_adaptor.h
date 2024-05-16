@@ -35,8 +35,8 @@ public:
     explicit KLauncherProcess(QObject *parent);
     ~KLauncherProcess();
 
-    void setupStartup(const QString &appexe, const KService::Ptr kservice, const qint64 timeout,
-                      const bool temp, const QStringList &args);
+    void setupProcess(const QString &appexe, const QStringList &args, const quint64 window,
+                      const KService::Ptr kservice, const qint64 timeout, const bool temp);
 
 private Q_SLOTS:
     void slotProcessStateChanged(QProcess::ProcessState state);
@@ -54,8 +54,10 @@ private:
     QTimer* m_startuptimer;
     KStartupInfoId m_kstartupinfoid;
     KStartupInfoData m_kstartupinfodata;
-    bool m_temp;
+    QString m_appexe;
     QStringList m_args;
+    quint64 m_window;
+    bool m_temp;
 };
 
 // Adaptor class for interface org.kde.KLauncher
