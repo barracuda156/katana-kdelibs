@@ -43,8 +43,8 @@ static const int s_sleeptime = 50;
 // kde-workspace/kwin/effects/startupfeedback/startupfeedback.cpp
 // kde-workspace/kcontrol/launch/kcmlaunch.cpp
 static const qint64 s_startuptimeout = 10; // 10sec
-// klauncher is the last process to quit in a session so 5sec for each child process is more than
-// enough
+// klauncher is one of the last processes to quit in a session so 5sec for each child process is
+// more than enough
 static const qint64 s_processtimeout = 5000; // 5sec
 
 static inline void removeTemp(const bool temp, const QStringList &args)
@@ -221,7 +221,7 @@ KLauncherAdaptor::KLauncherAdaptor(QObject *parent)
     KConfig klauncherconfig("klaunchrc", KConfig::NoGlobals);
     KConfigGroup kconfiggroup = klauncherconfig.group("BusyCursorSettings");
     const int busytimeout = kconfiggroup.readEntry("Timeout", s_startuptimeout);
-    m_startuptimeout = (busytimeout * 1000);
+    m_startuptimeout = (qMax(busytimeout, 1) * 1000);
 }
 
 KLauncherAdaptor::~KLauncherAdaptor()
