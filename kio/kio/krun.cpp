@@ -183,5 +183,3 @@ bool KRun::checkStartupNotify(const KService *service, QByteArray *wmclass_arg)
 
     return true;
 }
-
-#include "moc_krun.cpp"
