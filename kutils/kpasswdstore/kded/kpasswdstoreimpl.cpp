@@ -38,6 +38,9 @@ static const qint64 kpasswdstore_passtimeout = 2; // minutes
 
 static inline QWidget* widgetForWindowID(const qlonglong windowid)
 {
+    if (!windowid) {
+        return nullptr;
+    }
     return QWidget::find(windowid);
 }
 
@@ -82,10 +85,6 @@ KPasswdStoreImpl::KPasswdStoreImpl(const QString &id)
     m_timeout = (ksettings.integer("KPasswdStore/Timeout", kpasswdstore_passtimeout) * 60000);
 }
 
-KPasswdStoreImpl::~KPasswdStoreImpl()
-{
-}
-
 QString KPasswdStoreImpl::storeID() const
 {
     return m_storeid;
@@ -111,10 +110,30 @@ bool KPasswdStoreImpl::openStore(const qlonglong windowid)
         }
     }
     if (!hasPasswd()) {
-        KMessageBox::error(
-            widgetForWindowID(windowid),
-            i18n("The storage could not be open, passwords will not be permanently stored until the store is open")
-        );
+        KSettings ksettings("kpasswdstorerc", KSettings::SimpleConfig);
+        const QString askkey = m_storeid + QLatin1String("/DontAskAgain");
+        const bool dontask = ksettings.boolean(askkey, false);
+        if (!dontask) {
+            KDialog* kdialog = new KDialog(widgetForWindowID(windowid), Qt::Dialog);
+            kdialog->setCaption(i18n("Warning"));
+            kdialog->setButtons(KDialog::Ok);
+            kdialog->setModal(true);
+            kdialog->setButtonGuiItem(KDialog::Ok, KStandardGuiItem::ok());
+            kdialog->setDefaultButton(KDialog::Ok);
+            bool dontshowagainresult = false;
+            (void)KMessageBox::createKMessageBox(
+                kdialog,
+                QMessageBox::Warning,
+                i18n("Passwords will not be permanently stored until the store is open"),
+                QStringList(),
+                i18n("Do not ask again"),
+                &dontshowagainresult,
+                KMessageBox::Notify
+            );
+            if (dontshowagainresult) {
+                ksettings.setBoolean(askkey, true);
+            }
+        }
         setCacheOnly(true);
         return false;
     } else {

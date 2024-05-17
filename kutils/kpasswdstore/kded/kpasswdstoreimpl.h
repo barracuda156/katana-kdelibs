@@ -31,7 +31,6 @@ class KPasswdStoreImpl
 {
 public:
     KPasswdStoreImpl(const QString &id);
-    ~KPasswdStoreImpl();
 
     QString storeID() const;
 
