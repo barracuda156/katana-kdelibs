@@ -530,9 +530,9 @@ void ReadOnlyPartPrivate::_k_slotStatJobFinished(KJob * job)
     if (job->error() != KJob::NoError) {
         KIO::StatJob* statjob = static_cast<KIO::StatJob*>(job);
         const KUrl localUrl = statjob->mostLocalUrl();
-        const QString mime = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
         // set the mimetype only if it was not already set (for example, by the host application)
         if (m_arguments.mimeType().isEmpty()) {
+            const QString mime = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
             m_arguments.setMimeType(mime);
             m_bAutoDetectedMime = true;
         }
@@ -551,7 +551,7 @@ void ReadOnlyPartPrivate::_k_slotJobFinished(KJob *job)
 
     Q_ASSERT(job == m_job);
     m_job = nullptr;
-    if (job->error()) {
+    if (job->error() != KJob::NoError) {
         emit q->canceled(job->errorString());
     } else {
         if (q->openFile()) {
@@ -811,7 +811,7 @@ bool ReadWritePart::saveToUrl()
 void ReadWritePartPrivate::_k_slotUploadFinished(KJob *)
 {
     Q_Q(ReadWritePart);
-    if (m_uploadJob->error())
+    if (m_uploadJob->error() != KJob::NoError)
     {
         QFile::remove(m_uploadJob->srcUrl().toLocalFile());
         QString error = m_uploadJob->errorString();
