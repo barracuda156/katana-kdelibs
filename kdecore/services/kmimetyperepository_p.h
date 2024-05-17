@@ -25,7 +25,7 @@
 #include "kmimeglobsfileparser_p.h"
 #include "kmimetype.h"
 
-#include <QMutex>
+#include <mutex>
 
 /**
  * @internal  - this header is not installed
@@ -46,7 +46,7 @@ public:
     /**
      * Creates a KMimeType
      */
-    KMimeType::Ptr findMimeTypeByName(const QString &_name, KMimeType::FindByNameOption options) const;
+    KMimeType::Ptr findMimeTypeByName(const QString &_name, KMimeType::FindByNameOption options);
 
     /**
      * Check if mime is an alias, and return the canonical name for it if it is, otherwise empty.
@@ -140,7 +140,8 @@ private:
     QList<KMimeMagicRule> m_magicRules;
     KMimeGlobsFileParser::GlobList m_globs;
     KMimeType::Ptr m_defaultMimeType;
-    QMutex m_mutex;
+    QMap<QString, KMimeType::Ptr> m_mimeTypes;
+    std::recursive_mutex m_mutex;
 };
 
 #endif // KMIMETYPEREPOSITORY_H

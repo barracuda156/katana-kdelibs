@@ -104,7 +104,8 @@ void KMimeTypeRepository::parseMimeData(const QStringList &resources)
 
 void KMimeTypeRepository::parseMimeData()
 {
-    QMutexLocker locker(&m_mutex);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_mimeTypes.clear();
 
     const QStringList globFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", QString::fromLatin1("globs2"));
     m_globs = KMimeGlobsFileParser::parseGlobs(globFiles);
@@ -192,11 +193,16 @@ void KMimeTypeRepository::parseMimeData()
     qSort(m_magicRules.begin(), m_magicRules.end(), mimeMagicRuleCompare);
 }
 
-KMimeType::Ptr KMimeTypeRepository::findMimeTypeByName(const QString &_name, KMimeType::FindByNameOption options) const
+KMimeType::Ptr KMimeTypeRepository::findMimeTypeByName(const QString &_name, KMimeType::FindByNameOption options)
 {
     QString name = _name;
     if (options & KMimeType::ResolveAliases) {
         name = canonicalName(name);
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (m_mimeTypes.contains(name)) {
+        return m_mimeTypes.value(name);
     }
 
     const QString filename = KGlobal::dirs()->findResource("xdgdata-mime", name.toLower() + QLatin1String(".xml"));
@@ -204,7 +210,9 @@ KMimeType::Ptr KMimeTypeRepository::findMimeTypeByName(const QString &_name, KMi
         return KMimeType::Ptr(); // Not found
     }
 
-    return KMimeType::Ptr(new KMimeType(filename, name));
+    KMimeType::Ptr mimeType(new KMimeType(filename, name));
+    m_mimeTypes.insert(name, mimeType);
+    return mimeType;
 }
 
 bool KMimeTypeRepository::checkMimeTypes()

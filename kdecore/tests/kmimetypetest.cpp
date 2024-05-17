@@ -176,7 +176,8 @@ void KMimeTypeTest::testByName()
 
     KMimeType::Ptr s0Again = KMimeType::mimeType("application/x-zerosize");
     QCOMPARE(s0Again->name(), s0->name());
-    QVERIFY(s0Again != s0);
+    // unless cache was reset due to ksycoca database change it is the same
+    QVERIFY(s0Again == s0);
 
     KMimeType::Ptr s1 = KMimeType::mimeType("text/plain");
     QVERIFY( s1 );
