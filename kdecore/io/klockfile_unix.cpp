@@ -62,6 +62,7 @@ KLockFile::KLockFile(const QString &file)
 KLockFile::~KLockFile()
 {
     unlock();
+    d->m_lockfile.clear();
     delete d;
 }
 
@@ -77,7 +78,7 @@ bool KLockFile::tryLock()
 
 void KLockFile::lock()
 {
-    while (!tryLock()) {
+    while (!tryLock() && !d->m_lockfile.isEmpty()) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, KLOCKFILE_TIMEOUT);
         QThread::msleep(KLOCKFILE_SLEEPTIME);
     }
