@@ -17,10 +17,9 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "treeview.h"
+#include "treewidget.h"
 
-#include <QTreeView>
-#include <QHeaderView>
+#include <QTreeWidget>
 #include <QScrollBar>
 
 #include <kiconloader.h>
@@ -30,17 +29,17 @@
 namespace Plasma
 {
 
-class TreeViewPrivate
+class TreeWidgetPrivate
 {
 public:
     Plasma::Style::Ptr style;
 };
 
-TreeView::TreeView(QGraphicsWidget *parent)
+TreeWidget::TreeWidget(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new TreeViewPrivate)
+      d(new TreeWidgetPrivate)
 {
-    QTreeView *native = new QTreeView();
+    QTreeWidget *native = new QTreeWidget();
     setWidget(native);
     native->setWindowIcon(QIcon());
     native->setAttribute(Qt::WA_NoSystemBackground);
@@ -51,28 +50,18 @@ TreeView::TreeView(QGraphicsWidget *parent)
     native->horizontalScrollBar()->setStyle(d->style.data());
 }
 
-TreeView::~TreeView()
+TreeWidget::~TreeWidget()
 {
     delete d;
     Plasma::Style::doneWithSharedStyle();
 }
 
-void TreeView::setModel(QAbstractItemModel *model)
+QTreeWidget *TreeWidget::nativeWidget() const
 {
-    nativeWidget()->setModel(model);
-}
-
-QAbstractItemModel *TreeView::model()
-{
-    return nativeWidget()->model();
-}
-
-QTreeView *TreeView::nativeWidget() const
-{
-    return static_cast<QTreeView*>(widget());
+    return static_cast<QTreeWidget*>(widget());
 }
 
 }
 
-#include "moc_treeview.cpp"
+#include "moc_treewidget.cpp"
 

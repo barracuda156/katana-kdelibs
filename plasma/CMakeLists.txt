@@ -92,7 +92,7 @@ set(plasma_LIB_SRCS
     widgets/svgwidget.cpp
     widgets/tabbar.cpp
     widgets/textbrowser.cpp
-    widgets/treeview.cpp
+    widgets/treewidget.cpp
     widgets/textedit.cpp
     widgets/calendarwidget.cpp
 )
@@ -198,7 +198,7 @@ install(
     widgets/scrollwidget.h
     widgets/tabbar.h
     widgets/textbrowser.h
-    widgets/treeview.h
+    widgets/treewidget.h
     widgets/textedit.h
     widgets/calendarwidget.h
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/plasma/widgets

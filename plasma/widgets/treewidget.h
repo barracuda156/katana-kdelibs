@@ -17,54 +17,41 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PLASMA_TREEVIEW_H
-#define PLASMA_TREEVIEW_H
+#ifndef PLASMA_TREEWIDGET_H
+#define PLASMA_TREEWIDGET_H
 
 #include <QtGui/QGraphicsProxyWidget>
 
 #include <plasma/plasma_export.h>
 
-#include <QTreeView>
+#include <QTreeWidget>
 #include <QAbstractItemModel>
 
 namespace Plasma
 {
 
-class TreeViewPrivate;
+class TreeWidgetPrivate;
 
 /**
- * @class TreeView plasma/widgets/treeview.h <Plasma/Widgets/TreeView>
+ * @class TreeWidget plasma/widgets/treewidget.h <Plasma/Widgets/TreeWidget>
  *
- * @short Provides a plasma-themed QTreeView.
+ * @short Provides a plasma-themed QTreeWidget.
  */
-class PLASMA_EXPORT TreeView : public QGraphicsProxyWidget
+class PLASMA_EXPORT TreeWidget : public QGraphicsProxyWidget
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel)
 
 public:
-    explicit TreeView(QGraphicsWidget *parent = 0);
-    ~TreeView();
+    explicit TreeWidget(QGraphicsWidget *parent = 0);
+    ~TreeWidget();
 
     /**
-     * Sets a model for this weather view
-     *
-     * @param model the model to display
+     * @return the native widget wrapped by this TreeWidget
      */
-    void setModel(QAbstractItemModel *model);
-
-    /**
-     * @return the model shown by this view
-     */
-    QAbstractItemModel *model();
-
-    /**
-     * @return the native widget wrapped by this TreeView
-     */
-    QTreeView *nativeWidget() const;
+    QTreeWidget *nativeWidget() const;
 
 private:
-    TreeViewPrivate *const d;
+    TreeWidgetPrivate *const d;
 };
 
 }
