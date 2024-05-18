@@ -135,8 +135,12 @@ public:
     QList<KArchiveEntry> list(const QString &path = QString()) const;
     //! @brief Get entry information for path in archive
     KArchiveEntry entry(const QString &path) const;
-    //! @brief Get data for path in archive
-    QByteArray data(const QString &path) const;
+    /*!
+        @brief Get data for path in archive
+        @param path path to get data for
+        @param maxsize the limit for data, if zero then it is as if there is no limit
+    */
+    QByteArray data(const QString &path, const int maxsize = 0) const;
 
     //! @brief Returns if path is readable archive
     bool isReadable() const;

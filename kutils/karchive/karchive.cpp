@@ -201,7 +201,7 @@ public:
 
     bool copyData(struct archive* readarchive, struct archive* writearchive);
     bool writeFile(struct archive* writearchive, QFile *file);
-    bool readData(struct archive* readarchive, QByteArray *buffer);
+    bool readData(struct archive* readarchive, QByteArray *buffer, const int maxsize);
 
     QString tempFilePath() const;
 
@@ -413,7 +413,7 @@ bool KArchivePrivate::writeFile(struct archive* writearchive, QFile *file)
     return (readsize >= 0);
 }
 
-bool KArchivePrivate::readData(struct archive* readarchive, QByteArray *buffer)
+bool KArchivePrivate::readData(struct archive* readarchive, QByteArray *buffer, const int maxsize)
 {
     char readbuffer[KARCHIVE_BUFFSIZE];
     ssize_t readsize = archive_read_data(readarchive, readbuffer, sizeof(readbuffer));
@@ -424,10 +424,16 @@ bool KArchivePrivate::readData(struct archive* readarchive, QByteArray *buffer)
         if (result != ARCHIVE_OK) {
             m_error = archive_error_string(readarchive);
             kDebug() << "archive_read_data" << m_error;
+            buffer->clear();
             return false;
         }
 
         buffer->append(readbuffer, readsize);
+
+        if (maxsize > 0 && buffer->size() >= maxsize) {
+            buffer->resize(maxsize);
+            return true;
+        }
 
         readsize = archive_read_data(readarchive, readbuffer, sizeof(readbuffer));
     }
@@ -1151,7 +1157,7 @@ KArchiveEntry KArchive::entry(const QString &path) const
 }
 
 
-QByteArray KArchive::data(const QString &path) const
+QByteArray KArchive::data(const QString &path, const int maxsize) const
 {
     QByteArray result;
 
@@ -1185,7 +1191,7 @@ QByteArray KArchive::data(const QString &path) const
         const QByteArray pathname = archive_entry_pathname(entry);
         const QString pathnamestring = QFile::decodeName(pathname);
         if (pathnamestring == path) {
-            d->readData(readarchive, &result);
+            d->readData(readarchive, &result, maxsize);
 
             found = true;
             break;
