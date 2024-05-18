@@ -26,8 +26,6 @@
 #include <kurl.h>
 
 #include <QDataStream>
-#include <QVariant>
-#include <QMap>
 
 namespace KIO {
 
