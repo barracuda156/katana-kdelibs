@@ -63,12 +63,6 @@ public:
    AuthInfo(const AuthInfo &info);
 
    /**
-    * Destructor
-    * @since 4.1
-    */ 
-   ~AuthInfo();
-
-   /**
     * Custom assignment operator.
     */
    AuthInfo& operator=(const AuthInfo &info);

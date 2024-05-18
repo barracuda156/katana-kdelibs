@@ -26,20 +26,27 @@ using namespace KIO;
 //////
 
 AuthInfo::AuthInfo()
+    : readOnly(false),
+    keepPassword(false),
+    anonymousMode(false),
+    hideUserName(false)
 {
-    readOnly = false;
-    keepPassword = false;
-    anonymousMode = false;
-    hideUserName = false;
 }
 
 AuthInfo::AuthInfo(const AuthInfo &info)
 {
-    (*this) = info;
-}
-
-AuthInfo::~AuthInfo()
-{
+    url = info.url;
+    username = info.username;
+    password = info.password;
+    prompt = info.prompt;
+    caption = info.caption;
+    comment = info.comment;
+    commentLabel = info.commentLabel;
+    readOnly = info.readOnly;
+    keepPassword = info.keepPassword;
+    domain = info.domain;
+    anonymousMode = info.anonymousMode;
+    hideUserName = info.hideUserName;
 }
 
 AuthInfo& AuthInfo::operator=(const AuthInfo &info)
