@@ -223,7 +223,8 @@ KMimeType::Ptr KMimeType::findByUrl(const KUrl &url, mode_t mode,
         QFile file(localfile);
         if (file.open(QIODevice::ReadOnly)) {
             int magicAccuracy = 0;
-            KMimeType::Ptr mime = KMimeTypeRepository::self()->findFromContent(&file, &magicAccuracy);
+            // provide enough data for most rules (there are exceptions which require twice as much tho)
+            KMimeType::Ptr mime = KMimeTypeRepository::self()->findFromContent(file.read(16384), &magicAccuracy);
             // mime can't be 0, except in case of install problems.
             // However we get magicAccuracy==0 for octet-stream, i.e. no magic match found.
             // kDebug() << "findFromContent said" << (mime?mime->name():QString()) << "with accuracy" << magicAccuracy;
@@ -288,9 +289,7 @@ KMimeType::Ptr KMimeType::findByName(const QString &fileName, int *accuracy)
 KMimeType::Ptr KMimeType::findByContent(const QByteArray &data, int *accuracy)
 {
     KMimeTypeRepository::self()->checkEssentialMimeTypes();
-    QBuffer buffer(const_cast<QByteArray *>(&data));
-    buffer.open(QIODevice::ReadOnly);
-    return KMimeTypeRepository::self()->findFromContent(&buffer, accuracy);
+    return KMimeTypeRepository::self()->findFromContent(data, accuracy);
 }
 
 QString KMimeType::extractKnownExtension(const QString &fileName)

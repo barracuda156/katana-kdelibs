@@ -41,12 +41,12 @@
  *
  */
 
-static bool testMatches(QIODevice* device, qint64 deviceSize, QByteArray& availableData, const QList<KMimeMagicMatch>& matches, const QString& mimeType)
+static bool testMatches(const QByteArray &availableData, const QList<KMimeMagicMatch>& matches, const QString& mimeType)
 {
     for ( QList<KMimeMagicMatch>::const_iterator it = matches.begin(), end = matches.end() ;
           it != end ; ++it ) {
         const KMimeMagicMatch& match = *it;
-        if (match.match(device, deviceSize, availableData, mimeType)) {
+        if (match.match(availableData, mimeType)) {
             // One of the hierarchies matched -> mimetype recognized.
             return true;
         }
@@ -54,53 +54,29 @@ static bool testMatches(QIODevice* device, qint64 deviceSize, QByteArray& availa
     return false;
 }
 
-bool KMimeMagicRule::match(QIODevice* device, qint64 deviceSize, QByteArray& availableData) const
+bool KMimeMagicRule::match(const QByteArray &availableData) const
 {
-    return testMatches(device, deviceSize, availableData, m_matches, m_mimetype);
+    return testMatches(availableData, m_matches, m_mimetype);
 }
 
-bool KMimeMagicMatch::match(QIODevice* device, qint64 deviceSize, QByteArray& availableData, const QString& mimeType) const
+bool KMimeMagicMatch::match(const QByteArray &availableData, const QString& mimeType) const
 {
     // First, check that "this" matches, then we'll dive into subMatches if any.
 
     const qint64 mDataSize = m_data.size();
-    if (m_rangeStart + mDataSize > deviceSize)
+    if (m_rangeStart + mDataSize > availableData.size())
         return false; // file is too small
 
     // Read in one block all the data we'll need
     // Example: m_data="ABC", m_rangeLength=3 -> we need 3+3-1=5 bytes (ABCxx,xABCx,xxABC would match)
-    const int dataNeeded = qMin(mDataSize + m_rangeLength - 1, deviceSize - m_rangeStart);
-    QByteArray readData;
-
-    /*kDebug() << "need " << dataNeeded << " bytes of data starting at " << m_rangeStart
-             << "  - availableData has " << availableData.size() << " bytes,"
-             << " device has " << deviceSize << " bytes.";*/
-
-    if (m_rangeStart + dataNeeded > availableData.size() && availableData.size() < deviceSize) {
-        // Need to read from device
-        if (!device->seek(m_rangeStart))
-            return false;
-        readData.resize(dataNeeded);
-        const int nread = device->read(readData.data(), dataNeeded);
-        //kDebug() << "readData (from device): reading" << dataNeeded << "bytes.";
-        if (nread < mDataSize)
-            return false; // error (or not enough data but we checked for that already)
-        if (m_rangeStart == 0 && readData.size() > availableData.size()) {
-            availableData = readData; // update cache
-        }
-        if (nread < readData.size()) {
-            // File big enough to contain m_data, but not big enough for the full rangeLength.
-            // Pad with zeros.
-            memset(readData.data() + nread, 0, dataNeeded - nread);
-        }
-        //kDebug() << "readData (from device) at pos " << m_rangeStart << ":" << readData;
-    } else {
-        readData = QByteArray::fromRawData(availableData.constData() + m_rangeStart,
-                                           dataNeeded);
-        // Warning, readData isn't null-terminated so this kDebug
-        // gives valgrind warnings (when printing as char* data).
-        //kDebug() << "readData (from availableData) at pos " << m_rangeStart << ":" << readData;
-    }
+    const int dataNeeded = qMin(mDataSize + m_rangeLength - 1, availableData.size() - m_rangeStart);
+    QByteArray readData = QByteArray::fromRawData(
+        availableData.constData() + m_rangeStart,
+        dataNeeded
+    );
+    // Warning, readData isn't null-terminated so this kDebug
+    // gives valgrind warnings (when printing as char* data).
+    //kDebug() << "readData (from availableData) at pos " << m_rangeStart << ":" << readData;
 
     // All we need to do now, is to look for m_data in readData (whose size is dataNeeded).
     // Either as a simple indexOf search, or applying the mask.
@@ -141,5 +117,5 @@ bool KMimeMagicMatch::match(QIODevice* device, qint64 deviceSize, QByteArray& av
         return true;
 
     // Check that one of the submatches matches too
-    return testMatches(device, deviceSize, availableData, m_subMatches, mimeType);
+    return testMatches(availableData, m_subMatches, mimeType);
 }

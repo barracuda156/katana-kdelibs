@@ -314,26 +314,18 @@ QStringList KMimeTypeRepository::findFromFileName(const QString &fileName, QStri
     return matchingMimeTypes;
 }
 
-KMimeType::Ptr KMimeTypeRepository::findFromContent(QIODevice* device, int* accuracy)
+KMimeType::Ptr KMimeTypeRepository::findFromContent(const QByteArray &data, int* accuracy)
 {
-    Q_ASSERT(device->isOpen());
-    const qint64 deviceSize = device->size();
-    if (deviceSize == 0) {
+    if (data.size() == 0) {
         if (accuracy) {
             *accuracy = 100;
         }
         return findMimeTypeByName(QLatin1String("application/x-zerosize"), KMimeType::DontResolveAlias);
     }
-    // provide enough data for most rules (there are exceptions which require twice as much tho)
-    const qint64 dataNeeded = qMin(deviceSize, (qint64) 16384);
-    QByteArray beginning(dataNeeded, '\0');
-    if (!device->seek(0) || device->read(beginning.data(), dataNeeded) == -1) {
-        return defaultMimeTypePtr(); // don't bother detecting unreadable file
-    }
 
     // Apply magic rules
     Q_FOREACH ( const KMimeMagicRule& rule, m_magicRules ) {
-        if (rule.match(device, deviceSize, beginning)) {
+        if (rule.match( data)) {
             if (accuracy) {
                 *accuracy = rule.priority();
             }
@@ -343,7 +335,7 @@ KMimeType::Ptr KMimeTypeRepository::findFromContent(QIODevice* device, int* accu
 
     // Do fallback code so that we never return 0
     // Nothing worked, check if the file contents looks like binary or text
-    if (!KMimeType::isBufferBinaryData(beginning)) {
+    if (!KMimeType::isBufferBinaryData(data)) {
         if (accuracy) {
             *accuracy = 5;
         }

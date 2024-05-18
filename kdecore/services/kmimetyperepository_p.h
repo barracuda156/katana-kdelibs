@@ -97,13 +97,13 @@ private: // only for KMimeType and unittests
     QStringList findFromFileName(const QString &filename, QString *matchingExtension = nullptr) const;
 
     /**
-     * Find a mimetype from the content of a file or buffer
-     * @param device the file or buffer. Must be open.
+     * Find a mimetype from the content of data chunk
+     * @param data chunk of data
      * @param accuracy returns the priority of the rule that matched
      *
      * This is internal API, use KMimeType::findByUrl instead.
      */
-    KMimeType::Ptr findFromContent(QIODevice *device, int *accuracy);
+    KMimeType::Ptr findFromContent(const QByteArray &data, int *accuracy);
 
     /**
      * @return true if at least one mimetype is present

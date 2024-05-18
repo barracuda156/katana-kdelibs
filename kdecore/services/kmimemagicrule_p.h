@@ -31,7 +31,7 @@
  */
 struct KMimeMagicMatch
 {
-    bool match(QIODevice* device, qint64 deviceSize, QByteArray& availableData, const QString& mimeType) const;
+    bool match(const QByteArray &availableData, const QString& mimeType) const;
 
     qint64 m_rangeStart;
     qint64 m_rangeLength;
@@ -54,10 +54,10 @@ struct KMimeMagicMatch
 class KMimeMagicRule
 {
 public:
-    KMimeMagicRule(const QString& mimetype, int priority, const QList<KMimeMagicMatch>& matches)
+    KMimeMagicRule(const QString &mimetype, int priority, const QList<KMimeMagicMatch> &matches)
         : m_mimetype(mimetype), m_priority(priority), m_matches(matches) {}
 
-    bool match(QIODevice* device, qint64 deviceSize, QByteArray& availableData) const;
+    bool match(const QByteArray &availableData) const;
 
     QString mimetype() const { return m_mimetype; }
     int priority() const { return m_priority; }

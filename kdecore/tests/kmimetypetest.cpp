@@ -840,22 +840,17 @@ void KMimeTypeTest::testParseMagicFile_data()
 void KMimeTypeTest::testParseMagicFile()
 {
     QFETCH(QString, testData);
-    //kDebug() << QTest::currentDataTag();
+    // kDebug() << QTest::currentDataTag();
     QFETCH(QString, expected);
-    QBuffer testBuffer;
-    testBuffer.setData(testData.toLatin1());
-    QVERIFY(testBuffer.open(QIODevice::ReadOnly));
-    const qint64 testBufferSize = testBuffer.size();
+    QByteArray testDataBytes = testData.toLatin1();
     QString found;
-    QByteArray beginning;
     Q_FOREACH(const KMimeMagicRule& rule, m_rules) {
-        if (rule.match(&testBuffer, testBufferSize, beginning)) {
+        if (rule.match(testDataBytes)) {
             found = rule.mimetype();
             break;
         }
     }
     QCOMPARE(found, expected);
-    testBuffer.close();
 }
 
 void KMimeTypeTest::testHelperProtocols()
