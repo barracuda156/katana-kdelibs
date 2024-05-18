@@ -368,7 +368,7 @@ int main(int argc, char **argv)
 CurlProtocol::CurlProtocol(const QByteArray &app)
     : SlaveBase("curl", app),
     p_aborttransfer(false), p_upload(false),
-    m_firstchunk(true), m_ishttp(false), m_isftp(false), m_collectdata(false),
+    m_firstchunk(true), m_ishttp(false), m_isftp(false), m_issftp(false), m_collectdata(false),
     m_curl(nullptr), m_curlheaders(nullptr), m_curlquotes(nullptr)
 {
     m_curl = curl_easy_init();
@@ -437,7 +437,7 @@ void CurlProtocol::stat(const KUrl &url)
         return;
     }
 
-    if (m_isftp) {
+    if (m_isftp || m_issftp) {
         foreach (const KIO::UDSEntry &kioudsentry, udsEntries()) {
             if (kioudsentry.stringValue(KIO::UDSEntry::UDS_NAME) == staturlfilename) {
                 statEntry(kioudsentry);
@@ -891,11 +891,12 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     m_firstchunk = true;
     const QString urlprotocol = url.protocol();
     m_ishttp = (urlprotocol == QLatin1String("http") || urlprotocol == QLatin1String("https"));
-    m_isftp = (urlprotocol == QLatin1String("ftp") || urlprotocol == QLatin1String("sftp"));
+    m_isftp = (urlprotocol == QLatin1String("ftp"));
+    m_issftp = (urlprotocol == QLatin1String("sftp"));
     m_collectdata = false;
     m_writedata.clear();
 
-    if (ftp && !m_isftp) {
+    if (ftp && !m_isftp && !m_issftp) {
         // only for FTP or SFTP
         error(KIO::ERR_INTERNAL, url.prettyUrl());
         return false;
@@ -1027,7 +1028,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
         curl_slist_free_all(m_curlquotes);
         m_curlquotes = nullptr;
     }
-    if (m_isftp) {
+    if (m_isftp || m_issftp) {
         // NOTE: this is stored in kio_ftprc
         const long disablepassivemode = config()->readEntry("DisablePassiveMode", false);
         kDebug(7103) << "Disable passive mode" << disablepassivemode;
@@ -1099,7 +1100,13 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
             kioauthinfo.prompt = i18n("You need to supply a username and a password to access this URL.");
             kioauthinfo.commentLabel = i18n("URL:");
             kioauthinfo.comment = i18n("<b>%1</b>", url.prettyUrl());
+            kioauthinfo.anonymousMode = m_isftp;
             if (openPasswordDialog(kioauthinfo)) {
+                if (kioauthinfo.anonymousMode) {
+                    kDebug(7103) << "Anonymous mode";
+                    kioauthinfo.username = QLatin1String("anonymous");
+                    kioauthinfo.password = QLatin1String("anonymous");
+                }
                 curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
                 if (curlresult != CURLE_OK) {
                     return curlresult;

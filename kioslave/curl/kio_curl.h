@@ -54,6 +54,7 @@ private:
     bool m_firstchunk;
     bool m_ishttp;
     bool m_isftp;
+    bool m_issftp;
     bool m_collectdata;
     QByteArray m_writedata;
     CURL* m_curl;
