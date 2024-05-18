@@ -574,9 +574,10 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     KPasswdStore* passwdstore = d->passwdStore();
     Q_ASSERT(passwdstore);
 
-    passwdstore->openStore();
-    if (checkCachedAuthentication(info)) {
-        return true;
+    if (!passwdstore->isOpen() && passwdstore->openStore()) {
+        if (checkCachedAuthentication(info)) {
+            return true;
+        }
     }
 
     if (metaData(QLatin1String("no-auth-prompt")).compare(QLatin1String("true"), Qt::CaseInsensitive) == 0) {
