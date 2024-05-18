@@ -339,7 +339,7 @@ IconWidget::IconWidget(QGraphicsItem *parent)
 
 IconWidget::IconWidget(const QString &text, QGraphicsItem *parent)
     : QGraphicsWidget(parent),
-      d(new IconWidgetPrivate(this))
+    d(new IconWidgetPrivate(this))
 {
     d->init();
     setText(text);
@@ -557,12 +557,12 @@ QSizeF IconWidgetPrivate::iconSizeForWidgetSize(const QStyleOptionGraphicsItem *
 {
     setActiveMargins();
 
-    //calculate icon size based on the available space
-    qreal iconWidth;
+    // calculate icon size based on the available space
+    qreal iconWidth = 0.0;
 
     if (orientation == Qt::Vertical) {
         qreal heightAvail;
-        //if there is text resize the icon in order to make room for the text
+        // if there is text resize the icon in order to make room for the text
         if (text.isEmpty() && infoText.isEmpty()) {
             heightAvail = rect.height();
         } else {
@@ -1527,7 +1527,7 @@ QSizeF IconWidget::sizeFromIconSize(const qreal iconWidth) const
 {
     d->setActiveMargins();
     if (d->text.isEmpty() && d->infoText.isEmpty()) {
-        //no text, just the icon size
+        // no text, just the icon size
         return d->addMargin(QSizeF(iconWidth, iconWidth), IconWidgetPrivate::ItemMargin);
     }
 
@@ -1553,15 +1553,12 @@ QSizeF IconWidget::sizeFromIconSize(const qreal iconWidth) const
                 d->horizontalMargin[IconWidgetPrivate::TextMargin].left +
                 d->horizontalMargin[IconWidgetPrivate::TextMargin].right;
     }
-
-    qreal height;
-    qreal textHeight;
-
     QStyleOptionGraphicsItem option;
     option.state = QStyle::State_None;
     option.rect = QRect(0, 0, width, QWIDGETSIZE_MAX);
-    textHeight = d->displaySizeHint(&option, width).height();
+    qreal textHeight = d->displaySizeHint(&option, width).height();
 
+    qreal height = 0.0;
     if (d->orientation == Qt::Vertical) {
         height = iconWidth + textHeight +
                  d->verticalMargin[IconWidgetPrivate::TextMargin].top +

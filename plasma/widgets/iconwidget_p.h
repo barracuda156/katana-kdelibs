@@ -294,8 +294,11 @@ Qt::LayoutDirection IconWidgetPrivate::iconDirection(const QStyleOptionGraphicsI
 
 void IconWidgetPrivate::setActiveMargins()
 {
-    //sync here itemmargin with contentsrect, not overly pretty but it's where it's more reliable
-    qreal left, top, right, bottom;
+    // sync here item margin with contents rect, not overly pretty but it's where it's more reliable
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
     q->getContentsMargins(&left, &top, &right, &bottom);
     if (left || top || right || bottom) {
         verticalMargin[ItemMargin].left = horizontalMargin[ItemMargin].left = left;

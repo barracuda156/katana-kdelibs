@@ -604,6 +604,16 @@ void PopupApplet::timerEvent(QTimerEvent *event)
     } else if (event->timerId() == d->showDialogTimer.timerId()) {
         d->showDialogTimer.stop();
         d->showDialog();
+    } else if (event->timerId() == d->statusTimer.timerId()) {
+        if (d->icon) {
+            if (d->statusTick <= 0) {
+                d->statusTick++;
+                d->icon->setPressed(true);
+            } else {
+                d->statusTick--;
+                d->icon->setPressed(false);
+            }
+        }
     } else {
         Applet::timerEvent(event);
     }
@@ -670,13 +680,13 @@ bool PopupApplet::isIconified() const
 
 PopupAppletPrivate::PopupAppletPrivate(PopupApplet *applet)
         : q(applet),
-          icon(0),
-          widget(0),
+          icon(nullptr),
+          widget(nullptr),
           popupPlacement(Plasma::FloatingPopup),
           popupAlignment(Qt::AlignLeft),
           savedAspectRatio(Plasma::InvalidAspectRatioMode),
-          autohideTimer(0),
-          preShowStatus(UnknownStatus),
+          autohideTimer(nullptr),
+          statusTick(0),
           popupLostFocus(false),
           passive(false)
 {
@@ -685,6 +695,7 @@ PopupAppletPrivate::PopupAppletPrivate(PopupApplet *applet)
     q->setAcceptDrops(true);
     QObject::disconnect(q, SIGNAL(activate()), static_cast<Applet*>(q), SLOT(setFocus()));
     QObject::connect(q, SIGNAL(activate()), q, SLOT(appletActivated()));
+    QObject::connect(q, SIGNAL(newStatus(Plasma::ItemStatus)), q, SLOT(statusChange(Plasma::ItemStatus)));
     QObject::connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), q, SLOT(iconSizeChanged(int)));
 }
 
@@ -820,24 +831,27 @@ void PopupAppletPrivate::dialogSizeChanged()
 
 void PopupAppletPrivate::dialogStatusChanged(bool shown)
 {
+    q->setStatus(q->status());
     if (shown) {
-        preShowStatus = q->status();
-        q->setStatus(NeedsAttentionStatus);
-        QObject::connect(q, SIGNAL(newStatus(Plasma::ItemStatus)),
-                         q, SLOT(statusChangeWhileShown(Plasma::ItemStatus)),
-                         Qt::UniqueConnection);
+        // the dialog is getting attention
+        statusChange(Plasma::ItemStatus::UnknownStatus);
     } else {
-        QObject::disconnect(q, SIGNAL(newStatus(Plasma::ItemStatus)),
-                            q, SLOT(statusChangeWhileShown(Plasma::ItemStatus)));
-        q->setStatus(preShowStatus);
+        // back to needs attention, maybe
+        statusChange(q->status());
     }
-
     q->popupEvent(shown);
 }
 
-void PopupAppletPrivate::statusChangeWhileShown(Plasma::ItemStatus status)
+void PopupAppletPrivate::statusChange(Plasma::ItemStatus status)
 {
-    preShowStatus = status;
+    if (status == Plasma::ItemStatus::NeedsAttentionStatus) {
+        statusTimer.start(500, q);
+    } else {
+        statusTimer.stop();
+        if (icon) {
+            icon->setPressed(false);
+        }
+    }
 }
 
 void PopupAppletPrivate::createIconWidget()
