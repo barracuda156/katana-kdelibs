@@ -592,10 +592,6 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     // assemble dialog-flags
     KPasswordDialog::KPasswordDialogFlags dialogFlags;
 
-    if (!dlgInfo.domain.isEmpty()) {
-        dialogFlags |= KPasswordDialog::ShowDomainLine;
-    }
-
     if (dlgInfo.anonymousMode) {
         dialogFlags |= KPasswordDialog::ShowAnonymousLoginCheckBox;
     }
@@ -637,8 +633,6 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     // even if the store is not open passwords can be temporary stored
     dlg->setKeepPassword(true);
 
-    dlg->setDomain(dlgInfo.domain);
-
     if (password.isEmpty() && username.isEmpty()) {
         dlg->setAnonymousMode(dlgInfo.anonymousMode);
     }
@@ -649,7 +643,6 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
         dlgInfo.username = dlg->username();
         dlgInfo.password = dlg->password();
         dlgInfo.keepPassword = dlg->keepPassword();
-        dlgInfo.domain = dlg->domain();
         dlgInfo.anonymousMode = dlg->anonymousMode();
 
         info = dlgInfo;

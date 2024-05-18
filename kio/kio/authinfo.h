@@ -164,7 +164,6 @@ public:
     */
    bool keepPassword;
 
-   QString domain;
    bool anonymousMode;
    bool hideUserName;
 };

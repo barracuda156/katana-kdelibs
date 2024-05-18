@@ -79,17 +79,7 @@ public:
          * If this flag is set, the Anonymous Login checkbox will be displayed
          * @since 4.1
          */
-        ShowAnonymousLoginCheckBox = 0x08,
-        /**
-         * If this flag is set, there will be an additional line to let the user enter the domain.
-         * @since 4.1
-         */
-        ShowDomainLine = 0x10,
-        /**
-         * If this flag is set, the domain lineedit will be in read only mode.
-         * @since 4.1
-         */
-        DomainReadOnly = 0x20
+        ShowAnonymousLoginCheckBox = 0x08
     };
     Q_DECLARE_FLAGS(KPasswordDialogFlags, KPasswordDialogFlag)
 
@@ -110,13 +100,7 @@ public:
         /**
          * Error preventing further attempts, will result in disabling most of the interface
          */
-        FatalError,
-        
-        /**
-         * A problem with the domain as entered
-         * @since 4.1
-         **/
-        DomainError        
+        FatalError
     };
 
     /**
@@ -193,19 +177,6 @@ public:
      */
     QString username() const;
 
-    /**
-     * set the default domain.
-     * @since 4.1
-     */
-    void setDomain(const QString&);
-
-    /**
-     * Returns the domain entered by the user.
-     * @return the domain name
-     * @since 4.1
-     */
-    QString domain() const;
-    
     /**
      * set anonymous mode (all other fields will be grayed out)
      * @since 4.1
@@ -292,7 +263,6 @@ protected:
      * password is valid, @p false otherwise.
      */
     virtual bool checkPassword();
-
 
 private:
     Q_PRIVATE_SLOT(d, void actuallyAccept())

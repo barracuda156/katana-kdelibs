@@ -85,7 +85,6 @@ void KPasswordDialog::KPasswordDialogPrivate::updateFields()
         ui.userEdit->setReadOnly(true);
         ui.credentialsGroup->setFocusProxy(ui.passEdit);
     }
-    ui.domainEdit->setReadOnly(( m_flags & KPasswordDialog::DomainReadOnly ));
     ui.credentialsGroup->setEnabled( !q->anonymousMode() );
 }
 
@@ -102,8 +101,6 @@ void KPasswordDialog::KPasswordDialogPrivate::init()
     } else {
         ui.userNameLabel->hide();
         ui.userEdit->hide();
-        ui.domainLabel->hide();
-        ui.domainEdit->hide();
         ui.passEdit->setFocus();
         ui.credentialsGroup->setFocusProxy( ui.passEdit );
     }
@@ -112,12 +109,6 @@ void KPasswordDialog::KPasswordDialogPrivate::init()
     {
         ui.anonymousRadioButton->hide();
         ui.usePasswordButton->hide();
-    }
-
-    if ( !( m_flags & KPasswordDialog::ShowDomainLine ) )
-    {
-        ui.domainLabel->hide();
-        ui.domainEdit->hide();
     }
 
     if ( !( m_flags & KPasswordDialog::ShowKeepPassword ) )
@@ -176,16 +167,6 @@ QString KPasswordDialog::username() const
 QString KPasswordDialog::password() const
 {
     return d->ui.passEdit->text();
-}
-
-void KPasswordDialog::setDomain(const QString& domain)
-{
-    d->ui.domainEdit->setText(domain);
-}
-
-QString KPasswordDialog::domain() const
-{
-    return d->ui.domainEdit->text();
 }
 
 void KPasswordDialog::setAnonymousMode(bool anonymous)
@@ -279,13 +260,6 @@ void KPasswordDialog::showErrorMessage( const QString& message, const ErrorType 
                 d->ui.userEdit->setFocus();
             }
             break;
-        case DomainError:
-            if ( d->ui.domainEdit->isVisibleTo( this ) )
-            {
-                d->ui.domainLabel->setFont( bold );
-                d->ui.domainEdit->setFocus();
-            }
-            break;
         case FatalError:
             d->ui.userNameLabel->setEnabled( false );
             d->ui.userEdit->setEnabled( false );
@@ -353,8 +327,7 @@ void KPasswordDialog::setKnownLogins( const QMap<QString, QString>& knownLogins 
         d->ui.formLayout->setWidget( row > -1 ? row : 0, userEditRole, d->userEditCombo );
 
         setTabOrder( d->ui.userEdit, d->ui.anonymousRadioButton );
-        setTabOrder( d->ui.anonymousRadioButton, d->ui.domainEdit );
-        setTabOrder( d->ui.domainEdit, d->ui.passEdit );
+        setTabOrder( d->ui.anonymousRadioButton, d->ui.passEdit );
         setTabOrder( d->ui.passEdit, d->ui.keepCheckBox );
         connect( d->ui.userEdit, SIGNAL(returnPressed()), d->ui.passEdit, SLOT(setFocus()) );
     }

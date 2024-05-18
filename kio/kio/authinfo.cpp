@@ -44,7 +44,6 @@ AuthInfo::AuthInfo(const AuthInfo &info)
     commentLabel = info.commentLabel;
     readOnly = info.readOnly;
     keepPassword = info.keepPassword;
-    domain = info.domain;
     anonymousMode = info.anonymousMode;
     hideUserName = info.hideUserName;
 }
@@ -60,7 +59,6 @@ AuthInfo& AuthInfo::operator=(const AuthInfo &info)
     commentLabel = info.commentLabel;
     readOnly = info.readOnly;
     keepPassword = info.keepPassword;
-    domain = info.domain;
     anonymousMode = info.anonymousMode;
     hideUserName = info.hideUserName;
     return *this;
@@ -72,7 +70,7 @@ QDataStream& KIO::operator<<(QDataStream &s, const AuthInfo &a)
 {
     s << a.url << a.username << a.password << a.prompt << a.caption
       << a.comment << a.commentLabel << a.readOnly << a.keepPassword
-      << a.domain << a.anonymousMode << a.hideUserName;
+      << a.anonymousMode << a.hideUserName;
     return s;
 }
 
@@ -80,6 +78,6 @@ QDataStream& KIO::operator>>(QDataStream &s, AuthInfo &a)
 {
     s >> a.url >> a.username >> a.password >> a.prompt >> a.caption
       >> a.comment >> a.commentLabel >> a.readOnly >> a.keepPassword
-      >> a.domain >> a.anonymousMode >> a.hideUserName;
+      >> a.anonymousMode >> a.hideUserName;
     return s;
 }
