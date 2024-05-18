@@ -1191,6 +1191,7 @@ QByteArray KArchive::data(const QString &path) const
             break;
         }
 
+        archive_read_data_skip(readarchive);
         ret = archive_read_next_header(readarchive, &entry);
     }
 
