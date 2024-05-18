@@ -172,28 +172,9 @@ public:
     */
    bool keepPassword;
 
-   /**
-    * Set Extra Field Value. 
-    * Currently supported extra-fields: 
-    *    "domain" (QString), 
-    *    "anonymous" (bool)
-    *    "hide-username-line" (bool)
-    * Setting it to an invalid QVariant() will disable the field.
-    * Extra Fields are disabled by default.
-    * @since 4.1
-    */
-   void setExtraField(const QString &fieldName, const QVariant &value);
-
-   /**
-    * Get Extra Field Value
-    * Check QVariant::isValid() to find out if the field exists.
-    * @since 4.1 
-    */
-   QVariant getExtraField(const QString &fieldName) const;
-
-private:
-    friend class ::KIO::AuthInfoPrivate;
-    AuthInfoPrivate * const d;
+   QString domain;
+   bool anonymousMode;
+   bool hideUserName;
 };
 
 KIO_EXPORT QDataStream& operator<< (QDataStream &s, const AuthInfo &a);

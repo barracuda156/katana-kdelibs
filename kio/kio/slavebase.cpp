@@ -50,10 +50,6 @@
 #include "slaveinterface_p.h"
 #include "job_p.h"
 
-#define AUTHINFO_EXTRAFIELD_DOMAIN QLatin1String("domain")
-#define AUTHINFO_EXTRAFIELD_ANONYMOUS QLatin1String("anonymous")
-#define AUTHINFO_EXTRAFIELD_HIDE_USERNAME_INPUT QLatin1String("hide-username-line")
-
 extern "C" {
     static void sigpipe_handler(int sig);
 }
@@ -595,15 +591,15 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     // assemble dialog-flags
     KPasswordDialog::KPasswordDialogFlags dialogFlags;
 
-    if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_DOMAIN).isValid()) {
+    if (!dlgInfo.domain.isEmpty()) {
         dialogFlags |= KPasswordDialog::ShowDomainLine;
     }
 
-    if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_ANONYMOUS).isValid()) {
+    if (dlgInfo.anonymousMode) {
         dialogFlags |= KPasswordDialog::ShowAnonymousLoginCheckBox;
     }
 
-    if (!dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_HIDE_USERNAME_INPUT).toBool()) {
+    if (!dlgInfo.hideUserName) {
         dialogFlags |= KPasswordDialog::ShowUsernameLine;
     }
 
@@ -640,12 +636,10 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     // even if the store is not open passwords can be temporary stored
     dlg->setKeepPassword(true);
 
-    if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_DOMAIN).isValid()) {
-        dlg->setDomain(dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_DOMAIN).toString());
-    }
+    dlg->setDomain(dlgInfo.domain);
 
-    if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_ANONYMOUS).isValid () && password.isEmpty() && username.isEmpty()) {
-        dlg->setAnonymousMode(dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_ANONYMOUS).toBool());
+    if (password.isEmpty() && username.isEmpty()) {
+        dlg->setAnonymousMode(dlgInfo.anonymousMode);
     }
 
     KWindowSystem::setMainWindow(dlg, windowId);
@@ -654,13 +648,8 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
         dlgInfo.username = dlg->username();
         dlgInfo.password = dlg->password();
         dlgInfo.keepPassword = dlg->keepPassword();
-
-        if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_DOMAIN).isValid()) {
-            dlgInfo.setExtraField(AUTHINFO_EXTRAFIELD_DOMAIN, dlg->domain());
-        }
-        if (dlgInfo.getExtraField(AUTHINFO_EXTRAFIELD_ANONYMOUS).isValid()) {
-            dlgInfo.setExtraField(AUTHINFO_EXTRAFIELD_ANONYMOUS, dlg->anonymousMode());
-        }
+        dlgInfo.domain = dlg->domain();
+        dlgInfo.anonymousMode = dlg->anonymousMode();
 
         info = dlgInfo;
         return true;

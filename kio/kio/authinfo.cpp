@@ -19,53 +19,27 @@
  */
 
 #include "authinfo.h"
-
-#include <config.h>
-
-#include <sys/stat.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-#include <QtCore/QByteArray>
-#include <QtCore/QDir>
-#include <kde_file.h>
-
-#include <kdebug.h>
-#include <kstandarddirs.h>
-
-#define NETRC_READ_BUF_SIZE 4096
+#include "kdebug.h"
 
 using namespace KIO;
 
 //////
 
-class KIO::AuthInfoPrivate  
-{
-public:
-    QMap<QString, QVariant> extraFields;
-};
-
-
-//////
-
 AuthInfo::AuthInfo()
-    : d(new AuthInfoPrivate())
 {
     readOnly = false;
     keepPassword = false;
+    anonymousMode = false;
+    hideUserName = false;
 }
 
 AuthInfo::AuthInfo(const AuthInfo &info)
-    : d(new AuthInfoPrivate())
 {
     (*this) = info;
 }
 
 AuthInfo::~AuthInfo()
 {
-    delete d;
 }
 
 AuthInfo& AuthInfo::operator=(const AuthInfo &info)
@@ -79,23 +53,10 @@ AuthInfo& AuthInfo::operator=(const AuthInfo &info)
     commentLabel = info.commentLabel;
     readOnly = info.readOnly;
     keepPassword = info.keepPassword;
-    d->extraFields = info.d->extraFields;
+    domain = info.domain;
+    anonymousMode = info.anonymousMode;
+    hideUserName = info.hideUserName;
     return *this;
-}
-
-/////
-
-void AuthInfo::setExtraField(const QString &fieldName, const QVariant &value)
-{
-    d->extraFields[fieldName] = value;
-}
-
-QVariant AuthInfo::getExtraField(const QString &fieldName) const
-{
-    if (!d->extraFields.contains(fieldName)) {
-        return QVariant();
-    }
-    return d->extraFields[fieldName];
 }
 
 /////
@@ -104,7 +65,7 @@ QDataStream& KIO::operator<<(QDataStream &s, const AuthInfo &a)
 {
     s << a.url << a.username << a.password << a.prompt << a.caption
       << a.comment << a.commentLabel << a.readOnly << a.keepPassword
-      << a.d->extraFields;
+      << a.domain << a.anonymousMode << a.hideUserName;
     return s;
 }
 
@@ -112,6 +73,6 @@ QDataStream& KIO::operator>>(QDataStream &s, AuthInfo &a)
 {
     s >> a.url >> a.username >> a.password >> a.prompt >> a.caption
       >> a.comment >> a.commentLabel >> a.readOnly >> a.keepPassword
-      >> a.d->extraFields;
+      >> a.domain >> a.anonymousMode >> a.hideUserName;
     return s;
 }
