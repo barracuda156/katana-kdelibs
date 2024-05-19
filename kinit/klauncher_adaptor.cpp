@@ -42,10 +42,11 @@ static const int s_sleeptime = 50;
 // NOTE: keep in sync with:
 // kde-workspace/kwin/effects/startupfeedback/startupfeedback.cpp
 // kde-workspace/kcontrol/launch/kcmlaunch.cpp
-static const qint64 s_startuptimeout = 10; // 10sec
+static const int s_startuptimeout = 10; // 10sec
 // klauncher is one of the last processes to quit in a session so 5sec for each child process is
 // more than enough
 static const qint64 s_processtimeout = 5000; // 5sec
+static const int s_deletedelay = 3000; // 3sec
 
 static inline void removeTemp(const bool temp, const QStringList &args)
 {
@@ -142,7 +143,7 @@ void KLauncherProcess::slotProcessStateChanged(QProcess::ProcessState state)
                 );
             }
         }
-        deleteLater();
+        QTimer::singleShot(s_deletedelay, this, SLOT(deleteLater()));
     }
 }
 
