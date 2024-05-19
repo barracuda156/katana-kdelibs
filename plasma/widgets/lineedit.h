@@ -100,7 +100,6 @@ public:
 
 protected:
     void changeEvent(QEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);
 
@@ -114,11 +113,6 @@ Q_SIGNALS:
      * @since 4.4
      */
     void textChanged(const QString &text);
-    /**
-     * Emitted when the widget receives or loses focus
-     * @since 4.7
-     */
-    void focusChanged(bool focused);
 
 private:
     Q_PRIVATE_SLOT(d, void setPalette())

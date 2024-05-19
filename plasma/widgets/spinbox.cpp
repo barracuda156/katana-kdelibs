@@ -115,36 +115,8 @@ void SpinBox::changeEvent(QEvent *event)
     QGraphicsProxyWidget::changeEvent(event);
 }
 
-void SpinBox::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    QGraphicsWidget *widget = parentWidget();
-    Plasma::Applet *applet = qobject_cast<Plasma::Applet *>(widget);
-
-    while (!applet && widget) {
-        widget = widget->parentWidget();
-        applet = qobject_cast<Plasma::Applet *>(widget);
-    }
-
-    if (applet) {
-        applet->setStatus(Plasma::AcceptingInputStatus);
-    }
-    QGraphicsProxyWidget::mousePressEvent(event);
-}
-
 void SpinBox::focusOutEvent(QFocusEvent *event)
 {
-    QGraphicsWidget *widget = parentWidget();
-    Plasma::Applet *applet = qobject_cast<Plasma::Applet *>(widget);
-
-    while (!applet && widget) {
-        widget = widget->parentWidget();
-        applet = qobject_cast<Plasma::Applet *>(widget);
-    }
-
-    if (applet) {
-        applet->setStatus(Plasma::UnknownStatus);
-    }
-
     QEvent closeEvent(QEvent::CloseSoftwareInputPanel);
     if (qApp) {
         if (QGraphicsView *view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {

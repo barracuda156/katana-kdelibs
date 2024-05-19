@@ -192,8 +192,7 @@ enum ItemStatus {
     UnknownStatus = 0, /**< The status is unknown **/
     PassiveStatus = 1, /**< The Item is passive **/
     ActiveStatus = 2, /**< The Item is active **/
-    NeedsAttentionStatus = 3, /**< The Item needs attention **/
-    AcceptingInputStatus = 4 /**< The Item is accepting input **/
+    NeedsAttentionStatus = 3 /**< The Item needs attention **/
 };
 Q_ENUMS(ItemStatus)
 

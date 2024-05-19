@@ -115,7 +115,6 @@ Q_SIGNALS:
 protected:
     void focusOutEvent(QFocusEvent *event);
     void changeEvent(QEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     ComboBoxPrivate * const d;

@@ -130,22 +130,6 @@ void LineEdit::changeEvent(QEvent *event)
     QGraphicsProxyWidget::changeEvent(event);
 }
 
-void LineEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    QGraphicsWidget *widget = parentWidget();
-    Plasma::Applet *applet = qobject_cast<Plasma::Applet *>(widget);
-
-    while (!applet && widget) {
-        widget = widget->parentWidget();
-        applet = qobject_cast<Plasma::Applet *>(widget);
-    }
-
-    if (applet) {
-        applet->setStatus(Plasma::AcceptingInputStatus);
-    }
-    QGraphicsProxyWidget::mousePressEvent(event);
-}
-
 void LineEdit::focusInEvent(QFocusEvent *event)
 {
     QGraphicsProxyWidget::focusInEvent(event);
@@ -153,24 +137,10 @@ void LineEdit::focusInEvent(QFocusEvent *event)
         // as of Qt 4.7, apparently we have a bug here in QGraphicsProxyWidget
         nativeWidget()->setFocus(event->reason());
     }
-
-    emit focusChanged(true);
 }
 
 void LineEdit::focusOutEvent(QFocusEvent *event)
 {
-    QGraphicsWidget *widget = parentWidget();
-    Plasma::Applet *applet = qobject_cast<Plasma::Applet *>(widget);
-
-    while (!applet && widget) {
-        widget = widget->parentWidget();
-        applet = qobject_cast<Plasma::Applet *>(widget);
-    }
-
-    if (applet) {
-        applet->setStatus(Plasma::UnknownStatus);
-    }
-
     if (qApp) {
         if (QGraphicsView *view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
             if (view->scene() && view->scene() == scene()) {
@@ -181,8 +151,6 @@ void LineEdit::focusOutEvent(QFocusEvent *event)
     }
 
     QGraphicsProxyWidget::focusOutEvent(event);
-
-    emit focusChanged(false);
 }
 
 } // namespace Plasma

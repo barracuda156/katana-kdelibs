@@ -70,7 +70,6 @@ public:
 
 protected:
     void changeEvent(QEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void focusOutEvent(QFocusEvent *event);
 
 public Q_SLOTS:
