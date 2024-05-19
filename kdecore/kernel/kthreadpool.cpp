@@ -39,7 +39,7 @@ public:
     QMutex mutex;
     KThreadPool* parent;
     int maxthreads;
-    int activethreadcount;
+    QAtomicInt activethreadcount;
     QList<QThread*> activethreads;
     QList<QThread*> queuedthreads;
 };
@@ -55,7 +55,7 @@ KThreadPoolPrivate::KThreadPoolPrivate(KThreadPool *_parent)
 
 void KThreadPoolPrivate::appendThread(QThread *thread)
 {
-    activethreadcount++;
+    activethreadcount.ref();
     activethreads.append(thread);
     parent->connect(
         thread, SIGNAL(finished()),
@@ -73,7 +73,7 @@ void KThreadPoolPrivate::_k_slotFinished()
         if (thread->isFinished()) {
             kDebug() << "thread finished" << thread;
             iter.remove();
-            activethreadcount--;
+            activethreadcount.deref();
             Q_ASSERT(activethreadcount >= 0);
             thread->deleteLater();
         }
@@ -116,37 +116,15 @@ void KThreadPool::start(QThread *thread, const QThread::Priority priority)
 void KThreadPool::waitForDone(const int timeout)
 {
     kDebug() << "waiting for threads" << timeout;
-    QMutexLocker locker(&d->mutex);
     QElapsedTimer elapsedtimer;
     elapsedtimer.start();
-    QMutableListIterator<QThread*> iter(d->activethreads);
     kDebug() << "currently" << d->activethreadcount << "active threads";
     while ((timeout < 1 || elapsedtimer.elapsed() < timeout) && d->activethreadcount > 0) {
-        iter.toFront();
-        while (iter.hasNext()) {
-            QThread* thread = iter.next();
-            // kDebug() << "waiting for" << thread;
-            disconnect(thread, 0, this, 0);
-            thread->wait(s_waittimeout);
-            if (thread->isFinished()) {
-                kDebug() << "thread finished" << thread;
-                iter.remove();
-                d->activethreadcount--;
-                Q_ASSERT(d->activethreadcount >= 0);
-                thread->deleteLater();
-            }
-        }
+        QCoreApplication::processEvents(QEventLoop::AllEvents, s_waittimeout);
+        QThread::msleep(s_waittimeout);
     }
     if (d->activethreadcount > 0) {
         kWarning() << "still there are active threads" << d->activethreadcount;
-        iter.toFront();
-        while (iter.hasNext()) {
-            QThread* thread = iter.next();
-            kWarning() << "terminating" << thread;
-            thread->terminate();
-            thread->wait(s_terminatetimeout);
-            thread->deleteLater();
-        }
     }
 }
 
