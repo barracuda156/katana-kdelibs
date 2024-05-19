@@ -849,7 +849,6 @@ void Containment::addApplet(Applet *applet, const QPointF &pos, bool delayInit)
     d->applets << applet;
 
     connect(applet, SIGNAL(configNeedsSaving()), this, SIGNAL(configNeedsSaving()));
-    connect(applet, SIGNAL(releaseVisualFocus()), this, SIGNAL(releaseVisualFocus()));
     connect(applet, SIGNAL(appletDestroyed(Plasma::Applet*)), this, SLOT(appletDestroyed(Plasma::Applet*)));
     connect(applet, SIGNAL(newStatus(Plasma::ItemStatus)), this, SLOT(checkStatus(Plasma::ItemStatus)));
     connect(applet, SIGNAL(activate()), this, SIGNAL(activate()));

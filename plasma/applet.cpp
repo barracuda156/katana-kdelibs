@@ -1719,8 +1719,6 @@ void Applet::showConfigurationInterface()
     KConfigDialog *dialog = d->generateGenericConfigDialog();
     d->addStandardConfigurationPages(dialog);
     showConfigurationInterface(dialog);
-
-    emit releaseVisualFocus();
 }
 
 void Applet::showConfigurationInterface(QWidget *widget)
