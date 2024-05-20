@@ -142,6 +142,16 @@ void KIntNumInput::setSpecialValueText(const QString &text)
     d->spinbox->setSpecialValueText(text);
 }
 
+Qt::Alignment KIntNumInput::alignment() const
+{
+    return d->spinbox->alignment();
+}
+
+void KIntNumInput::setAlignment(const Qt::Alignment alignment)
+{
+    d->spinbox->setAlignment(alignment);
+}
+
 int KIntNumInput::base() const
 {
     return d->validator->base();
@@ -310,6 +320,16 @@ QString KDoubleNumInput::specialValueText() const
 void KDoubleNumInput::setSpecialValueText(const QString &text)
 {
     d->spinbox->setSpecialValueText(text);
+}
+
+Qt::Alignment KDoubleNumInput::alignment() const
+{
+    return d->spinbox->alignment();
+}
+
+void KDoubleNumInput::setAlignment(const Qt::Alignment alignment)
+{
+    d->spinbox->setAlignment(alignment);
 }
 
 int KDoubleNumInput::decimals() const

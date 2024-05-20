@@ -49,6 +49,7 @@ class KDEUI_EXPORT KIntNumInput : public QWidget
     Q_PROPERTY(QString suffix READ suffix WRITE setSuffix)
     Q_PROPERTY(QString prefix READ prefix WRITE setPrefix)
     Q_PROPERTY(QString specialValueText READ specialValueText WRITE setSpecialValueText)
+    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
     Q_PROPERTY(int base READ base WRITE setBase)
     Q_PROPERTY(bool sliderEnabled READ sliderEnabled WRITE setSliderEnabled)
 public:
@@ -74,6 +75,8 @@ public:
     QString prefix() const;
     QString specialValueText() const;
     void setSpecialValueText(const QString &text);
+    Qt::Alignment alignment() const;
+    void setAlignment(const Qt::Alignment alignment);
 
     /**
      * @return the base in which numbers in the spin box are represented.
@@ -143,6 +146,7 @@ class KDEUI_EXPORT KDoubleNumInput : public QWidget
     Q_PROPERTY(QString suffix READ suffix WRITE setSuffix)
     Q_PROPERTY(QString prefix READ prefix WRITE setPrefix)
     Q_PROPERTY(QString specialValueText READ specialValueText WRITE setSpecialValueText)
+    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
     Q_PROPERTY(int decimals READ decimals WRITE setDecimals)
     Q_PROPERTY(bool sliderEnabled READ sliderEnabled WRITE setSliderEnabled)
 public:
@@ -168,6 +172,8 @@ public:
     QString prefix() const;
     QString specialValueText() const;
     void setSpecialValueText(const QString &text);
+    Qt::Alignment alignment() const;
+    void setAlignment(const Qt::Alignment alignment);
 
     /**
      * @return number of decimals.
