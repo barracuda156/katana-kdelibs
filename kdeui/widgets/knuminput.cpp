@@ -57,6 +57,7 @@ KIntNumInput::KIntNumInput(QWidget* parent)
 {
     d->validator = new KIntValidator(this);
     QHBoxLayout* hboxlayout = new QHBoxLayout(this);
+    hboxlayout->setMargin(0);
     d->slider = new QSlider(this);
     d->slider->setVisible(false);
     hboxlayout->addWidget(d->slider);
@@ -225,6 +226,7 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
 {
     d->validator = new KDoubleValidator(this);
     QHBoxLayout* hboxlayout = new QHBoxLayout(this);
+    hboxlayout->setMargin(0);
     d->slider = new QSlider(this);
     d->slider->setVisible(false);
     hboxlayout->addWidget(d->slider);
