@@ -7,7 +7,6 @@ install(
     kfontrequester.png
     kurlrequester.png
     kcombobox.png
-    kintspinbox.png
     kled.png
     ksqueezedtextlabel.png
     kurllabel.png

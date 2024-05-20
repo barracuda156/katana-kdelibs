@@ -20,17 +20,16 @@
 #ifndef KINPUTDIALOG_P_H
 #define KINPUTDIALOG_P_H
 
+#include "kdialog.h"
+#include "knuminput.h"
+
 #include <QLabel>
 #include <QValidator>
 
 class KComboBox;
-#include <QDoubleSpinBox>
-class KIntSpinBox;
 class KLineEdit;
 class KListWidget;
 class KTextEdit;
-
-#include <kdialog.h>
 
 /**
  * @author Nadeem Hasan <nhasan@kde.org>
@@ -60,8 +59,8 @@ class KInputDialogHelper : public KDialog
     ~KInputDialogHelper();
 
     KLineEdit *lineEdit() const;
-    KIntSpinBox *intSpinBox() const;
-    QDoubleSpinBox *doubleSpinBox() const;
+    KIntNumInput *intSpinBox() const;
+    KDoubleNumInput *doubleSpinBox() const;
     KComboBox *comboBox() const;
     KListWidget *listBox() const;
     KTextEdit *textEdit() const;
@@ -73,8 +72,8 @@ class KInputDialogHelper : public KDialog
   private:
     QLabel *m_label;
     KLineEdit *m_lineEdit;
-    KIntSpinBox *m_intSpinBox;
-    QDoubleSpinBox *m_doubleSpinBox;
+    KIntNumInput *m_intSpinBox;
+    KDoubleNumInput *m_doubleSpinBox;
     KComboBox *m_comboBox;
     KListWidget *m_listBox;
     KTextEdit *m_textEdit;

@@ -24,10 +24,10 @@
 #include "private/style_p.h"
 #include "private/themedwidgetinterface_p.h"
 #include "theme.h"
+#include "kmimetype.h"
+#include "knuminput.h"
 
 #include <QGraphicsView>
-#include <kmimetype.h>
-#include <knuminput.h>
 
 namespace Plasma
 {
@@ -48,7 +48,7 @@ SpinBox::SpinBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new SpinBoxPrivate(this))
 {
-    QDoubleSpinBox *native = new QDoubleSpinBox();
+    KDoubleNumInput *native = new KDoubleNumInput();
 
     connect(native, SIGNAL(valueChanged(double)), this, SIGNAL(valueChanged(double)));
     connect(native, SIGNAL(editingFinished()), this, SIGNAL(editingFinished()));
@@ -104,9 +104,9 @@ double SpinBox::value() const
     return nativeWidget()->value();
 }
 
-QDoubleSpinBox *SpinBox::nativeWidget() const
+KDoubleNumInput *SpinBox::nativeWidget() const
 {
-    return static_cast<QDoubleSpinBox*>(widget());
+    return static_cast<KDoubleNumInput*>(widget());
 }
 
 void SpinBox::changeEvent(QEvent *event)

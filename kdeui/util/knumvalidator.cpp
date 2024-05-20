@@ -47,7 +47,7 @@ public:
     int _max;
 };
 
-KIntValidator::KIntValidator ( QWidget *parent, int base)
+KIntValidator::KIntValidator(QWidget *parent, int base)
     : QValidator(parent),
     d(new KIntValidatorPrivate())
 {

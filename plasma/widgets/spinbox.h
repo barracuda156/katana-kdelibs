@@ -21,10 +21,11 @@
 #ifndef PLASMA_SPINBOX_H
 #define PLASMA_SPINBOX_H
 
-#include <QDoubleSpinBox>
 #include <QGraphicsProxyWidget>
 
 #include <plasma/plasma_export.h>
+
+class KDoubleNumInput;
 
 namespace Plasma
 {
@@ -65,7 +66,7 @@ public:
     /**
      * @return the native widget wrapped by this SpinBox
      */
-    QDoubleSpinBox *nativeWidget() const;
+    KDoubleNumInput *nativeWidget() const;
 
 protected:
     void changeEvent(QEvent *event);
@@ -96,15 +97,6 @@ public Q_SLOTS:
     void setValue(double value);
 
 Q_SIGNALS:
-    /**
-     * This signal is emitted when the user drags the slider.
-     *
-     * In fact, it is emitted whenever the sliderMoved(double) signal
-     * of KIntSpinBox would be emitted.  See the Qt documentation for
-     * more information.
-     */
-    void sliderMoved(double value);
-
     /**
      * This signal is emitted when the slider value has changed,
      * with the new slider value as argument.

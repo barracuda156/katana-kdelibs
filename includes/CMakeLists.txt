@@ -136,7 +136,6 @@ install(
     KInputDialog
     KComponentData
     KIntNumInput
-    KIntSpinBox
     KIntValidator
     KJob
     KJobTrackerInterface

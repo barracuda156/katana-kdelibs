@@ -127,7 +127,11 @@ KInputDialogHelper::KInputDialogHelper( const QString &caption, const QString &l
     m_label->setAlignment(Qt::AlignTop);
     layout->addWidget(m_label);
 
-    m_intSpinBox = new KIntSpinBox(minValue, maxValue, step, value, frame, base);
+    m_intSpinBox = new KIntNumInput(frame);
+    m_intSpinBox->setRange(minValue, maxValue);
+    m_intSpinBox->setSingleStep(step);
+    m_intSpinBox->setValue(value);
+    m_intSpinBox->setBase(base);
     layout->addWidget(m_intSpinBox);
 
     layout->setMargin(0);
@@ -156,7 +160,7 @@ KInputDialogHelper::KInputDialogHelper( const QString &caption, const QString &l
     m_label->setAlignment(Qt::AlignTop);
     layout->addWidget(m_label);
 
-    m_doubleSpinBox = new QDoubleSpinBox(frame);
+    m_doubleSpinBox = new KDoubleNumInput(frame);
     m_doubleSpinBox->setRange(minValue, maxValue);
     m_doubleSpinBox->setSingleStep(step);
     m_doubleSpinBox->setValue(value);
@@ -297,12 +301,12 @@ KLineEdit *KInputDialogHelper::lineEdit() const
     return m_lineEdit;
 }
 
-KIntSpinBox *KInputDialogHelper::intSpinBox() const
+KIntNumInput *KInputDialogHelper::intSpinBox() const
 {
     return m_intSpinBox;
 }
 
-QDoubleSpinBox *KInputDialogHelper::doubleSpinBox() const
+KDoubleNumInput *KInputDialogHelper::doubleSpinBox() const
 {
     return m_doubleSpinBox;
 }

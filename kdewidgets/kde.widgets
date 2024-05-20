@@ -60,12 +60,6 @@ IncludeFile=kdialogbuttonbox.h
 Group=Buttons (KDE)
 DomXML=<ui><widget class="KDialogButtonBox"><property name="standardButtons"><set>QDialogButtonBox::Ok|QDialogButtonBox::Cancel</set></property></widget></ui>
 
-[KDoubleNumInput]
-ToolTip=Floating Point Number Input Widget (KDE)
-WhatsThis=An input widget for floating point numbers, consisting of a spinbox and a slider.
-IncludeFile=knuminput.h
-Group=Input (KDE)
-
 [KEditListWidget]
 ToolTip=Fullfeatured edit box with buttons (KDE)
 Group=Views (KDE)
@@ -111,9 +105,10 @@ WhatsThis=An input widget for integer numbers, consisting of a spinbox and a sli
 IncludeFile=knuminput.h
 Group=Input (KDE)
 
-[KIntSpinBox]
+[KDoubleNumInput]
+ToolTip=Floating Point Number Input Widget (KDE)
+WhatsThis=An input widget for floating point numbers, consisting of a spinbox and a slider.
 IncludeFile=knuminput.h
-ToolTip=Enhanced Spinbox for Integer Values (KDE)
 Group=Input (KDE)
 
 [KKeySequenceWidget]
