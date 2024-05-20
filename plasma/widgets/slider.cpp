@@ -28,14 +28,16 @@
 #include "framesvg.h"
 
 #include "private/style_p.h"
+#include "private/themedwidgetinterface_p.h"
 
 namespace Plasma
 {
 
-class SliderPrivate
+class SliderPrivate : public ThemedWidgetInterface<Slider>
 {
 public:
-    SliderPrivate()
+    SliderPrivate(Slider *slider)
+        : ThemedWidgetInterface<Slider>(slider)
     {
     }
 
@@ -44,7 +46,7 @@ public:
 
 Slider::Slider(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new SliderPrivate)
+      d(new SliderPrivate(this))
 {
     QSlider *native = new QSlider();
 
@@ -57,6 +59,8 @@ Slider::Slider(QGraphicsWidget *parent)
 
     d->style = Plasma::Style::sharedStyle();
     native->setStyle(d->style.data());
+
+    d->initTheming();
 }
 
 Slider::~Slider()

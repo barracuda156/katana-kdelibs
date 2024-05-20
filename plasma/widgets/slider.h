@@ -122,6 +122,8 @@ Q_SIGNALS:
     void valueChanged(int value);
 
 private:
+    Q_PRIVATE_SLOT(d, void setPalette())
+
     SliderPrivate * const d;
 };
 
