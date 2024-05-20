@@ -21,7 +21,7 @@
 #include "style_p.h"
 
 #include <QPainter>
-#include <QtGui/qstyleoption.h>
+#include <QStyleOption>
 #include <QSpinBox>
 #include <QComboBox>
 #include <QApplication>
@@ -194,73 +194,6 @@ void Style::drawComplexControl(ComplexControl control,
             painter->restore();
             break;
         }
-        case CC_SpinBox: {
-            d->createTextBox();
-
-            d->textBox->resizeFrame(option->rect.size());
-            d->textBox->paintFrame(painter);
-
-            const QStyleOptionSpinBox *spinOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option);
-            bool upSunken = (spinOpt->activeSubControls & SC_SpinBoxUp) &&
-                            (spinOpt->state & (State_Sunken | State_On));
-            bool downSunken = (spinOpt->activeSubControls & SC_SpinBoxDown) &&
-                            (spinOpt->state & (State_Sunken | State_On));
-
-            const QSpinBox *spin = qobject_cast<const QSpinBox *>(widget);
-            PrimitiveElement pe;
-            if (spin->buttonSymbols() == QSpinBox::PlusMinus) {
-                pe = PE_IndicatorSpinPlus;
-            } else {
-                pe = PE_IndicatorArrowUp;
-            }
-
-            QStyleOption upOpt;
-            upOpt = *option;
-            upOpt.rect = subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
-
-            if (upSunken) {
-                upOpt.state = State_Sunken|State_Enabled;
-            } else {
-                upOpt.state = State_Enabled;
-            }
-
-            qApp->style()->drawPrimitive(pe, &upOpt, painter, widget);
-
-            if (spin->buttonSymbols() == QSpinBox::PlusMinus) {
-                pe = PE_IndicatorSpinMinus;
-            } else {
-                pe = PE_IndicatorArrowDown;
-            }
-
-            QStyleOption downOpt;
-            downOpt= *option;
-            downOpt.rect = subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
-
-            if (downSunken) {
-                downOpt.state = State_Sunken|State_Enabled;
-            } else {
-                downOpt.state = State_Enabled;
-            }
-
-            qApp->style()->drawPrimitive(pe, &downOpt, painter, widget);
-            break;
-        }
-        case CC_ComboBox: {
-            const QComboBox *combo = qobject_cast<const QComboBox *>(widget);
-            if (!combo->isEditable()) {
-                qApp->style()->drawComplexControl(control, option, painter, widget);
-            } else {
-                d->createTextBox();
-                d->textBox->resizeFrame(option->rect.size());
-                d->textBox->paintFrame(painter);
-
-                QStyleOption arrowOpt;
-                arrowOpt = *option;
-                arrowOpt.rect = subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
-                qApp->style()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
-            }
-            break;
-        }
         default: {
             qApp->style()->drawComplexControl(control, option, painter, widget);
         }
@@ -342,44 +275,45 @@ int Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWi
     if (Theme::defaultTheme()->useNativeWidgetStyle()) {
         return qApp->style()->pixelMetric(metric, option, widget);
     }
-
     switch (metric) {
-    case PM_ScrollBarExtent: {
-        d->createScrollbar();
-        const QSizeF hintSize = d->scrollbar->elementSize("hint-scrollbar-size");
-        const QStyleOptionSlider *scrollOption = qstyleoption_cast<const QStyleOptionSlider *>(option);
+        case PM_ScrollBarExtent: {
+            d->createScrollbar();
+            const QSizeF hintSize = d->scrollbar->elementSize("hint-scrollbar-size");
+            const QStyleOptionSlider *scrollOption = qstyleoption_cast<const QStyleOptionSlider *>(option);
 
-        if (scrollOption && scrollOption->orientation == Qt::Vertical) {
-            if (hintSize.isEmpty()) {
-                return d->scrollbar->elementSize("arrow-down").width() + 2;
+            if (scrollOption && scrollOption->orientation == Qt::Vertical) {
+                if (hintSize.isEmpty()) {
+                    return d->scrollbar->elementSize("arrow-down").width() + 2;
+                } else {
+                    return hintSize.width();
+                }
             } else {
-                return hintSize.width();
-            }
-        } else {
-            if (hintSize.isEmpty()) {
-                return d->scrollbar->elementSize("arrow-left").height() + 2;
-            } else {
-                return hintSize.height();
+                if (hintSize.isEmpty()) {
+                    return d->scrollbar->elementSize("arrow-left").height() + 2;
+                } else {
+                    return hintSize.height();
+                }
             }
         }
-    }
-    default:
-        return qApp->style()->pixelMetric(metric, option, widget);
+        default: {
+            return qApp->style()->pixelMetric(metric, option, widget);
+        }
     }
 }
 
 QRect Style::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const
 {
     switch (element) {
-    case SE_LineEditContents: {
-        d->createTextBox();
+        case SE_LineEditContents: {
+            d->createTextBox();
 
-        qreal left, top, right, bottom;
-        d->textBox->getMargins(left, top, right, bottom);
-        return option->rect.adjusted(left + 2, top + 2, -(right + 2), -(bottom + 2)); 
-    }
-    default:
-        return qApp->style()->subElementRect(element, option, widget);
+            qreal left, top, right, bottom;
+            d->textBox->getMargins(left, top, right, bottom);
+            return option->rect.adjusted(left + 2, top + 2, -(right + 2), -(bottom + 2));
+        }
+        default: {
+            return qApp->style()->subElementRect(element, option, widget);
+        }
     }
 }
 
@@ -387,22 +321,16 @@ QSize Style::sizeFromContents(ContentsType type, const QStyleOption *option,
                               const QSize &contentsSize, const QWidget *widget) const
 {
     switch (type) {
-    case CT_SpinBox: {
-        d->createTextBox();
+        case CT_LineEdit: {
+            d->createTextBox();
 
-        qreal left, top, right, bottom;
-        d->textBox->getMargins(left, top, right, bottom);
-        return contentsSize + QSize(left + right - 2, top + bottom - 2);
-    }
-    case CT_LineEdit: {
-        d->createTextBox();
-
-        qreal left, top, right, bottom;
-        d->textBox->getMargins(left, top, right, bottom);
-        return contentsSize + QSize(left + right + 4, top + bottom + 4);
-    }
-    default:
-        return qApp->style()->sizeFromContents(type, option, contentsSize, widget);
+            qreal left, top, right, bottom;
+            d->textBox->getMargins(left, top, right, bottom);
+            return contentsSize + QSize(left + right + 4, top + bottom + 4);
+        }
+        default: {
+            return qApp->style()->sizeFromContents(type, option, contentsSize, widget);
+        }
     }
 }
 

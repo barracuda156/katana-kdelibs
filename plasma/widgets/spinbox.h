@@ -21,11 +21,10 @@
 #ifndef PLASMA_SPINBOX_H
 #define PLASMA_SPINBOX_H
 
-#include <QtGui/QGraphicsProxyWidget>
+#include <QDoubleSpinBox>
+#include <QGraphicsProxyWidget>
 
 #include <plasma/plasma_export.h>
-
-class KIntSpinBox;
 
 namespace Plasma
 {
@@ -35,14 +34,14 @@ class SpinBoxPrivate;
 /**
  * @class SpinBox plasma/widgets/slider.h <Plasma/Widgets/SpinBox>
  *
- * @short Provides a plasma-themed KIntSpinBox.
+ * @short Provides a plasma-themed KDoubleNumInput.
  */
 class PLASMA_EXPORT SpinBox : public QGraphicsProxyWidget
 {
     Q_OBJECT
-    Q_PROPERTY(int maximum READ maximum WRITE setMinimum)
-    Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
-    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(double maximum READ maximum WRITE setMinimum)
+    Q_PROPERTY(double minimum READ minimum WRITE setMinimum)
+    Q_PROPERTY(double value READ value WRITE setValue NOTIFY valueChanged)
 
 public:
     explicit SpinBox(QGraphicsWidget *parent = 0);
@@ -51,22 +50,22 @@ public:
     /**
      * @return the maximum value
      */
-    int maximum() const;
+    double maximum() const;
 
     /**
      * @return the minimum value
      */
-    int minimum() const;
+    double minimum() const;
 
     /**
      * @return the current value
      */
-    int value() const;
+    double value() const;
 
     /**
      * @return the native widget wrapped by this SpinBox
      */
-    KIntSpinBox *nativeWidget() const;
+    QDoubleSpinBox *nativeWidget() const;
 
 protected:
     void changeEvent(QEvent *event);
@@ -76,17 +75,17 @@ public Q_SLOTS:
     /**
      * Sets the maximum value the slider can take.
      */
-    void setMaximum(int maximum);
+    void setMaximum(double maximum);
 
     /**
      * Sets the minimum value the slider can take.
      */
-    void setMinimum(int minimum);
+    void setMinimum(double minimum);
 
     /**
      * Sets the minimum and maximum values the slider can take.
      */
-    void setRange(int minimum, int maximum);
+    void setRange(double minimum, double maximum);
 
     /**
      * Sets the value of the slider.
@@ -94,23 +93,23 @@ public Q_SLOTS:
      * If it is outside the range specified by minimum() and maximum(),
      * it will be adjusted to fit.
      */
-    void setValue(int value);
+    void setValue(double value);
 
 Q_SIGNALS:
     /**
      * This signal is emitted when the user drags the slider.
      *
-     * In fact, it is emitted whenever the sliderMoved(int) signal
+     * In fact, it is emitted whenever the sliderMoved(double) signal
      * of KIntSpinBox would be emitted.  See the Qt documentation for
      * more information.
      */
-    void sliderMoved(int value);
+    void sliderMoved(double value);
 
     /**
      * This signal is emitted when the slider value has changed,
      * with the new slider value as argument.
      */
-    void valueChanged(int value);
+    void valueChanged(double value);
 
     /**
      * This signal is emitted when editing is finished. 

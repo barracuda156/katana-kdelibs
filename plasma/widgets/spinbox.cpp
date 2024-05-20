@@ -48,9 +48,9 @@ SpinBox::SpinBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
       d(new SpinBoxPrivate(this))
 {
-    KIntSpinBox *native = new KIntSpinBox();
+    QDoubleSpinBox *native = new QDoubleSpinBox();
 
-    connect(native, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+    connect(native, SIGNAL(valueChanged(double)), this, SIGNAL(valueChanged(double)));
     connect(native, SIGNAL(editingFinished()), this, SIGNAL(editingFinished()));
 
     d->setWidget(native);
@@ -69,44 +69,44 @@ SpinBox::~SpinBox()
     Plasma::Style::doneWithSharedStyle();
 }
 
-void SpinBox::setMaximum(int max)
+void SpinBox::setMaximum(double max)
 {
-    static_cast<KIntSpinBox*>(widget())->setMaximum(max);
+    nativeWidget()->setMaximum(max);
 }
 
-int SpinBox::maximum() const
+double SpinBox::maximum() const
 {
-    return static_cast<KIntSpinBox*>(widget())->maximum();
+    return nativeWidget()->maximum();
 }
 
-void SpinBox::setMinimum(int min)
+void SpinBox::setMinimum(double min)
 {
-    static_cast<KIntSpinBox*>(widget())->setMinimum(min);
+    nativeWidget()->setMinimum(min);
 }
 
-int SpinBox::minimum() const
+double SpinBox::minimum() const
 {
-    return static_cast<KIntSpinBox*>(widget())->minimum();
+    return nativeWidget()->minimum();
 }
 
-void SpinBox::setRange(int min, int max)
+void SpinBox::setRange(double min, double max)
 {
-    static_cast<KIntSpinBox*>(widget())->setRange(min, max);
+    nativeWidget()->setRange(min, max);
 }
 
-void SpinBox::setValue(int value)
+void SpinBox::setValue(double value)
 {
-    static_cast<KIntSpinBox*>(widget())->setValue(value);
+    nativeWidget()->setValue(value);
 }
 
-int SpinBox::value() const
+double SpinBox::value() const
 {
-    return static_cast<KIntSpinBox*>(widget())->value();
+    return nativeWidget()->value();
 }
 
-KIntSpinBox *SpinBox::nativeWidget() const
+QDoubleSpinBox *SpinBox::nativeWidget() const
 {
-    return static_cast<KIntSpinBox*>(widget());
+    return static_cast<QDoubleSpinBox*>(widget());
 }
 
 void SpinBox::changeEvent(QEvent *event)
