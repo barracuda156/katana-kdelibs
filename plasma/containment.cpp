@@ -26,14 +26,10 @@
 #include "containmentactions.h"
 #include "containmentactionspluginsconfig.h"
 #include "corona.h"
-#include "extender.h"
-#include "extenderitem.h"
 #include "svg.h"
 #include "wallpaper.h"
 #include "private/applet_p.h"
 #include "private/containmentactionspluginsconfig_p.h"
-#include "private/extenderitemmimedata_p.h"
-#include "private/extenderapplet_p.h"
 #include "private/wallpaper_p.h"
 #include "plasma/plasma.h"
 #include "animations/animation.h"
@@ -1090,8 +1086,7 @@ void Containment::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     event->setAccepted(immutability() == Mutable &&
                        (event->mimeData()->hasFormat(static_cast<Corona*>(scene())->appletMimeType()) ||
-                        KUrl::List::canDecode(event->mimeData()) ||
-                        event->mimeData()->hasFormat(ExtenderItemMimeData::mimeType())));
+                        KUrl::List::canDecode(event->mimeData())));
     //kDebug() << immutability() << Mutable << (immutability() == Mutable) << event->isAccepted();
 
     if (!event->isAccepted()) {
@@ -1214,32 +1209,6 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
         }
         if (dropEvent) {
             dropEvent->acceptProposedAction();
-        }
-    } else if (mimeData->hasFormat(ExtenderItemMimeData::mimeType())) {
-        kDebug() << "mimetype plasma/extenderitem is dropped, creating internal:extender";
-        //Handle dropping extenderitems.
-        const ExtenderItemMimeData *extenderData = qobject_cast<const ExtenderItemMimeData*>(mimeData);
-        if (extenderData) {
-            ExtenderItem *item = extenderData->extenderItem();
-            QRectF geometry(pos - extenderData->pointerOffset(), item->size());
-            kDebug() << "desired geometry: " << geometry;
-            Applet *applet = qobject_cast<ExtenderApplet *>(item->extender() ?  item->extender()->applet() : 0);
-            if (applet) {
-                qreal left, top, right, bottom;
-                applet->getContentsMargins(&left, &top, &right, &bottom);
-                applet->setPos(geometry.topLeft() - QPointF(int(left), int(top)));
-                applet->show();
-            } else {
-                applet = addApplet("internal:extender", QVariantList(), geometry, 0, true);
-                applet->hide();
-                applet->init();
-                appletAppeared(applet);
-                applet->flushPendingConstraintsEvents();
-                applet->d->scheduleModificationNotification();
-                applet->adjustSize();
-                applet->show();
-            }
-            item->setExtender(applet->extender());
         }
     } else if (KUrl::List::canDecode(mimeData)) {
         foreach (const KUrl &url, KUrl::List::fromMimeData(mimeData)) {

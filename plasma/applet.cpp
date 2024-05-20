@@ -25,8 +25,6 @@
 #include "containment.h"
 #include "corona.h"
 #include "dialog.h"
-#include "extenders/extender.h"
-#include "extenders/extenderitem.h"
 #include "package.h"
 #include "plasma.h"
 #include "svg.h"
@@ -44,11 +42,9 @@
 #include "animations/animation.h"
 #include "private/applet_p.h"
 #include "private/applethandle_p.h"
-#include "private/extenderitem_p.h"
 #include "private/framesvg_p.h"
 #include "private/associatedapplicationmanager_p.h"
 #include "private/containment_p.h"
-#include "private/extenderapplet_p.h"
 #include "private/package_p.h"
 #include "private/packages_p.h"
 #include "private/popupapplet_p.h"
@@ -169,23 +165,6 @@ Applet::~Applet()
 {
     //let people know that i will die
     emit appletDestroyed(this);
-
-    if (!d->transient && d->extender) {
-        //This would probably be nicer if it was located in extender. But in it's dtor, this won't
-        //work since when that get's called, the applet's config() isn't accessible anymore. (same
-        //problem with calling saveState(). Doing this in saveState() might be a possibility, but
-        //that would require every extender savestate implementation to call it's parent function,
-        //which isn't very nice.
-        d->extender.data()->saveState();
-
-        foreach (ExtenderItem *item, d->extender.data()->attachedItems()) {
-            if (item->autoExpireDelay()) {
-                //destroy temporary extender items, or items that aren't detached, so their
-                //configuration won't linger after a plasma restart.
-                item->destroy();
-            }
-        }
-    }
 
     // clean up our config dialog, if any
     delete KConfigDialog::exists(d->configDialogId());
@@ -500,8 +479,7 @@ void AppletPrivate::createMessageOverlay(bool usePopup)
                 messageOverlayProxy = new QGraphicsProxyWidget(q);
                 messageOverlayProxy->setWidget(popup->widget());
                 messageOverlay = new AppletOverlayWidget(messageOverlayProxy);
-            } else if (popup->graphicsWidget() &&
-                       popup->graphicsWidget() != extender.data()) {
+            } else if (popup->graphicsWidget()) {
                 messageOverlay = new AppletOverlayWidget(popup->graphicsWidget());
             }
         }
@@ -528,7 +506,7 @@ void AppletPrivate::positionMessageOverlay()
         // popupapplet with widget()
         topItem = popup->d->proxy.data();
         messageOverlay->setGeometry(popup->widget()->contentsRect());
-    } else if (usePopup && popup->graphicsWidget() && popup->graphicsWidget() != extender.data()) {
+    } else if (usePopup && popup->graphicsWidget()) {
         // popupapplet with graphicsWidget()
         topItem = popup->graphicsWidget();
         QGraphicsWidget *w = dynamic_cast<QGraphicsWidget *>(topItem);
@@ -660,24 +638,6 @@ void Applet::constraintsEvent(Plasma::Constraints constraints)
     Q_UNUSED(constraints)
     //kDebug() << constraints << "constraints are FormFactor: " << formFactor()
     //         << ", Location: " << location();
-}
-
-void Applet::initExtenderItem(ExtenderItem *item)
-{
-    kWarning() << "Missing implementation of initExtenderItem in the applet "
-               << item->config().readEntry("SourceAppletPluginName", "")
-               << "!\n Any applet that uses extenders should implement initExtenderItem to "
-               << "instantiate a widget. Destroying the item...";
-    item->destroy();
-}
-
-Extender *Applet::extender() const
-{
-    if (!d->extender) {
-        new Extender(const_cast<Applet*>(this));
-    }
-
-    return d->extender.data();
 }
 
 void Applet::setBusy(bool busy)
@@ -1141,12 +1101,6 @@ void Applet::flushPendingConstraintsEvents()
         if (action && d->hasConfigurationInterface) {
             action->setVisible(unlocked);
             action->setEnabled(unlocked);
-        }
-
-        if (d->extender) {
-            foreach (ExtenderItem *item, d->extender.data()->attachedItems()) {
-                item->d->setMovable(unlocked);
-            }
         }
 
         if (!unlocked && d->handle) {
@@ -2074,13 +2028,8 @@ Applet *Applet::load(const QString &appletName, uint appletId, const QVariantLis
     QVariantList allArgs;
     allArgs << offer->storageId() << appletId << args;
 
-    Applet* applet = nullptr;
     QString error;
-    if (appletName == "internal:extender") {
-        applet = new ExtenderApplet(nullptr, allArgs);
-    } else {
-        applet = offer->createInstance<Plasma::Applet>(nullptr, allArgs, &error);
-    }
+    Applet* applet = offer->createInstance<Plasma::Applet>(nullptr, allArgs, &error);
 
     if (!applet) {
         kWarning() << "Could not load applet" << appletName << "! reason given:" << error;
@@ -2332,8 +2281,6 @@ AppletPrivate::AppletPrivate(KService::Ptr service, const KPluginInfo *info, int
 
 AppletPrivate::~AppletPrivate()
 {
-    delete extender.data();
-
     delete mainConfig;
     mainConfig = 0;
     delete modificationsTimer;

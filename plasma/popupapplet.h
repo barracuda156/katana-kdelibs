@@ -36,17 +36,12 @@ class PopupAppletPrivate;
 
 /**
  * Allows applets to automatically 'collapse' into an icon when put in an panel, and is a convenient
- * base class for any applet that wishes to use extenders.
+ * base class for any applet.
  *
  * Applets that subclass this class should implement either widget() or graphicsWidget() to return a
  * widget that will be displayed in the applet if the applet is in a Planar or MediaCenter form
  * factor. If the applet is put in a panel, an icon will be displayed instead, which shows the
  * widget in a popup when clicked.
- *
- * If you use this class as a base class for your extender using applet, the extender will
- * automatically be used for the popup; reimplementing graphicsWidget() is unnecessary in this case.
- * If you need a popup that does not steal window focus when openend or used, set window flag
- * Qt::X11BypassWindowManagerHint the widget returned by widget() or graphicsWidget().
  */
 
 class PLASMA_EXPORT PopupApplet : public Plasma::Applet
@@ -193,21 +188,6 @@ protected:
     /**
      * Reimplemented from QGraphicsLayoutItem
      */
-    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-
-    /**
-     * Reimplemented from QGraphicsLayoutItem
-     */
-    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
-
-    /**
-     * Reimplemented from QGraphicsLayoutItem
-     */
-    void dropEvent(QGraphicsSceneDragDropEvent *event);
-
-    /**
-     * Reimplemented from QGraphicsLayoutItem
-     */
     void timerEvent(QTimerEvent *event);
 
 private:
@@ -223,7 +203,6 @@ private:
 
     friend class Applet;
     friend class AppletPrivate;
-    friend class Extender;
     friend class PopupAppletPrivate;
     PopupAppletPrivate * const d;
 };

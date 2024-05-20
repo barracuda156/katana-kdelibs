@@ -47,8 +47,6 @@ namespace Plasma
 class AppletPrivate;
 class Containment;
 class Context;
-class Extender;
-class ExtenderItem;
 
 /**
  * @class Applet plasma/applet.h <Plasma/Applet>
@@ -487,24 +485,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         virtual void removeAssociatedWidget(QWidget *widget);
 
         /**
-         * Gets called when an extender item has to be initialized after a plasma restart. If you
-         * create ExtenderItems in your applet, you should implement this function to again create
-         * the widget that should be shown in this extender item. This function might look something
-         * like this:
-         *
-         * @code
-         * SuperCoolWidget *widget = new SuperCoolWidget();
-         * item->setWidget(widget);
-         * @endcode
-         *
-         * You can also add one or more custom qactions to this extender item in this function.
-         *
-         * Note that by default, not all ExtenderItems are persistent. Only items that are detached,
-         * will have their configuration stored when plasma exits.
-         */
-        virtual void initExtenderItem(ExtenderItem *item);
-
-        /**
          * @param parent the QGraphicsItem this applet is parented to
          * @param serviceId the name of the .desktop file containing the
          *      information about the widget
@@ -904,11 +884,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         bool isRegisteredAsDragHandle(QGraphicsItem *item);
 
         /**
-         * @return the extender of this applet.
-         */
-        Extender *extender() const;
-
-        /**
          * @internal scene event filter; used to manage applet dragging
          */
         bool sceneEventFilter (QGraphicsItem *watched, QEvent *event);
@@ -973,12 +948,6 @@ class PLASMA_EXPORT Applet : public QGraphicsWidget
         friend class PopupApplet;
         friend class PopupAppletPrivate;
         friend class AssociatedApplicationManager;
-
-        friend class Extender;
-        friend class ExtenderGroup;
-        friend class ExtenderGroupPrivate;
-        friend class ExtenderPrivate;
-        friend class ExtenderItem;
 };
 
 } // Plasma namespace

@@ -3,7 +3,6 @@ include_directories(
     ${KDE4_KDECORE_INCLUDES}
     ${KDE4_KDEUI_INCLUDES}
     ${KDE4_KIO_INCLUDES}
-    ${CMAKE_SOURCE_DIR}/plasma/extenders
     # for the export headers
     ${CMAKE_BINARY_DIR}/kutils
 )
@@ -39,17 +38,12 @@ set(plasma_LIB_SRCS
     delegate.cpp
     dialog.cpp
     dialogshadows.cpp
-    extenders/extender.cpp
-    extenders/extendergroup.cpp
-    extenders/extenderitem.cpp
     paintutils.cpp
     framesvg.cpp
     plasma.cpp
     popupapplet.cpp
     private/applethandle.cpp
     private/associatedapplicationmanager.cpp
-    private/extenderapplet.cpp
-    private/extenderitemmimedata.cpp
     private/nativetabbar.cpp
     private/packages.cpp
     private/runnerjobs.cpp
@@ -151,9 +145,6 @@ install(
     delegate.h
     dialog.h
     dialogshadows.h
-    extenders/extender.h
-    extenders/extendergroup.h
-    extenders/extenderitem.h
     paintutils.h
     windoweffects.h
     framesvg.h
@@ -221,11 +212,5 @@ install(
     data/servicetypes/plasma-toolbox.desktop
     data/servicetypes/plasma-wallpaper.desktop
     DESTINATION ${KDE4_SERVICETYPES_INSTALL_DIR}
-)
-
-install(
-    FILES
-    data/services/plasma-applet-extenderapplet.desktop
-    DESTINATION ${KDE4_SERVICES_INSTALL_DIR}
 )
 

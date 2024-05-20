@@ -141,7 +141,6 @@ public:
     Applet *q;
 
     // applet attributes
-    QWeakPointer<Extender> extender;
     Applet::BackgroundHints preferredBackgroundHints;
     Applet::BackgroundHints backgroundHints;
     Plasma::AspectRatioMode aspectRatioMode;
