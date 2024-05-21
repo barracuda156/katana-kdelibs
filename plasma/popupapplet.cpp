@@ -164,6 +164,11 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
 {
     Plasma::FormFactor f = q->formFactor();
 
+    // stop the animation, its snapshot has to be updated
+    if (statusAnimation && constraints & Plasma::SizeConstraint) {
+        statusAnimation->stop();
+    }
+
     if (constraints & Plasma::FormFactorConstraint ||
         constraints & Plasma::StartupCompletedConstraint ||
         (constraints & Plasma::SizeConstraint &&
@@ -322,11 +327,13 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
             //kDebug() << "about to switch to a popup";
             if (!qWidget && !gWidget) {
                 delete dialogPtr.data();
+                maybeStartAnimation();
                 return;
             }
 
             //there was already a dialog? don't make the switch again
             if (dialogPtr) {
+                maybeStartAnimation();
                 return;
             }
 
@@ -398,6 +405,8 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
         // the size changings
         emit q->sizeHintChanged(Qt::PreferredSize);
     }
+
+    maybeStartAnimation();
 }
 
 void PopupAppletPrivate::appletActivated()
@@ -530,16 +539,6 @@ void PopupApplet::timerEvent(QTimerEvent *event)
     } else if (event->timerId() == d->showDialogTimer.timerId()) {
         d->showDialogTimer.stop();
         d->showDialog();
-    } else if (event->timerId() == d->statusTimer.timerId()) {
-        if (d->icon) {
-            if (d->statusTick <= 0) {
-                d->statusTick++;
-                d->icon->setPressed(true);
-            } else {
-                d->statusTick--;
-                d->icon->setPressed(false);
-            }
-        }
     } else {
         Applet::timerEvent(event);
     }
@@ -605,16 +604,16 @@ bool PopupApplet::isIconified() const
 }
 
 PopupAppletPrivate::PopupAppletPrivate(PopupApplet *applet)
-        : q(applet),
-          icon(nullptr),
-          widget(nullptr),
-          popupPlacement(Plasma::FloatingPopup),
-          popupAlignment(Qt::AlignLeft),
-          savedAspectRatio(Plasma::InvalidAspectRatioMode),
-          autohideTimer(nullptr),
-          statusTick(0),
-          popupLostFocus(false),
-          passive(false)
+    : q(applet),
+    icon(nullptr),
+    widget(nullptr),
+    popupPlacement(Plasma::FloatingPopup),
+    popupAlignment(Qt::AlignLeft),
+    savedAspectRatio(Plasma::InvalidAspectRatioMode),
+    autohideTimer(nullptr),
+    statusAnimation(nullptr),
+    popupLostFocus(false),
+    passive(false)
 {
     int iconSize = IconSize(KIconLoader::Desktop);
     q->resize(iconSize, iconSize);
@@ -759,11 +758,18 @@ void PopupAppletPrivate::dialogStatusChanged(bool shown)
 void PopupAppletPrivate::statusChange(Plasma::ItemStatus status)
 {
     if (status == Plasma::ItemStatus::NeedsAttentionStatus) {
-        statusTimer.start(500, q);
-    } else {
-        statusTimer.stop();
+        if (icon && !statusAnimation) {
+            statusAnimation = Animator::create(Animator::PulseAnimation, q);
+            statusAnimation->setTargetWidget(icon);
+            statusAnimation->setDuration(1000);
+            statusAnimation->setLoopCount(-1);
+        }
         if (icon) {
-            icon->setPressed(false);
+            statusAnimation->start(QAbstractAnimation::KeepWhenStopped);
+        }
+    } else {
+        if (statusAnimation) {
+            statusAnimation->stop();
         }
     }
 }
@@ -784,6 +790,17 @@ void PopupAppletPrivate::createIconWidget()
     layout->addItem(icon);
     layout->setAlignment(icon, Qt::AlignCenter);
     q->setLayout(layout);
+}
+
+void PopupAppletPrivate::maybeStartAnimation()
+{
+    if (statusAnimation && q->status() == Plasma::ItemStatus::NeedsAttentionStatus) {
+        // not if the dialog is visible
+        if (dialogPtr && dialogPtr.data()->isVisible()) {
+            return;
+        }
+        statusAnimation->start(QAbstractAnimation::KeepWhenStopped);
+    }
 }
 
 void PopupAppletPrivate::restoreDialogSize()

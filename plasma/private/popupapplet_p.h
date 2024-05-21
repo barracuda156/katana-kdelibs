@@ -22,9 +22,11 @@
 
 #include <QTimer>
 #include <QBasicTimer>
-#include <QtCore/qsharedpointer.h>
+#include <QWeakPointer>
+#include <QTimeLine>
 
 #include <plasma/plasma.h>
+#include <plasma/animations/animation.h>
 
 namespace Plasma
 {
@@ -49,7 +51,7 @@ public:
     void appletActivated();
     void statusChange(Plasma::ItemStatus status);
     void createIconWidget();
-
+    void maybeStartAnimation();
 
     PopupApplet *q;
     Plasma::IconWidget *icon;
@@ -63,8 +65,7 @@ public:
     QTimer *autohideTimer;
     QBasicTimer delayedShowTimer;
     QBasicTimer showDialogTimer;
-    QBasicTimer statusTimer;
-    int statusTick;
+    Plasma::Animation* statusAnimation;
     QPoint clicked;
     bool popupLostFocus;
     bool passive;
