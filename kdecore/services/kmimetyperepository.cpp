@@ -201,16 +201,17 @@ KMimeType::Ptr KMimeTypeRepository::findMimeTypeByName(const QString &_name, KMi
     }
 
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if (m_mimeTypes.contains(name)) {
-        return m_mimeTypes.value(name);
+    KMimeType::Ptr mimeType = m_mimeTypes.value(name, KMimeType::Ptr());
+    if (mimeType) {
+        return mimeType;
     }
 
     const QString filename = KGlobal::dirs()->findResource("xdgdata-mime", name.toLower() + QLatin1String(".xml"));
     if (filename.isEmpty()) {
-        return KMimeType::Ptr(); // Not found
+        return mimeType; // Not found
     }
 
-    KMimeType::Ptr mimeType(new KMimeType(filename, name));
+    mimeType = new KMimeType(filename, name);
     m_mimeTypes.insert(name, mimeType);
     return mimeType;
 }
