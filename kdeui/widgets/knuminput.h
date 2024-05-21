@@ -31,11 +31,10 @@ class KDoubleNumInputPrivate;
 
 
 /**
- * @short An input control for numbers with different base.
+ * @short An input control for numbers with base 10.
  *
- * KIntNumInput combines a QSpinBox and optionally a QSlider
- * with a label to make an easy to use control for setting some float
- * parameter.
+ * KIntNumInput combines a QSpinBox and optionally a QSlider to make an easy to use control for
+ * setting some integer parameter.
  *
  * @see KDoubleNumInput
  */
@@ -90,7 +89,7 @@ public:
     void setSliderEnabled(bool enabled);
 
     /**
-     * Sets the spacing of tickmarks for the slider.
+     * Sets the steps for the slider.
      *
      * @param single The single slider step.
      * @param page The page slider step.
@@ -124,16 +123,15 @@ private:
 
     Q_DISABLE_COPY(KIntNumInput)
 };
+
 /**
- * @short An input control for real numbers.
+ * @short An input control for double numbers.
  *
- * KDoubleNumInput combines a QSpinBox and optionally a QSlider
- * with a label to make an easy to use control for setting some float
- * parameter.
+ * KDoubleNumInput combines a QDoubleSpinBox and optionally a QSlider to make an easy to use
+ * control for setting some double parameter.
  *
  * @see KIntNumInput
  */
-
 class KDEUI_EXPORT KDoubleNumInput : public QWidget
 {
     Q_OBJECT

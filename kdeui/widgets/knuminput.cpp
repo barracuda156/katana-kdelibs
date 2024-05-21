@@ -242,7 +242,7 @@ public:
 
     void _k_sliderMoved(int value)
     {
-        spinbox->setValue(qRound(value));
+        spinbox->setValue(value);
     }
 
     KDoubleValidator* validator;
