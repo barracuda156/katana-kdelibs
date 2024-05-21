@@ -189,6 +189,12 @@ void KIntNumInput::setSliderEnabled(bool enabled)
     d->slider->setVisible(enabled);
 }
 
+void KIntNumInput::setSteps(int single, int page)
+{
+    d->slider->setSingleStep(single);
+    d->slider->setPageStep(page);
+}
+
 QValidator::State KIntNumInput::validate(QString &input, int &pos) const
 {
     return d->validator->validate(input, pos);
@@ -389,6 +395,12 @@ bool KDoubleNumInput::sliderEnabled() const
 void KDoubleNumInput::setSliderEnabled(bool enabled)
 {
     d->slider->setVisible(enabled);
+}
+
+void KDoubleNumInput::setSteps(int single, int page)
+{
+    d->slider->setSingleStep(single);
+    d->slider->setPageStep(page);
 }
 
 QValidator::State KDoubleNumInput::validate(QString &input, int &pos) const

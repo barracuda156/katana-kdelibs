@@ -61,7 +61,7 @@ public:
     virtual ~KIntNumInput();
 
     /**
-     * Spin box proxies
+     * Spin box and slider proxies
      */
     void setRange(int min, int max);
     int value() const;
@@ -89,15 +89,23 @@ public:
 
     /**
      * @return if slider is enabled.
+     * @default disabled
      * @see setSliderEnabled()
      */
     bool sliderEnabled() const;
 
     /**
      * @param enabled Show the slider
-     * @default enabled
      */
     void setSliderEnabled(bool enabled);
+
+    /**
+     * Sets the spacing of tickmarks for the slider.
+     *
+     * @param single The single slider step.
+     * @param page The page slider step.
+     */
+    void setSteps(int single, int page);
 
     /**
      * Validation overrides
@@ -107,7 +115,7 @@ public:
 
 public Q_SLOTS:
     /**
-     * Spin box proxies
+     * Spin box and slider proxies
      */
     void setValue(int value);
     void setSuffix(const KLocalizedString &suffix);
@@ -158,7 +166,7 @@ public:
     virtual ~KDoubleNumInput();
 
     /**
-     * Spin box proxies
+     * Spin box and slider proxies
      */
     void setRange(double min, double max);
     double value() const;
@@ -187,15 +195,23 @@ public:
 
     /**
      * @return if slider is enabled.
+     * @default disabled
      * @see setSliderEnabled()
      */
     bool sliderEnabled() const;
 
     /**
      * @param enabled Show the slider
-     * @default enabled
      */
     void setSliderEnabled(bool enabled);
+
+    /**
+     * Sets the spacing of tickmarks for the slider.
+     *
+     * @param single The single slider step.
+     * @param page The page slider step.
+     */
+    void setSteps(int single, int page);
 
     /**
      * Validation overrides
@@ -205,7 +221,7 @@ public:
 
 public Q_SLOTS:
     /**
-     * Spin box proxies
+     * Spin box and slider proxies
      */
     void setValue(double value);
     void setSuffix(const KLocalizedString &suffix);
