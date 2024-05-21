@@ -36,13 +36,14 @@ public:
     {
     }
 
-    void _k_updateSuffix(int value)
+    void _k_valueChanged(int value)
     {
         if (suffix.isEmpty()) {
             spinbox->setSuffix(QString());
         } else {
             spinbox->setSuffix(suffix.subs(value).toString());
         }
+        slider->setValue(value);
     }
 
     KIntValidator* validator;
@@ -58,8 +59,12 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     d->validator = new KIntValidator(this);
     QHBoxLayout* hboxlayout = new QHBoxLayout(this);
     hboxlayout->setMargin(0);
-    d->slider = new QSlider(this);
+    d->slider = new QSlider(Qt::Horizontal, this);
     d->slider->setVisible(false);
+    connect(
+        d->slider, SIGNAL(sliderMoved(int)),
+        this, SLOT(setValue(int))
+    );
     hboxlayout->addWidget(d->slider);
     d->spinbox = new QSpinBox(this);
     connect(
@@ -68,7 +73,7 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     );
     connect(
         d->spinbox, SIGNAL(valueChanged(int)),
-        this, SLOT(_k_updateSuffix(int))
+        this, SLOT(_k_valueChanged(int))
     );
     connect(
         d->spinbox, SIGNAL(editingFinished()),
@@ -76,14 +81,22 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     );
     hboxlayout->addWidget(d->spinbox);
     setLayout(hboxlayout);
+
+    setFocusProxy(d->spinbox);
+    setRange(INT_MIN, INT_MAX);
+    setSingleStep(1);
+    setBase(10);
+    setValue(0);
 }
 
 KIntNumInput::~KIntNumInput()
 {
     delete d;
 }
+
 void KIntNumInput::setRange(int min, int max)
 {
+    d->slider->setRange(min, max);
     d->spinbox->setRange(min, max);
 }
 
@@ -99,6 +112,7 @@ int KIntNumInput::minimum() const
 
 void KIntNumInput::setMinimum(int min)
 {
+    d->slider->setMinimum(min);
     d->spinbox->setMinimum(min);
 }
 
@@ -110,6 +124,7 @@ int KIntNumInput::maximum() const
 void KIntNumInput::setMaximum(int max)
 {
     d->spinbox->setMaximum(max);
+    d->slider->setMaximum(max);
 }
 
 int KIntNumInput::singleStep() const
@@ -119,6 +134,8 @@ int KIntNumInput::singleStep() const
 
 void KIntNumInput::setSingleStep(int singleStep)
 {
+    d->slider->setSingleStep(singleStep);
+    d->slider->setPageStep(singleStep);
     d->spinbox->setSingleStep(singleStep);
 }
 
@@ -190,7 +207,7 @@ void KIntNumInput::setValue(int value)
 void KIntNumInput::setSuffix(const KLocalizedString &suffix)
 {
     d->suffix = suffix;
-    d->_k_updateSuffix(d->spinbox->value());
+    d->_k_valueChanged(d->spinbox->value());
 }
 
 void KIntNumInput::setSuffix(const QString &suffix)
@@ -215,13 +232,19 @@ public:
     {
     }
 
-    void _k_updateSuffix(double value)
+    void _k_valueChanged(double value)
     {
         if (suffix.isEmpty()) {
             spinbox->setSuffix(QString());
         } else {
             spinbox->setSuffix(suffix.subs(value).toString());
         }
+        slider->setValue(qRound(value));
+    }
+
+    void _k_sliderMoved(int value)
+    {
+        spinbox->setValue(qRound(value));
     }
 
     KDoubleValidator* validator;
@@ -237,8 +260,12 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
     d->validator = new KDoubleValidator(this);
     QHBoxLayout* hboxlayout = new QHBoxLayout(this);
     hboxlayout->setMargin(0);
-    d->slider = new QSlider(this);
+    d->slider = new QSlider(Qt::Horizontal, this);
     d->slider->setVisible(false);
+    connect(
+        d->slider, SIGNAL(sliderMoved(int)),
+        this, SLOT(_k_sliderMoved(int))
+    );
     hboxlayout->addWidget(d->slider);
     d->spinbox = new QDoubleSpinBox(this);
     connect(
@@ -247,7 +274,7 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
     );
     connect(
         d->spinbox, SIGNAL(valueChanged(double)),
-        this, SLOT(_k_updateSuffix(double))
+        this, SLOT(_k_valueChanged(double))
     );
     connect(
         d->spinbox, SIGNAL(editingFinished()),
@@ -255,6 +282,12 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
     );
     hboxlayout->addWidget(d->spinbox);
     setLayout(hboxlayout);
+
+    setFocusProxy(d->spinbox);
+    setRange(0.0, 9999.0);
+    setSingleStep(0.01);
+    setDecimals(2);
+    setValue(0.0);
 }
 
 KDoubleNumInput::~KDoubleNumInput()
@@ -264,6 +297,7 @@ KDoubleNumInput::~KDoubleNumInput()
 
 void KDoubleNumInput::setRange(double min, double max)
 {
+    d->slider->setRange(qRound(min), qRound(max));
     d->spinbox->setRange(min, max);
 }
 
@@ -279,6 +313,7 @@ double KDoubleNumInput::minimum() const
 
 void KDoubleNumInput::setMinimum(double min)
 {
+    d->slider->setMinimum(min);
     d->spinbox->setMinimum(min);
 }
 
@@ -290,6 +325,7 @@ double KDoubleNumInput::maximum() const
 void KDoubleNumInput::setMaximum(double max)
 {
     d->spinbox->setMaximum(max);
+    d->spinbox->setMaximum(max);
 }
 
 double KDoubleNumInput::singleStep() const
@@ -299,6 +335,9 @@ double KDoubleNumInput::singleStep() const
 
 void KDoubleNumInput::setSingleStep(double singleStep)
 {
+    const int intstep = qRound(singleStep);
+    d->slider->setSingleStep(intstep);
+    d->slider->setPageStep(intstep);
     d->spinbox->setSingleStep(singleStep);
 }
 
@@ -370,7 +409,7 @@ void KDoubleNumInput::setValue(double value)
 void KDoubleNumInput::setSuffix(const KLocalizedString &suffix)
 {
     d->suffix = suffix;
-    d->_k_updateSuffix(d->spinbox->value());
+    d->_k_valueChanged(d->spinbox->value());
 }
 
 void KDoubleNumInput::setSuffix(const QString &suffix)

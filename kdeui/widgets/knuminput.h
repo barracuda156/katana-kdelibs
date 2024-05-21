@@ -122,7 +122,7 @@ private:
     friend KIntNumInputPrivate;
     KIntNumInputPrivate* const d;
     
-    Q_PRIVATE_SLOT(d, void _k_updateSuffix(int value));
+    Q_PRIVATE_SLOT(d, void _k_valueChanged(int value));
 
     Q_DISABLE_COPY(KIntNumInput)
 };
@@ -220,7 +220,8 @@ private:
     friend KDoubleNumInputPrivate;
     KDoubleNumInputPrivate* const d;
 
-    Q_PRIVATE_SLOT(d, void _k_updateSuffix(double value));
+    Q_PRIVATE_SLOT(d, void _k_valueChanged(double value));
+    Q_PRIVATE_SLOT(d, void _k_sliderMoved(int value));
 
     Q_DISABLE_COPY(KDoubleNumInput)
 };
