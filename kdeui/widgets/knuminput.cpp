@@ -18,20 +18,33 @@
 */
 
 #include "knuminput.h"
-#include "knumvalidator.h"
+#include "kglobal.h"
+#include "klocale.h"
 #include "kdebug.h"
 
 #include <QHBoxLayout>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QSlider>
+#include <QEvent>
+
+static void setupSpinBox(QSpinBox *spinbox, const int value)
+{
+    spinbox->setLocale(KGlobal::locale()->toLocale());
+    spinbox->setValue(value);
+}
+
+static void setupDoubleSpinBox(QDoubleSpinBox *spinbox, const double value)
+{
+    spinbox->setLocale(KGlobal::locale()->toLocale());
+    spinbox->setValue(value);
+}
 
 class KIntNumInputPrivate
 {
 public:
     KIntNumInputPrivate()
-        : validator(nullptr),
-        slider(nullptr),
+        : slider(nullptr),
         spinbox(nullptr)
     {
     }
@@ -46,7 +59,6 @@ public:
         slider->setValue(value);
     }
 
-    KIntValidator* validator;
     QSlider* slider;
     QSpinBox* spinbox;
     KLocalizedString suffix;
@@ -56,7 +68,6 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     : QWidget(parent),
     d(new KIntNumInputPrivate())
 {
-    d->validator = new KIntValidator(this);
     QHBoxLayout* hboxlayout = new QHBoxLayout(this);
     hboxlayout->setMargin(0);
     d->slider = new QSlider(Qt::Horizontal, this);
@@ -83,6 +94,9 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     setLayout(hboxlayout);
 
     setFocusProxy(d->spinbox);
+
+    setupSpinBox(d->spinbox, d->spinbox->value());
+
     setRange(INT_MIN, INT_MAX);
     setSingleStep(1);
     setValue(0);
@@ -95,7 +109,6 @@ KIntNumInput::~KIntNumInput()
 
 void KIntNumInput::setRange(int min, int max)
 {
-    d->validator->setRange(min, max);
     d->slider->setRange(min, max);
     d->spinbox->setRange(min, max);
 }
@@ -112,7 +125,6 @@ int KIntNumInput::minimum() const
 
 void KIntNumInput::setMinimum(int min)
 {
-    d->validator->setRange(min, maximum());
     d->slider->setMinimum(min);
     d->spinbox->setMinimum(min);
 }
@@ -124,7 +136,6 @@ int KIntNumInput::maximum() const
 
 void KIntNumInput::setMaximum(int max)
 {
-    d->validator->setRange(minimum(), max);
     d->slider->setMaximum(max);
     d->spinbox->setMaximum(max);
 }
@@ -187,16 +198,6 @@ void KIntNumInput::setSteps(int single, int page)
     d->slider->setPageStep(page);
 }
 
-QValidator::State KIntNumInput::validate(QString &input, int &pos) const
-{
-    return d->validator->validate(input, pos);
-}
-
-void KIntNumInput::fixup(QString &input) const
-{
-    d->validator->fixup(input);
-}
-
 void KIntNumInput::setValue(int value)
 {
     d->spinbox->setValue(value);
@@ -219,13 +220,25 @@ void KIntNumInput::setPrefix(const QString &prefix)
     d->spinbox->setPrefix(prefix);
 }
 
+void KIntNumInput::changeEvent(QEvent *event)
+{
+    switch (event->type()) {
+        case QEvent::LocaleChange:
+        case QEvent::LanguageChange: {
+            setupSpinBox(d->spinbox, d->spinbox->value());
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
 
 class KDoubleNumInputPrivate
 {
 public:
     KDoubleNumInputPrivate()
-        : validator(nullptr),
-        slider(nullptr),
+        : slider(nullptr),
         spinbox(nullptr)
     {
     }
@@ -245,7 +258,6 @@ public:
         spinbox->setValue(value);
     }
 
-    KDoubleValidator* validator;
     QSlider* slider;
     QDoubleSpinBox* spinbox;
     KLocalizedString suffix;
@@ -255,7 +267,6 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
     : QWidget(parent),
     d(new KDoubleNumInputPrivate())
 {
-    d->validator = new KDoubleValidator(this);
     QHBoxLayout* hboxlayout = new QHBoxLayout(this);
     hboxlayout->setMargin(0);
     d->slider = new QSlider(Qt::Horizontal, this);
@@ -282,6 +293,9 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
     setLayout(hboxlayout);
 
     setFocusProxy(d->spinbox);
+
+    setupDoubleSpinBox(d->spinbox, d->spinbox->value());
+
     setRange(0.0, 9999.0);
     setSingleStep(0.01);
     setDecimals(2);
@@ -295,7 +309,6 @@ KDoubleNumInput::~KDoubleNumInput()
 
 void KDoubleNumInput::setRange(double min, double max)
 {
-    d->validator->setRange(min, max, decimals());
     d->slider->setRange(qRound(min), qRound(max));
     d->spinbox->setRange(min, max);
 }
@@ -312,7 +325,6 @@ double KDoubleNumInput::minimum() const
 
 void KDoubleNumInput::setMinimum(double min)
 {
-    d->validator->setRange(min, maximum(), decimals());
     d->slider->setMinimum(min);
     d->spinbox->setMinimum(min);
 }
@@ -324,7 +336,6 @@ double KDoubleNumInput::maximum() const
 
 void KDoubleNumInput::setMaximum(double max)
 {
-    d->validator->setRange(minimum(), max, decimals());
     d->slider->setMaximum(max);
     d->spinbox->setMaximum(max);
 }
@@ -398,16 +409,6 @@ void KDoubleNumInput::setSteps(int single, int page)
     d->slider->setPageStep(page);
 }
 
-QValidator::State KDoubleNumInput::validate(QString &input, int &pos) const
-{
-    return d->validator->validate(input, pos);
-}
-
-void KDoubleNumInput::fixup(QString &input) const
-{
-    d->validator->fixup(input);
-}
-
 void KDoubleNumInput::setValue(double value)
 {
     d->spinbox->setValue(value);
@@ -428,6 +429,20 @@ void KDoubleNumInput::setSuffix(const QString &suffix)
 void KDoubleNumInput::setPrefix(const QString &prefix)
 {
     d->spinbox->setPrefix(prefix);
+}
+
+void KDoubleNumInput::changeEvent(QEvent *event)
+{
+    switch (event->type()) {
+        case QEvent::LocaleChange:
+        case QEvent::LanguageChange: {
+            setupDoubleSpinBox(d->spinbox, d->spinbox->value());
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 #include "moc_knuminput.cpp"

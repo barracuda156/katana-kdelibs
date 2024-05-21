@@ -155,7 +155,6 @@ set(kdeui_LIB_SRCS
     util/kguiitem.cpp
     util/kkeyserver.cpp
     util/kselectionowner.cpp
-    util/knumvalidator.cpp
     util/kpassivepopup.cpp
     util/kstandardguiitem.cpp
     util/kxerrorhandler.cpp
@@ -403,7 +402,6 @@ install(
     util/kkeyboardlayout.h
     util/kdebugger.h
     util/kselectionowner.h
-    util/knumvalidator.h
     util/kpassivepopup.h
     util/kstandardguiitem.h
     util/kxerrorhandler.h

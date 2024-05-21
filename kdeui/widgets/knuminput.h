@@ -24,7 +24,6 @@
 #include <klocalizedstring.h>
 
 #include <QWidget>
-#include <QValidator>
 
 class KIntNumInputPrivate;
 class KDoubleNumInputPrivate;
@@ -96,12 +95,6 @@ public:
      */
     void setSteps(int single, int page);
 
-    /**
-     * Validation overrides
-     */
-    virtual QValidator::State validate(QString &input, int &pos) const;
-    virtual void fixup(QString &input) const;
-
 public Q_SLOTS:
     /**
      * Spin box and slider proxies
@@ -114,6 +107,10 @@ public Q_SLOTS:
 Q_SIGNALS:
     void valueChanged(int);
     void editingFinished();
+
+protected:
+    // QWidget reimplementation
+    virtual void changeEvent(QEvent *event);
 
 private:
     friend KIntNumInputPrivate;
@@ -201,12 +198,6 @@ public:
      */
     void setSteps(int single, int page);
 
-    /**
-     * Validation overrides
-     */
-    virtual QValidator::State validate(QString &input, int &pos) const;
-    virtual void fixup(QString &input) const;
-
 public Q_SLOTS:
     /**
      * Spin box and slider proxies
@@ -219,6 +210,10 @@ public Q_SLOTS:
 Q_SIGNALS:
     void valueChanged(double);
     void editingFinished();
+
+protected:
+    // QWidget reimplementation
+    virtual void changeEvent(QEvent *event);
 
 private:
     friend KDoubleNumInputPrivate;

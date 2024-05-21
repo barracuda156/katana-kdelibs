@@ -88,7 +88,6 @@ install(
     KFileWidget
     KDiskFreeSpaceInfo
     KDoubleNumInput
-    KDoubleValidator
     KEMail
     KEMailDialog
     KEMailSettings
@@ -136,7 +135,6 @@ install(
     KInputDialog
     KComponentData
     KIntNumInput
-    KIntValidator
     KJob
     KJobTrackerInterface
     KJobUiDelegate
