@@ -18,10 +18,9 @@
 */
 
 #include "knumvalidator.h"
-
-#include <klocale.h>
-#include <kglobal.h>
-#include <kdebug.h>
+#include "klocale.h"
+#include "kglobal.h"
+#include "kdebug.h"
 
 static void kAcceptLocalizedNumbers(QValidator *validator, const bool accept)
 {
@@ -72,7 +71,6 @@ void KIntValidator::setAcceptLocalizedNumbers(bool accept)
     d->acceptLocalizedNumbers = accept;
     kAcceptLocalizedNumbers(this, accept);
 }
-
 
 
 class KDoubleValidator::KDoubleValidatorPrivate

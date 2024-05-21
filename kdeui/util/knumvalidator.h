@@ -32,7 +32,7 @@
  * validation.
  *
  * @author Ivailo Monev <xakepa10@gmail.com>
- * @see KIntValidator
+ * @see KDoubleValidator
  **/
 class KDEUI_EXPORT KIntValidator : public QIntValidator
 {
@@ -41,7 +41,7 @@ class KDEUI_EXPORT KIntValidator : public QIntValidator
 public:
     /**
      * Constuct a locale-aware KIntValidator with default range 
-    */
+     */
     explicit KIntValidator(QObject *parent);
 
     /**
@@ -56,7 +56,6 @@ public:
 
     /** Sets whether to accept localized numbers, enabled by default */
     void setAcceptLocalizedNumbers(bool accept);
-
 
 private:
     class KIntValidatorPrivate;
@@ -80,7 +79,7 @@ class KDEUI_EXPORT KDoubleValidator : public QDoubleValidator
 public:
     /**
      * Constuct a locale-aware KDoubleValidator with default range 
-    */
+     */
     explicit KDoubleValidator(QObject *parent);
 
     /**
