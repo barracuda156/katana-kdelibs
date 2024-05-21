@@ -85,7 +85,6 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     setFocusProxy(d->spinbox);
     setRange(INT_MIN, INT_MAX);
     setSingleStep(1);
-    setBase(10);
     setValue(0);
 }
 
@@ -170,16 +169,6 @@ Qt::Alignment KIntNumInput::alignment() const
 void KIntNumInput::setAlignment(const Qt::Alignment alignment)
 {
     d->spinbox->setAlignment(alignment);
-}
-
-int KIntNumInput::base() const
-{
-    return d->validator->base();
-}
-
-void KIntNumInput::setBase(int base)
-{
-    d->validator->setBase(base);
 }
 
 bool KIntNumInput::sliderEnabled() const

@@ -1,139 +1,104 @@
-/**********************************************************************
-**
-** Copyright (C) 1999 Glen Parker <glenebob@nwlink.com>
-** Copyright (C) 2002 Marc Mutz <mutz@kde.org>
-**
-** This library is free software; you can redistribute it and/or
-** modify it under the terms of the GNU Library General Public
-** License as published by the Free Software Foundation; either
-** version 2 of the License, or (at your option) any later version.
-**
-** This library is distributed in the hope that it will be useful,
-** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-** Library General Public License for more details.
-**
-** You should have received a copy of the GNU Library General Public
-** License along with this library; if not, write to the Free
-** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-**
-*****************************************************************************/
+/*
+    This file is part of the KDE libraries
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License version 2, as published by the Free Software Foundation.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
 
 #ifndef KNUMVALIDATOR_H
 #define KNUMVALIDATOR_H
 
 #include <kdeui_export.h>
 
-#include <QtGui/QValidator>
-
-#include <QWidget>
-#include <QString>
+#include <QValidator>
 
 /**
- * QValidator for integers.
-
-  This can be used by QLineEdit or subclass to provide validated
-  text entry.  Can be provided with a base value (default is 10), to allow
-  the proper entry of hexadecimal, octal, or any other base numeric data.
-
-  @author Glen Parker <glenebob@nwlink.com>
-  @version 0.0.1
-*/
-class KDEUI_EXPORT KIntValidator : public QValidator
+ * @short A locale-aware QIntValidator
+ *
+ * QIntValidator extends QIntValidator to be locale-aware. That means that - subject to not being
+ * disabled - the system locale thousand separator, positive and negative sign are used for
+ * validation.
+ *
+ * @author Ivailo Monev <xakepa10@gmail.com>
+ * @see KIntValidator
+ **/
+class KDEUI_EXPORT KIntValidator : public QIntValidator
 {
+    Q_OBJECT
+    Q_PROPERTY(bool acceptLocalizedNumbers READ acceptLocalizedNumbers WRITE setAcceptLocalizedNumbers)
 public:
     /**
-     * Constructor.  Also sets the base value.
-     */
-    explicit KIntValidator(QWidget * parent, int base = 10);
+     * Constuct a locale-aware KIntValidator with default range 
+    */
+    explicit KIntValidator(QObject *parent);
+
     /**
-     * Constructor.  Also sets the minimum, maximum, and numeric base values.
+     * Constuct a locale-aware KIntValidator for the speicified range and decimals
      */
-    KIntValidator(int bottom, int top, QWidget *parent, int base = 10);
+    KIntValidator(int bottom, int top, QObject *parent);
 
     virtual ~KIntValidator();
 
-    /**
-     * Validates the text, and return the result.  Does not modify the parameters.
-     */
-    virtual QValidator::State validate(QString &, int &) const;
+    /** @return whether localized numbers are accepted, enabled by default */
+    bool acceptLocalizedNumbers() const;
 
-    /**
-     * Fixes the text if possible, providing a valid string.  The parameter may be modified.
-     */
-    virtual void fixup(QString &) const;
-    /**
-     * Sets the minimum and maximum values allowed. 
-     * If @p top is greater than @p bottom, it is set to the value of @p bottom.
-     */
-    virtual void setRange(int bottom, int top);
+    /** Sets whether to accept localized numbers, enabled by default */
+    void setAcceptLocalizedNumbers(bool accept);
 
-    /**
-     * Sets the numeric base value. @p base must be between 2 and 36.
-     */
-    virtual void setBase(int base);
-
-    /**
-     * Returns the current minimum value allowed.
-     */
-    virtual int bottom() const;
-
-    /**
-     * Returns the current maximum value allowed.
-     */
-    virtual int top() const;
-
-    /**
-     * Returns the current numeric base.
-     */
-    virtual int base() const;
 
 private:
     class KIntValidatorPrivate;
-    KIntValidatorPrivate * const d;
+    KIntValidatorPrivate* const d;
 };
 
 /**
-   @short A locale-aware QDoubleValidator
-
-   KDoubleValidator extends QDoubleValidator to be locale-aware. That
-   means that - subject to not being disabled - the system locale
-   decimal point, thousand separator, positive and negative sign are
-   used for validation.
-
-   @author Marc Mutz <mutz@kde.org>
-   @see KIntValidator
-**/
+ * @short A locale-aware QDoubleValidator
+ *
+ * KDoubleValidator extends QDoubleValidator to be locale-aware. That means that - subject to not
+ * being disabled - the system locale decimal point, thousand separator, positive and negative sign
+ * are used for validation.
+ *
+ * @author Ivailo Monev <xakepa10@gmail.com>
+ * @see KIntValidator
+ **/
 class KDEUI_EXPORT KDoubleValidator : public QDoubleValidator
 {
     Q_OBJECT
     Q_PROPERTY(bool acceptLocalizedNumbers READ acceptLocalizedNumbers WRITE setAcceptLocalizedNumbers)
 public:
     /**
-        Constuct a locale-aware KDoubleValidator with default range
-        (whatever QDoubleValidator uses for that) and parent @p
-        parent
+     * Constuct a locale-aware KDoubleValidator with default range 
     */
     explicit KDoubleValidator(QObject *parent);
 
     /**
-        Constuct a locale-aware KDoubleValidator for range [@p bottom,@p
-        top] and a precision of @p decimals decimals after the decimal
-        point.
-    */
+     * Constuct a locale-aware KDoubleValidator for the speicified range and decimals
+     */
     KDoubleValidator(double bottom, double top, int decimals, QObject *parent);
 
     virtual ~KDoubleValidator();
 
-    /** @return whether localized numbers are accepted (default: true) */
+    /** @return whether localized numbers are accepted, enabled by default */
     bool acceptLocalizedNumbers() const;
 
-    /** Sets whether to accept localized numbers (default: true) */
+    /** Sets whether to accept localized numbers, enabled by default */
     void setAcceptLocalizedNumbers(bool accept);
 
 private:
     class KDoubleValidatorPrivate;
-    KDoubleValidatorPrivate * const d;
+    KDoubleValidatorPrivate* const d;
 };
 
 #endif

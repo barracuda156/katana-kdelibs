@@ -50,7 +50,6 @@ class KDEUI_EXPORT KIntNumInput : public QWidget
     Q_PROPERTY(QString prefix READ prefix WRITE setPrefix)
     Q_PROPERTY(QString specialValueText READ specialValueText WRITE setSpecialValueText)
     Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
-    Q_PROPERTY(int base READ base WRITE setBase)
     Q_PROPERTY(bool sliderEnabled READ sliderEnabled WRITE setSliderEnabled)
 public:
     /**
@@ -77,15 +76,6 @@ public:
     void setSpecialValueText(const QString &text);
     Qt::Alignment alignment() const;
     void setAlignment(const Qt::Alignment alignment);
-
-    /**
-     * @return the base in which numbers in the spin box are represented.
-     */
-    int base() const;
-    /**
-     * Sets the base in which the numbers in the spin box are represented.
-     */
-    void setBase(int base);
 
     /**
      * @return if slider is enabled.

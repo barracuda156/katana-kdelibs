@@ -109,7 +109,7 @@ KInputDialogHelper::KInputDialogHelper( const QString &caption, const QString &l
 }
 
 KInputDialogHelper::KInputDialogHelper( const QString &caption, const QString &label,
-                                        int value, int minValue, int maxValue, int step, int base,
+                                        int value, int minValue, int maxValue, int step,
                                         QWidget *parent )
     : KDialog(parent),
       m_label(0), m_lineEdit(0), m_intSpinBox(0),
@@ -131,7 +131,6 @@ KInputDialogHelper::KInputDialogHelper( const QString &caption, const QString &l
     m_intSpinBox->setRange(minValue, maxValue);
     m_intSpinBox->setSingleStep(step);
     m_intSpinBox->setValue(value);
-    m_intSpinBox->setBase(base);
     layout->addWidget(m_intSpinBox);
 
     layout->setMargin(0);
@@ -382,10 +381,10 @@ QString getMultiLineText( const QString &caption,
 }
 
 int getInteger( const QString &caption, const QString &label,
-                int value, int minValue, int maxValue, int step, int base, bool *ok,
+                int value, int minValue, int maxValue, int step, bool *ok,
                 QWidget *parent )
 {
-    KInputDialogHelper dlg(caption, label, value, minValue, maxValue, step, base, parent);
+    KInputDialogHelper dlg(caption, label, value, minValue, maxValue, step, parent);
 
     bool _ok = (dlg.exec() == KDialog::Accepted);
 
@@ -397,13 +396,6 @@ int getInteger( const QString &caption, const QString &label,
         result = dlg.intSpinBox()->value();
 
     return result;
-}
-
-int getInteger( const QString &caption, const QString &label,
-                int value, int minValue, int maxValue, int step, bool *ok,
-                QWidget *parent )
-{
-    return getInteger(caption, label, value, minValue, maxValue, step, 10, ok, parent);
 }
 
 double getDouble( const QString &caption, const QString &label,

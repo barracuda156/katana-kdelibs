@@ -46,7 +46,7 @@ class KInputDialogHelper : public KDialog
     KInputDialogHelper( const QString &caption, const QString &label,
                         const QString &value, QWidget *parent );
     KInputDialogHelper( const QString &caption, const QString &label, int value,
-                        int minValue, int maxValue, int step, int base, QWidget *parent );
+                        int minValue, int maxValue, int step, QWidget *parent );
     KInputDialogHelper( const QString &caption, const QString &label, double value,
                         double minValue, double maxValue, double step, int decimals,
                         QWidget *parent );

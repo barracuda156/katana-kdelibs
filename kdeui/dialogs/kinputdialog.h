@@ -100,7 +100,7 @@ namespace KInputDialog
      * value for the spin box. minValue and maxValue are the minimum and
      * maximum allowable values the user may choose. step is the amount by
      * which the value will change as the user presses the increment and
-     * decrement buttons of the spin box. Base is the base of the number.
+     * decrement buttons of the spin box..
      *
      * @param caption  Caption of the dialog
      * @param label    Text of the label for the spin box
@@ -108,20 +108,10 @@ namespace KInputDialog
      * @param minValue Minimum value user can input
      * @param maxValue Maximum value user can input
      * @param step     Amount by which value is incremented or decremented
-     * @param base     Base of the number
      * @param ok       This bool would be set to true if user pressed Ok
      * @param parent   Parent of the dialog widget
      *
      * @return Number user entered if Ok was pressed, else 0
-     */
-
-    KDEUI_EXPORT int getInteger( const QString &caption, const QString &label,
-                                 int value=0, int minValue=INT_MIN, int maxValue=INT_MAX,
-                                 int step=1, int base=10, bool *ok=0, QWidget *parent=0 );
-
-    /**
-     * This is an overloaded convenience function. It behaves exactly same as
-     * above except it assumes base to be 10, i.e. accepts decimal numbers.
      */
     KDEUI_EXPORT int getInteger( const QString &caption, const QString &label,
                                  int value=0, int minValue=INT_MIN, int maxValue=INT_MAX,
