@@ -596,7 +596,7 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
         dialogFlags |= KPasswordDialog::ShowAnonymousLoginCheckBox;
     }
 
-    if (!dlgInfo.hideUserName) {
+    if (dlgInfo.hideUserName == false) {
         dialogFlags |= KPasswordDialog::ShowUsernameLine;
     }
 
