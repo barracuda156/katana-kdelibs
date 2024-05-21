@@ -96,6 +96,7 @@ KIntNumInput::~KIntNumInput()
 
 void KIntNumInput::setRange(int min, int max)
 {
+    d->validator->setRange(min, max);
     d->slider->setRange(min, max);
     d->spinbox->setRange(min, max);
 }
@@ -112,6 +113,7 @@ int KIntNumInput::minimum() const
 
 void KIntNumInput::setMinimum(int min)
 {
+    d->validator->setRange(min, maximum());
     d->slider->setMinimum(min);
     d->spinbox->setMinimum(min);
 }
@@ -123,8 +125,9 @@ int KIntNumInput::maximum() const
 
 void KIntNumInput::setMaximum(int max)
 {
-    d->spinbox->setMaximum(max);
+    d->validator->setRange(minimum(), max);
     d->slider->setMaximum(max);
+    d->spinbox->setMaximum(max);
 }
 
 int KIntNumInput::singleStep() const
@@ -303,6 +306,7 @@ KDoubleNumInput::~KDoubleNumInput()
 
 void KDoubleNumInput::setRange(double min, double max)
 {
+    d->validator->setRange(min, max, decimals());
     d->slider->setRange(qRound(min), qRound(max));
     d->spinbox->setRange(min, max);
 }
@@ -319,6 +323,7 @@ double KDoubleNumInput::minimum() const
 
 void KDoubleNumInput::setMinimum(double min)
 {
+    d->validator->setRange(min, maximum(), decimals());
     d->slider->setMinimum(min);
     d->spinbox->setMinimum(min);
 }
@@ -330,7 +335,8 @@ double KDoubleNumInput::maximum() const
 
 void KDoubleNumInput::setMaximum(double max)
 {
-    d->spinbox->setMaximum(max);
+    d->validator->setRange(minimum(), max, decimals());
+    d->slider->setMaximum(max);
     d->spinbox->setMaximum(max);
 }
 
