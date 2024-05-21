@@ -41,13 +41,14 @@ class KPasswordDialog::KPasswordDialogPrivate
 public:
     KPasswordDialogPrivate(KPasswordDialog *q)
         : q(q),
-          userEditCombo(0),
-          pixmapWidget(0),
-          commentRow(0)
-    {}
+        userEditCombo(nullptr),
+        pixmapWidget(nullptr),
+        commentRow(0)
+    {
+    }
 
     void actuallyAccept();
-    void activated( const QString& userName );
+    void activated(const QString &userName);
 
     void updateFields();
     void init();
@@ -61,17 +62,18 @@ public:
     unsigned int commentRow;
 };
 
-KPasswordDialog::KPasswordDialog( QWidget* parent ,
-                                  const KPasswordDialogFlags& flags,
-                                  const KDialog::ButtonCodes otherButtons )
-   : KDialog( parent ), d(new KPasswordDialogPrivate(this))
+KPasswordDialog::KPasswordDialog(QWidget *parent,
+                                 const KPasswordDialogFlags flags,
+                                 const KDialog::ButtonCodes otherButtons)
+   : KDialog(parent),
+   d(new KPasswordDialogPrivate(this))
 {
-    setCaption( i18n("Password") );
+    setCaption(i18n("Password"));
     setWindowIcon(KIcon("dialog-password"));
-    setButtons( Ok | Cancel | otherButtons );
-    setDefaultButton( Ok );
+    setButtons(KDialog::Ok | KDialog::Cancel | otherButtons);
+    setDefaultButton(KDialog::Ok);
     d->m_flags = flags;
-    d->init ();
+    d->init();
 }
 
 KPasswordDialog::~KPasswordDialog()
@@ -85,34 +87,32 @@ void KPasswordDialog::KPasswordDialogPrivate::updateFields()
         ui.userEdit->setReadOnly(true);
         ui.credentialsGroup->setFocusProxy(ui.passEdit);
     }
-    ui.credentialsGroup->setEnabled( !q->anonymousMode() );
+    ui.credentialsGroup->setEnabled(!q->anonymousMode());
 }
 
 void KPasswordDialog::KPasswordDialogPrivate::init()
 {
-    ui.setupUi( q->mainWidget() );
+    ui.setupUi(q->mainWidget());
     ui.errorMessage->setHidden(true);
 
     // Row 4: Username field
-    if ( m_flags & KPasswordDialog::ShowUsernameLine ) {
+    if (m_flags & KPasswordDialog::ShowUsernameLine) {
         ui.userEdit->setFocus();
-        ui.credentialsGroup->setFocusProxy( ui.userEdit );
-        QObject::connect( ui.userEdit, SIGNAL(returnPressed()), ui.passEdit, SLOT(setFocus()) );
+        ui.credentialsGroup->setFocusProxy(ui.userEdit);
+        QObject::connect(ui.userEdit, SIGNAL(returnPressed()), ui.passEdit, SLOT(setFocus()));
     } else {
         ui.userNameLabel->hide();
         ui.userEdit->hide();
         ui.passEdit->setFocus();
-        ui.credentialsGroup->setFocusProxy( ui.passEdit );
+        ui.credentialsGroup->setFocusProxy(ui.passEdit);
     }
 
-    if ( !( m_flags & KPasswordDialog::ShowAnonymousLoginCheckBox ) )
-    {
+    if (!(m_flags & KPasswordDialog::ShowAnonymousLoginCheckBox)) {
         ui.anonymousRadioButton->hide();
         ui.usePasswordButton->hide();
     }
 
-    if ( !( m_flags & KPasswordDialog::ShowKeepPassword ) )
-    {
+    if (!(m_flags & KPasswordDialog::ShowKeepPassword)) {
         ui.keepCheckBox->hide();
     }
 
@@ -125,39 +125,34 @@ void KPasswordDialog::KPasswordDialogPrivate::init()
 
 void KPasswordDialog::setPixmap(const QPixmap &pixmap)
 {
-    if ( !d->pixmapWidget )
-    {
-        d->pixmapWidget = new KPixmapWidget( mainWidget() );
-        d->pixmapWidget->setAlignment( Qt::AlignLeft | Qt::AlignTop );
-        d->ui.hboxLayout->insertWidget( 0, d->pixmapWidget );
+    if (!d->pixmapWidget) {
+        d->pixmapWidget = new KPixmapWidget(mainWidget());
+        d->pixmapWidget->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        d->ui.hboxLayout->insertWidget(0, d->pixmapWidget);
     }
 
-    d->pixmapWidget->setPixmap( pixmap );
+    d->pixmapWidget->setPixmap(pixmap);
 }
 
 QPixmap KPasswordDialog::pixmap() const
 {
-    if ( !d->pixmapWidget ) {
+    if (!d->pixmapWidget ) {
         return QPixmap();
     }
-
     return d->pixmapWidget->pixmap();
 }
 
-
-void KPasswordDialog::setUsername(const QString& user)
+void KPasswordDialog::setUsername(const QString &user)
 {
     d->ui.userEdit->setText(user);
-    if ( user.isEmpty() )
+    if (user.isEmpty()) {
         return;
-
+    }
     d->activated(user);
-    if ( d->ui.userEdit->isVisibleTo( this ) )
-    {
+    if (d->ui.userEdit->isVisibleTo(this)) {
         d->ui.passEdit->setFocus();
     }
 }
-
 
 QString KPasswordDialog::username() const
 {
@@ -174,13 +169,12 @@ void KPasswordDialog::setAnonymousMode(bool anonymous)
     if (anonymous && !(d->m_flags & KPasswordDialog::ShowAnonymousLoginCheckBox)) {
         // This is an error case, but we can at least let user see what's about
         // to happen if they proceed.
-        d->ui.anonymousRadioButton->setVisible( true );
+        d->ui.anonymousRadioButton->setVisible(true);
 
-        d->ui.usePasswordButton->setVisible( true );
-        d->ui.usePasswordButton->setEnabled( false );
+        d->ui.usePasswordButton->setVisible(true);
+        d->ui.usePasswordButton->setEnabled(false);
     }
-
-    d->ui.anonymousRadioButton->setChecked( anonymous );
+    d->ui.anonymousRadioButton->setChecked(anonymous);
 }
 
 bool KPasswordDialog::anonymousMode() const
@@ -188,10 +182,9 @@ bool KPasswordDialog::anonymousMode() const
     return d->ui.anonymousRadioButton->isChecked();
 }
 
-
-void KPasswordDialog::setKeepPassword( bool b )
+void KPasswordDialog::setKeepPassword(bool b)
 {
-    d->ui.keepCheckBox->setChecked( b );
+    d->ui.keepCheckBox->setChecked(b);
 }
 
 bool KPasswordDialog::keepPassword() const
@@ -199,10 +192,12 @@ bool KPasswordDialog::keepPassword() const
     return d->ui.keepCheckBox->isChecked();
 }
 
-void KPasswordDialog::addCommentLine( const QString& label,
-                                      const QString& comment )
+void KPasswordDialog::addCommentLine(const QString &label, const QString &comment)
 {
-    int gridMarginLeft, gridMarginTop, gridMarginRight, gridMarginBottom;
+    int gridMarginLeft = 0;
+    int gridMarginTop = 0;
+    int gridMarginRight = 0;
+    int gridMarginBottom = 0;
     d->ui.formLayout->getContentsMargins(&gridMarginLeft, &gridMarginTop, &gridMarginRight, &gridMarginBottom);
 
     int spacing = d->ui.formLayout->horizontalSpacing();
@@ -234,51 +229,54 @@ void KPasswordDialog::addCommentLine( const QString& label,
         if (li) {
             QLabel *l = qobject_cast<QLabel*>(li->widget());
             if (l && l->wordWrap()) {
-                int w = sizeHint().width() - firstColumnWidth - ( 2 * marginHint() ) - gridMarginLeft - gridMarginRight - spacing;
+                int w = sizeHint().width() - firstColumnWidth - (2 * marginHint()) - gridMarginLeft - gridMarginRight - spacing;
                 l->setMinimumSize( w, l->heightForWidth(w) );
             }
         }
     }
 }
 
-void KPasswordDialog::showErrorMessage( const QString& message, const ErrorType type )
+void KPasswordDialog::showErrorMessage(const QString &message, const ErrorType type)
 {
-    d->ui.errorMessage->setText( message, KTitleWidget::ErrorMessage );
+    d->ui.errorMessage->setText(message, KTitleWidget::ErrorMessage);
 
     QFont bold = font();
     bold.setBold( true );
-    switch ( type ) {
-        case PasswordError:
-            d->ui.passwordLabel->setFont( bold );
+    switch (type) {
+        case KPasswordDialog::PasswordError: {
+            d->ui.passwordLabel->setFont(bold);
             d->ui.passEdit->clear();
             d->ui.passEdit->setFocus();
             break;
-        case UsernameError:
-            if ( d->ui.userEdit->isVisibleTo( this ) )
-            {
-                d->ui.userNameLabel->setFont( bold );
+        }
+        case KPasswordDialog::UsernameError: {
+            if (d->ui.userEdit->isVisibleTo(this)) {
+                d->ui.userNameLabel->setFont(bold);
                 d->ui.userEdit->setFocus();
             }
             break;
-        case FatalError:
-            d->ui.userNameLabel->setEnabled( false );
-            d->ui.userEdit->setEnabled( false );
-            d->ui.passwordLabel->setEnabled( false );
-            d->ui.passEdit->setEnabled( false );
-            d->ui.keepCheckBox->setEnabled( false );
-            enableButton( Ok, false );
+        }
+        case KPasswordDialog::FatalError: {
+            d->ui.userNameLabel->setEnabled(false);
+            d->ui.userEdit->setEnabled(false);
+            d->ui.passwordLabel->setEnabled(false);
+            d->ui.passEdit->setEnabled(false);
+            d->ui.keepCheckBox->setEnabled(false);
+            enableButton(KDialog::Ok, false);
             break;
-        default:
+        }
+        default: {
             break;
+        }
     }
     adjustSize();
 }
 
-void KPasswordDialog::setPrompt(const QString& prompt)
+void KPasswordDialog::setPrompt(const QString &prompt)
 {
-    d->ui.prompt->setText( prompt );
-    d->ui.prompt->setWordWrap( true );
-    d->ui.prompt->setMinimumHeight( d->ui.prompt->heightForWidth( width() -  ( 2 * marginHint() ) ) );
+    d->ui.prompt->setText(prompt);
+    d->ui.prompt->setWordWrap(true);
+    d->ui.prompt->setMinimumHeight(d->ui.prompt->heightForWidth(width() - (2 * marginHint())));
 }
 
 QString KPasswordDialog::prompt() const
@@ -291,90 +289,88 @@ void KPasswordDialog::setPassword(const QString &p)
     d->ui.passEdit->setText(p);
 }
 
-void KPasswordDialog::setUsernameReadOnly( bool readOnly )
+void KPasswordDialog::setUsernameReadOnly(bool readOnly)
 {
-    d->ui.userEdit->setReadOnly( readOnly );
-
-    if ( readOnly && d->ui.userEdit->hasFocus() ) {
+    d->ui.userEdit->setReadOnly(readOnly);
+    if (readOnly && d->ui.userEdit->hasFocus()) {
         d->ui.passEdit->setFocus();
     }
 }
 
-void KPasswordDialog::setKnownLogins( const QMap<QString, QString>& knownLogins )
+void KPasswordDialog::setKnownLogins(const QMap<QString, QString> &knownLogins)
 {
     const int nr = knownLogins.count();
-    if ( nr == 0 ) {
+    if (nr == 0) {
         return;
     }
 
-    if ( nr == 1 ) {
-        d->ui.userEdit->setText( knownLogins.begin().key() );
-        setPassword( knownLogins.begin().value() );
+    if (nr == 1) {
+        d->ui.userEdit->setText(knownLogins.begin().key());
+        setPassword(knownLogins.begin().value());
         return;
     }
 
-    Q_ASSERT( !d->ui.userEdit->isReadOnly() );
-    if ( !d->userEditCombo ) {
+    Q_ASSERT(!d->ui.userEdit->isReadOnly());
+    if (!d->userEditCombo) {
         int row = -1;
         QFormLayout::ItemRole userEditRole = QFormLayout::FieldRole;
 
         d->ui.formLayout->getWidgetPosition(d->ui.userEdit, &row, &userEditRole);
         d->ui.formLayout->removeWidget(d->ui.userEdit);
         delete d->ui.userEdit;
-        d->userEditCombo = new KComboBox( true, d->ui.credentialsGroup );
+        d->userEditCombo = new KComboBox(true, d->ui.credentialsGroup );
         d->ui.userEdit = d->userEditCombo->lineEdit();
-        d->ui.userNameLabel->setBuddy( d->userEditCombo );
-        d->ui.formLayout->setWidget( row > -1 ? row : 0, userEditRole, d->userEditCombo );
+        d->ui.userNameLabel->setBuddy(d->userEditCombo );
+        d->ui.formLayout->setWidget(row > -1 ? row : 0, userEditRole, d->userEditCombo);
 
-        setTabOrder( d->ui.userEdit, d->ui.anonymousRadioButton );
-        setTabOrder( d->ui.anonymousRadioButton, d->ui.passEdit );
-        setTabOrder( d->ui.passEdit, d->ui.keepCheckBox );
-        connect( d->ui.userEdit, SIGNAL(returnPressed()), d->ui.passEdit, SLOT(setFocus()) );
+        setTabOrder(d->ui.userEdit, d->ui.anonymousRadioButton);
+        setTabOrder(d->ui.anonymousRadioButton, d->ui.passEdit);
+        setTabOrder(d->ui.passEdit, d->ui.keepCheckBox);
+        connect(d->ui.userEdit, SIGNAL(returnPressed()), d->ui.passEdit, SLOT(setFocus()));
     }
 
     d->knownLogins = knownLogins;
     d->userEditCombo->addItems( knownLogins.keys() );
     d->userEditCombo->setFocus();
 
-    connect( d->userEditCombo, SIGNAL(activated(QString)),
-             this, SLOT(activated(QString)) );
+    connect(d->userEditCombo, SIGNAL(activated(QString)), this, SLOT(activated(QString)));
 }
 
-void KPasswordDialog::KPasswordDialogPrivate::activated( const QString& userName )
+void KPasswordDialog::KPasswordDialogPrivate::activated(const QString &userName)
 {
-    QMap<QString, QString>::ConstIterator it = knownLogins.constFind( userName );
-    if ( it != knownLogins.constEnd() ) {
-        q->setPassword( it.value() );
+    QMap<QString, QString>::ConstIterator it = knownLogins.constFind(userName);
+    if (it != knownLogins.constEnd()) {
+        q->setPassword(it.value());
     }
 }
 
 void KPasswordDialog::accept()
 {
-    if (!d->ui.errorMessage->isHidden()) d->ui.errorMessage->setText( QString() );
+    if (!d->ui.errorMessage->isHidden()) {
+        d->ui.errorMessage->setText(QString());
+    }
 
     // reset the font in case we had an error previously
     if (!d->ui.passwordLabel->isHidden()) {
-        d->ui.passwordLabel->setFont( font() );
-        d->ui.userNameLabel->setFont( font() );
+        d->ui.passwordLabel->setFont(font());
+        d->ui.userNameLabel->setFont(font());
     }
 
-    // we do this to allow the error message, if any, to go away
-    // checkPassword() may block for a period of time
-    QTimer::singleShot( 0, this, SLOT(actuallyAccept()) );
+    // allow the error message, if any, to go away. checkPassword() may block for a period of time
+    QTimer::singleShot(0, this, SLOT(actuallyAccept()));
 }
 
 void KPasswordDialog::KPasswordDialogPrivate::actuallyAccept()
 {
-    if ( !q->checkPassword() )
-    {
+    if (!q->checkPassword()) {
         return;
     }
 
-    bool keep = ui.keepCheckBox->isVisibleTo( q ) && ui.keepCheckBox->isChecked();
-    emit q->gotPassword( q->password(), keep);
+    bool keep = (ui.keepCheckBox->isVisibleTo(q) && ui.keepCheckBox->isChecked());
+    emit q->gotPassword(q->password(), keep);
 
-    if ( ui.userEdit->isVisibleTo( q ) ) {
-        emit q->gotUsernameAndPassword( q->username(), q->password() , keep);
+    if (ui.userEdit->isVisibleTo(q)) {
+        emit q->gotUsernameAndPassword(q->username(), q->password() , keep);
     }
 
     q->KDialog::accept();

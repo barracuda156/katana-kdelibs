@@ -55,9 +55,7 @@
 class KDEUI_EXPORT KPasswordDialog : public KDialog
 {
     Q_OBJECT
-
 public:
-    
     enum KPasswordDialogFlag
     {
         NoFlags = 0x00,
@@ -112,9 +110,9 @@ public:
      *                     Useful for adding application-specific buttons like
      *                     "ignore" or "skip".
      */
-    explicit KPasswordDialog( QWidget *parent = 0L,
-                              const KPasswordDialogFlags& flags = 0,
-                              const KDialog::ButtonCodes otherButtons = 0);
+    explicit KPasswordDialog(QWidget *parent = nullptr,
+                             const KPasswordDialogFlags flags = NoFlags,
+                             const KDialog::ButtonCodes otherButtons = KDialog::None);
 
     /**
      * Destructor
@@ -125,7 +123,7 @@ public:
      * Sets the prompt to show to the user.
      * @param prompt        instructional text to be shown.
      */
-    void setPrompt( const QString& prompt );
+    void setPrompt(const QString &prompt);
 
     /**
      * Returns the prompt
@@ -151,14 +149,14 @@ public:
      * @param label       label for comment (ex:"Command:")
      * @param comment     the actual comment text.
      */
-    void addCommentLine( const QString& label, const QString& comment );
+    void addCommentLine(const QString &label, const QString &comment);
 
     /**
      * Shows an error message in the dialog box. Prevents having to show a dialog-on-a-dialog.
      *
      * @param message the error message to show
      */
-    void showErrorMessage( const QString& message, const ErrorType type = PasswordError );
+    void showErrorMessage(const QString &message, const ErrorType type = PasswordError);
 
     /**
      * Returns the password entered by the user.
@@ -169,7 +167,7 @@ public:
     /**
      * set the default username.
      */
-    void setUsername(const QString&);
+    void setUsername(const QString &user);
 
     /**
      * Returns the username entered by the user.
@@ -188,7 +186,7 @@ public:
      * @since 4.1
      */
     bool anonymousMode() const;    
-    
+
     /**
      * Determines whether supplied authorization should
      * persist even after the application has been closed.
@@ -208,7 +206,7 @@ public:
      * 
      * has only effect if ShowKeepCheckBox is set in the constructor
      */
-    void setKeepPassword( bool b );
+    void setKeepPassword(bool b);
 
     /**
      * Sets the username field read-only and sets the
@@ -218,13 +216,13 @@ public:
      *
      * @param readOnly true to set the user field to read-only
      */
-    void setUsernameReadOnly( bool readOnly );
+    void setUsernameReadOnly(bool readOnly);
 
     /**
      * Presets the password.
      * @param password the password to set
      */
-    void setPassword( const QString& password );
+    void setPassword(const QString &password);
 
     /**
      * Presets a number of login+password pairs that the user can choose from.
@@ -233,7 +231,7 @@ public:
      * This require the flag ShowUnernameLine to be set in the constructor, and not the flag UsernameReadOnly
      * @param knownLogins map of known logins: the keys are usernames, the values are passwords.
      */
-    void setKnownLogins( const QMap<QString, QString>& knownLogins );
+    void setKnownLogins(const QMap<QString, QString> &knownLogins);
 
     /**
      * @internal
@@ -246,7 +244,7 @@ Q_SIGNALS:
      * @param password  the entered password
      * @param keep true if the "remember password" checkbox was checked, false otherwise.  false if ShowKeepPassword was not set in the constructor
      */
-    void gotPassword( const QString& password , bool keep );
+    void gotPassword(const QString &password , bool keep);
 
     /**
      * emitted when the dialog has been accepted, and ShowUsernameLine was set on the constructor
@@ -254,7 +252,7 @@ Q_SIGNALS:
      * @param password  the entered password
      * @param keep true if the "remember password" checkbox was checked, false otherwise.  false if ShowKeepPassword was not set in the constructor
      */
-    void gotUsernameAndPassword( const QString& username, const QString& password , bool keep );
+    void gotUsernameAndPassword(const QString &username, const QString &password, bool keep);
 
 protected:
     /**
@@ -266,7 +264,7 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d, void actuallyAccept())
-    Q_PRIVATE_SLOT(d, void activated( const QString& userName ))
+    Q_PRIVATE_SLOT(d, void activated(const QString &userName))
     Q_PRIVATE_SLOT(d, void updateFields())
 
 private:
