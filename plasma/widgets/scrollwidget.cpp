@@ -97,7 +97,6 @@ public:
     void commonConstructor()
     {
         q->setFocusPolicy(Qt::StrongFocus);
-        q->setFiltersChildEvents(true);
         layout = new QGraphicsGridLayout(q);
         q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         layout->setContentsMargins(0, 0, 0, 0);
