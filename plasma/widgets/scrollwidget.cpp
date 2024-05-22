@@ -674,13 +674,11 @@ public:
     void createFlickAnimations()
     {
         if (widget.data()) {
-            QString xProp = QString::fromLatin1("x");
-            QString yProp = QString::fromLatin1("y");
+            const QByteArray xProp("x");
+            const QByteArray yProp("y");
 
-            flickAnimationX = new QPropertyAnimation(widget.data(),
-                                                     xProp.toLatin1(), widget.data());
-            flickAnimationY = new QPropertyAnimation(widget.data(),
-                                                     yProp.toLatin1(), widget.data());
+            flickAnimationX = new QPropertyAnimation(widget.data(), xProp, widget.data());
+            flickAnimationY = new QPropertyAnimation(widget.data(), yProp, widget.data());
             QObject::connect(flickAnimationX, SIGNAL(finished()),
                              q, SLOT(fixupX()));
             QObject::connect(flickAnimationY, SIGNAL(finished()),
@@ -703,14 +701,10 @@ public:
 
             fixupAnimation.groupX = new QSequentialAnimationGroup(widget.data());
             fixupAnimation.groupY = new QSequentialAnimationGroup(widget.data());
-            fixupAnimation.startX  = new QPropertyAnimation(widget.data(),
-                                                            xProp.toLatin1(), widget.data());
-            fixupAnimation.startY  = new QPropertyAnimation(widget.data(),
-                                                            yProp.toLatin1(), widget.data());
-            fixupAnimation.endX = new QPropertyAnimation(widget.data(),
-                                                         xProp.toLatin1(), widget.data());
-            fixupAnimation.endY = new QPropertyAnimation(widget.data(),
-                                                         yProp.toLatin1(), widget.data());
+            fixupAnimation.startX  = new QPropertyAnimation(widget.data(), xProp, widget.data());
+            fixupAnimation.startY  = new QPropertyAnimation(widget.data(), yProp, widget.data());
+            fixupAnimation.endX = new QPropertyAnimation(widget.data(), xProp, widget.data());
+            fixupAnimation.endY = new QPropertyAnimation(widget.data(), yProp, widget.data());
             fixupAnimation.groupX->addAnimation(
                 fixupAnimation.startX);
             fixupAnimation.groupY->addAnimation(
@@ -725,10 +719,8 @@ public:
             fixupAnimation.startY->setEasingCurve(QEasingCurve::InQuad);
             fixupAnimation.endY->setEasingCurve(QEasingCurve::OutQuint);
 
-            fixupAnimation.snapX = new QPropertyAnimation(widget.data(),
-                                                          xProp.toLatin1(), widget.data());
-            fixupAnimation.snapY = new QPropertyAnimation(widget.data(),
-                                                          yProp.toLatin1(), widget.data());
+            fixupAnimation.snapX = new QPropertyAnimation(widget.data(), xProp, widget.data());
+            fixupAnimation.snapY = new QPropertyAnimation(widget.data(), yProp, widget.data());
             fixupAnimation.snapX->setEasingCurve(QEasingCurve::InOutQuad);
             fixupAnimation.snapY->setEasingCurve(QEasingCurve::InOutQuad);
 
