@@ -53,8 +53,7 @@
 
 static const qreal MaxVelocity = 2000;
 
-// time it takes the widget to flick back to its
-//  bounds when overshot
+// time it takes the widget to flick back to its bounds when overshot
 static const qreal FixupDuration = 600;
 
 namespace Plasma
@@ -107,7 +106,7 @@ public:
         borderSvg = new Plasma::Svg(q);
         borderSvg->setImagePath("widgets/scrollwidget");
 
-        wheelTimer =  new QTimer(q);
+        wheelTimer = new QTimer(q);
         wheelTimer->setSingleShot(true);
 
         verticalScrollBar = new Plasma::ScrollBar(q);
@@ -294,7 +293,7 @@ public:
         QSizeF threshold = q->viewportGeometry().size();
         QPointF diff = pos - start;
 
-        //reduce if it's within the viewport
+        // reduce if it's within the viewport
         if (qAbs(diff.x()) < threshold.width() ||
             qAbs(diff.y()) < threshold.height())
             duration /= 2;
@@ -361,8 +360,8 @@ public:
                      << (duration * 1000) <<" msecs)";
             qDebug() <<"startY = "<<startY;
             qDebug() <<"endY = "<<endY;
-            qDebug() <<"overshoot = "<< overShootDistance(v, size);
-            qDebug() <<"avg velocity = "<< ((endY-startY)/duration);
+            qDebug() <<"overshoot = " << overShootDistance(v, size);
+            qDebug() <<"avg velocity = " << ((endY-startY) / duration);
 #endif
 
             anim->setStartValue(startY);
@@ -566,7 +565,8 @@ public:
 
     void handleWheelEvent(QGraphicsSceneWheelEvent *event)
     {
-        //only scroll when the animation is done, this avoids to receive too many events and getting mad when they arrive from a touchpad
+        // only scroll when the animation is done, this avoids to receive too many events and
+        // getting mad when they arrive from a touchpad
         if (!widget.data() || wheelTimer->isActive()) {
             return;
         }
@@ -584,9 +584,8 @@ public:
         // very painful
         qreal step = -event->delta()/3;
 
-        //ifthe widget can scroll in a single axis and the wheel is the other one, scroll the other one
-        Qt::Orientation orientation = event->orientation();
-        if (orientation == Qt::Vertical) {
+        // if the widget can scroll in a single axis and the wheel is the other one, scroll the other one
+        if (event->orientation() == Qt::Vertical) {
             if (!canYFlick() && canXFlick()) {
                 end += QPointF(step, 0);
             } else if (canYFlick()) {
@@ -692,7 +691,6 @@ public:
 
             flickAnimationX->setEasingCurve(QEasingCurve::OutCirc);
             flickAnimationY->setEasingCurve(QEasingCurve::OutCirc);
-
 
             fixupAnimation.groupX = new QSequentialAnimationGroup(widget.data());
             fixupAnimation.groupY = new QSequentialAnimationGroup(widget.data());
@@ -940,7 +938,7 @@ void ScrollWidget::ensureItemVisible(QGraphicsItem *item)
 QRectF ScrollWidget::viewportGeometry() const
 {
     if (d->widget) {
-        d->scrollingWidget->boundingRect();
+        return d->scrollingWidget->boundingRect();
     }
     return QRectF();
 }
