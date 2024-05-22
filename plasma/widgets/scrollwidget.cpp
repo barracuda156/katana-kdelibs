@@ -73,10 +73,6 @@ public:
     {
     }
 
-    ~ScrollWidgetPrivate()
-    {
-    }
-
     void commonConstructor()
     {
         q->setFocusPolicy(Qt::StrongFocus);
@@ -662,7 +658,7 @@ public:
 
     bool canXFlick() const
     {
-        //make the thing feel quite "fixed" don't permit to flick when the contents size is less than the viewport
+        // make the thing feel quite "fixed" don't permit to flick when the contents size is less than the viewport
         return q->contentsSize().width() > q->viewportGeometry().width();
     }
 
@@ -705,14 +701,10 @@ public:
             fixupAnimation.startY  = new QPropertyAnimation(widget.data(), yProp, widget.data());
             fixupAnimation.endX = new QPropertyAnimation(widget.data(), xProp, widget.data());
             fixupAnimation.endY = new QPropertyAnimation(widget.data(), yProp, widget.data());
-            fixupAnimation.groupX->addAnimation(
-                fixupAnimation.startX);
-            fixupAnimation.groupY->addAnimation(
-                fixupAnimation.startY);
-            fixupAnimation.groupX->addAnimation(
-                fixupAnimation.endX);
-            fixupAnimation.groupY->addAnimation(
-                fixupAnimation.endY);
+            fixupAnimation.groupX->addAnimation(fixupAnimation.startX);
+            fixupAnimation.groupY->addAnimation(fixupAnimation.startY);
+            fixupAnimation.groupX->addAnimation(fixupAnimation.endX);
+            fixupAnimation.groupY->addAnimation(fixupAnimation.endY);
 
             fixupAnimation.startX->setEasingCurve(QEasingCurve::InQuad);
             fixupAnimation.endX->setEasingCurve(QEasingCurve::OutQuint);
@@ -724,53 +716,55 @@ public:
             fixupAnimation.snapX->setEasingCurve(QEasingCurve::InOutQuad);
             fixupAnimation.snapY->setEasingCurve(QEasingCurve::InOutQuad);
 
-            QObject::connect(fixupAnimation.groupX,
-                             SIGNAL(stateChanged(QAbstractAnimation::State,
-                                                 QAbstractAnimation::State)),
-                             q, SIGNAL(scrollStateChanged(QAbstractAnimation::State,
-                                                          QAbstractAnimation::State)));
-            QObject::connect(fixupAnimation.groupY,
-                             SIGNAL(stateChanged(QAbstractAnimation::State,
-                                                 QAbstractAnimation::State)),
-                             q, SIGNAL(scrollStateChanged(QAbstractAnimation::State,
-                                                          QAbstractAnimation::State)));
+            QObject::connect(
+                fixupAnimation.groupX, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)),
+                q, SIGNAL(scrollStateChanged(QAbstractAnimation::State, QAbstractAnimation::State))
+            );
+            QObject::connect(
+                fixupAnimation.groupY, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)),
+                q, SIGNAL(scrollStateChanged(QAbstractAnimation::State, QAbstractAnimation::State))
+            );
 
-            directMoveAnimation = new QPropertyAnimation(q,
-                                                         "scrollPosition",
-                                                         q);
-            QObject::connect(directMoveAnimation, SIGNAL(finished()),
-                             q, SLOT(fixupX()));
-            QObject::connect(directMoveAnimation, SIGNAL(finished()),
-                             q, SLOT(fixupY()));
-            QObject::connect(directMoveAnimation,
-                             SIGNAL(stateChanged(QAbstractAnimation::State,
-                                                 QAbstractAnimation::State)),
-                             q, SIGNAL(scrollStateChanged(QAbstractAnimation::State,
-                                                          QAbstractAnimation::State)));
+            directMoveAnimation = new QPropertyAnimation(q, "scrollPosition", q);
+            QObject::connect(directMoveAnimation, SIGNAL(finished()), q, SLOT(fixupX()));
+            QObject::connect(directMoveAnimation, SIGNAL(finished()), q, SLOT(fixupY()));
+            QObject::connect(
+                directMoveAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)),
+                q, SIGNAL(scrollStateChanged(QAbstractAnimation::State, QAbstractAnimation::State))
+            );
             directMoveAnimation->setEasingCurve(QEasingCurve::OutCirc);
         }
     }
 
     void deleteFlickAnimations()
     {
-        if (flickAnimationX)
+        if (flickAnimationX) {
             flickAnimationX->stop();
-        if (flickAnimationY)
+        }
+        if (flickAnimationY) {
             flickAnimationY->stop();
+        }
         delete flickAnimationX;
+        flickAnimationX = nullptr;
         delete flickAnimationY;
+        flickAnimationY = nullptr;
         delete fixupAnimation.groupX;
+        fixupAnimation.groupX = nullptr;
         delete fixupAnimation.groupY;
+        fixupAnimation.groupY = nullptr;
         delete directMoveAnimation;
+        directMoveAnimation = nullptr;
         delete fixupAnimation.snapX;
+        fixupAnimation.snapX = nullptr;
         delete fixupAnimation.snapY;
+        fixupAnimation.snapY = nullptr;
     }
 
     void setScrollX()
     {
         if (horizontalScrollBarPolicy != Qt::ScrollBarAlwaysOff) {
             horizontalScrollBar->blockSignals(true);
-            horizontalScrollBar->setValue(-widget.data()->pos().x()/10.);
+            horizontalScrollBar->setValue(-widget.data()->pos().x() / 10.0);
             horizontalScrollBar->blockSignals(false);
         }
     }
@@ -779,7 +773,7 @@ public:
     {
         if (verticalScrollBarPolicy != Qt::ScrollBarAlwaysOff) {
             verticalScrollBar->blockSignals(true);
-            verticalScrollBar->setValue(-widget.data()->pos().y()/10.);
+            verticalScrollBar->setValue(-widget.data()->pos().y() / 10.0);
             verticalScrollBar->blockSignals(false);
         }
     }
@@ -882,7 +876,6 @@ Qt::ScrollBarPolicy ScrollWidget::horizontalScrollBarPolicy() const
     return d->horizontalScrollBarPolicy;
 }
 
-
 void ScrollWidget::setVerticalScrollBarPolicy(const Qt::ScrollBarPolicy policy)
 {
     d->verticalScrollBarPolicy = policy;
@@ -947,12 +940,10 @@ void ScrollWidget::ensureItemVisible(QGraphicsItem *item)
 
 QRectF ScrollWidget::viewportGeometry() const
 {
-    QRectF result;
-    if (!d->widget) {
-        return result;
+    if (d->widget) {
+        d->scrollingWidget->boundingRect();
     }
-
-    return d->scrollingWidget->boundingRect();
+    return QRectF();
 }
 
 QSizeF ScrollWidget::contentsSize() const
