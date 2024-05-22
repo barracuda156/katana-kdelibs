@@ -87,6 +87,7 @@ set(plasma_LIB_SRCS
     widgets/tabbar.cpp
     widgets/textbrowser.cpp
     widgets/treewidget.cpp
+    widgets/listwidget.cpp
     widgets/textedit.cpp
     widgets/calendarwidget.cpp
 )
@@ -190,6 +191,7 @@ install(
     widgets/tabbar.h
     widgets/textbrowser.h
     widgets/treewidget.h
+    widgets/listwidget.h
     widgets/textedit.h
     widgets/calendarwidget.h
     DESTINATION ${KDE4_INCLUDE_INSTALL_DIR}/plasma/widgets

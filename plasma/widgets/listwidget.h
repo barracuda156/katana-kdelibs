@@ -1,5 +1,5 @@
 /*
- *   Copyright 2008 Marco Martin <notmart@gmail.com>
+ *   Copyright 2024 Ivailo Monev <xakepa10@gmail.com>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU Library General Public License as
@@ -17,39 +17,39 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PLASMA_TREEWIDGET_H
-#define PLASMA_TREEWIDGET_H
+#ifndef PLASMA_LISTWIDGET_H
+#define PLASMA_LISTWIDGET_H
 
 #include <QGraphicsProxyWidget>
-#include <QTreeWidget>
+#include <QListWidget>
 
 #include <plasma/plasma_export.h>
 
 namespace Plasma
 {
 
-class TreeWidgetPrivate;
+class ListWidgetPrivate;
 
 /**
- * @class TreeWidget plasma/widgets/treewidget.h <Plasma/Widgets/TreeWidget>
+ * @class ListWidget plasma/widgets/listwidget.h <Plasma/Widgets/ListWidget>
  *
- * @short Provides a plasma-themed QTreeWidget.
+ * @short Provides a plasma-themed QListWidget.
  */
-class PLASMA_EXPORT TreeWidget : public QGraphicsProxyWidget
+class PLASMA_EXPORT ListWidget : public QGraphicsProxyWidget
 {
     Q_OBJECT
 
 public:
-    explicit TreeWidget(QGraphicsWidget *parent = nullptr);
-    ~TreeWidget();
+    explicit ListWidget(QGraphicsWidget *parent = nullptr);
+    ~ListWidget();
 
     /**
-     * @return the native widget wrapped by this TreeWidget
+     * @return the native widget wrapped by this ListWidget
      */
-    QTreeWidget* nativeWidget() const;
+    QListWidget* nativeWidget() const;
 
 private:
-    TreeWidgetPrivate *const d;
+    ListWidgetPrivate *const d;
 };
 
 }

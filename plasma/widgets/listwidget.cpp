@@ -1,5 +1,5 @@
 /*
- *   Copyright 2008 Marco Martin <notmart@gmail.com>
+ *   Copyright 2024 Ivailo Monev <xakepa10@gmail.com>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU Library General Public License as
@@ -17,26 +17,26 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "treewidget.h"
+#include "listwidget.h"
 #include "private/style_p.h"
 
-#include <QTreeWidget>
+#include <QListWidget>
 #include <QScrollBar>
 
 namespace Plasma
 {
 
-class TreeWidgetPrivate
+class ListWidgetPrivate
 {
 public:
     Plasma::Style::Ptr style;
 };
 
-TreeWidget::TreeWidget(QGraphicsWidget *parent)
+ListWidget::ListWidget(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-    d(new TreeWidgetPrivate())
+    d(new ListWidgetPrivate())
 {
-    QTreeWidget *native = new QTreeWidget();
+    QListWidget *native = new QListWidget();
     setWidget(native);
     native->setWindowIcon(QIcon());
     native->setAttribute(Qt::WA_NoSystemBackground);
@@ -47,18 +47,18 @@ TreeWidget::TreeWidget(QGraphicsWidget *parent)
     native->horizontalScrollBar()->setStyle(d->style.data());
 }
 
-TreeWidget::~TreeWidget()
+ListWidget::~ListWidget()
 {
     delete d;
     Plasma::Style::doneWithSharedStyle();
 }
 
-QTreeWidget* TreeWidget::nativeWidget() const
+QListWidget* ListWidget::nativeWidget() const
 {
-    return static_cast<QTreeWidget*>(widget());
+    return static_cast<QListWidget*>(widget());
 }
 
 }
 
-#include "moc_treewidget.cpp"
+#include "moc_listwidget.cpp"
 

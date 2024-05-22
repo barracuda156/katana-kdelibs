@@ -461,6 +461,7 @@ install(
     Plasma/ToolTipContent
     Plasma/ToolTipManager
     Plasma/TreeWidget
+    Plasma/ListWidget
     Plasma/CalendarWidget
     Plasma/View
     Plasma/Wallpaper
