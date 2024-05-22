@@ -28,16 +28,6 @@
 #include <QSlider>
 #include <QEvent>
 
-// inverse alignment of QLineEdit to put the text next to the arrows and expand text in the other
-// direction
-static const Qt::Alignment spinBoxAlignment(const QWidget *widget)
-{
-    if (widget->layoutDirection() == Qt::RightToLeft) {
-        return Qt::Alignment(Qt::AlignLeft | Qt::AlignVCenter);
-    }
-    return Qt::Alignment(Qt::AlignRight | Qt::AlignVCenter);
-}
-
 static void setupSpinBox(QSpinBox *spinbox, const int value)
 {
     spinbox->setLocale(KGlobal::locale()->toLocale());
@@ -110,7 +100,6 @@ KIntNumInput::KIntNumInput(QWidget* parent)
     setRange(INT_MIN, INT_MAX);
     setSingleStep(1);
     setValue(0);
-    setAlignment(spinBoxAlignment(this));
 }
 
 KIntNumInput::~KIntNumInput()
@@ -311,7 +300,6 @@ KDoubleNumInput::KDoubleNumInput(QWidget *parent)
     setSingleStep(0.01);
     setDecimals(2);
     setValue(0.0);
-    setAlignment(spinBoxAlignment(this));
 }
 
 KDoubleNumInput::~KDoubleNumInput()
