@@ -65,12 +65,33 @@ class ScrollWidgetPrivate
 public:
     ScrollWidgetPrivate(ScrollWidget *parent)
         : q(parent),
-        topBorder(0),
-        bottomBorder(0),
-        leftBorder(0),
-        rightBorder(0),
-        overflowBordersVisible(true)
+        scrollingWidget(nullptr),
+        borderSvg(nullptr),
+        topBorder(nullptr),
+        bottomBorder(nullptr),
+        leftBorder(nullptr),
+        rightBorder(nullptr),
+        layout(nullptr),
+        verticalScrollBar(nullptr),
+        verticalScrollBarPolicy(Qt::ScrollBarAsNeeded),
+        horizontalScrollBar(nullptr),
+        horizontalScrollBarPolicy(Qt::ScrollBarAsNeeded),
+        wheelTimer(nullptr),
+        flickAnimationX(nullptr),
+        flickAnimationY(nullptr),
+        directMoveAnimation(nullptr),
+        hasOvershoot(true),
+        overflowBordersVisible(true),
+        alignment(Qt::AlignLeft | Qt::AlignTop)
     {
+        fixupAnimation.groupX = nullptr;
+        fixupAnimation.startX = nullptr;
+        fixupAnimation.endX = nullptr;
+        fixupAnimation.groupY = nullptr;
+        fixupAnimation.startY = nullptr;
+        fixupAnimation.endY = nullptr;
+        fixupAnimation.snapX = nullptr;
+        fixupAnimation.snapY = nullptr;
     }
 
     void commonConstructor()
@@ -90,7 +111,6 @@ public:
         wheelTimer =  new QTimer(q);
         wheelTimer->setSingleShot(true);
 
-        verticalScrollBarPolicy = Qt::ScrollBarAsNeeded;
         verticalScrollBar = new Plasma::ScrollBar(q);
         verticalScrollBar->setFocusPolicy(Qt::NoFocus);
         layout->addItem(verticalScrollBar, 0, 1);
@@ -98,7 +118,6 @@ public:
         verticalScrollBar->nativeWidget()->setMaximum(100);
         QObject::connect(verticalScrollBar, SIGNAL(valueChanged(int)), q, SLOT(verticalScroll(int)));
 
-        horizontalScrollBarPolicy = Qt::ScrollBarAsNeeded;
         horizontalScrollBar = new Plasma::ScrollBar(q);
         verticalScrollBar->setFocusPolicy(Qt::NoFocus);
         horizontalScrollBar->setOrientation(Qt::Horizontal);
@@ -111,21 +130,6 @@ public:
         layout->setColumnSpacing(1, 0);
         layout->setRowSpacing(0, 0);
         layout->setRowSpacing(1, 0);
-
-        flickAnimationX = 0;
-        flickAnimationY = 0;
-        fixupAnimation.groupX = 0;
-        fixupAnimation.startX = 0;
-        fixupAnimation.endX = 0;
-        fixupAnimation.groupY = 0;
-        fixupAnimation.startY = 0;
-        fixupAnimation.endY = 0;
-        fixupAnimation.snapX = 0;
-        fixupAnimation.snapY = 0;
-        directMoveAnimation = 0;
-        hasOvershoot = true;
-
-        alignment = (Qt::AlignLeft | Qt::AlignTop);
     }
 
     void adjustScrollbars()
@@ -675,21 +679,17 @@ public:
 
             flickAnimationX = new QPropertyAnimation(widget.data(), xProp, widget.data());
             flickAnimationY = new QPropertyAnimation(widget.data(), yProp, widget.data());
-            QObject::connect(flickAnimationX, SIGNAL(finished()),
-                             q, SLOT(fixupX()));
-            QObject::connect(flickAnimationY, SIGNAL(finished()),
-                             q, SLOT(fixupY()));
+            QObject::connect(flickAnimationX, SIGNAL(finished()), q, SLOT(fixupX()));
+            QObject::connect(flickAnimationY, SIGNAL(finished()), q, SLOT(fixupY()));
 
-            QObject::connect(flickAnimationX,
-                             SIGNAL(stateChanged(QAbstractAnimation::State,
-                                                 QAbstractAnimation::State)),
-                             q, SIGNAL(scrollStateChanged(QAbstractAnimation::State,
-                                                          QAbstractAnimation::State)));
-            QObject::connect(flickAnimationY,
-                             SIGNAL(stateChanged(QAbstractAnimation::State,
-                                                 QAbstractAnimation::State)),
-                             q, SIGNAL(scrollStateChanged(QAbstractAnimation::State,
-                                                          QAbstractAnimation::State)));
+            QObject::connect(
+                flickAnimationX, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)),
+                q, SIGNAL(scrollStateChanged(QAbstractAnimation::State, QAbstractAnimation::State))
+            );
+            QObject::connect(
+                flickAnimationY, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)),
+                q, SIGNAL(scrollStateChanged(QAbstractAnimation::State, QAbstractAnimation::State))
+            );
 
             flickAnimationX->setEasingCurve(QEasingCurve::OutCirc);
             flickAnimationY->setEasingCurve(QEasingCurve::OutCirc);
