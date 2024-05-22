@@ -683,22 +683,19 @@ void Dialog::showEvent(QShowEvent * event)
 
 void Dialog::focusInEvent(QFocusEvent *event)
 {
-    Q_UNUSED(event)
-
     if (d->view) {
-        d->view->setFocus();
+        d->view->setFocus(event->reason());
     }
 
     QGraphicsWidget *graphicsWidget = d->graphicsWidgetPtr.data();
     if (graphicsWidget) {
-        graphicsWidget->setFocus();
+        graphicsWidget->setFocus(event->reason());
     }
 }
 
 void Dialog::moveEvent(QMoveEvent *event)
 {
     Q_UNUSED(event)
-    //kDebug();
     d->scheduleBorderCheck();
 }
 

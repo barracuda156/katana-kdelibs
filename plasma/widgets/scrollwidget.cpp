@@ -1177,10 +1177,8 @@ QSizeF ScrollWidget::snapSize() const
 
 void ScrollWidget::focusInEvent(QFocusEvent *event)
 {
-    Q_UNUSED(event)
-
     if (d->widget) {
-        d->widget.data()->setFocus();
+        d->widget.data()->setFocus(event->reason());
     }
 }
 
