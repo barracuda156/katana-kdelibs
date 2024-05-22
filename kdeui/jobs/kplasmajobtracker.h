@@ -37,7 +37,8 @@ public:
     KPlasmaJobTracker(QObject *parent = nullptr);
     virtual ~KPlasmaJobTracker();
 
-    virtual void registerJob(KJob *job);
+public Q_SLOTS:
+    virtual bool registerJob(KJob *job);
     virtual void unregisterJob(KJob *job);
 
 protected Q_SLOTS:

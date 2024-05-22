@@ -20,21 +20,10 @@
 
 #include "kdynamicjobtracker.h"
 
-#include <kplasmajobtracker.h>
-#include <kwidgetjobtracker.h>
-#include <kjobtrackerinterface.h>
-#include <kdebug.h>
-
-#include <QDBusConnection>
-#include <QDBusConnectionInterface>
-#include <QDBusInterface>
-#include <QMap>
-
-struct AllTrackers
-{
-    KPlasmaJobTracker *plasmaTracker;
-    KWidgetJobTracker *widgetTracker;
-};
+#include "kplasmajobtracker.h"
+#include "kwidgetjobtracker.h"
+#include "kjobtrackerinterface.h"
+#include "kdebug.h"
 
 class KDynamicJobTracker::Private
 {
@@ -53,7 +42,6 @@ public:
 
     KPlasmaJobTracker *plasmaTracker;
     KWidgetJobTracker *widgetTracker;
-    QMap<KJob*, AllTrackers> trackers;
 };
 
 KDynamicJobTracker::KDynamicJobTracker(QObject *parent)
@@ -67,43 +55,28 @@ KDynamicJobTracker::~KDynamicJobTracker()
     delete d;
 }
 
-void KDynamicJobTracker::registerJob(KJob *job)
+bool KDynamicJobTracker::registerJob(KJob *job)
 {
     if (!d->plasmaTracker) {
         d->plasmaTracker = new KPlasmaJobTracker();
     }
-
-    d->trackers[job].plasmaTracker = d->plasmaTracker;
-    d->trackers[job].plasmaTracker->registerJob(job);
-
-    QDBusInterface interface("org.kde.plasma-desktop", "/JobTracker", "org.kde.JobTracker", QDBusConnection::sessionBus(), this);
-    if (!interface.isValid()) {
-        // create a widget tracker in addition to KPlasmaJobTracker.
-        if (!d->widgetTracker) {
-            d->widgetTracker = new KWidgetJobTracker();
-        }
-        d->trackers[job].widgetTracker = d->widgetTracker;
-        d->trackers[job].widgetTracker->registerJob(job);
+    if (d->plasmaTracker->registerJob(job)) {
+        return true;
     }
-
-    Q_ASSERT(d->trackers[job].plasmaTracker || d->trackers[job].widgetTracker);
+    // create a widget tracker in addition to KPlasmaJobTracker.
+    if (!d->widgetTracker) {
+        d->widgetTracker = new KWidgetJobTracker();
+    }
+    return d->widgetTracker->registerJob(job);
 }
 
 void KDynamicJobTracker::unregisterJob(KJob *job)
 {
-    KPlasmaJobTracker *plasmaTracker = d->trackers[job].plasmaTracker;
-    KWidgetJobTracker *widgetTracker = d->trackers[job].widgetTracker;
-
-    if (!(widgetTracker || plasmaTracker)) {
-        kWarning() << "Tried to unregister a kio job that hasn't been registered.";
-        return;
+    if (d->plasmaTracker) {
+        d->plasmaTracker->unregisterJob(job);
     }
-
-    if (plasmaTracker) {
-        plasmaTracker->unregisterJob(job);
-    }
-    if (widgetTracker) {
-        widgetTracker->unregisterJob(job);
+    if (d->widgetTracker) {
+        d->widgetTracker->unregisterJob(job);
     }
 }
 

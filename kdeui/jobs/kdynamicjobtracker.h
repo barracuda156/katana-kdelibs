@@ -50,7 +50,7 @@ public Q_SLOTS:
      *
      * @param job the job to register
      */
-    virtual void registerJob(KJob *job);
+    virtual bool registerJob(KJob *job);
 
     /**
      * Unregister a job from the tracker it was registered to.

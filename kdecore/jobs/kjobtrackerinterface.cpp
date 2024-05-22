@@ -30,37 +30,56 @@ KJobTrackerInterface::~KJobTrackerInterface()
 {
 }
 
-void KJobTrackerInterface::registerJob(KJob *job)
+bool KJobTrackerInterface::registerJob(KJob *job)
 {
-    QObject::connect(job, SIGNAL(finished(KJob*)),
-                     this, SLOT(unregisterJob(KJob*)));
-    QObject::connect(job, SIGNAL(finished(KJob*)),
-                     this, SLOT(finished(KJob*)));
+    connect(
+        job, SIGNAL(finished(KJob*)),
+        this, SLOT(unregisterJob(KJob*))
+    );
+    connect(
+        job, SIGNAL(finished(KJob*)),
+        this, SLOT(finished(KJob*))
+    );
 
-    QObject::connect(job, SIGNAL(suspended(KJob*)),
-                     this, SLOT(suspended(KJob*)));
-    QObject::connect(job, SIGNAL(resumed(KJob*)),
-                     this, SLOT(resumed(KJob*)));
+    connect(
+        job, SIGNAL(suspended(KJob*)),
+        this, SLOT(suspended(KJob*))
+    );
+    connect(
+        job, SIGNAL(resumed(KJob*)),
+        this, SLOT(resumed(KJob*))
+    );
 
-    QObject::connect(job, SIGNAL(description(KJob*, const QString&,
-                                             const QPair<QString, QString>&,
-                                             const QPair<QString, QString>&)),
-                     this, SLOT(description(KJob*, const QString&,
-                                            const QPair<QString, QString>&,
-                                            const QPair<QString, QString>&)));
-    QObject::connect(job, SIGNAL(infoMessage(KJob*,QString,QString)),
-                     this, SLOT(infoMessage(KJob*,QString,QString)));
-    QObject::connect(job, SIGNAL(warning(KJob*,QString,QString)),
-                     this, SLOT(warning(KJob*,QString,QString)));
+    connect(
+        job, SIGNAL(description(KJob*, const QString&, const QPair<QString, QString>&, const QPair<QString, QString>&)),
+        this, SLOT(description(KJob*, const QString&, const QPair<QString, QString>&, const QPair<QString, QString>&))
+    );
+    connect(
+        job, SIGNAL(infoMessage(KJob*,QString,QString)),
+        this, SLOT(infoMessage(KJob*,QString,QString))
+    );
+    connect(
+        job, SIGNAL(warning(KJob*,QString,QString)),
+        this, SLOT(warning(KJob*,QString,QString))
+    );
 
-    QObject::connect(job, SIGNAL(totalAmount(KJob*,KJob::Unit,qulonglong)),
-                     this, SLOT(totalAmount(KJob*,KJob::Unit,qulonglong)));
-    QObject::connect(job, SIGNAL(processedAmount(KJob*,KJob::Unit,qulonglong)),
-                     this, SLOT(processedAmount(KJob*,KJob::Unit,qulonglong)));
-    QObject::connect(job, SIGNAL(percent(KJob*,ulong)),
-                     this, SLOT(percent(KJob*,ulong)));
-    QObject::connect(job, SIGNAL(speed(KJob*,ulong)),
-                     this, SLOT(speed(KJob*,ulong)));
+    connect(
+        job, SIGNAL(totalAmount(KJob*,KJob::Unit,qulonglong)),
+        this, SLOT(totalAmount(KJob*,KJob::Unit,qulonglong))
+    );
+    connect(
+        job, SIGNAL(processedAmount(KJob*,KJob::Unit,qulonglong)),
+        this, SLOT(processedAmount(KJob*,KJob::Unit,qulonglong))
+    );
+    connect(
+        job, SIGNAL(percent(KJob*,ulong)),
+        this, SLOT(percent(KJob*,ulong))
+    );
+    connect(
+        job, SIGNAL(speed(KJob*,ulong)),
+        this, SLOT(speed(KJob*,ulong))
+    );
+    return true;
 }
 
 void KJobTrackerInterface::unregisterJob(KJob *job)

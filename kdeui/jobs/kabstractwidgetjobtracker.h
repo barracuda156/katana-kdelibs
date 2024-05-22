@@ -44,29 +44,6 @@ public:
      */
     KAbstractWidgetJobTracker(QWidget *parent = nullptr);
 
-    /**
-     * Destroys a KAbstractWidgetJobTracker
-     */
-    virtual ~KAbstractWidgetJobTracker();
-
-    // KDE5: move this two virtual methods to be placed correctly (ereslibre)
-public Q_SLOTS:
-    /**
-     * Register a new job in this tracker.
-     * Note that job trackers inheriting from this class can have only one job
-     * registered at a time.
-     *
-     * @param job the job to register
-     */
-    virtual void registerJob(KJob *job);
-
-    /**
-     * Unregister a job from this tracker.
-     *
-     * @param job the job to unregister
-     */
-    virtual void unregisterJob(KJob *job);
-
 public:
     /**
      * The widget associated to this tracker.

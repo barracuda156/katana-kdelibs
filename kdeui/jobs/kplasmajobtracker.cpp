@@ -46,12 +46,6 @@ public:
 KPlasmaJobTrackerPrivate::KPlasmaJobTrackerPrivate()
     : interface("org.kde.plasma-desktop", "/JobTracker", "org.kde.JobTracker", QDBusConnection::sessionBus())
 {
-    QDBusConnectionInterface* sessionIface = QDBusConnection::sessionBus().interface();
-    if (!sessionIface->isServiceRegistered("org.kde.plasma-desktop")) {
-        kError() << "The service org.kde.plasma-desktop is still not registered";
-    } else {
-        kDebug() << "Plasma job tracker registered";
-    }
 }
 
 void KPlasmaJobTrackerPrivate::_k_slotStopRequested(const QString &name)
@@ -96,11 +90,16 @@ KPlasmaJobTracker::~KPlasmaJobTracker()
     delete d;
 }
 
-void KPlasmaJobTracker::registerJob(KJob *job)
+bool KPlasmaJobTracker::registerJob(KJob *job)
 {
     if (d->jobs.contains(job)) {
         kWarning() << "atempting to register the same job twice" << job;
-        return;
+        return false;
+    }
+
+    if (!d->interface.isValid()) {
+        kDebug() << "Plasma job tracker not registered";
+        return false;
     }
 
     const KComponentData componentData = KGlobal::mainComponent();
@@ -129,7 +128,7 @@ void KPlasmaJobTracker::registerJob(KJob *job)
     d->interface.call("updateJob", jobid, jobdata);
 
     kDebug() << "registerd job" << jobid << jobdata;
-    KJobTrackerInterface::registerJob(job);
+    return KJobTrackerInterface::registerJob(job);
 }
 
 void KPlasmaJobTracker::unregisterJob(KJob *job)

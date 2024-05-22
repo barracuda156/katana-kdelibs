@@ -26,20 +26,6 @@ KAbstractWidgetJobTracker::KAbstractWidgetJobTracker(QWidget *parent)
 {
 }
 
-KAbstractWidgetJobTracker::~KAbstractWidgetJobTracker()
-{
-}
-
-void KAbstractWidgetJobTracker::registerJob(KJob *job)
-{
-    KJobTrackerInterface::registerJob(job);
-}
-
-void KAbstractWidgetJobTracker::unregisterJob(KJob *job)
-{
-    KJobTrackerInterface::unregisterJob(job);
-}
-
 void KAbstractWidgetJobTracker::setStopOnClose(KJob *job, bool stopOnClose)
 {
     Q_UNUSED(job);

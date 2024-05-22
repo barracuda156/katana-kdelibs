@@ -77,7 +77,7 @@ QWidget *KWidgetJobTracker::widget(KJob *job)
     return d->progressWidget.value(job, 0);
 }
 
-void KWidgetJobTracker::registerJob(KJob *job)
+bool KWidgetJobTracker::registerJob(KJob *job)
 {
     Private::ProgressWidget *vi = new Private::ProgressWidget(job, this, d->parent);
     vi->jobRegistered = true;
@@ -88,6 +88,8 @@ void KWidgetJobTracker::registerJob(KJob *job)
     KAbstractWidgetJobTracker::registerJob(job);
 
     QTimer::singleShot(500, this, SLOT(_k_showProgressWidget()));
+
+    return true;
 }
 
 void KWidgetJobTracker::unregisterJob(KJob *job)

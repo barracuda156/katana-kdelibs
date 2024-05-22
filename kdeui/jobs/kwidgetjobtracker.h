@@ -53,14 +53,13 @@ public:
      */
     virtual QWidget *widget(KJob *job);
 
-// KDE5: move this two virtual methods to be placed correctly (ereslibre)
 public Q_SLOTS:
     /**
      * Register a new job in this tracker.
      *
      * @param job the job to register
      */
-    virtual void registerJob(KJob *job);
+    virtual bool registerJob(KJob *job);
 
     /**
      * Unregister a job from this tracker.
