@@ -1175,11 +1175,6 @@ QSizeF ScrollWidget::snapSize() const
     return d->snapSize;
 }
 
-QWidget *ScrollWidget::nativeWidget() const
-{
-    return 0;
-}
-
 void ScrollWidget::focusInEvent(QFocusEvent *event)
 {
     Q_UNUSED(event)

@@ -190,7 +190,7 @@ public:
     QPointF scrollPosition() const;
 
     /**
-     * Set the nap size of the kinetic scrolling:
+     * Set the snap size of the kinetic scrolling:
      * the scrolling will always stop at multiples of that size.
      *
      * @param the desired snap size
@@ -203,11 +203,6 @@ public:
      * @since 4.5
      */
     QSizeF snapSize() const;
-
-    /**
-     * @return the native widget wrapped by this ScrollWidget
-     */
-    QWidget *nativeWidget() const;
 
 Q_SIGNALS:
     /**
