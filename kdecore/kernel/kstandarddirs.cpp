@@ -829,7 +829,8 @@ KStandardDirs::realFilePath(const QString &filename)
     ::memset(realpath_buffer, 0, PATH_MAX + 1);
 
     /* If the path contains symlinks, get the real name */
-    if (::realpath( QFile::encodeName(filename).constData(), realpath_buffer) != 0) {
+    const QByteArray filenamebytes = QFile::encodeName(filename);
+    if (::realpath(filenamebytes.constData(), realpath_buffer) != 0) {
         // success, use result from realpath
         return QFile::decodeName(realpath_buffer);
     }
