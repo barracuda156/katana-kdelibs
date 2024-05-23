@@ -77,12 +77,16 @@ void Label::setText(const QString &text)
         d->elideText();
     } else {
         nativeWidget()->setText(text);
+        d->originaltext.clear();
     }
     updateGeometry();
 }
 
 QString Label::text() const
 {
+    if (!d->originaltext.isEmpty()) {
+        return d->originaltext;
+    }
     return nativeWidget()->text();
 }
 
