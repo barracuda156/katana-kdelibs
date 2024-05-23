@@ -127,6 +127,7 @@ Q_SIGNALS:
     void linkHovered(const QString &link);
 
 protected:
+    void resizeEvent(QGraphicsSceneResizeEvent *event);
     void changeEvent(QEvent *event);
     bool event(QEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant & value);

@@ -36,11 +36,20 @@ public:
         : ThemedWidgetInterface<Label>(label)
     {
     }
+
+    void elideText()
+    {
+        QFontMetricsF fontmetricsf(q->font());
+        const qreal dotx3width = fontmetricsf.width(QLatin1String("..."));
+        q->nativeWidget()->setText(fontmetricsf.elidedText(originaltext, Qt::ElideRight, q->size().width() - dotx3width));
+    }
+
+    QString originaltext;
 };
 
 Label::Label(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new LabelPrivate(this))
+    d(new LabelPrivate(this))
 {
     QLabel *native = new QLabel();
 
@@ -63,7 +72,12 @@ Label::~Label()
 
 void Label::setText(const QString &text)
 {
-    nativeWidget()->setText(text);
+    if (!nativeWidget()->wordWrap()) {
+        d->originaltext = text;
+        d->elideText();
+    } else {
+        nativeWidget()->setText(text);
+    }
     updateGeometry();
 }
 
@@ -95,6 +109,13 @@ Qt::Alignment Label::alignment() const
 void Label::setWordWrap(bool wrap)
 {
     nativeWidget()->setWordWrap(wrap);
+    if (!wrap) {
+        d->originaltext = nativeWidget()->text();
+        d->elideText();
+    } else {
+        nativeWidget()->setText(d->originaltext);
+        d->originaltext.clear();
+    }
 }
 
 bool Label::wordWrap() const
@@ -118,6 +139,14 @@ void Label::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         QApplication::sendEvent(nativeWidget(), &contextMenuEvent);
     } else{
         event->ignore();
+    }
+}
+
+void Label::resizeEvent(QGraphicsSceneResizeEvent *event)
+{
+    QGraphicsProxyWidget::resizeEvent(event);
+    if (!nativeWidget()->wordWrap()) {
+        d->elideText();
     }
 }
 
