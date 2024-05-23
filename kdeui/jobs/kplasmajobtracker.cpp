@@ -40,11 +40,13 @@ public:
     void _k_slotStopRequested(const QString &name);
 
     QMap<KJob*, QVariantMap> jobs;
-    QDBusInterface interface;
+    QDBusInterface desktop;
+    QDBusInterface windowed;
 };
 
 KPlasmaJobTrackerPrivate::KPlasmaJobTrackerPrivate()
-    : interface("org.kde.plasma-desktop", "/JobTracker", "org.kde.JobTracker", QDBusConnection::sessionBus())
+    : desktop("org.kde.plasma-desktop", "/JobTracker", "org.kde.JobTracker", QDBusConnection::sessionBus()),
+    windowed("org.kde.plasma-windowed", "/JobTracker", "org.kde.JobTracker", QDBusConnection::sessionBus())
 {
 }
 
@@ -65,9 +67,15 @@ KPlasmaJobTracker::KPlasmaJobTracker(QObject *parent)
     : KJobTrackerInterface(parent),
     d(new KPlasmaJobTrackerPrivate())
 {
-    if (d->interface.isValid()) {
+    if (d->desktop.isValid()) {
         connect(
-            &d->interface, SIGNAL(stopRequested(QString)),
+            &d->desktop, SIGNAL(stopRequested(QString)),
+            this, SLOT(_k_slotStopRequested(QString))
+        );
+    }
+    if (d->windowed.isValid()) {
+        connect(
+            &d->windowed, SIGNAL(stopRequested(QString)),
             this, SLOT(_k_slotStopRequested(QString))
         );
     }
@@ -97,7 +105,7 @@ bool KPlasmaJobTracker::registerJob(KJob *job)
         return false;
     }
 
-    if (!d->interface.isValid()) {
+    if (!d->desktop.isValid() && !d->windowed.isValid()) {
         kDebug() << "plasma job tracker not registered";
         return false;
     }
@@ -117,15 +125,20 @@ bool KPlasmaJobTracker::registerJob(KJob *job)
     jobdata.insert("label0", QString());
     jobdata.insert("label1", QString());
     // NOTE: destUrl never changes, it is set when the job is created
-    jobdata.insert("destUrl", job->property("destUrl"));
+    jobdata.insert("destUrl", job->property("destUrl").toString());
     jobdata.insert("error", QString());
     jobdata.insert("percentage", 0);
     jobdata.insert("state", "running");
     jobdata.insert("killable", bool(job->capabilities() & KJob::Killable));
     d->jobs.insert(job, jobdata);
-    d->interface.call("addJob", jobid);
-    d->interface.call("updateJob", jobid, jobdata);
-
+    if (d->desktop.isValid()) {
+        d->desktop.call("addJob", jobid);
+        d->desktop.asyncCall("updateJob", jobid, jobdata);
+    }
+    if (d->windowed.isValid()) {
+        d->windowed.call("addJob", jobid);
+        d->windowed.asyncCall("updateJob", jobid, jobdata);
+    }
     kDebug() << "registerd job" << jobid << jobdata;
     return KJobTrackerInterface::registerJob(job);
 }
@@ -141,7 +154,6 @@ void KPlasmaJobTracker::unregisterJob(KJob *job)
     // both finished() and unregistrJob() will be called, either does it
     kDebug() << "unregisterd job" << kJobID(job);
     finished(job);
-    d->jobs.remove(job);
 }
 
 void KPlasmaJobTracker::finished(KJob *job)
@@ -156,7 +168,8 @@ void KPlasmaJobTracker::finished(KJob *job)
         jobdata.insert("error", job->errorText());
     }
     jobdata.insert("state", "stopped");
-    d->interface.call("updateJob", jobid, jobdata);
+    d->desktop.asyncCall("updateJob", jobid, jobdata);
+    d->windowed.asyncCall("updateJob", jobid, jobdata);
     kDebug() << "job finished" << jobid;
     d->jobs.remove(job);
 }
@@ -171,7 +184,8 @@ void KPlasmaJobTracker::suspended(KJob *job)
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("state", "suspended");
     d->jobs.insert(job, jobdata);
-    d->interface.call("updateJob", jobid, jobdata);
+    d->desktop.asyncCall("updateJob", jobid, jobdata);
+    d->windowed.asyncCall("updateJob", jobid, jobdata);
     kDebug() << "job suspended" << jobid;
 }
 
@@ -185,7 +199,8 @@ void KPlasmaJobTracker::resumed(KJob *job)
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("state", "running");
     d->jobs.insert(job, jobdata);
-    d->interface.call("updateJob", jobid, jobdata);
+    d->desktop.asyncCall("updateJob", jobid, jobdata);
+    d->windowed.asyncCall("updateJob", jobid, jobdata);
     kDebug() << "job resumed" << jobid;
 }
 
@@ -204,7 +219,8 @@ void KPlasmaJobTracker::description(KJob *job, const QString &title,
     jobdata.insert("labelName1", field2.first);
     jobdata.insert("label1", field2.second);
     d->jobs.insert(job, jobdata);
-    d->interface.call("updateJob", jobid, jobdata);
+    d->desktop.asyncCall("updateJob", jobid, jobdata);
+    d->windowed.asyncCall("updateJob", jobid, jobdata);
     kDebug() << "job description" << jobid << field1 << field2;
 }
 
@@ -219,7 +235,8 @@ void KPlasmaJobTracker::infoMessage(KJob *job, const QString &plain, const QStri
     jobdata.insert("infoMessage", plain);
     // NOTE: the message is used in the notificatin plasma applet, it should be stored
     d->jobs.insert(job, jobdata);
-    d->interface.call("updateJob", jobid, jobdata);
+    d->desktop.asyncCall("updateJob", jobid, jobdata);
+    d->windowed.asyncCall("updateJob", jobid, jobdata);
     kDebug() << "job info message" << jobid << plain << rich;
 }
 
@@ -233,7 +250,8 @@ void KPlasmaJobTracker::percent(KJob *job, unsigned long percent)
     QVariantMap jobdata = d->jobs.value(job);
     jobdata.insert("percentage", qulonglong(percent));
     d->jobs.insert(job, jobdata);
-    d->interface.call("updateJob", jobid, jobdata);
+    d->desktop.asyncCall("updateJob", jobid, jobdata);
+    d->windowed.asyncCall("updateJob", jobid, jobdata);
     kDebug() << "job percent" << jobid << percent;
 }
 
