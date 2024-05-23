@@ -98,7 +98,7 @@ bool KPlasmaJobTracker::registerJob(KJob *job)
     }
 
     if (!d->interface.isValid()) {
-        kDebug() << "Plasma job tracker not registered";
+        kDebug() << "plasma job tracker not registered";
         return false;
     }
 

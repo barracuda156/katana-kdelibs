@@ -46,7 +46,7 @@ public:
 
 KDynamicJobTracker::KDynamicJobTracker(QObject *parent)
     : KJobTrackerInterface(parent),
-      d(new Private())
+    d(new Private())
 {
 }
 
@@ -63,7 +63,7 @@ bool KDynamicJobTracker::registerJob(KJob *job)
     if (d->plasmaTracker->registerJob(job)) {
         return true;
     }
-    // create a widget tracker in addition to KPlasmaJobTracker.
+    // fallback to a widget tracker
     if (!d->widgetTracker) {
         d->widgetTracker = new KWidgetJobTracker();
     }
