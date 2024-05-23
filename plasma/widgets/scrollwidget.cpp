@@ -440,16 +440,21 @@ public:
     }
     void fixupX()
     {
-        fixup(fixupAnimation.groupX, fixupAnimation.startX, fixupAnimation.endX,
-              widget.data()->x(), minXExtent(), maxXExtent());
-    }
-    void fixupY()
-    {
-        fixup(fixupAnimation.groupY, fixupAnimation.startY, fixupAnimation.endY,
-              widget.data()->y(), minYExtent(), maxYExtent());
+        fixup(
+            fixupAnimation.groupX, fixupAnimation.startX, fixupAnimation.endX,
+            widget.data()->x(), minXExtent(), maxXExtent()
+        );
     }
 
-    void makeRectVisible()
+    void fixupY()
+    {
+        fixup(
+            fixupAnimation.groupY, fixupAnimation.startY, fixupAnimation.endY,
+            widget.data()->y(), minYExtent(), maxYExtent()
+        );
+    }
+
+    void makeRectVisible(const QRectF &rectToBeVisible)
     {
         if (!widget) {
             return;
@@ -457,9 +462,13 @@ public:
 
         QRectF viewRect = scrollingWidget->boundingRect();
         //ensure the rect is not outside the widget bounding rect
-        QRectF mappedRect = QRectF(QPointF(qBound((qreal)0.0, rectToBeVisible.x(), widget.data()->size().width() - rectToBeVisible.width()),
-                                           qBound((qreal)0.0, rectToBeVisible.y(), widget.data()->size().height() - rectToBeVisible.height())),
-                                           rectToBeVisible.size());
+        QRectF mappedRect = QRectF(
+            QPointF(
+                qBound((qreal)0.0, rectToBeVisible.x(), widget.data()->size().width() - rectToBeVisible.width()),
+                qBound((qreal)0.0, rectToBeVisible.y(), widget.data()->size().height() - rectToBeVisible.height())
+            ),
+            rectToBeVisible.size()
+        );
         mappedRect = widget.data()->mapToItem(scrollingWidget, mappedRect).boundingRect();
 
         if (viewRect.contains(mappedRect)) {
@@ -490,9 +499,7 @@ public:
         }
 
         QRectF rect(widget.data()->mapFromScene(itemToBeVisible->scenePos()), itemToBeVisible->boundingRect().size());
-        rectToBeVisible = rect;
-
-        makeRectVisible();
+        makeRectVisible(rect);
     }
 
     void makeItemVisible()
@@ -789,7 +796,6 @@ public:
     ScrollBar *horizontalScrollBar;
     Qt::ScrollBarPolicy horizontalScrollBarPolicy;
     QWeakPointer<QGraphicsWidget> widgetToBeVisible;
-    QRectF rectToBeVisible;
     QTimer *wheelTimer;
 
     QPropertyAnimation *flickAnimationX;
@@ -904,8 +910,7 @@ void ScrollWidget::ensureRectVisible(const QRectF &rect)
         return;
     }
 
-    d->rectToBeVisible = rect;
-    d->makeRectVisible();
+    d->makeRectVisible(rect);
 }
 
 void ScrollWidget::ensureItemVisible(QGraphicsItem *item)
@@ -1089,10 +1094,8 @@ QSizeF ScrollWidget::sizeHint(Qt::SizeHint which, const QSizeF & constraint) con
 void Plasma::ScrollWidget::setAlignment(Qt::Alignment align)
 {
     d->alignment = align;
-    if (d->widget.data() &&
-        d->widget.data()->isVisible()) {
-        d->widget.data()->setPos(d->minXExtent(),
-                                 d->minYExtent());
+    if (d->widget.data() && d->widget.data()->isVisible()) {
+        d->widget.data()->setPos(d->minXExtent(), d->minYExtent());
     }
 }
 
