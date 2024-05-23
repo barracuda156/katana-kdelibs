@@ -107,8 +107,6 @@ bool KPlasmaJobTracker::registerJob(KJob *job)
     if (appIconName.isEmpty()) {
         appIconName = componentData.aboutData()->appName();
     }
-    // NOTE: destUrl never changes, it is set when the job is created
-    const QString destUrl = job->property("destUrl").toString();
 
     const QString jobid = kJobID(job);
     QVariantMap jobdata;
@@ -118,7 +116,8 @@ bool KPlasmaJobTracker::registerJob(KJob *job)
     jobdata.insert("labelName1", QString());
     jobdata.insert("label0", QString());
     jobdata.insert("label1", QString());
-    jobdata.insert("destUrl", destUrl);
+    // NOTE: destUrl never changes, it is set when the job is created
+    jobdata.insert("destUrl", job->property("destUrl"));
     jobdata.insert("error", QString());
     jobdata.insert("percentage", 0);
     jobdata.insert("state", "running");
@@ -191,8 +190,8 @@ void KPlasmaJobTracker::resumed(KJob *job)
 }
 
 void KPlasmaJobTracker::description(KJob *job, const QString &title,
-                                      const QPair<QString, QString> &field1,
-                                      const QPair<QString, QString> &field2)
+                                    const QPair<QString, QString> &field1,
+                                    const QPair<QString, QString> &field2)
 {
     if (!d->jobs.contains(job)) {
         return;
