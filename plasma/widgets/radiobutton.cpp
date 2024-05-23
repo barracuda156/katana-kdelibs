@@ -18,16 +18,10 @@
  */
 
 #include "radiobutton.h"
-
-#include <QDir>
-#include <QPainter>
-#include <QRadioButton>
-
-#include <kmimetype.h>
-
 #include "private/themedwidgetinterface_p.h"
 #include "svg.h"
-#include "theme.h"
+
+#include <QRadioButton>
 
 namespace Plasma
 {
@@ -36,44 +30,14 @@ class RadioButtonPrivate : public ThemedWidgetInterface<RadioButton>
 {
 public:
     RadioButtonPrivate(RadioButton *radio)
-        : ThemedWidgetInterface<RadioButton>(radio),
-         svg(nullptr)
+        : ThemedWidgetInterface<RadioButton>(radio)
     {
     }
-
-    ~RadioButtonPrivate()
-    {
-        delete svg;
-    }
-
-    void setPixmap(RadioButton *q)
-    {
-        if (imagePath.isEmpty()) {
-            return;
-        }
-
-        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(absImagePath));
-        QPixmap pm(q->size().toSize());
-
-        if (mime->is("image/svg+xml")) {
-            svg = new Svg();
-            QPainter p(&pm);
-            svg->paint(&p, pm.rect());
-        } else {
-            pm = QPixmap(absImagePath);
-        }
-
-        static_cast<QRadioButton*>(q->widget())->setIcon(QIcon(pm));
-    }
-
-    QString imagePath;
-    QString absImagePath;
-    Svg *svg;
 };
 
 RadioButton::RadioButton(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new RadioButtonPrivate(this))
+    d(new RadioButtonPrivate(this))
 {
     QRadioButton *native = new QRadioButton();
     connect(native, SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
@@ -90,37 +54,12 @@ RadioButton::~RadioButton()
 
 void RadioButton::setText(const QString &text)
 {
-    static_cast<QRadioButton*>(widget())->setText(text);
+    nativeWidget()->setText(text);
 }
 
 QString RadioButton::text() const
 {
-    return static_cast<QRadioButton*>(widget())->text();
-}
-
-void RadioButton::setImage(const QString &path)
-{
-    if (d->imagePath == path) {
-        return;
-    }
-
-    delete d->svg;
-    d->svg = nullptr;
-    d->imagePath = path;
-
-    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
-    if (absolutePath) {
-        d->absImagePath = path;
-    } else {
-        d->absImagePath = Theme::defaultTheme()->imagePath(path);
-    }
-
-    d->setPixmap(this);
-}
-
-QString RadioButton::image() const
-{
-    return d->imagePath;
+    return nativeWidget()->text();
 }
 
 QRadioButton *RadioButton::nativeWidget() const
@@ -128,20 +67,14 @@ QRadioButton *RadioButton::nativeWidget() const
     return static_cast<QRadioButton*>(widget());
 }
 
-void RadioButton::resizeEvent(QGraphicsSceneResizeEvent *event)
-{
-    d->setPixmap(this);
-    QGraphicsProxyWidget::resizeEvent(event);
-}
-
 void RadioButton::setChecked(bool checked)
 {
-    static_cast<QRadioButton*>(widget())->setChecked(checked);
+    nativeWidget()->setChecked(checked);
 }
 
 bool RadioButton::isChecked() const
 {
-    return static_cast<QRadioButton*>(widget())->isChecked();
+    return nativeWidget()->isChecked();
 }
 
 void RadioButton::changeEvent(QEvent *event)

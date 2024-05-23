@@ -40,7 +40,6 @@ class PLASMA_EXPORT CheckBox : public QGraphicsProxyWidget
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString image READ image WRITE setImage)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
 
 public:
@@ -58,18 +57,6 @@ public:
      * @return the display text
      */
     QString text() const;
-
-    /**
-     * Sets the path to an image to display.
-     *
-     * @param path the path to the image; if a relative path, then a themed image will be loaded.
-     */
-    void setImage(const QString &path);
-
-    /**
-     * @return the image path being displayed currently, or an empty string if none.
-     */
-    QString image() const;
 
     /**
      * @return the native widget wrapped by this CheckBox
@@ -92,12 +79,10 @@ Q_SIGNALS:
     void toggled(bool);
 
 protected:
-    void resizeEvent(QGraphicsSceneResizeEvent *event);
     void changeEvent(QEvent *event);
 
 private:
     Q_PRIVATE_SLOT(d, void setPalette())
-    Q_PRIVATE_SLOT(d, void setPixmap())
 
     CheckBoxPrivate * const d;
 };

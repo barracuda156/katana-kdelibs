@@ -20,14 +20,8 @@
 #include "checkbox.h"
 
 #include <QCheckBox>
-#include <QPainter>
-#include <QDir>
-
-#include <kmimetype.h>
 
 #include "private/themedwidgetinterface_p.h"
-#include "svg.h"
-#include "theme.h"
 
 namespace Plasma
 {
@@ -36,49 +30,9 @@ class CheckBoxPrivate : public ThemedWidgetInterface<CheckBox>
 {
 public:
     CheckBoxPrivate(CheckBox *c)
-        : ThemedWidgetInterface<CheckBox>(c),
-          svg(nullptr)
+        : ThemedWidgetInterface<CheckBox>(c)
     {
     }
-
-    ~CheckBoxPrivate()
-    {
-        delete svg;
-    }
-
-    void setPixmap()
-    {
-        if (imagePath.isEmpty()) {
-            delete svg;
-            svg = nullptr;
-            return;
-        }
-
-        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(absImagePath));
-        QPixmap pm(q->size().toSize());
-
-        if (mime->is("image/svg+xml") || mime->is("image/svg+xml-compressed")) {
-            if (!svg || svg->imagePath() != imagePath) {
-                delete svg;
-                svg = new Svg();
-                svg->setImagePath(imagePath);
-                QObject::connect(svg, SIGNAL(repaintNeeded()), q, SLOT(setPixmap()));
-            }
-
-            QPainter p(&pm);
-            svg->paint(&p, pm.rect());
-        } else {
-            delete svg;
-            svg = nullptr;
-            pm = QPixmap(absImagePath);
-        }
-
-        static_cast<QCheckBox*>(q->widget())->setIcon(QIcon(pm));
-    }
-
-    QString imagePath;
-    QString absImagePath;
-    Svg *svg;
 };
 
 CheckBox::CheckBox(QGraphicsWidget *parent)
@@ -101,37 +55,12 @@ CheckBox::~CheckBox()
 
 void CheckBox::setText(const QString &text)
 {
-    static_cast<QCheckBox*>(widget())->setText(text);
+    nativeWidget()->setText(text);
 }
 
 QString CheckBox::text() const
 {
-    return static_cast<QCheckBox*>(widget())->text();
-}
-
-void CheckBox::setImage(const QString &path)
-{
-    if (d->imagePath == path) {
-        return;
-    }
-
-    delete d->svg;
-    d->svg = nullptr;
-    d->imagePath = path;
-
-    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
-    if (absolutePath) {
-        d->absImagePath = path;
-    } else {
-        d->absImagePath = Theme::defaultTheme()->imagePath(path);
-    }
-
-    d->setPixmap();
-}
-
-QString CheckBox::image() const
-{
-    return d->imagePath;
+    return nativeWidget()->text();
 }
 
 QCheckBox *CheckBox::nativeWidget() const
@@ -139,20 +68,14 @@ QCheckBox *CheckBox::nativeWidget() const
     return static_cast<QCheckBox*>(widget());
 }
 
-void CheckBox::resizeEvent(QGraphicsSceneResizeEvent *event)
-{
-    d->setPixmap();
-    QGraphicsProxyWidget::resizeEvent(event);
-}
-
 void CheckBox::setChecked(bool checked)
 {
-    static_cast<QCheckBox*>(widget())->setChecked(checked);
+    nativeWidget()->setChecked(checked);
 }
 
 bool CheckBox::isChecked() const
 {
-    return static_cast<QCheckBox*>(widget())->isChecked();
+    return nativeWidget()->isChecked();
 }
 
 void CheckBox::changeEvent(QEvent *event)

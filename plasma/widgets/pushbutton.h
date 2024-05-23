@@ -22,11 +22,10 @@
 
 #include <QtGui/QGraphicsProxyWidget>
 
+#include <plasma/plasma_export.h>
 #include <kicon.h>
 
 class KPushButton;
-
-#include <plasma/plasma_export.h>
 
 namespace Plasma
 {
@@ -42,7 +41,6 @@ class PLASMA_EXPORT PushButton : public QGraphicsProxyWidget
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString image READ image WRITE setImage)
     Q_PROPERTY(QAction *action READ action WRITE setAction)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon)
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable)
@@ -64,28 +62,6 @@ public:
      * @return the display text
      */
     QString text() const;
-
-    /**
-     * Sets the path to an image to display.
-     *
-     * @param path the path to the image; if a relative path, then a themed image will be loaded.
-     */
-    void setImage(const QString &path);
-
-    /**
-     * Sets the path to an svg image to display and the id of the used svg element, if necessary.
-     *
-     * @param path the path to the image; if a relative path, then a themed image will be loaded.
-     * @param elementid the id of a svg element.
-     *
-     * @since 4.4
-     */
-    void setImage(const QString &path, const QString &elementid);
-
-    /**
-     * @return the image path being displayed currently, or an empty string if none.
-     */
-    QString image() const;
 
     /**
      * Associate an action with this PushButton
@@ -201,11 +177,9 @@ public Q_SLOTS:
     void setChecked(bool checked);
 
 protected:
-    void resizeEvent(QGraphicsSceneResizeEvent *event);
     void changeEvent(QEvent *event);
 
 private:
-    Q_PRIVATE_SLOT(d, void setPixmap())
     Q_PRIVATE_SLOT(d, void syncToAction())
     Q_PRIVATE_SLOT(d, void clearAction())
     Q_PRIVATE_SLOT(d, void setPalette())

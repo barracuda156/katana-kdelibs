@@ -18,24 +18,16 @@
  */
 
 #include "toolbutton.h"
+#include "animator.h"
+#include "framesvg.h"
+#include "private/actionwidgetinterface_p.h"
+#include "private/themedwidgetinterface_p.h"
 
-#include <QDir>
-#include <QPainter>
 #include <QPropertyAnimation>
-#include <QtGui/qstyleoption.h>
+#include <QStyleOptionToolButton>
 #include <QToolButton>
 
 #include <kcolorutils.h>
-#include <kicon.h>
-#include <kiconeffect.h>
-#include <kmimetype.h>
-
-#include "animator.h"
-#include "framesvg.h"
-#include "paintutils.h"
-#include "private/actionwidgetinterface_p.h"
-#include "private/themedwidgetinterface_p.h"
-#include "theme.h"
 
 namespace Plasma
 {
@@ -48,56 +40,8 @@ public:
           background(nullptr),
           animation(nullptr),
           opacity(1.0),
-          svg(nullptr),
           underMouse(false)
     {
-    }
-
-    ~ToolButtonPrivate()
-    {
-        delete svg;
-    }
-
-    void setPixmap()
-    {
-        if (imagePath.isEmpty()) {
-            delete svg;
-            svg = nullptr;
-            return;
-        }
-
-        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(absImagePath));
-        QPixmap pm;
-
-        if (mime->is("image/svg+xml") || mime->is("image/svg+xml-compressed")) {
-            if (!svg || svg->imagePath() != absImagePath) {
-                delete svg;
-                svg = new Svg();
-                svg->setImagePath(imagePath);
-                QObject::connect(svg, SIGNAL(repaintNeeded()), q, SLOT(setPixmap()));
-                if (!svgElement.isNull()) {
-                    svg->setContainsMultipleImages(true);
-                }
-            }
-
-            //QPainter p(&pm);
-            if (!svgElement.isNull() && svg->hasElement(svgElement)) {
-                QSizeF elementSize = svg->elementSize(svgElement);
-                float scale = pm.width() / qMax(elementSize.width(), elementSize.height());
-
-                svg->resize(svg->size() * scale);
-                pm = svg->pixmap(svgElement);
-            } else {
-                svg->resize(pm.size());
-                pm = svg->pixmap();
-            }
-        } else {
-            delete svg;
-            svg = nullptr;
-            pm = QPixmap(absImagePath);
-        }
-
-        static_cast<QToolButton*>(q->widget())->setIcon(KIcon(pm));
     }
 
     void syncActiveRect();
@@ -109,10 +53,6 @@ public:
     qreal opacity;
     QRectF activeRect;
 
-    QString imagePath;
-    QString absImagePath;
-    Svg *svg;
-    QString svgElement;
     bool underMouse;
 };
 
@@ -162,7 +102,7 @@ void ToolButtonPrivate::animationUpdate(qreal progress)
 
 ToolButton::ToolButton(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new ToolButtonPrivate(this))
+    d(new ToolButtonPrivate(this))
 {
     d->background = new FrameSvg(this);
     d->background->setImagePath("widgets/button");
@@ -227,43 +167,13 @@ bool ToolButton::autoRaise() const
 
 void ToolButton::setText(const QString &text)
 {
-    static_cast<QToolButton*>(widget())->setText(text);
+    nativeWidget()->setText(text);
     updateGeometry();
 }
 
 QString ToolButton::text() const
 {
-    return static_cast<QToolButton*>(widget())->text();
-}
-
-void ToolButton::setImage(const QString &path)
-{
-    if (d->imagePath == path) {
-        return;
-    }
-
-    delete d->svg;
-    d->svg = nullptr;
-    d->imagePath = path;
-
-    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
-    if (absolutePath) {
-        d->absImagePath = path;
-    } else {
-        d->absImagePath = Theme::defaultTheme()->imagePath(path);
-    }
-
-    d->setPixmap();
-}
-
-void ToolButton::setImage(const QString &path, const QString &elementid)
-{
-    if (d->imagePath == path && d->svgElement == elementid) {
-        return;
-    }
-    d->imagePath.clear();
-    d->svgElement = elementid;
-    setImage(path);
+    return nativeWidget()->text();
 }
 
 void ToolButton::setIcon(const QIcon &icon)
@@ -274,11 +184,6 @@ void ToolButton::setIcon(const QIcon &icon)
 QIcon ToolButton::icon() const
 {
     return nativeWidget()->icon();
-}
-
-QString ToolButton::image() const
-{
-    return d->imagePath;
 }
 
 void ToolButton::setDown(bool down)
@@ -298,8 +203,6 @@ QToolButton *ToolButton::nativeWidget() const
 
 void ToolButton::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
-    d->setPixmap();
-
    if (d->background) {
         // resize all four panels
         d->background->setElementPrefix("pressed");

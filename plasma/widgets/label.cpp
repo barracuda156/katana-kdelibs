@@ -20,20 +20,11 @@
 #include "label.h"
 
 #include <QApplication>
-#include <QDir>
-#include <QtGui/qgraphicssceneevent.h>
+#include <QGraphicsSceneContextMenuEvent>
 #include <QLabel>
-#include <QMenu>
-#include <QPainter>
-#include <QtGui/qstyleoption.h>
-
-#include <kcolorscheme.h>
-#include <kglobalsettings.h>
-#include <kmimetype.h>
+#include <QIcon>
 
 #include "private/themedwidgetinterface_p.h"
-#include "svg.h"
-#include "theme.h"
 
 namespace Plasma
 {
@@ -42,49 +33,9 @@ class LabelPrivate : public ThemedWidgetInterface<Label>
 {
 public:
     LabelPrivate(Label *label)
-        : ThemedWidgetInterface<Label>(label),
-          svg(nullptr)
+        : ThemedWidgetInterface<Label>(label)
     {
     }
-
-    ~LabelPrivate()
-    {
-        delete svg;
-    }
-
-    void setPixmap()
-    {
-        if (imagePath.isEmpty()) {
-            delete svg;
-            svg = nullptr;
-            return;
-        }
-
-        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(absImagePath));
-        QPixmap pm(q->size().toSize());
-
-        if (mime->is("image/svg+xml") || mime->is("image/svg+xml-compressed")) {
-            if (!svg || svg->imagePath() != absImagePath) {
-                delete svg;
-                svg = new Svg();
-                svg->setImagePath(imagePath);
-                QObject::connect(svg, SIGNAL(repaintNeeded()), q, SLOT(setPixmap()));
-            }
-
-            QPainter p(&pm);
-            svg->paint(&p, pm.rect());
-        } else {
-            delete svg;
-            svg = nullptr;
-            pm = QPixmap(absImagePath);
-        }
-
-        q->nativeWidget()->setPixmap(pm);
-    }
-
-    QString imagePath;
-    QString absImagePath;
-    Svg *svg;
 };
 
 Label::Label(QGraphicsWidget *parent)
@@ -119,31 +70,6 @@ void Label::setText(const QString &text)
 QString Label::text() const
 {
     return nativeWidget()->text();
-}
-
-void Label::setImage(const QString &path)
-{
-    if (d->imagePath == path) {
-        return;
-    }
-
-    delete d->svg;
-    d->svg = nullptr;
-    d->imagePath = path;
-
-    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
-    if (absolutePath) {
-        d->absImagePath = path;
-    } else {
-        d->absImagePath = Theme::defaultTheme()->imagePath(path);
-    }
-
-    d->setPixmap();
-}
-
-QString Label::image() const
-{
-    return d->imagePath;
 }
 
 void Label::setScaledContents(bool scaled)
@@ -193,12 +119,6 @@ void Label::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     } else{
         event->ignore();
     }
-}
-
-void Label::resizeEvent(QGraphicsSceneResizeEvent *event)
-{
-    d->setPixmap();
-    QGraphicsProxyWidget::resizeEvent(event);
 }
 
 void Label::changeEvent(QEvent *event)

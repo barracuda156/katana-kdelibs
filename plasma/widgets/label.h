@@ -40,7 +40,6 @@ class PLASMA_EXPORT Label : public QGraphicsProxyWidget
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString image READ image WRITE setImage)
     Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
     Q_PROPERTY(bool hasScaledContents READ hasScaledContents WRITE setScaledContents)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
@@ -65,18 +64,6 @@ public:
      * @return the display text
      */
     QString text() const;
-
-    /**
-     * Sets the path to an image to display.
-     *
-     * @param path the path to the image; if a relative path, then a themed image will be loaded.
-     */
-    void setImage(const QString &path);
-
-    /**
-     * @return the image path being displayed currently, or an empty string if none.
-     */
-    QString image() const;
 
     /**
      * Sets the alignment for the text
@@ -140,7 +127,6 @@ Q_SIGNALS:
     void linkHovered(const QString &link);
 
 protected:
-    void resizeEvent(QGraphicsSceneResizeEvent *event);
     void changeEvent(QEvent *event);
     bool event(QEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant & value);
@@ -149,7 +135,6 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d, void setPalette())
-    Q_PRIVATE_SLOT(d, void setPixmap())
 
     LabelPrivate * const d;
 };

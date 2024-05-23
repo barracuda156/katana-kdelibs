@@ -19,23 +19,10 @@
  */
 
 #include "pushbutton.h"
-
-#include <QDir>
-#include <QPainter>
-#include <QtGui/qstyleoption.h>
-#include <QtCore/qsharedpointer.h>
-
-#include <kicon.h>
-#include <kiconeffect.h>
-#include <kmimetype.h>
-#include <kpushbutton.h>
-
-#include "animator.h"
-#include "framesvg.h"
-#include "paintutils.h"
 #include "private/actionwidgetinterface_p.h"
 #include "private/themedwidgetinterface_p.h"
-#include "theme.h"
+
+#include <kpushbutton.h>
 
 namespace Plasma
 {
@@ -44,64 +31,9 @@ class PushButtonPrivate : public ActionWidgetInterface<PushButton>
 {
 public:
     PushButtonPrivate(PushButton *pushButton)
-        : ActionWidgetInterface<PushButton>(pushButton),
-          svg(nullptr)
+        : ActionWidgetInterface<PushButton>(pushButton)
     {
     }
-
-    ~PushButtonPrivate()
-    {
-        delete svg;
-    }
-
-    void setPixmap()
-    {
-        if (imagePath.isEmpty()) {
-            delete svg;
-            svg = nullptr;
-            return;
-        }
-
-        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(absImagePath));
-        QPixmap pm;
-
-        if (mime->is("image/svg+xml") || mime->is("image/svg+xml-compressed")) {
-            if (!svg || svg->imagePath() != absImagePath) {
-                delete svg;
-                svg = new Svg();
-                svg->setImagePath(imagePath);
-                QObject::connect(svg, SIGNAL(repaintNeeded()), q, SLOT(setPixmap()));
-                if (!svgElement.isNull()) {
-                    svg->setContainsMultipleImages(true);
-                }
-            }
-
-            //QPainter p(&pm);
-
-            if (!svgElement.isEmpty() && svg->hasElement(svgElement)) {
-                svg->resize();
-                QSizeF elementSize = svg->elementSize(svgElement);
-                float scale = q->nativeWidget()->iconSize().width() / qMax(elementSize.width(), elementSize.height());
-
-                svg->resize(elementSize * scale);
-                pm = svg->pixmap(svgElement);
-            } else {
-                svg->resize(q->nativeWidget()->iconSize());
-                pm = svg->pixmap();
-            }
-        } else {
-            delete svg;
-            svg = nullptr;
-            pm = QPixmap(absImagePath);
-        }
-
-        static_cast<KPushButton*>(q->widget())->setIcon(KIcon(pm));
-    }
-
-    QString imagePath;
-    QString absImagePath;
-    Svg *svg;
-    QString svgElement;
 };
 
 
@@ -131,44 +63,13 @@ PushButton::~PushButton()
 
 void PushButton::setText(const QString &text)
 {
-    static_cast<KPushButton*>(widget())->setText(text);
+    nativeWidget()->setText(text);
     updateGeometry();
 }
 
 QString PushButton::text() const
 {
-    return static_cast<KPushButton*>(widget())->text();
-}
-
-void PushButton::setImage(const QString &path)
-{
-    if (d->imagePath == path) {
-        return;
-    }
-
-    delete d->svg;
-    d->svg = nullptr;
-    d->imagePath = path;
-
-    const bool absolutePath = (!path.isEmpty() && path[0] == '/');
-    if (absolutePath) {
-        d->absImagePath = path;
-    } else {
-        d->absImagePath = Theme::defaultTheme()->imagePath(path);
-    }
-
-    d->setPixmap();
-}
-
-void PushButton::setImage(const QString &path, const QString &elementid)
-{
-    d->svgElement = elementid;
-    setImage(path);
-}
-
-QString PushButton::image() const
-{
-    return d->imagePath;
+    return nativeWidget()->text();
 }
 
 void PushButton::setAction(QAction *action)
@@ -229,12 +130,6 @@ bool PushButton::isDown() const
 KPushButton *PushButton::nativeWidget() const
 {
     return static_cast<KPushButton*>(widget());
-}
-
-void PushButton::resizeEvent(QGraphicsSceneResizeEvent *event)
-{
-    d->setPixmap();
-    QGraphicsProxyWidget::resizeEvent(event);
 }
 
 void PushButton::changeEvent(QEvent *event)

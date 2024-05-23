@@ -42,11 +42,10 @@ class PLASMA_EXPORT <Name> : public QGraphicsProxyWidget
 
     Q_PROPERTY(QGraphicsWidget *parentWidget READ parentWidget)
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString image READ image WRITE setImage)
     Q_PROPERTY(<Native>* nativeWidget READ nativeWidget)
 
 public:
-    explicit <Name>(QGraphicsWidget *parent = 0);
+    explicit <Name>(QGraphicsWidget *parent = nullptr);
     ~<Name>();
 
     /**
@@ -62,30 +61,13 @@ public:
     QString text() const;
 
     /**
-     * Sets the path to an image to display.
-     *
-     * @arg path the path to the image; if a relative path, then a themed image will be loaded.
-     */
-    void setImage(const QString &path);
-
-    /**
-     * @return the image path being displayed currently, or an empty string if none.
-     */
-    QString image() const;
-
-    /**
      * @return the native widget wrapped by this <Name>
      */
     <Native>* nativeWidget() const;
 
 Q_SIGNALS:
 
-protected:
-    void resizeEvent(QGraphicsSceneResizeEvent *event);
-
 private:
-    Q_PRIVATE_SLOT(d, void setPixmap())
-
     <Name>Private * const d;
 };
 
