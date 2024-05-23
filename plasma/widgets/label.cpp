@@ -43,9 +43,7 @@ class LabelPrivate : public ThemedWidgetInterface<Label>
 public:
     LabelPrivate(Label *label)
         : ThemedWidgetInterface<Label>(label),
-          svg(nullptr),
-          textSelectable(false),
-          hasLinks(false)
+          svg(nullptr)
     {
     }
 
@@ -87,8 +85,6 @@ public:
     QString imagePath;
     QString absImagePath;
     Svg *svg;
-    bool textSelectable;
-    bool hasLinks;
 };
 
 Label::Label(QGraphicsWidget *parent)
@@ -116,7 +112,6 @@ Label::~Label()
 
 void Label::setText(const QString &text)
 {
-    d->hasLinks = text.contains("<a ", Qt::CaseInsensitive);
     nativeWidget()->setText(text);
     updateGeometry();
 }
@@ -161,22 +156,6 @@ bool Label::hasScaledContents() const
     return nativeWidget()->hasScaledContents();
 }
 
-void Label::setTextSelectable(bool enable)
-{
-    if (enable) {
-        nativeWidget()->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    } else {
-        nativeWidget()->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-    }
-
-    d->textSelectable = enable;
-}
-
-bool Label::textSelectable() const
-{
-  return d->textSelectable;
-}
-
 void Label::setAlignment(Qt::Alignment alignment)
 {
     nativeWidget()->setAlignment(alignment);
@@ -204,11 +183,14 @@ QLabel *Label::nativeWidget() const
 
 void Label::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-    if (d->textSelectable || d->hasLinks){
-        QContextMenuEvent contextMenuEvent(QContextMenuEvent::Reason(event->reason()),
-                                           event->pos().toPoint(), event->screenPos(), event->modifiers());
+    const Qt::TextInteractionFlags textFlags = nativeWidget()->textInteractionFlags();
+    if (textFlags & Qt::TextSelectableByMouse || textFlags & Qt::LinksAccessibleByMouse){
+        QContextMenuEvent contextMenuEvent(
+            QContextMenuEvent::Reason(event->reason()),
+            event->pos().toPoint(), event->screenPos(), event->modifiers()
+        );
         QApplication::sendEvent(nativeWidget(), &contextMenuEvent);
-    }else{
+    } else{
         event->ignore();
     }
 }
@@ -217,23 +199,6 @@ void Label::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
     d->setPixmap();
     QGraphicsProxyWidget::resizeEvent(event);
-}
-
-void Label::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    QGraphicsProxyWidget::mousePressEvent(event);
-    //FIXME: when QTextControl accept()s mouse press events (as of Qt 4.6.2, it processes them
-    //but never marks them as accepted) the following event->accept() can be removed
-    if (d->textSelectable || d->hasLinks) {
-        event->accept();
-    }
-}
-
-void Label::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    if (d->textSelectable) {
-        QGraphicsProxyWidget::mouseMoveEvent(event);
-    }
 }
 
 void Label::changeEvent(QEvent *event)
@@ -260,9 +225,8 @@ QSizeF Label::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
     if (sizePolicy().verticalPolicy() == QSizePolicy::Fixed) {
         return QGraphicsProxyWidget::sizeHint(Qt::PreferredSize, constraint);
-    } else {
-        return QGraphicsProxyWidget::sizeHint(which, constraint);
     }
+    return QGraphicsProxyWidget::sizeHint(which, constraint);
 }
 
 } // namespace Plasma

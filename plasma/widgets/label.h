@@ -43,7 +43,6 @@ class PLASMA_EXPORT Label : public QGraphicsProxyWidget
     Q_PROPERTY(QString image READ image WRITE setImage)
     Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
     Q_PROPERTY(bool hasScaledContents READ hasScaledContents WRITE setScaledContents)
-    Q_PROPERTY(bool textSelectable READ textSelectable WRITE setTextSelectable)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
 
 public:
@@ -142,8 +141,6 @@ Q_SIGNALS:
 
 protected:
     void resizeEvent(QGraphicsSceneResizeEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void changeEvent(QEvent *event);
     bool event(QEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant & value);
