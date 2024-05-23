@@ -33,17 +33,19 @@ class LabelPrivate : public ThemedWidgetInterface<Label>
 {
 public:
     LabelPrivate(Label *label)
-        : ThemedWidgetInterface<Label>(label)
+        : ThemedWidgetInterface<Label>(label),
+        elideText(false)
     {
     }
 
-    void elideText()
+    void elideLabelText()
     {
         QFontMetricsF fontmetricsf(q->font());
         const qreal dotx3width = fontmetricsf.width(QLatin1String("..."));
         q->nativeWidget()->setText(fontmetricsf.elidedText(originaltext, Qt::ElideRight, q->size().width() - dotx3width));
     }
 
+    bool elideText;
     QString originaltext;
 };
 
@@ -72,9 +74,9 @@ Label::~Label()
 
 void Label::setText(const QString &text)
 {
-    if (!nativeWidget()->wordWrap()) {
+    if (d->elideText) {
         d->originaltext = text;
-        d->elideText();
+        d->elideLabelText();
     } else {
         nativeWidget()->setText(text);
         d->originaltext.clear();
@@ -84,7 +86,7 @@ void Label::setText(const QString &text)
 
 QString Label::text() const
 {
-    if (!d->originaltext.isEmpty()) {
+    if (d->elideText) {
         return d->originaltext;
     }
     return nativeWidget()->text();
@@ -113,18 +115,28 @@ Qt::Alignment Label::alignment() const
 void Label::setWordWrap(bool wrap)
 {
     nativeWidget()->setWordWrap(wrap);
-    if (!wrap) {
+}
+
+bool Label::wordWrap() const
+{
+    return nativeWidget()->wordWrap();
+}
+
+void Label::setElideText(bool elide)
+{
+    d->elideText = elide;
+    if (!elide) {
         d->originaltext = nativeWidget()->text();
-        d->elideText();
+        d->elideLabelText();
     } else {
         nativeWidget()->setText(d->originaltext);
         d->originaltext.clear();
     }
 }
 
-bool Label::wordWrap() const
+bool Label::elideText() const
 {
-    return nativeWidget()->wordWrap();
+    return d->elideText;
 }
 
 QLabel *Label::nativeWidget() const
@@ -149,8 +161,8 @@ void Label::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 void Label::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
     QGraphicsProxyWidget::resizeEvent(event);
-    if (!nativeWidget()->wordWrap()) {
-        d->elideText();
+    if (d->elideText) {
+        d->elideLabelText();
     }
 }
 

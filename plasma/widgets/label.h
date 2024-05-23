@@ -43,14 +43,14 @@ class PLASMA_EXPORT Label : public QGraphicsProxyWidget
     Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
     Q_PROPERTY(bool hasScaledContents READ hasScaledContents WRITE setScaledContents)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
-
+    Q_PROPERTY(bool elideText READ elideText WRITE setElideText)
 public:
     /**
      * Constructs a label with word wrap on by default
      *
      * @param parent the parent of this widget
      */
-    explicit Label(QGraphicsWidget *parent = 0);
+    explicit Label(QGraphicsWidget *parent = nullptr);
     ~Label();
 
     /**
@@ -116,6 +116,21 @@ public:
      * @since 4.5
      */
     bool wordWrap() const;
+
+    /**
+     * Sets if the text of the label can elide if too long
+     *
+     * @param elide elide text or not
+     * @note this makes sense only when not wrapping, turn wrapping off for best results
+     * @since 4.24
+     */
+    void setElideText(bool elide);
+
+    /**
+     * @return true if the label text can elide if too long
+     * @since 4.24
+     */
+    bool elideText() const;
 
     /**
      * @return the native widget wrapped by this Label
