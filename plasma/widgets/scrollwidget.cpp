@@ -701,8 +701,8 @@ public:
 
             fixupAnimation.groupX = new QSequentialAnimationGroup(widget.data());
             fixupAnimation.groupY = new QSequentialAnimationGroup(widget.data());
-            fixupAnimation.startX  = new QPropertyAnimation(widget.data(), xProp, widget.data());
-            fixupAnimation.startY  = new QPropertyAnimation(widget.data(), yProp, widget.data());
+            fixupAnimation.startX = new QPropertyAnimation(widget.data(), xProp, widget.data());
+            fixupAnimation.startY = new QPropertyAnimation(widget.data(), yProp, widget.data());
             fixupAnimation.endX = new QPropertyAnimation(widget.data(), xProp, widget.data());
             fixupAnimation.endY = new QPropertyAnimation(widget.data(), yProp, widget.data());
             fixupAnimation.groupX->addAnimation(fixupAnimation.startX);
@@ -845,7 +845,6 @@ void ScrollWidget::setWidget(QGraphicsWidget *widget)
     if (d->widget && d->widget.data() != widget) {
         d->deleteFlickAnimations();
         d->widget.data()->removeEventFilter(this);
-        delete d->widget.data();
     }
 
     d->widget = widget;
@@ -872,7 +871,6 @@ void ScrollWidget::setHorizontalScrollBarPolicy(const Qt::ScrollBarPolicy policy
 {
     d->horizontalScrollBarPolicy = policy;
 }
-
 
 Qt::ScrollBarPolicy ScrollWidget::horizontalScrollBarPolicy() const
 {
@@ -928,12 +926,12 @@ void ScrollWidget::ensureItemVisible(QGraphicsItem *item)
         parentOfItem = parentOfItem->parentItem();
     }
 
-    //since we can't ensure it'll stay alive we can delay only if it's a qgraphicswidget
+    // may or may not be valid, delay only if it's a qgraphicswidget
     QGraphicsWidget *widget = qgraphicsitem_cast<QGraphicsWidget *>(item);
     if (widget) {
         d->widgetToBeVisible = widget;
 
-        // We need to wait for the parent item to resize...
+        // need to wait for the parent item to resize...
         QTimer::singleShot(0, this, SLOT(makeItemVisible()));
     } else {
         d->makeItemVisible(item);
