@@ -327,13 +327,13 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
             //kDebug() << "about to switch to a popup";
             if (!qWidget && !gWidget) {
                 delete dialogPtr.data();
-                maybeStartAnimation();
+                statusChange(q->status());
                 return;
             }
 
             //there was already a dialog? don't make the switch again
             if (dialogPtr) {
-                maybeStartAnimation();
+                statusChange(q->status());
                 return;
             }
 
@@ -406,7 +406,7 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
         emit q->sizeHintChanged(Qt::PreferredSize);
     }
 
-    maybeStartAnimation();
+    statusChange(q->status());
 }
 
 void PopupAppletPrivate::appletActivated()
@@ -765,6 +765,10 @@ void PopupAppletPrivate::statusChange(Plasma::ItemStatus status)
             statusAnimation->setLoopCount(-1);
         }
         if (icon) {
+            // not if the dialog is visible
+            if (dialogPtr && dialogPtr.data()->isVisible()) {
+                return;
+            }
             statusAnimation->start(QAbstractAnimation::KeepWhenStopped);
         }
     } else {
@@ -790,17 +794,6 @@ void PopupAppletPrivate::createIconWidget()
     layout->addItem(icon);
     layout->setAlignment(icon, Qt::AlignCenter);
     q->setLayout(layout);
-}
-
-void PopupAppletPrivate::maybeStartAnimation()
-{
-    if (statusAnimation && q->status() == Plasma::ItemStatus::NeedsAttentionStatus) {
-        // not if the dialog is visible
-        if (dialogPtr && dialogPtr.data()->isVisible()) {
-            return;
-        }
-        statusAnimation->start(QAbstractAnimation::KeepWhenStopped);
-    }
 }
 
 void PopupAppletPrivate::restoreDialogSize()

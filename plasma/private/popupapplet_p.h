@@ -51,7 +51,6 @@ public:
     void appletActivated();
     void statusChange(Plasma::ItemStatus status);
     void createIconWidget();
-    void maybeStartAnimation();
 
     PopupApplet *q;
     Plasma::IconWidget *icon;
