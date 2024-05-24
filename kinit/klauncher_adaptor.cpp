@@ -23,6 +23,7 @@
 #include "kshell.h"
 #include "kconfiggroup.h"
 #include "kmessagebox.h"
+#include "kdesktopfile.h"
 #include "kmimetype.h"
 #include "kmimetypetrader.h"
 #include "kprotocolmanager.h"
@@ -447,6 +448,11 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
     kDebug() << "MIME type of" << url << "is" << urlmimetype;
     if (KRun::isExecutable(urlmimetype)) {
         kDebug() << "execuable file" << url;
+        // safety second for some
+        if (urlmimetype == QLatin1String("application/x-desktop") && KDesktopFile::isAuthorizedDesktopFile(url)) {
+            kDebug() << "desktop file is authorized" << url;
+            return start_service_by_storage_id(url, QStringList(), envs, window, temp);
+        }
         KMessageBox::sorryWId(
             static_cast<WId>(window),
             i18n("The file <tt>%1</tt> is an executable program.<br/>For safety it will not be started.", realurl.prettyUrl())
