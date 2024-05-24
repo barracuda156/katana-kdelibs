@@ -678,10 +678,10 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
 
     // We set this data from the first item, and we'll
     // check that the other items match against it, resetting when not.
-    bool isLocal = false;
     const KFileItem item = properties->item();
-    KUrl url = item.mostLocalUrl(isLocal);
-    bool isReallyLocal = item.url().isLocalFile();
+    KUrl url = item.url();
+    bool isReallyLocal = url.isLocalFile();
+    bool isLocal = isReallyLocal;
     bool bDesktopFile = item.isDesktopFile();
     mode_t mode = item.mode();
     bool hasDirs = item.isDir() && !item.isLink();
@@ -1206,10 +1206,8 @@ void KFilePropsPlugin::slotSizeDetermine()
 
     // also update the "Free disk space" display
     if (d->m_capacityBar) {
-        bool isLocal = false;
-        const KFileItem item = properties->item();
-        KUrl url = item.mostLocalUrl(isLocal);
-        if (isLocal) {
+        const KUrl url = properties->item().url();
+        if (url.isLocalFile()) {
             KMountPoint::Ptr mp = KMountPoint::currentMountPoints().findByPath(url.toLocalFile());
             if (mp) {
                 KDiskFreeSpaceInfo info = KDiskFreeSpaceInfo::freeSpaceInfo(mp->mountPoint());
@@ -1405,8 +1403,7 @@ void KFilePropsPlugin::applyIconChanges()
     }
     // handle icon changes - only local files (or pseudo-local) for now
     // TODO: Use KTempFile and KIO::file_copy with overwrite = true
-    KUrl url = properties->kurl();
-    url = KIO::NetAccess::mostLocalUrl(url, properties);
+    const KUrl url = properties->kurl();
     if (url.isLocalFile()) {
         QString path;
 
@@ -2610,7 +2607,7 @@ KUrlPropsPlugin::KUrlPropsPlugin(KPropertiesDialog *props)
     d->URLEdit = new KUrlRequester(d->m_frame);
     layout->addWidget(d->URLEdit);
 
-    KUrl url = KIO::NetAccess::mostLocalUrl(properties->kurl(), properties);
+    const KUrl url = properties->kurl();
     if (url.isLocalFile()) {
         QString path = url.toLocalFile();
 
@@ -2652,15 +2649,15 @@ bool KUrlPropsPlugin::supports(const KFileItemList &items)
         return false;
     }
     const KFileItem item = items.first();
-    // check if desktop file
-    if (!item.isDesktopFile()) {
+
+    // open file and check type
+    const KUrl url = item.url();
+    if (!url.isLocalFile()) {
         return false;
     }
 
-    // open file and check type
-    bool isLocal = false;
-    KUrl url = item.mostLocalUrl(isLocal);
-    if (!isLocal) {
+    // check if desktop file
+    if (!item.isDesktopFile()) {
         return false;
     }
 
@@ -2670,7 +2667,7 @@ bool KUrlPropsPlugin::supports(const KFileItemList &items)
 
 void KUrlPropsPlugin::applyChanges()
 {
-    KUrl url = KIO::NetAccess::mostLocalUrl(properties->kurl(), properties);
+    const KUrl url = properties->kurl();
     if (!url.isLocalFile()) {
         // FIXME: 4.2 add this: KMessageBox::sorry(0, i18n("Could not save properties. Only entries on local file systems are supported."));
         return;
@@ -2806,7 +2803,7 @@ KDevicePropsPlugin::KDevicePropsPlugin(KPropertiesDialog *props)
 
     layout->setRowStretch(6, 1);
 
-    KUrl url = KIO::NetAccess::mostLocalUrl(props->kurl(), props);
+    const KUrl url = props->kurl();
     if (!url.isLocalFile()) {
         return;
     }
@@ -2925,15 +2922,15 @@ bool KDevicePropsPlugin::supports(const KFileItemList &items)
         return false;
     }
     const KFileItem item = items.first();
-    // check if desktop file
-    if (!item.isDesktopFile()) {
+
+    // open file and check type
+    const KUrl url = item.url();
+    if (!url.isLocalFile()) {
         return false;
     }
 
-    // open file and check type
-    bool isLocal = false;
-    KUrl url = item.mostLocalUrl(isLocal);
-    if (!isLocal) {
+    // check if desktop file
+    if (!item.isDesktopFile()) {
         return false;
     }
 
@@ -2943,7 +2940,7 @@ bool KDevicePropsPlugin::supports(const KFileItemList &items)
 
 void KDevicePropsPlugin::applyChanges()
 {
-    KUrl url = KIO::NetAccess::mostLocalUrl(properties->kurl(), properties);
+    const KUrl url = properties->kurl();
     if (!url.isLocalFile()) {
         return;
     }
@@ -3040,7 +3037,7 @@ KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *props)
     connect(d->w->advancedButton, SIGNAL(clicked()), this, SLOT(slotAdvanced()));
 
     // now populate the page
-    KUrl url = KIO::NetAccess::mostLocalUrl(props->kurl(), props);
+    const KUrl url = props->kurl();
     if (!url.isLocalFile()) {
         return;
     }
@@ -3174,7 +3171,7 @@ void KDesktopPropsPlugin::applyChanges()
 {
     kDebug() << "KDesktopPropsPlugin::applyChanges";
 
-    KUrl url = KIO::NetAccess::mostLocalUrl( properties->kurl(), properties );
+    const KUrl url = properties->kurl();
     if (!url.isLocalFile()) {
         //FIXME: 4.2 add this: KMessageBox::sorry(0, i18n("Could not save properties. Only entries on local file systems are supported."));
         return;
@@ -3351,15 +3348,14 @@ bool KDesktopPropsPlugin::supports(const KFileItemList &items)
 
     const KFileItem item = items.first();
 
-    // check if desktop file
-    if (!item.isDesktopFile()) {
+    // open file and check type
+    const KUrl url = item.url();
+    if (!url.isLocalFile()) {
         return false;
     }
 
-    // open file and check type
-    bool isLocal = false;
-    KUrl url = item.mostLocalUrl(isLocal);
-    if (!isLocal) {
+    // check if desktop file
+    if (!item.isDesktopFile()) {
         return false;
     }
 

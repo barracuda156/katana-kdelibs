@@ -1104,10 +1104,9 @@ void KNewFileMenu::slotResult(KJob * job)
         KIO::CopyJob* copyJob = ::qobject_cast<KIO::CopyJob*>(job);
         if (copyJob) {
             const KUrl destUrl = copyJob->destUrl();
-            const KUrl localUrl = KIO::NetAccess::mostLocalUrl(destUrl, d->m_parentWidget);
-            if (localUrl.isLocalFile()) {
+            if (destUrl.isLocalFile()) {
                 // Normal (local) file. Need to "touch" it, kio_file copied the mtime.
-                (void) ::utime(QFile::encodeName(localUrl.toLocalFile()), 0);
+                (void) ::utime(QFile::encodeName(destUrl.toLocalFile()), 0);
             }
             emit fileCreated(destUrl);
         } else if (KIO::SimpleJob* simpleJob = ::qobject_cast<KIO::SimpleJob*>(job)) {

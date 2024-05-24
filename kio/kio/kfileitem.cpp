@@ -426,8 +426,7 @@ QString KFileItemPrivate::localPath() const
     if (m_bIsLocalUrl) {
         return m_url.toLocalFile();
     }
-    // Extract the local path from the KIO::UDSEntry
-    return m_entry.stringValue(KIO::UDSEntry::UDS_LOCAL_PATH);
+    return QString();
 }
 
 QString KFileItem::localPath() const
@@ -602,9 +601,7 @@ KMimeType::Ptr KFileItem::determineMimeType() const
     }
 
     if (!d->m_pMimeType || !d->m_bMimeTypeKnown) {
-        bool isLocalUrl = false;
-        KUrl url = mostLocalUrl(isLocalUrl);
-        d->m_pMimeType = KMimeType::findByUrl(url, d->m_fileMode, !isLocalUrl);
+        d->m_pMimeType = KMimeType::findByUrl(d->m_url, d->m_fileMode, !d->m_url.isLocalFile());
         Q_ASSERT(d->m_pMimeType);
         // kDebug() << d << "finding final mimetype for" << url << ":" << d->m_pMimeType->name();
         d->m_bMimeTypeKnown = true;
@@ -651,20 +648,18 @@ QString KFileItem::mimeComment() const
     }
 
     KMimeType::Ptr mime = determineMimeType();
-    bool isLocalUrl = false;
-    KUrl url = mostLocalUrl(isLocalUrl);
     // This cannot move to kio_file (with UDS_DISPLAY_TYPE) because it needs
     // the mimetype to be determined, which is done here, and possibly delayed...
-    if (isLocalUrl && !d->isSlow() && mime->is("application/x-desktop")) {
-        KDesktopFile cfg(url.toLocalFile());
+    if (d->m_url.isLocalFile() && !d->isSlow() && mime->is("application/x-desktop")) {
+        KDesktopFile cfg(d->m_url.toLocalFile());
         QString comment = cfg.desktopGroup().readEntry("Comment");
         if (!comment.isEmpty()) {
             return comment;
         }
     }
 
-    QString comment = d->isSlow() ? mime->comment() : mime->comment(url);
-    // kDebug() << "finding comment for " << url.url() << " : " << d->m_pMimeType->name();
+    QString comment = d->isSlow() ? mime->comment() : mime->comment(d->m_url);
+    // kDebug() << "finding comment for " << d->m_url.url() << " : " << d->m_pMimeType->name();
     if (!comment.isEmpty()) {
         return comment;
     }
@@ -711,9 +706,6 @@ QString KFileItem::iconName() const
         return d->m_iconName;
     }
 
-    bool isLocalUrl = false;
-    KUrl url = mostLocalUrl(isLocalUrl);
-
     KMimeType::Ptr mime;
     // Use guessed mimetype for the icon
     if (!d->m_guessedMimeType.isEmpty()) {
@@ -723,8 +715,8 @@ QString KFileItem::iconName() const
     }
 
     const bool delaySlowOperations = d->m_delayedMimeTypes;
-    if (isLocalUrl && !delaySlowOperations && mime->is("application/x-desktop")) {
-        d->m_iconName = iconFromDesktopFile(url.toLocalFile());
+    if (d->m_url.isLocalFile() && !delaySlowOperations && mime->is("application/x-desktop")) {
+        d->m_iconName = iconFromDesktopFile(d->m_url.toLocalFile());
         if (!d->m_iconName.isEmpty()) {
             d->m_useIconNameCache = d->m_bMimeTypeKnown;
             return d->m_iconName;
@@ -734,10 +726,10 @@ QString KFileItem::iconName() const
     if (delaySlowOperations) {
         d->m_iconName = mime->iconName();
     } else {
-        d->m_iconName = mime->iconName(url);
+        d->m_iconName = mime->iconName(d->m_url);
     }
     d->m_useIconNameCache = d->m_bMimeTypeKnown;
-    // kDebug() << "finding icon for" << url << ":" << d->m_iconName;
+    // kDebug() << "finding icon for" << d->m_url << ":" << d->m_iconName;
     return d->m_iconName;
 }
 
@@ -753,9 +745,7 @@ static bool checkDesktopFile(const KFileItem &item, bool _determineMimeType)
     }
 
     // only local files
-    bool isLocal = false;
-    const KUrl url = item.mostLocalUrl(isLocal);
-    if (!isLocal) {
+    if (!item.url().isLocalFile()) {
         return false;
     }
 
@@ -875,10 +865,8 @@ QPixmap KFileItem::pixmap(int _size, int _state) const
         mime = KMimeType::findByUrl(sf, 0, !d->m_bIsLocalUrl);
     }
 
-    KUrl url = mostLocalUrl();
-
-    QPixmap p = KIconLoader::global()->loadMimeTypeIcon(mime->iconName(url), KIconLoader::Desktop, _size, _state);
-    // kDebug() << "finding pixmap for " << url.url() << " : " << mime->name();
+    QPixmap p = KIconLoader::global()->loadMimeTypeIcon(mime->iconName(d->m_url), KIconLoader::Desktop, _size, _state);
+    // kDebug() << "finding pixmap for " << d->m_url.url() << " : " << mime->name();
     if (p.isNull()) {
         kWarning() << "Pixmap not found for mimetype " << d->m_pMimeType->name();
     }
@@ -1152,29 +1140,6 @@ QString KFileItem::timeString(FileTimes which) const
     return KGlobal::locale()->formatDateTime(d->time(which));
 }
 
-KUrl KFileItem::mostLocalUrl(bool &local) const
-{
-    if (!d) {
-        return KUrl();
-    }
-
-    QString local_path = localPath();
-    if (!local_path.isEmpty()) {
-        local = true;
-        KUrl url;
-        url.setPath(local_path);
-        return url;
-    }
-    local = d->m_bIsLocalUrl;
-    return d->m_url;
-}
-
-KUrl KFileItem::mostLocalUrl() const
-{
-    bool local = false;
-    return mostLocalUrl(local);
-}
-
 QDataStream& operator<<(QDataStream &s, const KFileItem &a)
 {
     if (a.d) {
@@ -1315,17 +1280,15 @@ KMimeType::Ptr KFileItem::mimeTypePtr() const
     if (!d->m_pMimeType) {
         // On-demand fast (but not always accurate) mimetype determination
         Q_ASSERT(!d->m_url.isEmpty());
-        bool isLocalUrl = false;
-        KUrl url = mostLocalUrl(isLocalUrl);
         d->m_pMimeType = KMimeType::findByUrl(
-            url, d->m_fileMode,
+            d->m_url, d->m_fileMode,
             // use fast mode if delayed mimetype determination can refine it later
             d->m_delayedMimeTypes
         );
         // If it was not a perfect (glob and content-based) match,
         // then determineMimeType will be able to do better for readable URLs.
         const bool canDoBetter = d->m_delayedMimeTypes;
-        //kDebug() << "finding mimetype for" << url << ":" << d->m_pMimeType->name() << "canDoBetter=" << canDoBetter;
+        //kDebug() << "finding mimetype for" << d->m_url << ":" << d->m_pMimeType->name() << "canDoBetter=" << canDoBetter;
         d->m_bMimeTypeKnown = !canDoBetter;
     }
     return d->m_pMimeType;

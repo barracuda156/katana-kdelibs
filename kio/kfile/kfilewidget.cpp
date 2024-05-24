@@ -189,13 +189,6 @@ public:
 
     QString locationEditCurrentText() const;
 
-    /**
-     * KIO::NetAccess::mostLocalUrl local replacement.
-     * This method won't show any progress dialogs for stating, since
-     * they are very annoying when stating.
-     */
-    KUrl mostLocalUrl(const KUrl &url);
-
     KFileWidget* q;
 
     // the last selected url
@@ -906,7 +899,7 @@ void KFileWidget::slotOk()
         bool res = KIO::NetAccess::synchronousRun(statJob, this);
 
         // if we are on local mode, make sure we haven't got a remote base url
-        if ((mode & KFile::LocalOnly) && !d->mostLocalUrl(d->url).isLocalFile()) {
+        if ((mode & KFile::LocalOnly) && !d->url.isLocalFile()) {
             if (directoryMode) {
                 KMessageBox::sorry(
                     this,
@@ -1638,10 +1631,9 @@ KUrl::List KFileWidgetPrivate::tokenize( const QString& line ) const
 QString KFileWidget::selectedFile() const
 {
     if ( d->inAccept ) {
-        const KUrl url = d->mostLocalUrl(d->url);
-        if (url.isLocalFile())
-            return url.toLocalFile();
-        else {
+        if (d->url.isLocalFile()) {
+            return d->url.toLocalFile();
+        } else {
             KMessageBox::sorry( const_cast<KFileWidget*>(this),
                                 i18n("You can only select local files."),
                                 i18n("Remote Files Not Accepted") );
@@ -1656,19 +1648,16 @@ QStringList KFileWidget::selectedFiles() const
 
     if (d->inAccept) {
         if (d->ops->mode() & KFile::Files) {
-            const KUrl::List urls = d->parseSelectedUrls();
-            QList<KUrl>::const_iterator it = urls.begin();
-            while (it != urls.end()) {
-                KUrl url = d->mostLocalUrl(*it);
-                if (url.isLocalFile())
+            foreach (const KUrl &url, d->parseSelectedUrls()) {
+                if (url.isLocalFile()) {
                     list.append(url.toLocalFile());
-                ++it;
+                }
             }
-        }
-
-        else { // single-selection mode
-            if ( d->url.isLocalFile() )
+        } else {
+            // single-selection mode
+            if ( d->url.isLocalFile() ) {
                 list.append( d->url.toLocalFile() );
+            }
         }
     }
 
@@ -2660,29 +2649,6 @@ void KFileWidget::readConfig( KConfigGroup& group )
 QString KFileWidgetPrivate::locationEditCurrentText() const
 {
     return locationEdit->currentText();
-}
-
-KUrl KFileWidgetPrivate::mostLocalUrl(const KUrl &url)
-{
-    if (url.isLocalFile()) {
-        return url;
-    }
-
-    KIO::StatJob *statJob = KIO::stat(url, KIO::HideProgressInfo);
-    bool res = KIO::NetAccess::synchronousRun(statJob, q);
-
-    if (!res) {
-        return url;
-    }
-
-    const QString path = statJob->statResult().stringValue(KIO::UDSEntry::UDS_LOCAL_PATH);
-    if (!path.isEmpty()) {
-        KUrl newUrl;
-        newUrl.setPath(path);
-        return newUrl;
-    }
-
-    return url;
 }
 
 #include "moc_kfilewidget.cpp"

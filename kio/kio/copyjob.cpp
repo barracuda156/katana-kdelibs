@@ -369,15 +369,7 @@ void CopyJobPrivate::slotResultStating( KJob *job )
         } else {
             // Treat symlinks to dirs as dirs here, so no test on isLink
             destinationState = isDir ? DEST_IS_DIR : DEST_IS_FILE;
-            //kDebug(7007) << "dest is dir:" << isDir;
-
-            const QString sLocalPath = entry.stringValue( KIO::UDSEntry::UDS_LOCAL_PATH );
-            if ( !sLocalPath.isEmpty() && kio_resolve_local_urls && destinationState != DEST_DOESNT_EXIST ) {
-                m_dest = KUrl();
-                m_dest.setPath(sLocalPath);
-                if ( isGlobalDest )
-                    m_globalDest = m_dest;
-            }
+            // kDebug(7007) << "dest is dir:" << isDir;
         }
         if ( isGlobalDest )
             m_globalDestinationState = destinationState;
@@ -395,9 +387,6 @@ void CopyJobPrivate::slotResultStating( KJob *job )
 
 void CopyJobPrivate::sourceStated(const UDSEntry& entry, const KUrl& sourceUrl)
 {
-    const QString sLocalPath = entry.stringValue( KIO::UDSEntry::UDS_LOCAL_PATH );
-    const bool isDir = entry.isDir();
-
     // We were stating the current source URL
     // Is it a file or a dir ?
 
@@ -413,29 +402,20 @@ void CopyJobPrivate::sourceStated(const UDSEntry& entry, const KUrl& sourceUrl)
     // 5 - src is a file, destination is a file, m_dest is the exact destination name
     // 6 - src is a file, destination doesn't exist, m_dest is the exact destination name
 
-    KUrl srcurl;
-    if (!sLocalPath.isEmpty() && destinationState != DEST_DOESNT_EXIST) {
-        kDebug() << "Using sLocalPath. destinationState=" << destinationState;
-        // Prefer the local path -- but only if we were able to stat() the dest.
-        // Otherwise, renaming a desktop:/ url would copy from src=file to dest=desktop (#218719)
-        srcurl.setPath(sLocalPath);
-    } else {
-        srcurl = sourceUrl;
-    }
-    addCopyInfoFromUDSEntry(entry, srcurl, false, m_dest);
+    addCopyInfoFromUDSEntry(entry, sourceUrl, false, m_dest);
 
     m_currentDest = m_dest;
     m_bCurrentSrcIsDir = false;
 
-    if ( isDir
+    if ( entry.isDir()
          // treat symlinks as files (no recursion)
          && !entry.isLink()
          && m_mode != CopyJob::Link ) // No recursion in Link mode either.
     {
         //kDebug(7007) << "Source is a directory";
 
-        if (srcurl.isLocalFile()) {
-            const QString parentDir = srcurl.toLocalFile(KUrl::RemoveTrailingSlash);
+        if (sourceUrl.isLocalFile()) {
+            const QString parentDir = sourceUrl.toLocalFile(KUrl::RemoveTrailingSlash);
             m_parentDirs.insert(parentDir);
         }
 
@@ -445,9 +425,9 @@ void CopyJobPrivate::sourceStated(const UDSEntry& entry, const KUrl& sourceUrl)
             if ( !m_asMethod )
             {
                 // Use <desturl>/<directory_copied> as destination, from now on
-                QString directory = srcurl.fileName();
+                QString directory = sourceUrl.fileName();
                 const QString sName = entry.stringValue( KIO::UDSEntry::UDS_NAME );
-                KProtocolInfo::FileNameUsedForCopying fnu = KProtocolManager::fileNameUsedForCopying(srcurl);
+                KProtocolInfo::FileNameUsedForCopying fnu = KProtocolManager::fileNameUsedForCopying(sourceUrl);
                 if (fnu == KProtocolInfo::Name) {
                     if (!sName.isEmpty())
                         directory = sName;
@@ -472,14 +452,14 @@ void CopyJobPrivate::sourceStated(const UDSEntry& entry, const KUrl& sourceUrl)
                 m_globalDestinationState = destinationState;
         }
 
-        startListing( srcurl );
+        startListing( sourceUrl );
     }
     else
     {
         //kDebug(7007) << "Source is a file (or a symlink), or we are linking -> no recursive listing";
 
-        if (srcurl.isLocalFile()) {
-            const QString parentDir = srcurl.directory(KUrl::LeaveTrailingSlash);
+        if (sourceUrl.isLocalFile()) {
+            const QString parentDir = sourceUrl.directory(KUrl::LeaveTrailingSlash);
             m_parentDirs.insert(parentDir);
         }
 
@@ -598,12 +578,11 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
     KUrl url;
     if (!urlStr.isEmpty())
         url = urlStr;
-    QString localPath = entry.stringValue(KIO::UDSEntry::UDS_LOCAL_PATH);
     const bool isDir = entry.isDir();
     info.linkDest = entry.stringValue(KIO::UDSEntry::UDS_LINK_DEST);
 
     if (fileName != QLatin1String("..") && fileName != QLatin1String(".")) {
-        const bool hasCustomURL = !url.isEmpty() || !localPath.isEmpty();
+        const bool hasCustomURL = !url.isEmpty();
         if (!hasCustomURL) {
             // Make URL from displayName
             url = srcUrl;
@@ -613,9 +592,6 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
             }
         }
         //kDebug(7007) << "displayName=" << displayName << "url=" << url;
-        if (!localPath.isEmpty() && kio_resolve_local_urls && destinationState != DEST_DOESNT_EXIST) {
-            url = KUrl(localPath);
-        }
 
         info.uSource = url;
         info.uDest = currentDest;
@@ -627,7 +603,7 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
              (! (m_asMethod && state == STATE_STATING)))
         {
             QString destFileName;
-	    KProtocolInfo::FileNameUsedForCopying fnu = KProtocolManager::fileNameUsedForCopying(url);
+            KProtocolInfo::FileNameUsedForCopying fnu = KProtocolManager::fileNameUsedForCopying(url);
             if (hasCustomURL &&
                  fnu == KProtocolInfo::FromUrl) {
                 //destFileName = url.fileName(); // Doesn't work for recursive listing

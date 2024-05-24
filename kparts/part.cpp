@@ -421,16 +421,6 @@ bool ReadOnlyPart::openUrl(const KUrl &url)
     if (d->m_url.isLocalFile()) {
         d->m_file = d->m_url.toLocalFile();
         return d->openLocalFile();
-    } else if (KProtocolInfo::protocolIsLocal(url.protocol())) {
-        // Maybe we can use a "local path", to avoid a temp copy?
-        KIO::JobFlags flags = (d->m_showProgressInfo ? KIO::DefaultFlags : KIO::HideProgressInfo);
-        d->m_statJob = KIO::mostLocalUrl(d->m_url, flags);
-        d->m_statJob->ui()->setWindow(widget() ? widget()->window() : nullptr);
-        connect(
-            d->m_statJob, SIGNAL(result(KJob*)),
-            this, SLOT(_k_slotStatJobFinished(KJob*))
-        );
-        return true;
     }
     d->openRemoteFile();
     return true;
@@ -517,32 +507,6 @@ bool ReadOnlyPart::closeUrl()
     // but the return value exists for reimplementations
     // (e.g. pressing cancel for a modified read-write part)
     return true;
-}
-
-void ReadOnlyPartPrivate::_k_slotStatJobFinished(KJob * job)
-{
-    Q_ASSERT(job == m_statJob);
-    m_statJob = nullptr;
-
-    // We could emit canceled on error, but we haven't even emitted started yet,
-    // this could maybe confuse some apps? So for now we'll just fallback to KIO::get
-    // and error again. Well, maybe this even helps with wrong stat results.
-    if (job->error() != KJob::NoError) {
-        KIO::StatJob* statjob = static_cast<KIO::StatJob*>(job);
-        const KUrl localUrl = statjob->mostLocalUrl();
-        // set the mimetype only if it was not already set (for example, by the host application)
-        if (m_arguments.mimeType().isEmpty()) {
-            const QString mime = statjob->statResult().stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
-            m_arguments.setMimeType(mime);
-            m_bAutoDetectedMime = true;
-        }
-        if (localUrl.isLocalFile()) {
-            m_file = localUrl.toLocalFile();
-            (void)openLocalFile();
-            return;
-        }
-    }
-    openRemoteFile();
 }
 
 void ReadOnlyPartPrivate::_k_slotJobFinished(KJob *job)

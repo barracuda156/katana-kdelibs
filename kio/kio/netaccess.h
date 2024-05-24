@@ -210,19 +210,6 @@ public:
     static bool stat(const KUrl &url, KIO::UDSEntry &entry, QWidget *window);
 
     /**
-     * Tries to map a local URL for the given URL.
-     *
-     * This is a convenience function for KIO::stat() + parsing the resulting UDSEntry.
-     *
-     * @param url The URL we are testing.
-     * @param window main window associated with this job. This is used to show message boxes.
-     *
-     * @return a local URL corresponding to the same resource than the original URL, or the
-     *         original URL if no local URL can be mapped
-     */
-    static KUrl mostLocalUrl(const KUrl &url, QWidget *window);
-
-    /**
      * Deletes a file or a directory in a synchronous way.
      *
      * This is a convenience function for KIO::del().
