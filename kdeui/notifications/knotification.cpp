@@ -68,10 +68,16 @@ private Q_SLOTS:
     void slotDirty(const QString &path);
 
 private:
+    QDBusInterface* createInterface(const QString &service);
+    bool callAddMethod(const QString &notifyid);
+    void callUpdateMethod(const QString &notifyid, const QVariantMap &eventdata);
+    void callCloseMethod(const QString &notifyid);
+
     QMutex m_mutex;
     KConfig *m_config;
     KDirWatch m_configwatch;
-    QDBusInterface* m_notificationsiface;
+    QDBusInterface* m_desktopiface;
+    QDBusInterface* m_windowediface;
     QDBusInterface* m_kaudioplayeriface;
     QMap<KNotification*,QVariantMap> m_notifications;
 };
@@ -80,7 +86,8 @@ K_GLOBAL_STATIC(KNotificationManager, kNotificationManager);
 KNotificationManager::KNotificationManager()
     : m_config(nullptr),
     m_configwatch(this),
-    m_notificationsiface(nullptr),
+    m_desktopiface(nullptr),
+    m_windowediface(nullptr),
     m_kaudioplayeriface(nullptr)
 {
     // NOTE: the default poll interval of QFileSystemWatcher is 1sec
@@ -149,21 +156,13 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
     }
     // qDebug() << Q_FUNC_INFO << eventactions << notification->actions();
     if (eventactions.contains(s_popupaction)) {
-        if (!m_notificationsiface) {
-            m_notificationsiface = new QDBusInterface(
-                "org.kde.plasma-desktop", "/Notifications", "org.kde.Notifications",
-                QDBusConnection::sessionBus(), this
-            );
-            connect(
-                m_notificationsiface, SIGNAL(closeRequested(QString)),
-                this, SLOT(slotCloseRequested(QString))
-            );
-            connect(
-                m_notificationsiface, SIGNAL(actionRequested(QString,QString)),
-                this, SLOT(slotActionRequested(QString,QString))
-            );
+        if (!m_desktopiface) {
+            m_desktopiface = createInterface("org.kde.plasma-desktop");
         }
-        if (!m_notificationsiface || !m_notificationsiface->isValid()) {
+        if (!m_windowediface) {
+            m_windowediface = createInterface("org.kde.plasma-windowed");
+        }
+        if (!m_desktopiface->isValid() && !m_windowediface->isValid()) {
             kWarning(s_knotificationarea) << "notifications interface is not valid";
             const QPixmap eventpixmap = KIconLoader::global()->loadIcon(eventicon, KIconLoader::Small);
             KPassivePopup* kpassivepopup = new KPassivePopup(notification->widget());
@@ -194,23 +193,10 @@ void KNotificationManager::send(KNotification *notification, const bool persiste
             eventdata.insert("actions", eventactions);
             // NOTE: has to be set to be configurable via plasma notifications applet
             eventdata.insert("appRealName", spliteventid.at(0));
-            bool updatenotification = false;
-            QDBusReply<void> notifyreply;
-            if (addnotification) {
-                notifyreply = m_notificationsiface->call(s_addmethod, notifyid);
-                if (!notifyreply.isValid()) {
-                    kWarning(s_knotificationarea) << "invalid add reply" << notifyreply.error().message();
-                } else {
-                    updatenotification = true;
-                    m_notifications.insert(notification, eventdata);
-                }
+            if (addnotification && callAddMethod(notifyid)) {
+                m_notifications.insert(notification, eventdata);
             }
-            if (updatenotification) {
-                notifyreply = m_notificationsiface->call(s_updatemethod, notifyid, eventdata);
-                if (!notifyreply.isValid()) {
-                    kWarning(s_knotificationarea) << "invalid update reply" << notifyreply.error().message();
-                }
-            }
+            callUpdateMethod(notifyid, eventdata);
         }
     }
 
@@ -259,11 +245,76 @@ void KNotificationManager::close(KNotification *notification)
         if (iter.key() == notification) {
             const QString notifyid = kNotifyID(iter.key());
             iter.remove();
-            QDBusReply<void> closereply = m_notificationsiface->call(s_closemethod, notifyid);
-            if (!closereply.isValid()) {
-                kWarning(s_knotificationarea) << "invalid close reply" << closereply.error().message();
-            }
+            callCloseMethod(notifyid);
             break;
+        }
+    }
+}
+
+QDBusInterface* KNotificationManager::createInterface(const QString &service)
+{
+    QDBusInterface* interface = new QDBusInterface(
+        service, "/Notifications", "org.kde.Notifications",
+        QDBusConnection::sessionBus(), this
+    );
+    connect(
+        interface, SIGNAL(closeRequested(QString)),
+        this, SLOT(slotCloseRequested(QString))
+    );
+    connect(
+        interface, SIGNAL(actionRequested(QString,QString)),
+        this, SLOT(slotActionRequested(QString,QString))
+    );
+    return interface;
+}
+
+bool KNotificationManager::callAddMethod(const QString &notifyid)
+{
+    QDBusReply<void> desktopreply;
+    QDBusReply<void> windowedreply;
+    if (m_desktopiface && m_desktopiface->isValid()) {
+        desktopreply = m_desktopiface->call(s_addmethod, notifyid);
+        if (!desktopreply.isValid()) {
+            kWarning(s_knotificationarea) << "invalid desktop add reply" << desktopreply.error().message();
+        }
+    }
+    if (m_windowediface && m_windowediface->isValid()) {
+        windowedreply = m_windowediface->call(s_addmethod, notifyid);
+        if (!windowedreply.isValid()) {
+            kWarning(s_knotificationarea) << "invalid windowed add reply" << windowedreply.error().message();
+        }
+    }
+    return (desktopreply.isValid() || windowedreply.isValid());
+}
+
+void KNotificationManager::callUpdateMethod(const QString &notifyid, const QVariantMap &eventdata)
+{
+    if (m_desktopiface && m_desktopiface->isValid()) {
+        QDBusReply<void> updatereply = m_desktopiface->call(s_updatemethod, notifyid, eventdata);
+        if (!updatereply.isValid()) {
+            kWarning(s_knotificationarea) << "invalid desktop update reply" << updatereply.error().message();
+        }
+    }
+    if (m_windowediface && m_windowediface->isValid()) {
+        QDBusReply<void> updatereply = m_windowediface->call(s_updatemethod, notifyid, eventdata);
+        if (!updatereply.isValid()) {
+            kWarning(s_knotificationarea) << "invalid windowed update reply" << updatereply.error().message();
+        }
+    }
+}
+
+void KNotificationManager::callCloseMethod(const QString &notifyid)
+{
+    if (m_desktopiface && m_desktopiface->isValid()) {
+        QDBusReply<void> closereply = m_desktopiface->call(s_closemethod, notifyid);
+        if (!closereply.isValid()) {
+            kWarning(s_knotificationarea) << "invalid desktop close reply" << closereply.error().message();
+        }
+    }
+    if (m_windowediface && m_windowediface->isValid()) {
+        QDBusReply<void> closereply = m_windowediface->call(s_closemethod, notifyid);
+        if (!closereply.isValid()) {
+            kWarning(s_knotificationarea) << "invalid windowed close reply" << closereply.error().message();
         }
     }
 }
