@@ -338,7 +338,7 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
     if (option.direction == Qt::LeftToRight) {
         if (((titleRect.width() + decorationRect.width() + 10) > option.rect.width() ||
             (subTitleRect.width() + decorationRect.width() + 15) > option.rect.width()) &&
-	    (titleRect.width() > 120 || subTitleRect.width() > 120)) {
+            (titleRect.width() > 120 || subTitleRect.width() > 120)) {
             QPainter p(&buffer);
             p.setCompositionMode(QPainter::CompositionMode_DestinationOut);
             p.setPen(Qt::NoPen);
@@ -359,7 +359,7 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
     } else {
         if (((titleRect.width() + decorationRect.width() + 10) > option.rect.width() ||
             (subTitleRect.width() + decorationRect.width() + 15 )> option.rect.width()) &&
-	    (titleRect.width() > 120 || subTitleRect.width() > 120)) {
+            (titleRect.width() > 120 || subTitleRect.width() > 120)) {
             buffer.fill(Qt::transparent);
             QPainter p(&buffer);
             p.setCompositionMode(QPainter::CompositionMode_DestinationOut);

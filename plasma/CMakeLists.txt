@@ -69,7 +69,6 @@ set(plasma_LIB_SRCS
     widgets/frame.cpp
     widgets/groupbox.cpp
     widgets/iconwidget.cpp
-    widgets/itembackground.cpp
     widgets/label.cpp
     widgets/lineedit.cpp
     widgets/meter.cpp
@@ -173,7 +172,6 @@ install(
     widgets/frame.h
     widgets/groupbox.h
     widgets/iconwidget.h
-    widgets/itembackground.h
     widgets/label.h
     widgets/lineedit.h
     widgets/meter.h

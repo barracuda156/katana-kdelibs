@@ -430,7 +430,6 @@ install(
     Plasma/FrameSvg
     Plasma/GroupBox
     Plasma/IconWidget
-    Plasma/ItemBackground
     Plasma/Label
     Plasma/LineEdit
     Plasma/Meter
