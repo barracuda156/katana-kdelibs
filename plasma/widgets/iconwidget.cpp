@@ -804,7 +804,7 @@ QPixmap IconWidgetPrivate::decoration(const QStyleOptionGraphicsItem *option, bo
 
     if (iconSvg) {
         if (iconSvgElementChanged || iconSvgPixmap.size() != iconSize.toSize()) {
-            //even the svg is returned at standard sizes because:
+            // even the svg is returned at standard sizes because:
             // * it may have a version optimized for that size
             // * look aligned with other icons
             iconSvg->resize(finalSize);
@@ -813,7 +813,7 @@ QPixmap IconWidgetPrivate::decoration(const QStyleOptionGraphicsItem *option, bo
         }
         result = iconSvgPixmap;
     } else {
-        //the QIcon isn't filled with available sizes, return a near standard size for small pixmaps
+        // the QIcon isn't filled with available sizes, return a near standard size for small pixmaps
         if (!icon.availableSizes().isEmpty()) {
             finalSize = icon.actualSize(iconSize.toSize(), mode, state);
         }
@@ -827,9 +827,8 @@ QPixmap IconWidgetPrivate::decoration(const QStyleOptionGraphicsItem *option, bo
 
     if (!result.isNull() && useHoverEffect) {
         KIconEffect *effect = KIconLoader::global()->iconEffect();
-        // Note that in KIconLoader terminology, active = hover.
-        // We're assuming that the icon group is desktop/filemanager, since this
-        // is KFileItemDelegate.
+        // note that in KIconLoader terminology, active = hover. assuming that the icon group is
+        // desktop
         if (effect->hasEffect(KIconLoader::Desktop, KIconLoader::ActiveState)) {
             if (qFuzzyCompare(qreal(1.0), hoverAnimation->value())) {
                 result = effect->apply(result, KIconLoader::Desktop, KIconLoader::ActiveState);
