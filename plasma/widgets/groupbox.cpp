@@ -18,16 +18,11 @@
  */
 
 #include "groupbox.h"
+#include "svg.h"
+#include "private/themedwidgetinterface_p.h"
 
 #include <QGroupBox>
 #include <QIcon>
-#include <QPainter>
-
-#include <kmimetype.h>
-
-#include "svg.h"
-#include "private/themedwidgetinterface_p.h"
-#include "theme.h"
 
 namespace Plasma
 {

@@ -18,19 +18,11 @@
  */
 
 #include "combobox.h"
-
-#include <QPainter>
-#include <QGraphicsView>
-
-#include <kcombobox.h>
-#include <kiconeffect.h>
-#include <kiconloader.h>
-#include <kmimetype.h>
-
-#include "applet.h"
 #include "private/style_p.h"
 #include "private/themedwidgetinterface_p.h"
-#include "theme.h"
+#include "kcombobox.h"
+
+#include <QGraphicsView>
 
 namespace Plasma
 {
@@ -49,7 +41,7 @@ public:
 
 ComboBox::ComboBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new ComboBoxPrivate(this))
+    d(new ComboBoxPrivate(this))
 {
     setZValue(900);
 

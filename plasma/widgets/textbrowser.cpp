@@ -18,19 +18,14 @@
  */
 
 #include "textbrowser.h"
-
-#include <QtGui/qgraphicssceneevent.h>
-#include <QMenu>
-#include <QPainter>
-#include <QScrollBar>
-#include <QTextBrowser>
-
-#include <kmimetype.h>
-
 #include "svg.h"
-#include "theme.h"
 #include "private/style_p.h"
 #include "private/themedwidgetinterface_p.h"
+
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMenu>
+#include <QScrollBar>
+#include <QTextBrowser>
 
 namespace Plasma
 {

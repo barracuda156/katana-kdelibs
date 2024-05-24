@@ -24,7 +24,6 @@
 #include "private/style_p.h"
 #include "private/themedwidgetinterface_p.h"
 #include "theme.h"
-#include "kmimetype.h"
 #include "knuminput.h"
 
 #include <QGraphicsView>
@@ -46,7 +45,7 @@ public:
 
 SpinBox::SpinBox(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new SpinBoxPrivate(this))
+    d(new SpinBoxPrivate(this))
 {
     KDoubleNumInput *native = new KDoubleNumInput();
 

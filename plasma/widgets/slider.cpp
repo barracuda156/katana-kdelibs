@@ -18,17 +18,13 @@
  */
 
 #include "slider.h"
+#include "framesvg.h"
+#include "private/style_p.h"
+#include "private/themedwidgetinterface_p.h"
 
 #include <QApplication>
 #include <QSlider>
 #include <QGraphicsSceneWheelEvent>
-#include <kmimetype.h>
-
-#include "theme.h"
-#include "framesvg.h"
-
-#include "private/style_p.h"
-#include "private/themedwidgetinterface_p.h"
 
 namespace Plasma
 {

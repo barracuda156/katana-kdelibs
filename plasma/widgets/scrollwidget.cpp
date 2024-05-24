@@ -36,11 +36,10 @@
 #include <QLabel>
 
 //KDE
-#include <kmimetype.h>
-#include <kdebug.h>
 #include <kglobalsettings.h>
 #include <kiconloader.h>
 #include <ktextedit.h>
+#include <kdebug.h>
 
 //Plasma
 #include <plasma/widgets/scrollbar.h>

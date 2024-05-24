@@ -33,22 +33,21 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QtGui/qgraphicssceneevent.h>
+#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QMenu>
 #include <QPainter>
-#include <QtGui/qstyleoption.h>
+#include <QStyleOption>
 #include <QTextLayout>
 #include <QTimer>
 
 #include <kcolorscheme.h>
-#include <kdebug.h>
 #include <kglobalsettings.h>
 #include <kicon.h>
 #include <kiconeffect.h>
 #include <kiconloader.h>
-#include <kmimetype.h>
 #include <kurl.h>
+#include <kdebug.h>
 
 namespace Plasma
 {

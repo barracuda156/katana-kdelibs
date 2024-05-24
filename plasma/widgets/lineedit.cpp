@@ -18,20 +18,13 @@
  */
 
 #include "lineedit.h"
-
-#include <QtGui/qgraphicssceneevent.h>
-#include <QIcon>
-#include <QPainter>
-#include <QGraphicsView>
-
-#include <klineedit.h>
-#include <kmimetype.h>
-
-#include "applet.h"
 #include "framesvg.h"
 #include "private/style_p.h"
 #include "private/themedwidgetinterface_p.h"
-#include "theme.h"
+#include "klineedit.h"
+
+#include <QIcon>
+#include <QGraphicsView>
 
 namespace Plasma
 {
