@@ -1186,7 +1186,6 @@ void ContainmentPrivate::dropData(QPointF scenePos, QPoint screenPos, QGraphicsS
     } else {
         QClipboard *clipboard = QApplication::clipboard();
         mimeData = clipboard->mimeData(QClipboard::Selection);
-        //TODO if that's not supported (ie non-linux) should we try clipboard instead of selection?
     }
 
     if (!mimeData) {
