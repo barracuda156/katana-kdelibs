@@ -23,7 +23,6 @@
 #include "kconfiggroup.h"
 #include "kstandarddirs.h"
 #include "kwindowsystem.h"
-#include "kdbusconnectionpool.h"
 #include "kiconloader.h"
 #include "kpassivepopup.h"
 #include "kdirwatch.h"
