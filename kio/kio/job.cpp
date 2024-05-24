@@ -1156,7 +1156,6 @@ public:
     JobFlags m_flags;
 
     void startBestCopyMethod();
-    void startCopyJob();
     void startCopyJob(const KUrl &slave_url);
     void startRenameJob(const KUrl &slave_url);
     void startDataPump();
@@ -1261,7 +1260,7 @@ void FileCopyJobPrivate::startBestCopyMethod()
         (m_src.userName() == m_dest.userName()) &&
         (m_src.password() == m_dest.password()))
     {
-        startCopyJob();
+        startCopyJob(m_src);
     } else if (m_src.isLocalFile() && KProtocolManager::canCopyFromFile(m_dest)) {
         startCopyJob(m_dest);
     } else if (m_dest.isLocalFile() && KProtocolManager::canCopyToFile(m_src)) {
@@ -1294,11 +1293,6 @@ KUrl FileCopyJob::srcUrl() const
 KUrl FileCopyJob::destUrl() const
 {
     return d_func()->m_dest;
-}
-
-void FileCopyJobPrivate::startCopyJob()
-{
-    startCopyJob(m_src);
 }
 
 void FileCopyJobPrivate::startCopyJob(const KUrl &slave_url)
