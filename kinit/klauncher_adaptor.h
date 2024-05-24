@@ -21,12 +21,16 @@
 
 #include "kstartupinfo.h"
 #include "kservice.h"
+#include "kurl.h"
 
 #include <QDBusAbstractAdaptor>
 #include <QProcess>
 #include <QTimer>
+#include <QMap>
 
 // #define KLAUNCHER_DEBUG
+
+typedef QMap<QString,KUrl> KLauncherDownloads;
 
 class KLauncherProcess : public QProcess
 {
@@ -36,7 +40,8 @@ public:
     ~KLauncherProcess();
 
     void setupProcess(const QString &appexe, const QStringList &args, const quint64 window,
-                      const KService::Ptr kservice, const qint64 timeout, const bool temp);
+                      const KService::Ptr kservice, const qint64 timeout, const bool temp,
+                      const KLauncherDownloads &downloaded);
 
 private Q_SLOTS:
     void slotProcessStateChanged(QProcess::ProcessState state);
@@ -58,6 +63,8 @@ private:
     QStringList m_args;
     quint64 m_window;
     bool m_temp;
+    KLauncherDownloads m_downloaded;
+    QMap<QString,QDateTime> m_lastmodified;
 };
 
 // Adaptor class for interface org.kde.KLauncher
@@ -107,7 +114,8 @@ private:
     void startDetached(const QString &name, const QStringList &args);
     bool startProgram(const QString &app, const QStringList &args, const QStringList &envs,
                       const quint64 window, const bool temp, const QString &workdir,
-                      const qint64 timeout, const KService::Ptr kservice = KService::Ptr(nullptr));
+                      const qint64 timeout, const KService::Ptr kservice = KService::Ptr(nullptr),
+                      const KLauncherDownloads &downloaded = KLauncherDownloads());
 
     QProcessEnvironment m_environment;
     qint64 m_startuptimeout;

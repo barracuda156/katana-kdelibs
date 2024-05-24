@@ -94,13 +94,15 @@ KLauncherProcess::~KLauncherProcess()
 
 void KLauncherProcess::setupProcess(const QString &appexe, const QStringList &args,
                                     const quint64 window, const KService::Ptr kservice,
-                                    const qint64 timeout, const bool temp)
+                                    const qint64 timeout, const bool temp,
+                                    const KLauncherDownloads &downloaded)
 {
     Q_ASSERT(m_kstartupinfoid.none() == true);
     m_appexe = appexe;
     m_args = args;
     m_window = window;
     m_temp = temp;
+    m_downloaded = downloaded;
     QByteArray startupwmclass;
     if (KRun::checkStartupNotify(kservice.data(), &startupwmclass)) {
         m_kstartupinfoid.initId(KStartupInfo::createNewStartupId());
@@ -117,6 +119,11 @@ void KLauncherProcess::setupProcess(const QString &appexe, const QStringList &ar
         sendSIStart(timeout);
     } else {
         kDebug() << "no ASN for" << m_appexe;
+    }
+    foreach (const QString &download, m_downloaded.keys()) {
+        const QDateTime downloadlastmodified = QFileInfo(download).lastModified();
+        kDebug() << "current last modified for" << download << "is" << downloadlastmodified;
+        m_lastmodified.insert(download, downloadlastmodified);
     }
 }
 
@@ -141,6 +148,20 @@ void KLauncherProcess::slotProcessStateChanged(QProcess::ProcessState state)
                     i18n("Application exited abnormally: %1", m_appexe),
                     QString::fromLocal8Bit(processerror.constData(), processerror.size())
                 );
+            }
+        }
+        if (!m_downloaded.isEmpty()) {
+            foreach (const QString &download, m_downloaded.keys()) {
+                const QDateTime downloadlastmodified = QFileInfo(download).lastModified();
+                kDebug() << "current last modified for" << download << "is" << downloadlastmodified;
+                if (downloadlastmodified != m_lastmodified.value(download)) {
+                    // TODO: maybe ask
+                    const KUrl uploadurl = m_downloaded.value(download);
+                    kDebug() << "uploading" << download << "to" << uploadurl;
+                    if (!KIO::NetAccess::upload(download, uploadurl, findWindow(m_window))) {
+                        kWarning() << "could not upload" << download;
+                    }
+                }
             }
         }
         QTimer::singleShot(s_deletedelay, this, SLOT(deleteLater()));
@@ -354,10 +375,9 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
     }
     const QString program = programandargs.takeFirst();
     const QString kserviceexec = kservice->exec();
+    KLauncherDownloads downloaded;
     if (!kserviceexec.contains(QLatin1String("%u")) && !kserviceexec.contains(QLatin1String("%U"))) {
         kDebug() << "service does not support remote" << serviceName;
-        // TODO: upload? spec says nothing
-        QStringList downloaded;
         foreach (const QString &url, urls) {
             const KUrl realurl = KUrl(url);
             if (!realurl.isLocalFile()) {
@@ -368,13 +388,13 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
                 const QString prettyurl = realurl.prettyUrl();
                 if (!KIO::NetAccess::download(realurl, urldestination, findWindow(window))) {
                     kError() << "could not download" << prettyurl;
-                    showError(i18n("Could not download URL: %1", Qt::escape(prettyurl)), window);
+                    showError(i18n("Could not download URL: %1", prettyurl), window);
                     removeTemp(temp, urls);
-                    removeTemp(true, downloaded);
+                    removeTemp(true, downloaded.keys());
                     return false;
                 }
                 kDebug() << "downloaded" << prettyurl << "to" << urldestination;
-                downloaded.append(urldestination);
+                downloaded.insert(urldestination, realurl);
                 // URLs may not be unique
                 int indexofurl = programandargs.indexOf(url);
                 while (indexofurl != -1) {
@@ -386,7 +406,7 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
         temp = (temp || !downloaded.isEmpty());
     }
     kDebug() << "starting" << kservice->entryPath() << urls;
-    return startProgram(program, programandargs, envs, window, temp, programworkdir, m_startuptimeout, kservice);
+    return startProgram(program, programandargs, envs, window, temp, programworkdir, m_startuptimeout, kservice, downloaded);
 }
 
 bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringList &envs,
@@ -429,7 +449,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
         kDebug() << "execuable file" << url;
         KMessageBox::sorryWId(
             static_cast<WId>(window),
-            i18n("The file <tt>%1</tt> is an executable program.<br/>For safety it will not be started.", Qt::escape(realurl.prettyUrl()))
+            i18n("The file <tt>%1</tt> is an executable program.<br/>For safety it will not be started.", realurl.prettyUrl())
         );
         removeTemp(temp, QStringList() << url);
         return false;
@@ -496,7 +516,8 @@ void KLauncherAdaptor::startDetached(const QString &name, const QStringList &arg
 
 bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args, const QStringList &envs,
                                     const quint64 window, const bool temp, const QString &workdir,
-                                    const qint64 timeout, const KService::Ptr kservice)
+                                    const qint64 timeout, const KService::Ptr kservice,
+                                    const KLauncherDownloads &downloaded)
 {
     const QString appexe = findExe(app);
     if (appexe.isEmpty()) {
@@ -522,7 +543,7 @@ bool KLauncherAdaptor::startProgram(const QString &app, const QStringList &args,
     }
     process->setProcessEnvironment(processenv);
     process->setWorkingDirectory(workdir);
-    process->setupProcess(appexe, args, window, kservice, timeout, temp);
+    process->setupProcess(appexe, args, window, kservice, timeout, temp, downloaded);
     kDebug() << "starting" << appexe << args << envs << workdir;
     process->start(appexe, args);
     while (process->state() == QProcess::Starting) {
