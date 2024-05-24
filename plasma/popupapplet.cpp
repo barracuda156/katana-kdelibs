@@ -48,7 +48,7 @@ namespace Plasma
 
 PopupApplet::PopupApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
-      d(new PopupAppletPrivate(this))
+    d(new PopupAppletPrivate(this))
 {
 }
 
@@ -233,17 +233,17 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
             }
         }
 
-        //Applet on desktop
+        // Applet on desktop
         if ((((!parentApplet || parentApplet->isContainment() ) && icon && (!icon->svg().isEmpty() || !icon->icon().isNull()) && ((f != Plasma::Vertical && f != Plasma::Horizontal))) ||
             (((f == Plasma::Vertical && parentSize.width() >= minimum.width()) ||
              (f == Plasma::Horizontal && parentSize.height() >= minimum.height())) &&
              (!q->parentWidget() || (q->parentWidget()->size().width() >= minimum.width() && q->parentWidget()->size().height() >= minimum.height()))))) {
-            //kDebug() << "we are expanding the popupapplet";
+            // kDebug() << "we are expanding the popupapplet";
 
 
-            // we only switch to expanded if we aren't horiz/vert constrained and
-            // this applet has an icon.
-            // otherwise, we leave it up to the applet itself to figure it out
+            // only switch to expanded if we aren't horiz/vert constrained and
+            // this applet has an icon. otherwise, we leave it up to the applet
+            // itself to figure it out
             if (icon) {
                 icon->hide();
             }
@@ -255,7 +255,7 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
             Dialog *dialog = dialogPtr.data();
             if (dialog) {
                 if (dialog->layout() && qWidget) {
-                    //we don't want to delete Widget inside the dialog layout
+                    // don't want to delete Widget inside the dialog layout
                     dialog->layout()->removeWidget(qWidget);
                 }
 
@@ -309,22 +309,20 @@ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
                 minimum.setWidth(0);
             }
 
-            qreal left, top, right, bottom;
-            q->getContentsMargins(&left, &top, &right, &bottom);
             QSizeF oldSize(q->size());
 
-            //size not saved/invalid size saved
+            // size not saved/invalid size saved
             if (oldSize.width() < q->minimumSize().width() || oldSize.height() < q->minimumSize().height()) {
                 q->resize(prefSize);
                 emit q->appletTransformedItself();
             }
         } else {
-            //Applet on popup
+            // Applet on popup
             if (icon && lay) {
                 lay->addItem(icon);
             }
 
-            //kDebug() << "about to switch to a popup";
+            // kDebug() << "about to switch to a popup";
             if (!qWidget && !gWidget) {
                 delete dialogPtr.data();
                 statusChange(q->status());
@@ -421,8 +419,8 @@ QSizeF PopupApplet::sizeHint(Qt::SizeHint which, const QSizeF & constraint) cons
     }
 
     switch (formFactor()) {
-        case Vertical:
-        case Horizontal: {
+        case Plasma::Vertical:
+        case Plasma::Horizontal: {
             const int size = IconSize(KIconLoader::Panel);
             return QSizeF(size, size);
         }
