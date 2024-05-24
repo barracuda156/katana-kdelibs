@@ -18,7 +18,6 @@
  */
 
 #include "slider.h"
-#include "framesvg.h"
 #include "private/style_p.h"
 #include "private/themedwidgetinterface_p.h"
 
@@ -42,7 +41,7 @@ public:
 
 Slider::Slider(QGraphicsWidget *parent)
     : QGraphicsProxyWidget(parent),
-      d(new SliderPrivate(this))
+    d(new SliderPrivate(this))
 {
     QSlider *native = new QSlider();
 
@@ -74,47 +73,47 @@ void Slider::wheelEvent(QGraphicsSceneWheelEvent *event)
 
 void Slider::setMaximum(int max)
 {
-    static_cast<QSlider*>(widget())->setMaximum(max);
+    nativeWidget()->setMaximum(max);
 }
 
 int Slider::maximum() const
 {
-    return static_cast<QSlider*>(widget())->maximum();
+    return nativeWidget()->maximum();
 }
 
 void Slider::setMinimum(int min)
 {
-    static_cast<QSlider*>(widget())->setMinimum(min);
+    nativeWidget()->setMinimum(min);
 }
 
 int Slider::minimum() const
 {
-    return static_cast<QSlider*>(widget())->minimum();
+    return nativeWidget()->minimum();
 }
 
 void Slider::setRange(int min, int max)
 {
-    static_cast<QSlider*>(widget())->setRange(min, max);
+    nativeWidget()->setRange(min, max);
 }
 
 void Slider::setValue(int value)
 {
-    static_cast<QSlider*>(widget())->setValue(value);
+    nativeWidget()->setValue(value);
 }
 
 int Slider::value() const
 {
-    return static_cast<QSlider*>(widget())->value();
+    return nativeWidget()->value();
 }
 
 void Slider::setOrientation(Qt::Orientation orientation)
 {
-    static_cast<QSlider*>(widget())->setOrientation(orientation);
+    nativeWidget()->setOrientation(orientation);
 }
 
 Qt::Orientation Slider::orientation() const
 {
-    return static_cast<QSlider*>(widget())->orientation();
+    return nativeWidget()->orientation();
 }
 
 QSlider *Slider::nativeWidget() const
