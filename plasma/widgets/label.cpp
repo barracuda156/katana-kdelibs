@@ -125,7 +125,7 @@ bool Label::wordWrap() const
 void Label::setElideText(bool elide)
 {
     d->elideText = elide;
-    if (!elide) {
+    if (elide) {
         d->originaltext = nativeWidget()->text();
         d->elideLabelText();
     } else {
