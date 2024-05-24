@@ -346,6 +346,12 @@ set_package_properties(LibArchive PROPERTIES
     PURPOSE "Archives in TAR, ZIP and other formats"
 )
 
+find_program(SETXKBMAP_EXECUTABLE setxkbmap)
+add_feature_info(setxkbmap
+    SETXKBMAP_EXECUTABLE
+    "Set keyboard layout"
+)
+
 ################# configure checks and create the configured files #################
 
 include(ConfigureChecks.cmake)
