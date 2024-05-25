@@ -396,11 +396,28 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
                 }
                 kDebug() << "downloaded" << prettyurl << "to" << urldestination;
                 downloaded.insert(urldestination, realurl);
-                // URLs may not be unique
-                int indexofurl = programandargs.indexOf(url);
-                while (indexofurl != -1) {
+                // URLs may not be unique, don't download more than once
+                const int indexofurl = programandargs.indexOf(url);
+                if (indexofurl == -1) {
+                    // this should never happen but warn just in case
+                    kWarning() << "could not find the index of" << url;
+                } else {
                     programandargs.replace(indexofurl, urldestination);
-                    indexofurl = programandargs.indexOf(url);
+                    bool isfirst = true;
+                    QMutableListIterator<QString> iter(programandargs);
+                    while (iter.hasNext()) {
+                        if (iter.next() == url) {
+                            if (isfirst) {
+                                // first already replaced
+                                isfirst = false;
+                                continue;
+                            } else {
+                                // every other occurance is removed
+                                kDebug() << "removing duplicate of downloaded URL" << url;
+                                iter.remove();
+                            }
+                        }
+                    }
                 }
             }
         }
