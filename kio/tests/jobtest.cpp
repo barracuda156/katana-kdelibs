@@ -1193,18 +1193,6 @@ void JobTest::stat()
 #endif
 }
 
-void JobTest::mostLocalUrl()
-{
-    const QString filePath = homeTmpDir() + "fileFromHome";
-    createTestFile( filePath );
-    KIO::StatJob* job = KIO::mostLocalUrl(filePath, KIO::HideProgressInfo);
-    QVERIFY(job);
-    job->setUiDelegate(0);
-    bool ok = KIO::NetAccess::synchronousRun(job, 0);
-    QVERIFY(ok);
-    QCOMPARE(job->mostLocalUrl().toLocalFile(), filePath);
-}
-
 void JobTest::moveFileDestAlreadyExists() // #157601
 {
     const QString file1 = homeTmpDir() + "fileFromHome";

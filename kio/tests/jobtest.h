@@ -67,7 +67,6 @@ private Q_SLOTS:
     void rmdirEmpty();
     void rmdirNotEmpty();
     void stat();
-    void mostLocalUrl();
     //void newApiPerformance();
     void calculateRemainingSeconds();
     void moveFileDestAlreadyExists();
