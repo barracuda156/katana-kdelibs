@@ -76,57 +76,61 @@ static inline int ftpUserModeFromChar(const char modechar, const int rmode, cons
       return result;
 }
 
-static inline mode_t ftpModeFromString(const char* const modestring)
+static inline mode_t ftpModeFromString(const QByteArray &modestring)
 {
-     mode_t result = 0;
-     switch (modestring[0]) {
-         case '-': {
-             result |= S_IFREG;
-             break;
-          }
-          case 'b': {
-             result |= S_IFBLK;
-             break;
-          }
-          case 'c': {
-             result |= S_IFCHR;
-             break;
-          }
-          case 'd': {
-             result |= S_IFDIR;
-             break;
-         }
-         case 'l': {
-             result |= S_IFLNK;
-             break;
-         }
-         case 'p': {
-             result |= S_IFIFO;
-             break;
-         }
-         case 's': {
-             result |= S_IFSOCK;
-             break;
-         }
-         default: {
-             kWarning(7103) << "Invalid FTP mode string" << modestring;
-             break;
-         }
-     }
+    mode_t result = 0;
+    if (modestring.size() != 10) {
+        kWarning(7103) << "Invalid FTP mode string" << modestring;
+        return result;
+    }
+    switch (modestring[0]) {
+        case '-': {
+            result |= S_IFREG;
+            break;
+        }
+        case 'b': {
+            result |= S_IFBLK;
+            break;
+        }
+        case 'c': {
+            result |= S_IFCHR;
+            break;
+        }
+        case 'd': {
+            result |= S_IFDIR;
+            break;
+        }
+        case 'l': {
+            result |= S_IFLNK;
+            break;
+        }
+        case 'p': {
+            result |= S_IFIFO;
+            break;
+        }
+        case 's': {
+            result |= S_IFSOCK;
+            break;
+        }
+        default: {
+            kWarning(7103) << "Invalid FTP mode string" << modestring;
+            break;
+        }
+    }
 
-     result |= ftpUserModeFromChar(modestring[1], S_IRUSR, S_IWUSR, S_IXUSR);
-     result |= ftpUserModeFromChar(modestring[2], S_IRUSR, S_IWUSR, S_IXUSR);
-     result |= ftpUserModeFromChar(modestring[3], S_IRUSR, S_IWUSR, S_IXUSR);
+    result |= ftpUserModeFromChar(modestring[1], S_IRUSR, S_IWUSR, S_IXUSR);
+    result |= ftpUserModeFromChar(modestring[2], S_IRUSR, S_IWUSR, S_IXUSR);
+    result |= ftpUserModeFromChar(modestring[3], S_IRUSR, S_IWUSR, S_IXUSR);
 
-     result |= ftpUserModeFromChar(modestring[4], S_IRGRP, S_IWGRP, S_IXGRP);
-     result |= ftpUserModeFromChar(modestring[5], S_IRGRP, S_IWGRP, S_IXGRP);
-     result |= ftpUserModeFromChar(modestring[6], S_IRGRP, S_IWGRP, S_IXGRP);
+    result |= ftpUserModeFromChar(modestring[4], S_IRGRP, S_IWGRP, S_IXGRP);
+    result |= ftpUserModeFromChar(modestring[5], S_IRGRP, S_IWGRP, S_IXGRP);
+    result |= ftpUserModeFromChar(modestring[6], S_IRGRP, S_IWGRP, S_IXGRP);
 
-     result |= ftpUserModeFromChar(modestring[7], S_IROTH, S_IWOTH, S_IXOTH);
-     result |= ftpUserModeFromChar(modestring[8], S_IROTH, S_IWOTH, S_IXOTH);
-     result |= ftpUserModeFromChar(modestring[9], S_IROTH, S_IWOTH, S_IXOTH);
+    result |= ftpUserModeFromChar(modestring[7], S_IROTH, S_IWOTH, S_IXOTH);
+    result |= ftpUserModeFromChar(modestring[8], S_IROTH, S_IWOTH, S_IXOTH);
+    result |= ftpUserModeFromChar(modestring[9], S_IROTH, S_IWOTH, S_IXOTH);
 
-     return result;
+    return result;
 }
 
 // for reference:
