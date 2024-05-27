@@ -68,13 +68,12 @@ public:
                      const KUrl &itemOrDirUrl,
                      bool urlIsDirectory)
         : m_entry(entry),
-          m_url(itemOrDirUrl),
-          m_pMimeType(nullptr),
-          m_fileMode(KFileItem::Unknown),
-          m_permissions(KFileItem::Unknown),
-          m_bMarked(false),
-          m_bLink(false),
-          m_bIsLocalUrl(itemOrDirUrl.isLocalFile())
+        m_url(itemOrDirUrl),
+        m_pMimeType(nullptr),
+        m_fileMode(KFileItem::Unknown),
+        m_permissions(KFileItem::Unknown),
+        m_bLink(false),
+        m_bIsLocalUrl(itemOrDirUrl.isLocalFile())
     {
         if (entry.count() != 0) {
             // extract fields from the KIO::UDS Entry
@@ -169,10 +168,6 @@ public:
      */
     mode_t m_permissions;
 
-    /**
-     * Marked : see mark()
-     */
-    bool m_bMarked;
     /**
      * Whether the file is a link
      */
@@ -451,7 +446,6 @@ QDateTime KFileItem::time(FileTimes which) const
     }
     return d->time(which);
 }
-
 
 QString KFileItem::user() const
 {
@@ -1119,32 +1113,6 @@ KIO::UDSEntry KFileItem::entry() const
         return KIO::UDSEntry();
     }
     return d->m_entry;
-}
-
-bool KFileItem::isMarked() const
-{
-    if (!d) {
-        return false;
-    }
-    return d->m_bMarked;
-}
-
-void KFileItem::mark()
-{
-    if (!d) {
-        kWarning() << "null item";
-        return;
-    }
-    d->m_bMarked = true;
-}
-
-void KFileItem::unmark()
-{
-    if (!d) {
-        kWarning() << "null item";
-        return;
-    }
-    d->m_bMarked = false;
 }
 
 KFileItem& KFileItem::operator=(const KFileItem &other)

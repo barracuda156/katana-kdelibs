@@ -76,10 +76,8 @@ void KFileItemTest::testNull()
     QVERIFY(null.isNull());
     KFileItem fileItem(KUrl("/"), QString(), KFileItem::Unknown);
     QVERIFY(!fileItem.isNull());
-    fileItem.mark();
     null = fileItem; // ok, now 'null' isn't so null anymore
     QVERIFY(!null.isNull());
-    QVERIFY(null.isMarked());
     QVERIFY(null.isReadable());
     QVERIFY(!null.isHidden());
 }
@@ -99,14 +97,10 @@ void KFileItemTest::testDetach()
     KFileItem fileItem2(fileItem);
     QVERIFY(fileItem == fileItem2);
     QVERIFY(fileItem.d == fileItem2.d);
-    fileItem2.mark();
-    QVERIFY(fileItem2.isMarked());
-    QVERIFY(!fileItem.isMarked());
     QVERIFY(fileItem == fileItem2);
     QVERIFY(fileItem.d != fileItem2.d);
 
     fileItem = fileItem2;
-    QVERIFY(fileItem2.isMarked());
     QVERIFY(fileItem == fileItem2);
     QVERIFY(fileItem.d == fileItem2.d);
     QVERIFY(!(fileItem != fileItem2));
