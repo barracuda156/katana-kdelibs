@@ -105,12 +105,6 @@ public:
     void refresh();
 
     /**
-     * Re-reads mimetype information.
-     * This is called when the mimetype database changes.
-     */
-    void refreshMimeType();
-
-    /**
      * Returns the url of the file.
      * @return the url of the file
      */

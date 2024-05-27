@@ -319,23 +319,14 @@ void KFileItem::refresh()
 
     d->m_fileMode = KFileItem::Unknown;
     d->m_permissions = KFileItem::Unknown;
-    refreshMimeType();
+    d->m_pMimeType = nullptr;
+    d->m_iconName.clear();
 
     // basically, can't trust any information while listing. everything could have changed.
     // clearing m_entry makes it possible to detect changes in the size of the file, the time
     // information, etc.
     d->m_entry.clear();
     d->init();
-}
-
-void KFileItem::refreshMimeType()
-{
-    if (!d) {
-        return;
-    }
-
-    d->m_pMimeType = nullptr;
-    d->m_iconName.clear();
 }
 
 void KFileItem::setUrl(const KUrl &url)
