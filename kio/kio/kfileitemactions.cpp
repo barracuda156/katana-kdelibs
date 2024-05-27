@@ -245,35 +245,6 @@ int KFileItemActions::addServiceActionsTo(QMenu* mainMenu)
         KDesktopFile desktopFile(file);
         const KConfigGroup cfg = desktopFile.desktopGroup();
 
-        if (cfg.hasKey("X-KDE-ShowIfRunning")) {
-            const QString app = cfg.readEntry("X-KDE-ShowIfRunning");
-            if (QDBusConnection::sessionBus().interface()->isServiceRegistered(app)) {
-                continue;
-            }
-        }
-        if (cfg.hasKey("X-KDE-ShowIfDBusCall")) {
-            QString calldata = cfg.readEntry("X-KDE-ShowIfDBusCall");
-            const QStringList parts = calldata.split(' ');
-            const QString &app = parts.at(0);
-            const QString &obj = parts.at(1);
-            QString interface = parts.at(2);
-            QString method;
-            int pos = interface.lastIndexOf(QLatin1Char('.'));
-            if (pos != -1) {
-                method = interface.mid(pos + 1);
-                interface.truncate(pos);
-            }
-
-            //if (!QDBus::sessionBus().busService()->nameHasOwner(app))
-            //    continue; //app does not exist so cannot send call
-
-            QDBusMessage reply = QDBusInterface(app, obj, interface).
-                                 call(method, urlList.toStringList());
-            if (reply.arguments().count() < 1 || reply.arguments().at(0).type() != QVariant::Bool || !reply.arguments().at(0).toBool()) {
-                continue;
-            }
-
-        }
         if (cfg.hasKey("X-KDE-Protocol")) {
             const QString theProtocol = cfg.readEntry("X-KDE-Protocol");
             if (theProtocol.startsWith('!')) {
@@ -284,14 +255,12 @@ int KFileItemActions::addServiceActionsTo(QMenu* mainMenu)
             } else if (protocol != theProtocol) {
                 continue;
             }
-        }
-        else if (cfg.hasKey("X-KDE-Protocols")) {
+        } else if (cfg.hasKey("X-KDE-Protocols")) {
             const QStringList protocols = cfg.readEntry("X-KDE-Protocols", QStringList());
             if (!protocols.contains(protocol)) {
                 continue;
             }
-        }
-        else if (protocol == "trash") {
+        } else if (protocol == "trash") {
             // Require servicemenus for the trash to ask for protocol=trash explicitly.
             // Trashed files aren't supposed to be available for actions.
             // One might want a servicemenu for trash.desktop itself though.
