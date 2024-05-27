@@ -20,8 +20,6 @@
 */
 
 #include "kio/renamedialog.h"
-#include <stdio.h>
-#include <assert.h>
 
 #include <QtCore/QDir>
 #include <QtCore/QDateTime>
@@ -53,6 +51,7 @@
 #include <kguiitem.h>
 #include <ksqueezedtextlabel.h>
 #include <kfilemetadatawidget.h>
+#include <kpixmapwidget.h>
 #include <previewjob.h>
 
 using namespace KIO;
@@ -73,7 +72,8 @@ public:
         m_destPreview = 0;
     }
 
-    void setRenameBoxText(const QString& fileName) {
+    void setRenameBoxText(const QString &fileName)
+    {
         // sets the text in file name line edit box, selecting the filename (but not the extension if there is one).
         const QString extension = KMimeType::extractKnownExtension(fileName);
         m_pLineEdit->setText(fileName);
@@ -84,6 +84,68 @@ public:
         } else {
             m_pLineEdit->selectAll();
         }
+    }
+
+    QScrollArea* createContainerLayout(RenameDialog *dialog, QWidget* parent, const KFileItem& item, KPixmapWidget* preview)
+    {
+        KFileItemList itemList;
+        itemList << item;
+
+        // widget
+        KFileMetaDataWidget* metaWidget = new KFileMetaDataWidget(dialog);
+        metaWidget->setItems(itemList);
+
+        // Encapsulate the MetaDataWidgets inside a container with stretch at the bottom.
+        // This prevents that the meta data widgets get vertically stretched
+        // in the case where the height of m_metaDataArea > m_metaDataWidget.
+
+        QWidget* widgetContainer = new QWidget(parent);
+        QVBoxLayout* containerLayout = new QVBoxLayout(widgetContainer);
+
+        containerLayout->setContentsMargins(0, 0, 0, 0);
+        containerLayout->setSpacing(0);
+        containerLayout->addWidget(preview);
+        containerLayout->addWidget(metaWidget);
+        containerLayout->addStretch(1);
+
+        QScrollArea* metaDataArea = new QScrollArea(parent);
+
+        metaDataArea->setWidget(widgetContainer);
+        metaDataArea->setWidgetResizable(true);
+        metaDataArea->setFrameShape(QFrame::NoFrame);
+
+        return metaDataArea;
+    }
+
+    QLabel* createLabel(QWidget *parent, const QString &text)
+    {
+        QLabel* label = new QLabel(parent);
+
+        label->setAlignment(Qt::AlignHCenter);
+        label->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+        label->setText(text);
+
+        return label;
+    }
+
+    KSqueezedTextLabel* createSqueezedLabel(QWidget* parent, const QString& text)
+    {
+        KSqueezedTextLabel* label = new KSqueezedTextLabel(text, parent);
+
+        label->setAlignment(Qt::AlignHCenter);
+        label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+
+        return label;
+    }
+
+    KPixmapWidget* createPixmapWidget(QWidget *parent)
+    {
+        KPixmapWidget* widget = new KPixmapWidget(parent);
+
+        widget->setAlignment(Qt::AlignHCenter);
+        widget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+
+        return widget;
     }
 
     KPushButton *bCancel;
@@ -98,8 +160,8 @@ public:
     KUrl dest;
     bool m_srcPendingPreview;
     bool m_destPendingPreview;
-    QLabel* m_srcPreview;
-    QLabel* m_destPreview;
+    KPixmapWidget* m_srcPreview;
+    KPixmapWidget* m_destPreview;
     QScrollArea* m_srcArea;
     QScrollArea* m_destArea;
     KFileItem srcItem;
@@ -199,8 +261,8 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
             d->destItem = KFileItem(destUds, d->dest);
         }
 
-        d->m_srcPreview = createLabel(parent, QString(), false);
-        d->m_destPreview = createLabel(parent, QString(), false);
+        d->m_srcPreview = d->createPixmapWidget(parent);
+        d->m_destPreview = d->createPixmapWidget(parent);
 
         d->m_srcPreview->setMinimumHeight(KIconLoader::SizeEnormous);
         d->m_destPreview->setMinimumHeight(KIconLoader::SizeEnormous);
@@ -212,8 +274,8 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
         d->m_destPendingPreview = true;
 
         // widget
-        d->m_srcArea = createContainerLayout(parent, d->srcItem, d->m_srcPreview);
-        d->m_destArea = createContainerLayout(parent, d->destItem, d->m_destPreview);
+        d->m_srcArea = d->createContainerLayout(this, parent, d->srcItem, d->m_srcPreview);
+        d->m_destArea = d->createContainerLayout(this, parent, d->destItem, d->m_destPreview);
 
         connect(d->m_srcArea->verticalScrollBar(), SIGNAL(valueChanged(int)), d->m_destArea->verticalScrollBar(), SLOT(setValue(int)));
         connect(d->m_destArea->verticalScrollBar(), SIGNAL(valueChanged(int)), d->m_srcArea->verticalScrollBar(), SLOT(setValue(int)));
@@ -226,11 +288,11 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
 
         QLabel* titleLabel = new QLabel(i18n("This action will overwrite the destination."), this);
 
-        QLabel* srcTitle = createLabel(parent, i18n("Source"), true);
-        QLabel* destTitle = createLabel(parent, i18n("Destination"), true);
+        QLabel* srcTitle = d->createLabel(parent, i18n("Source"));
+        QLabel* destTitle = d->createLabel(parent, i18n("Destination"));
 
-        QLabel* srcInfo = createSqueezedLabel(parent, d->src.pathOrUrl());
-        QLabel* destInfo = createSqueezedLabel(parent, d->dest.pathOrUrl());
+        QLabel* srcInfo = d->createSqueezedLabel(parent, d->src.pathOrUrl());
+        QLabel* destInfo = d->createSqueezedLabel(parent, d->dest.pathOrUrl());
 
         if (mtimeDest > mtimeSrc) {
             QLabel* warningLabel = new QLabel(i18n("Warning, the destination is more recent."), this);
@@ -621,64 +683,6 @@ void RenameDialog::resizePanels()
             this, SLOT(showSrcIcon(KFileItem)));
     connect(destJob, SIGNAL(failed(KFileItem)),
             this, SLOT(showDestIcon(KFileItem)));
-}
-
-QScrollArea* RenameDialog::createContainerLayout(QWidget* parent, const KFileItem& item, QLabel* preview)
-{
-    KFileItemList itemList;
-    itemList << item;
-
-    // widget
-    KFileMetaDataWidget* metaWidget = new KFileMetaDataWidget(this);
-    metaWidget->setItems(itemList);
-
-    // Encapsulate the MetaDataWidgets inside a container with stretch at the bottom.
-    // This prevents that the meta data widgets get vertically stretched
-    // in the case where the height of m_metaDataArea > m_metaDataWidget.
-
-    QWidget* widgetContainer = new QWidget(parent);
-    QVBoxLayout* containerLayout = new QVBoxLayout(widgetContainer);
-
-    containerLayout->setContentsMargins(0, 0, 0, 0);
-    containerLayout->setSpacing(0);
-    containerLayout->addWidget(preview);
-    containerLayout->addWidget(metaWidget);
-    containerLayout->addStretch(1);
-
-    QScrollArea* metaDataArea = new QScrollArea(parent);
-
-    metaDataArea->setWidget(widgetContainer);
-    metaDataArea->setWidgetResizable(true);
-    metaDataArea->setFrameShape(QFrame::NoFrame);
-
-    return metaDataArea;
-}
-
-QLabel* RenameDialog::createLabel(QWidget* parent, const QString& text, bool containerTitle)
-{
-    QLabel* label = new QLabel(parent);
-
-    if (containerTitle) {
-        QFont font = label->font();
-        font.setBold(true);
-        label->setFont(font);
-    }
-
-    label->setAlignment(Qt::AlignHCenter);
-    label->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-    label->setText(text);
-
-    return label;
-}
-
-KSqueezedTextLabel* RenameDialog::createSqueezedLabel(QWidget* parent, const QString& text)
-{
-    KSqueezedTextLabel* label = new KSqueezedTextLabel(text, parent);
-
-    label->setAlignment(Qt::AlignHCenter);
-    label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-
-    return label;
 }
 
 #include "moc_renamedialog.cpp"

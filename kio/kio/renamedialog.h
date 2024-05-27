@@ -22,16 +22,14 @@
 #ifndef KIO_RENAMEDIALOG_H
 #define KIO_RENAMEDIALOG_H
 
-#include <ksqueezedtextlabel.h>
 #include <kurl.h>
 #include <QtGui/QDialog>
 #include <sys/types.h>
 
 #include <kio/global.h>
 
-#include <QScrollArea>
-#include <QLabel>
 #include <QPixmap>
+
 class KFileItem;
 
 namespace KIO
@@ -52,12 +50,31 @@ namespace KIO
  * M_NORENAME: Don't offer a "Rename" button
  * M_ISDIR: The dest is a directory, so label the "overwrite" button something like "merge" instead.
  */
-enum RenameDialog_Mode { M_OVERWRITE = 1, M_OVERWRITE_ITSELF = 2, M_SKIP = 4, M_SINGLE = 8, M_MULTI = 16, M_RESUME = 32, M_NORENAME = 64, M_ISDIR = 128 };
+enum RenameDialog_Mode {
+    M_OVERWRITE = 1,
+    M_OVERWRITE_ITSELF = 2,
+    M_SKIP = 4,
+    M_SINGLE = 8,
+    M_MULTI = 16,
+    M_RESUME = 32,
+    M_NORENAME = 64,
+    M_ISDIR = 128
+};
 
 /**
  * The result of open_RenameDialog().
  */
-enum RenameDialog_Result {R_RESUME = 6, R_RESUME_ALL = 7, R_OVERWRITE = 4, R_OVERWRITE_ALL = 5, R_SKIP = 2, R_AUTO_SKIP = 3, R_RENAME = 1, R_AUTO_RENAME = 8, R_CANCEL = 0};
+enum RenameDialog_Result {
+    R_RESUME = 6,
+    R_RESUME_ALL = 7,
+    R_OVERWRITE = 4,
+    R_OVERWRITE_ALL = 5,
+    R_SKIP = 2,
+    R_AUTO_SKIP = 3,
+    R_RENAME = 1,
+    R_AUTO_RENAME = 8,
+    R_CANCEL = 0
+};
 
 
 /**
@@ -141,9 +158,6 @@ private Q_SLOTS:
     void resizePanels();
 
 private:
-    QScrollArea* createContainerLayout(QWidget* parent, const KFileItem& item, QLabel* preview);
-    QLabel* createLabel(QWidget* parent, const QString& text, const bool containerTitle);
-    KSqueezedTextLabel* createSqueezedLabel(QWidget* parent, const QString& text);
     class RenameDialogPrivate;
     RenameDialogPrivate* const d;
 };
