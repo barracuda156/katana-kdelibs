@@ -71,17 +71,13 @@ public:
      *
      * @param entry the KIO entry used to get the file, contains info about it
      * @param itemOrDirUrl the URL of the item or of the directory containing this item (see urlIsDirectory).
-     * @param delayedMimeTypes specifies if the mimetype of the given
-     *       URL should be determined immediately or on demand.
-     *       See the bool delayedMimeTypes in the KDirLister constructor.
      * @param urlIsDirectory specifies if the url is just the directory of the
      *       fileitem and the filename from the UDSEntry should be used.
      *
      * When creating KFileItems out of the UDSEntry emitted by a KIO list job,
-     * use KFileItem(entry, listjob->url(), delayedMimeTypes, true);
+     * use KFileItem(entry, listjob->url(), true);
      */
     KFileItem(const KIO::UDSEntry &entry, const KUrl &itemOrDirUrl,
-              bool delayedMimeTypes = false,
               bool urlIsDirectory = false );
 
     /**
@@ -93,12 +89,8 @@ public:
      * local files.
      * Set to KFileItem::Unknown if you don't know the mode or the permission.
      * @param url the file url
-     *
-     * @param delayedMimeTypes specify if the mimetype of the given URL
-     *       should be determined immediately or on demand
      */
-    KFileItem(mode_t mode, mode_t permissions, const KUrl &url,
-              bool delayedMimeTypes = false);
+    KFileItem(mode_t mode, mode_t permissions, const KUrl &url);
 
     /**
      * Creates an item representing a file, for which the mimetype is already known.
@@ -246,13 +238,6 @@ public:
     bool isHidden() const;
 
     /**
-     * @return true if the file is a remote URL, or a local file on a network mount.
-     * It will return false only for really-local file systems.
-     * @since 4.7.4
-     */
-    bool isSlow() const;
-
-    /**
      * Checks whether the file is a readable local .desktop file,
      * i.e. a file whose path can be given to KDesktopFile
      * @return true if the file is a desktop file.
@@ -327,20 +312,10 @@ public:
     QString name(bool lowerCase = false) const;
 
     /**
-     * Returns the mimetype of the file item.
-     * If @p delayedMimeTypes was used in the constructor, this will determine
-     * the mimetype first. Equivalent to determineMimeType()->name()
+     * Returns the mimetype of the file item. Equivalent to mimeTypePtr()->name()
      * @return the mime type of the file
      */
     QString mimetype() const;
-
-    /**
-     * Returns the mimetype of the file item.
-     * If delayedMimeTypes was used in the constructor, this will determine
-     * the mimetype first.
-     * @return the mime type
-     */
-    KMimeType::Ptr determineMimeType() const;
 
     /**
      * Returns the currently known mimetype of the file item.
@@ -348,20 +323,6 @@ public:
      * @return the known mime type
      */
     KMimeType::Ptr mimeTypePtr() const;
-
-    /**
-     * @return true if we have determined the final icon of this file already.
-     * @since 4.10.2
-     */
-    bool isFinalIconKnown() const;
-
-    /**
-     * @return true if we have determined the mimetype of this file already,
-     * i.e. if determineMimeType() will be fast. Otherwise it will have to
-     * find what the mimetype is, which is a possibly slow operation; usually
-     * this is delayed until necessary.
-     */
-    bool isMimeTypeKnown() const;
 
     /**
      * Returns the user-readable string representing the type of this file,

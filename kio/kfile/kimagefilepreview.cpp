@@ -34,7 +34,7 @@ static KIO::PreviewJob* createJob(const KUrl &url, int w, int h)
 {
     if (url.isValid()) {
         KFileItemList items;
-        items.append(KFileItem(KFileItem::Unknown, KFileItem::Unknown, url, true));
+        items.append(KFileItem(KFileItem::Unknown, KFileItem::Unknown, url));
         static const QStringList plugins = KIO::PreviewJob::availablePlugins();
 
         KIO::PreviewJob *previewJob = KIO::filePreview(items, QSize(w, h), &plugins);

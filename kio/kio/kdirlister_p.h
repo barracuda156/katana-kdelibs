@@ -35,7 +35,6 @@ public:
     // toplevel URL
     KUrl url;
     bool autoUpdate;
-    bool delayedMimeTypes;
     bool autoErrorHandling;
     bool showingDotFiles;
     bool dirOnlyMode;

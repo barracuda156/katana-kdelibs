@@ -1552,7 +1552,6 @@ void KDirOperator::setDirLister(KDirLister *lister)
     d->proxyModel->setSourceModel(d->dirModel);
 
     d->dirLister->setAutoUpdate(true);
-    d->dirLister->setDelayedMimeTypes(true);
 
     QWidget* mainWidget = window();
     d->dirLister->setMainWindow(mainWidget);

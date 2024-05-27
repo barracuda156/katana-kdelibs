@@ -29,7 +29,6 @@
 
 KDirListerPrivate::KDirListerPrivate(KDirLister *parent)
     : autoUpdate(true),
-    delayedMimeTypes(false),
     autoErrorHandling(true),
     showingDotFiles(false),
     dirOnlyMode(false),
@@ -81,7 +80,7 @@ void KDirListerPrivate::processEntries(KIO::Job *job, const KIO::UDSEntryList &e
         if (name.isEmpty()) {
             continue;
         }
-        const KFileItem item(it, processJob->url(), delayedMimeTypes, true);
+        const KFileItem item(it, processJob->url(), true);
         if (name == QLatin1String(".")) {
             rootItem = item;
             continue;
@@ -760,16 +759,6 @@ KFileItemList KDirLister::items(WhichItems which) const
         }
     }
     return KFileItemList();
-}
-
-bool KDirLister::delayedMimeTypes() const
-{
-    return d->delayedMimeTypes;
-}
-
-void KDirLister::setDelayedMimeTypes(bool delayedMimeTypes)
-{
-    d->delayedMimeTypes = delayedMimeTypes;
 }
 
 #include "moc_kdirlister.cpp"

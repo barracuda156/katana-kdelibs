@@ -785,7 +785,7 @@ void KFilePreviewGenerator::Private::resolveMimeType()
     bool resolved = false;
     do {
         KFileItem item = m_pendingItems.takeFirst();
-        if (item.isMimeTypeKnown()) {
+        if (item.mimeTypePtr()) {
             if (m_pendingVisibleIconUpdates > 0) {
                 // The item is visible and the MIME type already known.
                 // Decrease the update counter for dispatchIconUpdateQueue():
@@ -797,7 +797,6 @@ void KFilePreviewGenerator::Private::resolveMimeType()
             // would be very expensive. Instead the item is remembered in
             // m_resolvedMimeTypes and will be dispatched later
             // by dispatchIconUpdateQueue().
-            item.determineMimeType();
             m_resolvedMimeTypes.append(item);
             resolved = true;
         }
@@ -1137,7 +1136,7 @@ void KFilePreviewGenerator::setPreviewShown(bool show)
         QList<QModelIndex> indexesWithKnownMimeType;
         foreach (const KFileItem& item, itemList) {
             const QModelIndex index = dirModel->indexForItem(item);
-            if (item.isMimeTypeKnown()) {
+            if (item.mimeTypePtr()) {
                 indexesWithKnownMimeType.append(index);
             }
             dirModel->setData(index, QIcon(), Qt::DecorationRole);

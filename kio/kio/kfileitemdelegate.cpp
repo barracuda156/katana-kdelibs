@@ -263,11 +263,11 @@ QString KFileItemDelegate::Private::information(const QStyleOptionViewItem &opti
                 break;
 
             case KFileItemDelegate::MimeType:
-                string += item.isMimeTypeKnown() ? item.mimetype() : i18nc("@info mimetype","Unknown");
+                string += item.mimeTypePtr() ? item.mimetype() : i18nc("@info mimetype","Unknown");
                 break;
 
             case KFileItemDelegate::FriendlyMimeType:
-                string += item.isMimeTypeKnown() ? item.mimeComment() : i18nc("@info mimetype","Unknown");
+                string += item.mimeTypePtr() ? item.mimeComment() : i18nc("@info mimetype","Unknown");
                 break;
 
             case KFileItemDelegate::LinkDest:

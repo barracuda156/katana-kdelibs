@@ -141,12 +141,6 @@ class KIO_EXPORT KFileItemDelegate : public QAbstractItemDelegate
          * For the number of items to be shown for folders, the model must provide a valid
          * value for KDirMode::ChildCountRole, in addition to KDirModel::FileItemRole.
          *
-         * Note that KFileItemDelegate will not call KFileItem::determineMimeType() if
-         * KFileItem::isMimeTypeKnown() returns false, so if you want to display mime types
-         * you should use a KMimeTypeResolver with the model and the view, to ensure that mime
-         * types are resolved. If the mime type isn't known, "Unknown" will be displayed until
-         * the mime type has been successfully resolved.
-         *
          * @see setShowInformation()
          * @see showInformation()
          * @see information
@@ -288,7 +282,6 @@ class KIO_EXPORT KFileItemDelegate : public QAbstractItemDelegate
          * Returns the file item information that should be shown below item labels in list views.
          */
         InformationList showInformation() const;
-
 
         /**
          * Sets the color used for drawing the text shadow.

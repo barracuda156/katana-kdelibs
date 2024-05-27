@@ -43,7 +43,6 @@
 #include <kconfiggroup.h>
 #include <kuser.h>
 #include <ktoolinvocation.h>
-#include <kfilesystemtype_p.h>
 
 static bool isKDirShare(const QString &dirpath)
 {
@@ -68,8 +67,7 @@ public:
     KFileItemPrivate(const KIO::UDSEntry &entry,
                      mode_t mode, mode_t permissions,
                      const KUrl &itemOrDirUrl,
-                     bool urlIsDirectory,
-                     bool delayedMimeTypes)
+                     bool urlIsDirectory)
         : m_entry(entry),
           m_url(itemOrDirUrl),
           m_strName(),
@@ -82,9 +80,6 @@ public:
           m_bMarked(false),
           m_bLink(false),
           m_bIsLocalUrl(itemOrDirUrl.isLocalFile()),
-          m_bMimeTypeKnown(false),
-          m_delayedMimeTypes(delayedMimeTypes),
-          m_useIconNameCache(false),
           m_slow(SlowUnknown)
     {
         if (entry.count() != 0) {
@@ -110,8 +105,7 @@ public:
                 }
             }
             const QString mimeTypeStr = m_entry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
-            m_bMimeTypeKnown = !mimeTypeStr.isEmpty();
-            if (m_bMimeTypeKnown) {
+            if (!mimeTypeStr.isEmpty()) {
                 m_pMimeType = KMimeType::mimeType(mimeTypeStr);
             }
 
@@ -137,12 +131,10 @@ public:
      */
     void init();
 
-    QString localPath() const;
     QDateTime time(KFileItem::FileTimes which) const;
     void setTime(KFileItem::FileTimes which, long long time_t_val) const;
     QString user() const;
     QString group() const;
-    bool isSlow() const;
 
     /**
      * The UDSEntry that contains the data for this fileitem, if it came from a directory listing.
@@ -200,12 +192,6 @@ public:
      * True if local file
      */
     bool m_bIsLocalUrl;
-
-    mutable bool m_bMimeTypeKnown;
-    mutable bool m_delayedMimeTypes;
-
-    /** True if m_iconName should be used as cache. */
-    mutable bool m_useIconNameCache;
 
     // Slow? (nfs/smb/ssh)
     mutable enum { SlowUnknown, Fast, Slow } m_slow;
@@ -313,21 +299,20 @@ KFileItem::KFileItem()
 {
 }
 
-KFileItem::KFileItem(const KIO::UDSEntry& entry, const KUrl& itemOrDirUrl, bool delayedMimeTypes, bool urlIsDirectory)
-    : d(new KFileItemPrivate(entry, KFileItem::Unknown, KFileItem::Unknown, itemOrDirUrl, urlIsDirectory, delayedMimeTypes))
+KFileItem::KFileItem(const KIO::UDSEntry& entry, const KUrl& itemOrDirUrl, bool urlIsDirectory)
+    : d(new KFileItemPrivate(entry, KFileItem::Unknown, KFileItem::Unknown, itemOrDirUrl, urlIsDirectory))
 {
 }
 
-KFileItem::KFileItem(mode_t mode, mode_t permissions, const KUrl &url, bool delayedMimeTypes)
-    : d(new KFileItemPrivate(KIO::UDSEntry(), mode, permissions, url, false, delayedMimeTypes))
+KFileItem::KFileItem(mode_t mode, mode_t permissions, const KUrl &url)
+    : d(new KFileItemPrivate(KIO::UDSEntry(), mode, permissions, url, false))
 {
 }
 
 KFileItem::KFileItem( const KUrl &url, const QString &mimeType, mode_t mode)
-    : d(new KFileItemPrivate(KIO::UDSEntry(), mode, KFileItem::Unknown, url, false, false))
+    : d(new KFileItemPrivate(KIO::UDSEntry(), mode, KFileItem::Unknown, url, false))
 {
-    d->m_bMimeTypeKnown = !mimeType.isEmpty();
-    if (d->m_bMimeTypeKnown) {
+    if (!mimeType.isEmpty()) {
         d->m_pMimeType = KMimeType::mimeType(mimeType);
     }
 }
@@ -353,10 +338,9 @@ void KFileItem::refresh()
     d->m_permissions = KFileItem::Unknown;
     refreshMimeType();
 
-    // Basically, we can't trust any information we got while listing.
-    // Everything could have changed...
-    // Clearing m_entry makes it possible to detect changes in the size of the file,
-    // the time information, etc.
+    // basically, can't trust any information while listing. everything could have changed.
+    // clearing m_entry makes it possible to detect changes in the size of the file, the time
+    // information, etc.
     d->m_entry.clear();
     d->init();
 }
@@ -367,8 +351,7 @@ void KFileItem::refreshMimeType()
         return;
     }
 
-    d->m_pMimeType = 0;
-    d->m_bMimeTypeKnown = false;
+    d->m_pMimeType = nullptr;
     d->m_iconName.clear();
 }
 
@@ -409,7 +392,7 @@ QString KFileItem::linkDest() const
         return linkStr;
     }
 
-    // If not in the KIO::UDSEntry, or if UDSEntry empty, use readlink() [if local URL]
+    // If not in the KIO::UDSEntry or if UDSEntry empty use readlink() [if local URL]
     if (d->m_bIsLocalUrl) {
         char buf[1000];
         int n = readlink(QFile::encodeName(d->m_url.toLocalFile(KUrl::RemoveTrailingSlash)), buf, sizeof(buf) - 1);
@@ -421,20 +404,15 @@ QString KFileItem::linkDest() const
     return QString();
 }
 
-QString KFileItemPrivate::localPath() const
-{
-    if (m_bIsLocalUrl) {
-        return m_url.toLocalFile();
-    }
-    return QString();
-}
-
 QString KFileItem::localPath() const
 {
     if (!d) {
         return QString();
     }
-    return d->localPath();
+    if (d->m_bIsLocalUrl) {
+        return d->m_url.toLocalFile();
+    }
+    return QString();
 }
 
 KIO::filesize_t KFileItem::size() const
@@ -559,81 +537,16 @@ QString KFileItemPrivate::group() const
     return groupName;
 }
 
-bool KFileItemPrivate::isSlow() const
-{
-    if (m_slow == SlowUnknown) {
-        const QString path = localPath();
-        if (!path.isEmpty()) {
-            const KFileSystemType::Type fsType = KFileSystemType::fileSystemType(path);
-            m_slow = (fsType == KFileSystemType::Nfs || fsType == KFileSystemType::Smb) ? Slow : Fast;
-        } else {
-            m_slow = Slow;
-        }
-    }
-    return m_slow == Slow;
-}
-
-bool KFileItem::isSlow() const
-{
-    if (!d) {
-        return false;
-    }
-    return d->isSlow();
-}
-
 QString KFileItem::mimetype() const
 {
     if (!d) {
         return QString();
     }
-    KFileItem* that = const_cast<KFileItem *>(this);
-    KMimeType::Ptr mime = that->determineMimeType();
+    KMimeType::Ptr mime = mimeTypePtr();
     if (!mime) {
         return QString();
     }
     return mime->name();
-}
-
-KMimeType::Ptr KFileItem::determineMimeType() const
-{
-    if (!d) {
-        return KMimeType::Ptr();
-    }
-
-    if (!d->m_pMimeType || !d->m_bMimeTypeKnown) {
-        d->m_pMimeType = KMimeType::findByUrl(d->m_url, d->m_fileMode, !d->m_url.isLocalFile());
-        Q_ASSERT(d->m_pMimeType);
-        // kDebug() << d << "finding final mimetype for" << url << ":" << d->m_pMimeType->name();
-        d->m_bMimeTypeKnown = true;
-    }
-
-    if (d->m_delayedMimeTypes) {
-        // if we delayed getting the iconName up till now, this is the right point in time to do so
-        d->m_delayedMimeTypes = false;
-        d->m_useIconNameCache = false;
-        (void)iconName();
-    }
-
-    return d->m_pMimeType;
-}
-
-bool KFileItem::isMimeTypeKnown() const
-{
-    if (!d) {
-        return false;
-    }
-    // The mimetype isn't known if determineMimeType was never called (on-demand determination)
-    // or if this fileitem has a guessed mimetype (e.g. ftp symlink) - in which case
-    // it always remains "not fully determined"
-    return (d->m_bMimeTypeKnown && d->m_guessedMimeType.isEmpty());
-}
-
-bool KFileItem::isFinalIconKnown() const
-{
-    if (!d) {
-        return false;
-    }
-    return (d->m_bMimeTypeKnown && !d->m_delayedMimeTypes);
 }
 
 QString KFileItem::mimeComment() const
@@ -647,10 +560,10 @@ QString KFileItem::mimeComment() const
         return displayType;
     }
 
-    KMimeType::Ptr mime = determineMimeType();
+    KMimeType::Ptr mime = mimeTypePtr();
     // This cannot move to kio_file (with UDS_DISPLAY_TYPE) because it needs
     // the mimetype to be determined, which is done here, and possibly delayed...
-    if (d->m_url.isLocalFile() && !d->isSlow() && mime->is("application/x-desktop")) {
+    if (d->m_bIsLocalUrl && mime->is("application/x-desktop")) {
         KDesktopFile cfg(d->m_url.toLocalFile());
         QString comment = cfg.desktopGroup().readEntry("Comment");
         if (!comment.isEmpty()) {
@@ -658,36 +571,12 @@ QString KFileItem::mimeComment() const
         }
     }
 
-    QString comment = d->isSlow() ? mime->comment() : mime->comment(d->m_url);
+    QString comment = mime->comment(d->m_url);
     // kDebug() << "finding comment for " << d->m_url.url() << " : " << d->m_pMimeType->name();
     if (!comment.isEmpty()) {
         return comment;
     }
     return mime->name();
-}
-
-static QString iconFromDesktopFile(const QString &path)
-{
-    KDesktopFile cfg(path);
-    const QString icon = cfg.readIcon();
-    if (cfg.hasLinkType()) {
-        const KConfigGroup group = cfg.desktopGroup();
-        const QString type = cfg.readPath();
-        const QString emptyIcon = group.readEntry("EmptyIcon");
-        if (!emptyIcon.isEmpty()) {
-            const QString u = cfg.readUrl();
-            const KUrl url(u);
-            if (url.protocol() == "trash") {
-                // We need to find if the trash is empty, preferably  without using a KIO job.
-                // So instead kio_trash leaves an entry in its config file for us.
-                KConfig trashConfig("trashrc", KConfig::SimpleConfig);
-                if (trashConfig.group("Status").readEntry("Empty", true)) {
-                    return emptyIcon;
-                }
-            }
-        }
-    }
-    return icon;
 }
 
 QString KFileItem::iconName() const
@@ -696,13 +585,12 @@ QString KFileItem::iconName() const
         return QString();
     }
 
-    if (d->m_useIconNameCache && !d->m_iconName.isEmpty()) {
+    if (!d->m_iconName.isEmpty()) {
         return d->m_iconName;
     }
 
     d->m_iconName = d->m_entry.stringValue(KIO::UDSEntry::UDS_ICON_NAME);
     if (!d->m_iconName.isEmpty()) {
-        d->m_useIconNameCache = d->m_bMimeTypeKnown;
         return d->m_iconName;
     }
 
@@ -714,49 +602,34 @@ QString KFileItem::iconName() const
         mime = mimeTypePtr();
     }
 
-    const bool delaySlowOperations = d->m_delayedMimeTypes;
-    if (d->m_url.isLocalFile() && !delaySlowOperations && mime->is("application/x-desktop")) {
-        d->m_iconName = iconFromDesktopFile(d->m_url.toLocalFile());
+    if (d->m_bIsLocalUrl && isDesktopFile()) {
+        KDesktopFile cfg(d->m_url.toLocalFile());
+        d->m_iconName = cfg.readIcon();
+        if (cfg.hasLinkType()) {
+            const KConfigGroup group = cfg.desktopGroup();
+            const QString type = cfg.readPath();
+            const QString emptyIcon = group.readEntry("EmptyIcon");
+            if (!emptyIcon.isEmpty()) {
+                const QString u = cfg.readUrl();
+                const KUrl url(u);
+                if (url.protocol() == "trash") {
+                    // We need to find if the trash is empty, preferably  without using a KIO job.
+                    // So instead kio_trash leaves an entry in its config file for us.
+                    KConfig trashConfig("trashrc", KConfig::SimpleConfig);
+                    if (trashConfig.group("Status").readEntry("Empty", true)) {
+                        d->m_iconName = emptyIcon;
+                    }
+                }
+            }
+        }
         if (!d->m_iconName.isEmpty()) {
-            d->m_useIconNameCache = d->m_bMimeTypeKnown;
             return d->m_iconName;
         }
     }
 
-    if (delaySlowOperations) {
-        d->m_iconName = mime->iconName();
-    } else {
-        d->m_iconName = mime->iconName(d->m_url);
-    }
-    d->m_useIconNameCache = d->m_bMimeTypeKnown;
     // kDebug() << "finding icon for" << d->m_url << ":" << d->m_iconName;
+    d->m_iconName = mime->iconName(d->m_url);
     return d->m_iconName;
-}
-
-/**
- * Returns true if this is a desktop file.
- * Mimetype determination is optional.
- */
-static bool checkDesktopFile(const KFileItem &item, bool _determineMimeType)
-{
-    // only regular files
-    if (!item.isRegularFile()) {
-        return false;
-    }
-
-    // only local files
-    if (!item.url().isLocalFile()) {
-        return false;
-    }
-
-    // only if readable
-    if (!item.isReadable()) {
-        return false;
-    }
-
-    // return true if desktop file
-    KMimeType::Ptr mime = _determineMimeType ? item.determineMimeType() : item.mimeTypePtr();
-    return mime->is("application/x-desktop");
 }
 
 QStringList KFileItem::overlays() const
@@ -775,7 +648,7 @@ QStringList KFileItem::overlays() const
         names.append("object-locked");
     }
 
-    if (checkDesktopFile(*this, false)) {
+    if (d->m_bIsLocalUrl && isDesktopFile()) {
         KDesktopFile cfg(localPath());
         const KConfigGroup group = cfg.desktopGroup();
 
@@ -1180,7 +1053,7 @@ QDataStream& operator>>(QDataStream &s, KFileItem &a)
     a.d->m_strName = strName;
     a.d->m_strText = strText;
     a.d->m_bIsLocalUrl = a.d->m_url.isLocalFile();
-    a.d->m_bMimeTypeKnown = false;
+    a.d->m_pMimeType = nullptr;
     a.refresh();
 
     return s;
@@ -1260,18 +1133,6 @@ KUrl KFileItem::targetUrl() const
     return url();
 }
 
-/*
- * Mimetype handling.
- *
- * Initial state: m_pMimeType = 0.
- * When mimeTypePtr() is called first: fast mimetype determination,
- *   might either find an accurate mimetype (-> Final state), otherwise we
- *   set m_pMimeType but not m_bMimeTypeKnown (-> Intermediate state)
- * Intermediate state: determineMimeType() does the real determination -> Final state.
- *
- * If delayedMimeTypes isn't set, then we always go to the Final state directly.
- */
-
 KMimeType::Ptr KFileItem::mimeTypePtr() const
 {
     if (!d) {
@@ -1283,13 +1144,8 @@ KMimeType::Ptr KFileItem::mimeTypePtr() const
         d->m_pMimeType = KMimeType::findByUrl(
             d->m_url, d->m_fileMode,
             // use fast mode if delayed mimetype determination can refine it later
-            d->m_delayedMimeTypes
+            !d->m_bIsLocalUrl
         );
-        // If it was not a perfect (glob and content-based) match,
-        // then determineMimeType will be able to do better for readable URLs.
-        const bool canDoBetter = d->m_delayedMimeTypes;
-        //kDebug() << "finding mimetype for" << d->m_url << ":" << d->m_pMimeType->name() << "canDoBetter=" << canDoBetter;
-        d->m_bMimeTypeKnown = !canDoBetter;
     }
     return d->m_pMimeType;
 }
@@ -1398,7 +1254,12 @@ KUrl::List KFileItemList::targetUrlList() const
 
 bool KFileItem::isDesktopFile() const
 {
-    return checkDesktopFile(*this, true);
+    // return true if desktop file
+    KMimeType::Ptr mime = mimeTypePtr();
+    if (!mime) {
+        return false;
+    }
+    return mime->is("application/x-desktop");
 }
 
 bool KFileItem::isRegularFile() const

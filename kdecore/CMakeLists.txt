@@ -53,7 +53,6 @@ set(kdecore_LIB_SRCS
     date/ksystemtimezone.cpp
     io/kdebug.cpp
     io/kdirwatch.cpp
-    io/kfilesystemtype_p.cpp
     io/kmountpoint.cpp
     io/kprocess.cpp
     io/ksavefile.cpp

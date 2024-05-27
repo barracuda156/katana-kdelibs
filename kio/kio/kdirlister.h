@@ -49,7 +49,6 @@ class KIO_EXPORT KDirLister : public QObject
     Q_PROPERTY(bool showingDotFiles READ showingDotFiles WRITE setShowingDotFiles)
     Q_PROPERTY(bool dirOnlyMode READ dirOnlyMode WRITE setDirOnlyMode)
     Q_PROPERTY(bool autoErrorHandlingEnabled READ autoErrorHandlingEnabled)
-    Q_PROPERTY(bool delayedMimeTypes READ delayedMimeTypes WRITE setDelayedMimeTypes)
     Q_PROPERTY(QString nameFilter READ nameFilter WRITE setNameFilter)
     Q_PROPERTY(QStringList mimeFilter READ mimeFilters WRITE setMimeFilter RESET clearMimeFilter)
 
@@ -88,21 +87,6 @@ public:
      * job running.
      */
     void stop();
-
-    /**
-     * @return true if the "delayed mimetypes" feature was enabled
-     * @see setDelayedMimeTypes()
-     */
-    bool delayedMimeTypes() const;
-
-    /**
-     * If enabled, mime types will be fetched on demand, which leads to a
-     * faster initial directory listing, where icons get progressively replaced
-     * with the correct one while KMimeType is going through the items with
-     * unknown or imprecise mimetype (e.g. files with no extension or an
-     * unknown extension).
-     */
-    void setDelayedMimeTypes(bool delayedMimeTypes);
 
     /**
      * @return true if KDirWatch is used to automatically update directories.
