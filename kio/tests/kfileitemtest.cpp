@@ -172,7 +172,7 @@ void KFileItemTest::testMimeTypeOnDemand()
     QVERIFY(file.open());
 
     {
-        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()), true /*on demand*/);
+        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()));
         QCOMPARE(fileItem.mimeTypePtr()->name(), KMimeType::defaultMimeType());
         QVERIFY(!fileItem.isMimeTypeKnown());
         //kDebug() << fileItem.determineMimeType()->name();
@@ -183,7 +183,7 @@ void KFileItemTest::testMimeTypeOnDemand()
 
     {
         // Calling mimeType directly also does mimetype determination
-        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()), true /*on demand*/);
+        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()));
         QVERIFY(!fileItem.isMimeTypeKnown());
         QCOMPARE(fileItem.mimetype(), QString("application/x-zerosize"));
         QVERIFY(fileItem.isMimeTypeKnown());
@@ -191,7 +191,7 @@ void KFileItemTest::testMimeTypeOnDemand()
 
     {
         // Calling overlays should NOT do mimetype determination (#237668)
-        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()), true /*on demand*/);
+        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()));
         QVERIFY(!fileItem.isMimeTypeKnown());
         fileItem.overlays();
         QVERIFY(!fileItem.isMimeTypeKnown());
@@ -206,7 +206,7 @@ void KFileItemTest::testMimeTypeOnDemand()
         QString fileName = file.fileName();
         QVERIFY(!fileName.isEmpty());
         file.close();
-        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(fileName), true /*on demand*/);
+        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(fileName));
         QCOMPARE(fileItem.mimeTypePtr()->name(), KMimeType::defaultMimeType());
         QVERIFY(!fileItem.isMimeTypeKnown());
         QCOMPARE(fileItem.determineMimeType()->name(), QString("application/pdf"));
@@ -223,17 +223,12 @@ void KFileItemTest::testMimeTypeOnDemand()
         QString fileName = file.fileName();
         QVERIFY(!fileName.isEmpty());
         file.close();
-        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(fileName), true /*on demand*/);
+        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(fileName));
         QCOMPARE(fileItem.mimeTypePtr()->name(), QString("text/plain"));
         QVERIFY(!fileItem.isMimeTypeKnown());
         QCOMPARE(fileItem.determineMimeType()->name(), QString("text/plain"));
         QCOMPARE(fileItem.mimetype(), QString("text/plain"));
         QVERIFY(fileItem.isMimeTypeKnown());
-
-        // And if the mimetype is not on demand?
-        KFileItem fileItem2(KFileItem::Unknown, KFileItem::Unknown, KUrl(fileName));
-        QCOMPARE(fileItem2.mimeTypePtr()->name(), QString("text/plain")); // XDG says: application/smil; but can't sniff all files so this can't work
-        QVERIFY(fileItem2.isMimeTypeKnown());
     }
 }
 
@@ -242,8 +237,8 @@ void KFileItemTest::testCmp()
     KTemporaryFile file;
     QVERIFY(file.open());
 
-    KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()), true /*on demand*/);
-    KFileItem fileItem2(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()), false);
+    KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()));
+    KFileItem fileItem2(KFileItem::Unknown, KFileItem::Unknown, KUrl(file.fileName()));
     QVERIFY(fileItem == fileItem2); // created independently, but still 'equal'
     QVERIFY(fileItem.d != fileItem2.d);
     QVERIFY(!(fileItem != fileItem2));

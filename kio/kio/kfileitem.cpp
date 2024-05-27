@@ -299,8 +299,8 @@ KFileItem::KFileItem()
 {
 }
 
-KFileItem::KFileItem(const KIO::UDSEntry& entry, const KUrl& itemOrDirUrl, bool urlIsDirectory)
-    : d(new KFileItemPrivate(entry, KFileItem::Unknown, KFileItem::Unknown, itemOrDirUrl, urlIsDirectory))
+KFileItem::KFileItem(const KIO::UDSEntry& entry, const KUrl& itemOrDirUrl)
+    : d(new KFileItemPrivate(entry, KFileItem::Unknown, KFileItem::Unknown, itemOrDirUrl, true))
 {
 }
 

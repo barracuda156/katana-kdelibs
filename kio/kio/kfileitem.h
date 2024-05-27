@@ -77,8 +77,7 @@ public:
      * When creating KFileItems out of the UDSEntry emitted by a KIO list job,
      * use KFileItem(entry, listjob->url(), true);
      */
-    KFileItem(const KIO::UDSEntry &entry, const KUrl &itemOrDirUrl,
-              bool urlIsDirectory = false );
+    KFileItem(const KIO::UDSEntry &entry, const KUrl &itemOrDirUrl);
 
     /**
      * Creates an item representing a file, from all the necessary info for it.

@@ -80,7 +80,7 @@ void KDirListerPrivate::processEntries(KIO::Job *job, const KIO::UDSEntryList &e
         if (name.isEmpty()) {
             continue;
         }
-        const KFileItem item(it, processJob->url(), true);
+        const KFileItem item(it, processJob->url());
         if (name == QLatin1String(".")) {
             rootItem = item;
             continue;
