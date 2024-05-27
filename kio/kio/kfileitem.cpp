@@ -894,7 +894,11 @@ QString KFileItem::permissionsString() const
     }
 
     char buffer[12];
-    char uxbit, gxbit, oxbit;
+    ::memset(buffer, 0, sizeof(buffer));
+    int bufferlen = 10;
+    char uxbit = 0;
+    char gxbit = 0;
+    char oxbit = 0;
 
     if ((d->m_permissions & (S_IXUSR|S_ISUID)) == (S_IXUSR|S_ISUID)) {
         uxbit = 's';
@@ -908,7 +912,7 @@ QString KFileItem::permissionsString() const
 
     if ((d->m_permissions & (S_IXGRP|S_ISGID)) == (S_IXGRP|S_ISGID)) {
         gxbit = 's';
-    } else if ( (d->m_permissions & (S_IXGRP|S_ISGID)) == S_ISGID) {
+    } else if ((d->m_permissions & (S_IXGRP|S_ISGID)) == S_ISGID) {
         gxbit = 'S';
     } else if ((d->m_permissions & (S_IXGRP|S_ISGID)) == S_IXGRP) {
         gxbit = 'x';
@@ -960,12 +964,10 @@ QString KFileItem::permissionsString() const
     // if (hasExtendedACL())
     if (d->m_entry.contains(KIO::UDSEntry::UDS_EXTENDED_ACL)) {
         buffer[10] = '+';
-        buffer[11] = 0;
-    } else {
-        buffer[10] = 0;
+        bufferlen = 11;
     }
 
-    return QString::fromLatin1(buffer);
+    return QString::fromLatin1(buffer, bufferlen);
 }
 
 QString KFileItem::timeString(FileTimes which) const
