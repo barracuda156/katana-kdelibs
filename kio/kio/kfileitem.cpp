@@ -65,22 +65,16 @@ class KFileItemPrivate : public QSharedData
 {
 public:
     KFileItemPrivate(const KIO::UDSEntry &entry,
-                     mode_t mode, mode_t permissions,
                      const KUrl &itemOrDirUrl,
                      bool urlIsDirectory)
         : m_entry(entry),
           m_url(itemOrDirUrl),
-          m_strName(),
-          m_strText(),
-          m_iconName(),
-          m_strLowerCaseName(),
           m_pMimeType(nullptr),
-          m_fileMode(mode),
-          m_permissions(permissions),
+          m_fileMode(KFileItem::Unknown),
+          m_permissions(KFileItem::Unknown),
           m_bMarked(false),
           m_bLink(false),
-          m_bIsLocalUrl(itemOrDirUrl.isLocalFile()),
-          m_slow(SlowUnknown)
+          m_bIsLocalUrl(itemOrDirUrl.isLocalFile())
     {
         if (entry.count() != 0) {
             // extract fields from the KIO::UDS Entry
@@ -193,9 +187,6 @@ public:
      */
     bool m_bIsLocalUrl;
 
-    // Slow? (nfs/smb/ssh)
-    mutable enum { SlowUnknown, Fast, Slow } m_slow;
-
     // For special case like link to dirs over FTP
     QString m_guessedMimeType;
 
@@ -299,22 +290,14 @@ KFileItem::KFileItem()
 {
 }
 
-KFileItem::KFileItem(const KIO::UDSEntry& entry, const KUrl& itemOrDirUrl)
-    : d(new KFileItemPrivate(entry, KFileItem::Unknown, KFileItem::Unknown, itemOrDirUrl, true))
+KFileItem::KFileItem(const KIO::UDSEntry& entry, const KUrl &dirUrl)
+    : d(new KFileItemPrivate(entry, dirUrl, true))
 {
 }
 
-KFileItem::KFileItem(mode_t mode, mode_t permissions, const KUrl &url)
-    : d(new KFileItemPrivate(KIO::UDSEntry(), mode, permissions, url, false))
+KFileItem::KFileItem(const KUrl &url)
+    : d(new KFileItemPrivate(KIO::UDSEntry(), url, false))
 {
-}
-
-KFileItem::KFileItem( const KUrl &url, const QString &mimeType, mode_t mode)
-    : d(new KFileItemPrivate(KIO::UDSEntry(), mode, KFileItem::Unknown, url, false))
-{
-    if (!mimeType.isEmpty()) {
-        d->m_pMimeType = KMimeType::mimeType(mimeType);
-    }
 }
 
 

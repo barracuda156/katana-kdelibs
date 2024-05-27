@@ -174,7 +174,7 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
         pLayout->addWidget(lb);
     } else if (_mode & M_OVERWRITE) {
         if (d->src.isLocalFile()) {
-            d->srcItem = KFileItem(KFileItem::Unknown, KFileItem::Unknown, d->src);
+            d->srcItem = KFileItem(d->src);
         } else {
             UDSEntry srcUds;
 
@@ -187,7 +187,7 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
         }
 
         if (d->dest.isLocalFile()) {
-            d->destItem = KFileItem(KFileItem::Unknown, KFileItem::Unknown, d->dest);
+            d->destItem = KFileItem(d->dest);
         } else {
             UDSEntry destUds;
 

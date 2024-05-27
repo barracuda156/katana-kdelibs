@@ -70,34 +70,18 @@ public:
      * This is the preferred constructor when using KIO::listDir().
      *
      * @param entry the KIO entry used to get the file, contains info about it
-     * @param itemOrDirUrl the URL of the item or of the directory containing this item (see urlIsDirectory).
-     * @param urlIsDirectory specifies if the url is just the directory of the
-     *       fileitem and the filename from the UDSEntry should be used.
+     * @param dirUrl the URL of the directory containing this item.
      *
      * When creating KFileItems out of the UDSEntry emitted by a KIO list job,
-     * use KFileItem(entry, listjob->url(), true);
+     * use KFileItem(entry, listjob->url());
      */
-    KFileItem(const KIO::UDSEntry &entry, const KUrl &itemOrDirUrl);
+    KFileItem(const KIO::UDSEntry &entry, const KUrl &dirUrl);
 
     /**
-     * Creates an item representing a file, from all the necessary info for it.
-     * @param mode the file mode (according to stat() (e.g. S_IFDIR...)
-     * Set to KFileItem::Unknown if unknown. For local files, KFileItem will use stat().
-     * @param permissions the access permissions
-     * If you set both the mode and the permissions, you save a ::stat() for
-     * local files.
-     * Set to KFileItem::Unknown if you don't know the mode or the permission.
+     * Creates an item representing a file.
      * @param url the file url
      */
-    KFileItem(mode_t mode, mode_t permissions, const KUrl &url);
-
-    /**
-     * Creates an item representing a file, for which the mimetype is already known.
-     * @param url the file url
-     * @param mimeType the name of the file's mimetype
-     * @param mode the mode (S_IFDIR...)
-     */
-    KFileItem(const KUrl &url, const QString &mimeType, mode_t mode);
+    KFileItem(const KUrl &url);
 
     /**
      * Copy constructor

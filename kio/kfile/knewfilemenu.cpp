@@ -517,7 +517,7 @@ void KNewFileMenuPrivate::executeStrategy()
     if (uSrc.isLocalFile()) {
         // In case the templates/.source directory contains symlinks, resolve
         // them to the target files. Fixes bug #149628.
-        KFileItem item(uSrc, QString(), KFileItem::Unknown);
+        KFileItem item(uSrc);
         if (item.isLink())
             uSrc.setPath(item.linkDest());
 
