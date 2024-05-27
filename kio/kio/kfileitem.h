@@ -282,11 +282,9 @@ public:
     /**
      * Return the name of the file item (without a path).
      * Similar to text(), but unencoded, i.e. the original name.
-     * @param lowerCase if true, the name will be returned in lower case,
-     * which is useful to speed up sorting by name, case insensitively.
      * @return the file's name
      */
-    QString name(bool lowerCase = false) const;
+    QString name() const;
 
     /**
      * Returns the mimetype of the file item. Equivalent to mimeTypePtr()->name()

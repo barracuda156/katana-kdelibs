@@ -156,11 +156,6 @@ public:
     mutable QString m_iconName;
 
     /**
-     * The filename in lower case (to speed up sorting)
-     */
-    mutable QString m_strLowerCaseName;
-
-    /**
      * The mimetype of the file
      */
     mutable KMimeType::Ptr m_pMimeType;
@@ -1081,18 +1076,12 @@ QString KFileItem::text() const
     return d->m_strText;
 }
 
-QString KFileItem::name(bool lowerCase) const
+QString KFileItem::name() const
 {
     if (!d) {
         return QString();
     }
-    if (!lowerCase) {
-        return d->m_strName;
-    }
-    if (d->m_strLowerCaseName.isNull()) {
-        d->m_strLowerCaseName = d->m_strName.toLower();
-    }
-    return d->m_strLowerCaseName;
+    return d->m_strName;
 }
 
 KUrl KFileItem::targetUrl() const

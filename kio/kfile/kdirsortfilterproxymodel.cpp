@@ -171,9 +171,7 @@ bool KDirSortFilterProxyModel::subSortLessThan(const QModelIndex& left,
         int result = d->compare(leftFileItem.text(), rightFileItem.text(), sortCaseSensitivity());
         if (result == 0) {
             // KFileItem::text() may not be unique in case UDS_DISPLAY_NAME is used
-            result = d->compare(leftFileItem.name(sortCaseSensitivity() == Qt::CaseInsensitive),
-                                rightFileItem.name(sortCaseSensitivity() == Qt::CaseInsensitive),
-                                sortCaseSensitivity());
+            result = d->compare(leftFileItem.name(), rightFileItem.name(), sortCaseSensitivity());
             if (result == 0) {
                 // If KFileItem::text() is also not unique most probably a search protocol is used
                 // that allows showing the same file names from different directories
