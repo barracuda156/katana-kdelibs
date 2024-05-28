@@ -636,6 +636,14 @@ QStringList KFileItem::overlays() const
         names.append("application-zip");
     }
 
+    // only for URLs with http or https as protocol
+    if (!d->m_bIsLocalUrl) {
+        const QString favIcon = KMimeType::favIconForUrl(d->m_url);
+        if (!favIcon.isEmpty()) {
+            names.append(favIcon);
+        }
+    }
+
     return names;
 }
 
