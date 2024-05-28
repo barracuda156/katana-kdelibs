@@ -64,7 +64,7 @@ KIO_EXPORT QString KIO::convertSizeFromKiB( KIO::filesize_t kibSize )
 
 KIO_EXPORT QString KIO::number( KIO::filesize_t size )
 {
-    char charbuf[256];
+    char charbuf[20];
     ::memset(charbuf, '\0', sizeof(charbuf) * sizeof(char));
     ::sprintf(charbuf, "%lld", size);
     return QString::fromLatin1(charbuf);
