@@ -126,8 +126,6 @@ public:
 
     QDateTime time(KFileItem::FileTimes which) const;
     void setTime(KFileItem::FileTimes which, long long time_t_val) const;
-    QString user() const;
-    QString group() const;
 
     /**
      * The UDSEntry that contains the data for this fileitem, if it came from a directory listing.
@@ -452,20 +450,15 @@ QString KFileItem::user() const
     if (!d) {
         return QString();
     }
-    return d->user();
-}
-
-QString KFileItemPrivate::user() const
-{
-    QString userName = m_entry.stringValue(KIO::UDSEntry::UDS_USER);
-    if (userName.isEmpty() && m_bIsLocalUrl) {
+    QString userName = d->m_entry.stringValue(KIO::UDSEntry::UDS_USER);
+    if (userName.isEmpty() && d->m_bIsLocalUrl) {
         KDE_struct_stat buff;
         // get uid/gid of the link, if it's a link
-        if (KDE::lstat(m_url.toLocalFile(KUrl::RemoveTrailingSlash), &buff) == 0) {
+        if (KDE::lstat(d->m_url.toLocalFile(KUrl::RemoveTrailingSlash), &buff) == 0) {
             const KUser kuser(buff.st_uid);
             if (kuser.isValid()) {
                 userName = kuser.loginName();
-                m_entry.insert(KIO::UDSEntry::UDS_USER, userName);
+                d->m_entry.insert(KIO::UDSEntry::UDS_USER, userName);
             }
         }
     }
@@ -477,16 +470,11 @@ QString KFileItem::group() const
     if (!d) {
         return QString();
     }
-    return d->group();
-}
-
-QString KFileItemPrivate::group() const
-{
-    QString groupName = m_entry.stringValue(KIO::UDSEntry::UDS_GROUP);
-    if (groupName.isEmpty() && m_bIsLocalUrl) {
+    QString groupName = d->m_entry.stringValue(KIO::UDSEntry::UDS_GROUP);
+    if (groupName.isEmpty() && d->m_bIsLocalUrl) {
         KDE_struct_stat buff;
         // get uid/gid of the link, if it's a link
-        if (KDE::lstat(m_url.toLocalFile(KUrl::RemoveTrailingSlash), &buff) == 0) {
+        if (KDE::lstat(d->m_url.toLocalFile(KUrl::RemoveTrailingSlash), &buff) == 0) {
             const KUserGroup kusergroup(buff.st_gid);
             if (kusergroup.isValid()) {
                 groupName = kusergroup.name();
@@ -494,7 +482,7 @@ QString KFileItemPrivate::group() const
             if (groupName.isEmpty()) {
                 groupName = QString::number(buff.st_gid);
             }
-            m_entry.insert(KIO::UDSEntry::UDS_GROUP, groupName);
+            d->m_entry.insert(KIO::UDSEntry::UDS_GROUP, groupName);
         }
     }
     return groupName;
@@ -836,8 +824,8 @@ bool KFileItem::cmp(const KFileItem &item) const
     kDebug() << " local" << (d->m_bIsLocalUrl == item.d->m_bIsLocalUrl);
     kDebug() << " mode" << (d->m_fileMode == item.d->m_fileMode);
     kDebug() << " perm" << (d->m_permissions == item.d->m_permissions);
-    kDebug() << " UDS_USER" << (d->user() == item.d->user());
-    kDebug() << " UDS_GROUP" << (d->group() == item.d->group());
+    kDebug() << " UDS_USER" << (user() == item.user());
+    kDebug() << " UDS_GROUP" << (group() == item.group());
     kDebug() << " UDS_EXTENDED_ACL" << (d->m_entry.stringValue( KIO::UDSEntry::UDS_EXTENDED_ACL ) == item.d->m_entry.stringValue( KIO::UDSEntry::UDS_EXTENDED_ACL ));
     kDebug() << " UDS_ACL_STRING" << (d->m_entry.stringValue( KIO::UDSEntry::UDS_ACL_STRING ) == item.d->m_entry.stringValue( KIO::UDSEntry::UDS_ACL_STRING ));
     kDebug() << " UDS_DEFAULT_ACL_STRING" << (d->m_entry.stringValue( KIO::UDSEntry::UDS_DEFAULT_ACL_STRING ) == item.d->m_entry.stringValue( KIO::UDSEntry::UDS_DEFAULT_ACL_STRING ));
@@ -851,8 +839,8 @@ bool KFileItem::cmp(const KFileItem &item) const
         && d->m_bIsLocalUrl == item.d->m_bIsLocalUrl
         && d->m_fileMode == item.d->m_fileMode
         && d->m_permissions == item.d->m_permissions
-        && d->user() == item.d->user()
-        && d->group() == item.d->group()
+        && user() == item.user()
+        && group() == item.group()
         && d->m_entry.stringValue(KIO::UDSEntry::UDS_EXTENDED_ACL) == item.d->m_entry.stringValue(KIO::UDSEntry::UDS_EXTENDED_ACL)
         && d->m_entry.stringValue(KIO::UDSEntry::UDS_ACL_STRING) == item.d->m_entry.stringValue(KIO::UDSEntry::UDS_ACL_STRING)
         && d->m_entry.stringValue(KIO::UDSEntry::UDS_DEFAULT_ACL_STRING) == item.d->m_entry.stringValue(KIO::UDSEntry::UDS_DEFAULT_ACL_STRING)
