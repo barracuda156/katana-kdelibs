@@ -56,6 +56,8 @@
 
 using namespace KIO;
 
+static const int s_previewsize = KIconLoader::SizeEnormous;
+
 /** @internal */
 class RenameDialog::RenameDialogPrivate
 {
@@ -264,8 +266,8 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
         d->m_srcPreview = d->createPixmapWidget(parent);
         d->m_destPreview = d->createPixmapWidget(parent);
 
-        d->m_srcPreview->setMinimumHeight(KIconLoader::SizeEnormous);
-        d->m_destPreview->setMinimumHeight(KIconLoader::SizeEnormous);
+        d->m_srcPreview->setMinimumHeight(s_previewsize);
+        d->m_destPreview->setMinimumHeight(s_previewsize);
 
         d->m_srcPreview->setAlignment(Qt::AlignCenter);
         d->m_destPreview->setAlignment(Qt::AlignCenter);
@@ -618,14 +620,24 @@ void RenameDialog::showSrcIcon(const KFileItem& fileitem)
 {
     // The preview job failed, show a standard file icon.
     d->m_srcPendingPreview = false;
-    d->m_srcPreview->setPixmap(fileitem.pixmap(d->m_srcPreview->height()));
+    d->m_srcPreview->setPixmap(
+        KIconLoader::global()->loadIcon(
+            fileitem.iconName(), KIconLoader::Desktop, s_previewsize, KIconLoader::DefaultState,
+            fileitem.overlays()
+        )
+    );
 }
 
 void RenameDialog::showDestIcon(const KFileItem& fileitem)
 {
     // The preview job failed, show a standard file icon.
     d->m_destPendingPreview = false;
-    d->m_destPreview->setPixmap(fileitem.pixmap(d->m_srcPreview->height()));
+    d->m_destPreview->setPixmap(
+        KIconLoader::global()->loadIcon(
+            fileitem.iconName(), KIconLoader::Desktop, s_previewsize, KIconLoader::DefaultState,
+            fileitem.overlays()
+        )
+    );
 }
 
 void RenameDialog::showSrcPreview(const KFileItem& fileitem, const QPixmap& pixmap)

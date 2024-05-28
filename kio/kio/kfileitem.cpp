@@ -647,56 +647,6 @@ QString KFileItem::comment() const
     return d->m_entry.stringValue(KIO::UDSEntry::UDS_COMMENT);
 }
 
-// TODO: where is this used?
-QPixmap KFileItem::pixmap(int _size, int _state) const
-{
-    if (!d) {
-        return QPixmap();
-    }
-
-    const QString iconName = d->m_entry.stringValue(KIO::UDSEntry::UDS_ICON_NAME);
-    if (!iconName.isEmpty()) {
-        return DesktopIcon(iconName, _size, _state);
-    }
-
-    if (!d->m_pMimeType) {
-        // No mimetype determined yet, go for a fast default icon
-        if (S_ISDIR(d->m_fileMode)) {
-            const KMimeType::Ptr mimeType = KMimeType::mimeType("inode/directory");
-            if (mimeType) {
-                return DesktopIcon(mimeType->iconName(), _size, _state);
-            } else {
-                kWarning() << "No mimetype for inode/directory could be found. Check your installation.";
-            }
-        }
-        return DesktopIcon("unknown", _size, _state);
-    }
-
-    KMimeType::Ptr mime;
-    // Use guessed mimetype for the icon
-    if (!d->m_guessedMimeType.isEmpty()) {
-        mime = KMimeType::mimeType(d->m_guessedMimeType);
-    } else {
-        mime = d->m_pMimeType;
-    }
-
-    // Support for gzipped files: extract mimetype of contained file
-    // See also the relevant code in overlays, which adds the zip overlay.
-    if (mime->name() == "application/x-gzip" && d->m_url.fileName().endsWith( QLatin1String(".gz"))) {
-        KUrl sf;
-        sf.setPath(d->m_url.path().left( d->m_url.path().length() - 3));
-        // kDebug() << "subFileName=" << subFileName;
-        mime = KMimeType::findByUrl(sf, 0, !d->m_bIsLocalUrl);
-    }
-
-    QPixmap p = KIconLoader::global()->loadMimeTypeIcon(mime->iconName(d->m_url), KIconLoader::Desktop, _size, _state);
-    // kDebug() << "finding pixmap for " << d->m_url.url() << " : " << mime->name();
-    if (p.isNull()) {
-        kWarning() << "Pixmap not found for mimetype " << d->m_pMimeType->name();
-    }
-    return p;
-}
-
 bool KFileItem::isReadable() const
 {
     if (!d) {

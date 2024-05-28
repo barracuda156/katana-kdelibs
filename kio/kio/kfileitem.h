@@ -314,16 +314,6 @@ public:
     QString iconName() const;
 
     /**
-     * Returns a pixmap representing the file.
-     * @param _size Size for the pixmap in pixels. Zero will return the
-     * globally configured default size.
-     * @param _state The state of the icon: KIconLoader::DefaultState,
-     * KIconLoader::ActiveState or KIconLoader::DisabledState.
-     * @return the pixmap
-     */
-    QPixmap pixmap(int _size, int _state = 0) const;
-
-    /**
      * Returns the overlays (bitfield of KIconLoader::*Overlay flags) that are used
      * for this item's pixmap. Overlays are used to show for example, whether
      * a file can be modified.
