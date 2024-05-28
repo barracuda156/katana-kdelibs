@@ -18,16 +18,17 @@
 
 #include "kurlcombobox.h"
 
-#include <QtCore/QDir>
-#include <QtGui/qevent.h>
-#include <QtGui/QDrag>
+#include <QDir>
+#include <QMouseEvent>
+#include <QDrag>
 
-#include <kdebug.h>
-#include <kglobalsettings.h>
-#include <kicon.h>
-#include <klocale.h>
-#include <kmimetype.h>
-#include <kiconloader.h>
+#include "kglobalsettings.h"
+#include "kicon.h"
+#include "klocale.h"
+#include "kmimetype.h"
+#include "kiconloader.h"
+#include "kio/global.h"
+#include "kdebug.h"
 
 class KUrlComboBox::KUrlComboBoxPrivate
 {
@@ -420,10 +421,10 @@ void KUrlComboBox::mouseMoveEvent(QMouseEvent *event)
 
 QIcon KUrlComboBox::KUrlComboBoxPrivate::getIcon( const KUrl& url ) const
 {
-    if (myMode == Directories)
+    if (myMode == Directories) {
         return dirIcon;
-    else
-        return KIcon(KMimeType::iconNameForUrl(url, 0));
+    }
+    return KIcon(KIO::pixmapForUrl(url));
 }
 
 
@@ -433,12 +434,11 @@ void KUrlComboBox::KUrlComboBoxPrivate::updateItem( const KUrlComboBoxPrivate::K
 {
     m_parent->setItemIcon(index,icon);
 
-    if ( m_parent->isEditable() ) {
+    if (m_parent->isEditable()) {
         m_parent->setItemText(index, item->url.pathOrUrl(myMode == Directories
                                                          ? KUrl::AddTrailingSlash
                                                          : KUrl::RemoveTrailingSlash));
-    }
-    else {
+    } else {
         m_parent->setItemText(index,item->text);
     }
 }

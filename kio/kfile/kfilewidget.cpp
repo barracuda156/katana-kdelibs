@@ -1165,7 +1165,7 @@ void KFileWidgetPrivate::removeDummyHistoryEntry()
 void KFileWidgetPrivate::setLocationText(const KUrl& url)
 {
     if (!url.isEmpty()) {
-        QPixmap urlIcon = KIO::pixmapForUrl( url, KIconLoader::Small );
+        QPixmap urlIcon = KIO::pixmapForUrl(url, KIconLoader::Small);
         if (url.hasPath()) {
             if (!url.directory().isEmpty()) {
                 KUrl u(url);
@@ -1385,7 +1385,7 @@ void KFileWidgetPrivate::_k_urlEntered(const KUrl& url)
 
     bool blocked = locationEdit->blockSignals(true);
     if (keepLocation) {
-        locationEdit->changeUrl(0, KIcon(KMimeType::iconNameForUrl(filename)), filename);
+        locationEdit->changeUrl(0, KIcon(KIO::pixmapForUrl(KUrl(filename))), filename);
         locationEdit->lineEdit()->setModified(true);
     }
 
@@ -1487,7 +1487,11 @@ void KFileWidgetPrivate::_k_fileCompletion( const QString& match )
         return;
     }
 
-    setDummyHistoryEntry(locationEdit->currentText(), KIconLoader::global()->loadMimeTypeIcon( KMimeType::iconNameForUrl( match ), KIconLoader::Small), !locationEdit->currentText().isEmpty());
+    setDummyHistoryEntry(
+        locationEdit->currentText(),
+        KIO::pixmapForUrl(KUrl(match), KIconLoader::Small),
+        !locationEdit->currentText().isEmpty()
+    );
 }
 
 void KFileWidgetPrivate::_k_slotLocationChanged( const QString& text )
