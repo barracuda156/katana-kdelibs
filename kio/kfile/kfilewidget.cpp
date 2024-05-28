@@ -326,11 +326,11 @@ KFileWidget::KFileWidget( const KUrl& _startDir, QWidget *parent )
     KUrlComboBox *pathCombo = d->urlNavigator->editor();
     u.setPath(QDir::rootPath());
     pathCombo->addDefaultUrl(u,
-                             KIO::pixmapForUrl(u, 0, KIconLoader::Small),
+                             KIO::pixmapForUrl(u, KIconLoader::Small),
                              u.toLocalFile());
 
     u.setPath(QDir::homePath());
-    pathCombo->addDefaultUrl(u, KIO::pixmapForUrl(u, 0, KIconLoader::Small),
+    pathCombo->addDefaultUrl(u, KIO::pixmapForUrl(u, KIconLoader::Small),
                              u.path(KUrl::AddTrailingSlash));
 
     KUrl docPath;
@@ -339,13 +339,13 @@ KFileWidget::KFileWidget( const KUrl& _startDir, QWidget *parent )
           QDir(docPath.path(KUrl::AddTrailingSlash)).exists() )
     {
         pathCombo->addDefaultUrl( docPath,
-                                  KIO::pixmapForUrl( docPath, 0, KIconLoader::Small ),
+                                  KIO::pixmapForUrl( docPath, KIconLoader::Small ),
                                   docPath.path(KUrl::AddTrailingSlash));
     }
 
     u.setPath( KGlobalSettings::desktopPath() );
     pathCombo->addDefaultUrl(u,
-                             KIO::pixmapForUrl(u, 0, KIconLoader::Small),
+                             KIO::pixmapForUrl(u, KIconLoader::Small),
                              u.path(KUrl::AddTrailingSlash));
 
     d->ops = new KDirOperator(KUrl(), d->opsWidget);
@@ -1165,19 +1165,17 @@ void KFileWidgetPrivate::removeDummyHistoryEntry()
 void KFileWidgetPrivate::setLocationText(const KUrl& url)
 {
     if (!url.isEmpty()) {
-        QPixmap mimeTypeIcon = KIconLoader::global()->loadMimeTypeIcon( KMimeType::iconNameForUrl( url ), KIconLoader::Small );
+        QPixmap urlIcon = KIO::pixmapForUrl( url, KIconLoader::Small );
         if (url.hasPath()) {
-            if (!url.directory().isEmpty())
-            {
+            if (!url.directory().isEmpty()) {
                 KUrl u(url);
                 u.setPath(u.directory());
                 q->setUrl(u, false);
-            }
-            else {
+            } else {
                 q->setUrl(url.path(), false);
             }
         }
-        setDummyHistoryEntry(url.fileName() , mimeTypeIcon);
+        setDummyHistoryEntry(url.fileName(), urlIcon);
     } else {
         removeDummyHistoryEntry();
     }
@@ -1219,8 +1217,7 @@ void KFileWidgetPrivate::setLocationText( const KUrl::List& urlList )
 
         setDummyHistoryEntry( urls, QPixmap(), false );
     } else if ( urlList.count() == 1 ) {
-        const QPixmap mimeTypeIcon = KIconLoader::global()->loadMimeTypeIcon( KMimeType::iconNameForUrl( urlList[0] ),  KIconLoader::Small );
-        setDummyHistoryEntry( relativePathOrUrl(currUrl, urlList[0]), mimeTypeIcon );
+        setDummyHistoryEntry( relativePathOrUrl(currUrl, urlList[0]), KIO::pixmapForUrl(urlList[0],  KIconLoader::Small));
     } else {
         removeDummyHistoryEntry();
     }

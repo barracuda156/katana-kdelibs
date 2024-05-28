@@ -239,23 +239,16 @@ namespace KIO
   /**
    * Convenience method to find the pixmap for a URL.
    *
-   * Call this one when you don't know the mimetype.
-   *
-   * @param _url URL for the file.
-   * @param _mode the mode of the file. The mode may modify the icon
-   *              with overlays that show special properties of the
-   *              icon. Use 0 for default
-   * @param _group The icon group where the icon is going to be used.
-   * @param _force_size Override globally configured icon size.
-   *        Use 0 for the default size
-   * @param _state The icon state, one of: KIconLoader::DefaultState,
+   * @param url URL for the file.
+   * @param group The icon group where the icon is going to be used.
+   * @param force_size Override globally configured icon size. Use 0 for the default size
+   * @param state The icon state, one of: KIconLoader::DefaultState,
    * KIconLoader::ActiveState or KIconLoader::DisabledState.
-   * @param _path Output parameter to get the full path. Seldom needed.
-   *              Ignored if 0
+   * @param path Output parameter to get the full path, seldom needed.
    * @return the pixmap of the URL, can be a default icon if not found
    */
-  KIO_EXPORT QPixmap pixmapForUrl( const KUrl & _url, mode_t _mode = 0, KIconLoader::Group _group = KIconLoader::Desktop,
-                                   int _force_size = 0, int _state = 0, QString * _path = 0 );
+  KIO_EXPORT QPixmap pixmapForUrl(const KUrl &url, KIconLoader::Group group = KIconLoader::Desktop,
+                                  int force_size = 0, int state = 0, QString *path = nullptr);
 
   KIO_EXPORT KJobTrackerInterface *getJobTracker();
 

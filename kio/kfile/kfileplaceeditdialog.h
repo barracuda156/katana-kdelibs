@@ -60,7 +60,7 @@ public:
      * @p parent the parent-widget for the dialog
      *
      * If you leave the icon empty, the default icon for the given url will be
-     * used (KMimeType::pixmapForUrl()).
+     * used (KMimeType::iconNameForUrl()).
      */
     static bool getInformation( bool allowGlobal, KUrl& url,
                                 QString& label, QString& icon,
@@ -83,7 +83,7 @@ public:
      * @p parent the parent-widget for the dialog
      *
      * If you leave the icon empty, the default icon for the given url will be
-     * used (KMimeType::pixmapForUrl()).
+     * used (KMimeType::iconNameForUrl()).
      */
     KFilePlaceEditDialog(bool allowGlobal, const KUrl& url,
                          const QString& label, const QString &icon,

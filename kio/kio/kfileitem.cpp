@@ -723,7 +723,6 @@ bool KFileItem::isFile() const
     return !isDir();
 }
 
-
 QString KFileItem::getStatusBarInfo() const
 {
     if (!d) {
@@ -800,8 +799,7 @@ bool KFileItem::cmp(const KFileItem &item) const
         && d->m_entry.stringValue(KIO::UDSEntry::UDS_ICON_NAME) == item.d->m_entry.stringValue(KIO::UDSEntry::UDS_ICON_NAME)
     );
 
-    // Don't compare the mimetypes here. They might not be known, and we don't want to
-    // do the slow operation of determining them here.
+    // Don't compare the mimetypes here
 }
 
 bool KFileItem::operator==(const KFileItem &other) const
@@ -1036,11 +1034,10 @@ KMimeType::Ptr KFileItem::mimeTypePtr() const
         return KMimeType::Ptr();
     }
     if (!d->m_pMimeType) {
-        // On-demand fast (but not always accurate) mimetype determination
         Q_ASSERT(!d->m_url.isEmpty());
         d->m_pMimeType = KMimeType::findByUrl(
             d->m_url, d->m_fileMode,
-            // use fast mode if delayed mimetype determination can refine it later
+            // use fast mode if not local (content cannot be read)
             !d->m_bIsLocalUrl
         );
     }

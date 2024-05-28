@@ -38,8 +38,7 @@
 
 static QPixmap kPixmapForUrl(const QString &item, const int height)
 {
-#warning implement icon for KUrl/QUrl into KIconLoader?
-    // the logic is the same as in KIO::pixmapForUrl() but kdeui cannot depend on kio
+    // kdeui cannot depend on kio
     const QString iconName = KMimeType::iconNameForUrl(KUrl(item));
     return KIconLoader::global()->loadMimeTypeIcon(iconName, KIconLoader::Desktop, height);
 }
@@ -380,7 +379,8 @@ void KHistoryComboBox::insertItems( const QStringList& items )
 
     while ( it != itEnd ) {
         const QString item = *it;
-        if ( !item.isEmpty() ) { // only insert non-empty items);
+        if ( !item.isEmpty() ) {
+            // only insert non-empty items);
             addItem( kPixmapForUrl(item, iconSize().height()), item );
         }
         ++it;

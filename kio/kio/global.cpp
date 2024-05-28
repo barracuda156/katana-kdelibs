@@ -23,13 +23,14 @@
 #include <config.h>
 
 #include <kglobalsettings.h>
-#include <kdebug.h>
 #include <klocale.h>
 #include <kglobal.h>
 #include <kiconloader.h>
 #include <kprotocolmanager.h>
 #include <kmimetype.h>
 #include <kdynamicjobtracker.h>
+#include <kfileitem.h>
+#include <kdebug.h>
 
 #include <QtCore/QByteArray>
 #include <QtCore/qdatetime.h>
@@ -976,16 +977,13 @@ KIO_EXPORT QByteArray KIO::rawErrorDetail(int errorCode, const QString &errorTex
 }
 
 /***************************************************************
- *
  * Utility functions
- *
  ***************************************************************/
-
-QPixmap KIO::pixmapForUrl( const KUrl & _url, mode_t _mode, KIconLoader::Group _group,
-                           int _force_size, int _state, QString * _path )
+QPixmap KIO::pixmapForUrl(const KUrl &url, KIconLoader::Group group,
+                           int force_size, int state, QString *path)
 {
-    const QString iconName = KMimeType::iconNameForUrl( _url, _mode );
-    return KIconLoader::global()->loadMimeTypeIcon( iconName, _group, _force_size, _state, QStringList(), _path );
+    const KFileItem fileitem(url);
+    return KIconLoader::global()->loadIcon(fileitem.iconName(), group, force_size, state, fileitem.overlays(), path);
 }
 
 KJobTrackerInterface *KIO::getJobTracker()
