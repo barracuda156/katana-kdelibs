@@ -31,10 +31,11 @@
 #include <kdynamicjobtracker.h>
 #include <kfileitem.h>
 #include <kdebug.h>
+#include <netaccess.h>
 
-#include <QtCore/QByteArray>
-#include <QtCore/qdatetime.h>
-#include <QtGui/QTextDocument>
+#include <QByteArray>
+#include <QDateTime>
+#include <QTextDocument>
 
 #include <sys/stat.h>  // S_ISDIR
 #include <sys/wait.h>
@@ -982,7 +983,14 @@ KIO_EXPORT QByteArray KIO::rawErrorDetail(int errorCode, const QString &errorTex
 QPixmap KIO::pixmapForUrl(const KUrl &url, KIconLoader::Group group,
                            int force_size, int state, QString *path)
 {
-    const KFileItem fileitem(url);
+    KFileItem fileitem;
+    if (url.isLocalFile()) {
+        fileitem = KFileItem(url);
+    } else {
+        KIO::UDSEntry entry;
+        KIO::NetAccess::stat(url, entry, nullptr);
+        fileitem = KFileItem(entry, url);
+    }
     return KIconLoader::global()->loadIcon(fileitem.iconName(), group, force_size, state, fileitem.overlays(), path);
 }
 
