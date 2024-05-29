@@ -679,14 +679,14 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
     // We set this data from the first item, and we'll
     // check that the other items match against it, resetting when not.
     const KFileItem item = properties->item();
-    KUrl url = item.url();
+    const KUrl url = item.url();
     bool isReallyLocal = url.isLocalFile();
     bool isLocal = isReallyLocal;
     bool bDesktopFile = item.isDesktopFile();
     mode_t mode = item.mode();
     bool hasDirs = item.isDir() && !item.isLink();
     bool hasRoot = url.path() == QLatin1String("/");
-    QString iconStr = KMimeType::iconNameForUrl(url, mode);
+    QString iconStr = item.iconName();
     QString directory = properties->kurl().directory();
     QString protocol = properties->kurl().protocol();
     const QString desktopPath = KGlobalSettings::desktopPath();
@@ -698,11 +698,9 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
     d->mimeType = item.mimetype();
     KIO::filesize_t totalSize = item.size();
     QString magicMimeComment;
-    if (isLocal) {
-        KMimeType::Ptr magicMimeType = KMimeType::findByUrl(url);
-        if (magicMimeType->name() != KMimeType::defaultMimeType()) {
-            magicMimeComment = magicMimeType->comment();
-        }
+    KMimeType::Ptr mimeType = item.mimeTypePtr();
+    if (!mimeType.isNull() && !mimeType->isDefault()) {
+        magicMimeComment = mimeType->comment();
     }
 
     // Those things only apply to 'single file' mode
@@ -788,7 +786,7 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
             if ((*kit).mode() != mode) {
                 mode = (mode_t)0;
             }
-            if (KMimeType::iconNameForUrl(url, mode) != iconStr) {
+            if ((*kit).iconName() != iconStr) {
                 iconStr = "document-multiple";
             }
             if (url.directory() != directory) {
@@ -801,8 +799,8 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *props)
                 mimeComment.clear();
             }
             if (isLocal && !magicMimeComment.isNull()) {
-                KMimeType::Ptr magicMimeType = KMimeType::findByUrl(url);
-                if (magicMimeType->comment() != magicMimeComment) {
+                KMimeType::Ptr itMimeType = (*kit).mimeTypePtr();
+                if (!itMimeType.isNull() && itMimeType->comment() != magicMimeComment) {
                     magicMimeComment.clear();
                 }
             }
@@ -1416,7 +1414,7 @@ void KFilePropsPlugin::applyIconChanges()
         }
 
         // Get the default image
-        QString str = KMimeType::findByUrl(url, properties->item().mode())->iconName();
+        QString str = properties->item().iconName();
         // Is it another one than the default ?
         QString sIcon;
         if (str != iconButton->icon()) {
