@@ -278,9 +278,9 @@ static KHTTPHeaders HTTPHeaders(const QString &serverid, const bool authenticate
     // optional for anything but 405, see:
     // https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.1
     khttpheaders.insert("Allow", "GET, HEAD");
-    // optional, see:
+    // optional (the range request can be ignored), see:
     // https://www.rfc-editor.org/rfc/rfc9110.html#section-14.3
-    khttpheaders.insert("Accept-Ranges", "none");
+    khttpheaders.insert("Accept-Ranges", "bytes");
     // TODO: maybe implement persistent connections
     khttpheaders.insert("Connection", "close");
     if (authenticate) {
