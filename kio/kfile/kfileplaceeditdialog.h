@@ -59,8 +59,8 @@ public:
      * @p iconSize determines the size of the icon that is shown/selectable
      * @p parent the parent-widget for the dialog
      *
-     * If you leave the icon empty, the default icon for the given url will be
-     * used (KMimeType::iconNameForUrl()).
+     * If the icon is empty, the default icon for the given url will be
+     * used (KIO::pixmapForUrl()).
      */
     static bool getInformation( bool allowGlobal, KUrl& url,
                                 QString& label, QString& icon,
@@ -82,8 +82,8 @@ public:
      * @p iconSize determines the size of the icon that is shown/selectable
      * @p parent the parent-widget for the dialog
      *
-     * If you leave the icon empty, the default icon for the given url will be
-     * used (KMimeType::iconNameForUrl()).
+     * If the icon is empty, the default icon for the given url will be
+     * used (KIO::pixmapForUrl()).
      */
     KFilePlaceEditDialog(bool allowGlobal, const KUrl& url,
                          const QString& label, const QString &icon,

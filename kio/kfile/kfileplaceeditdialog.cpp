@@ -129,7 +129,7 @@ KFilePlaceEditDialog::KFilePlaceEditDialog(bool allowGlobal, const KUrl& url,
     m_iconButton->setIconSize( iconSize );
     m_iconButton->setIconType( KIconLoader::NoGroup, KIconLoader::Place );
     if ( icon.isEmpty() )
-        m_iconButton->setIcon( KMimeType::iconNameForUrl( url ) );
+        m_iconButton->setIcon( KIO::pixmapForUrl( url ) );
     else
         m_iconButton->setIcon( icon );
     m_iconButton->setWhatsThis( whatsThisText );
