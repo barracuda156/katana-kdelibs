@@ -40,10 +40,12 @@
 static const int s_khttpdebugarea = 7050;
 
 // for reference:
+// https://www.rfc-editor.org/rfc/rfc9111
 // https://www.rfc-editor.org/rfc/rfc9110
 // https://www.rfc-editor.org/rfc/rfc7230
 // https://www.rfc-editor.org/rfc/rfc7235
 // https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+// https://www.iana.org/assignments/http-cache-directives/http-cache-directives.xhtml
 
 static QByteArray HTTPStatusToBytes(const ushort httpstatus)
 {
@@ -326,6 +328,8 @@ static QByteArray HTTPData(const ushort httpstatus, const KHTTPHeaders &httphead
 class KHTTPHeadersParser
 {
 public:
+    KHTTPHeadersParser();
+
     void parseHeaders(const QByteArray &header, const bool authenticate);
 
     QByteArray method() const { return m_method; }
@@ -333,6 +337,8 @@ public:
     QByteArray version() const { return m_version; }
     QByteArray authUser() const { return m_authuser; }
     QByteArray authPass() const { return m_authpass; }
+    quint64 rangeStart() const { return m_rangestart; }
+    quint64 rangeEnd() const { return m_rangeend; }
 
 private:
     QByteArray m_method;
@@ -340,7 +346,15 @@ private:
     QByteArray m_version;
     QByteArray m_authuser;
     QByteArray m_authpass;
+    quint64 m_rangestart;
+    quint64 m_rangeend;
 };
+
+KHTTPHeadersParser::KHTTPHeadersParser()
+    : m_rangestart(0),
+    m_rangeend(0)
+{
+}
 
 void KHTTPHeadersParser::parseHeaders(const QByteArray &header, const bool authenticate)
 {
@@ -373,17 +387,32 @@ void KHTTPHeadersParser::parseHeaders(const QByteArray &header, const bool authe
                     }
                 }
             }
+        } else if (qstrcmp(m_method.constData(), "GET") == 0 && qstrnicmp(line.constData(), "Range", 5) == 0) {
+            const QList<QByteArray> splitline = line.split(':');
+            if (splitline.size() == 2) {
+                const QByteArray rangedata = splitline.at(1).trimmed();
+                if (qstrnicmp(rangedata.constData(), "bytes=", 6) == 0) {
+                    const QList<QByteArray> splitrange = rangedata.split('-');
+                    if (splitrange.size() == 1) {
+                        m_rangeend = splitrange.at(0).mid(6).toULongLong();
+                    } else if (splitrange.size() == 2) {
+                        m_rangestart = splitrange.at(0).mid(6).toULongLong();
+                        m_rangeend = splitrange.at(1).toULongLong();
+                    }
+                }
+            }
         }
         firstline = false;
     }
-    // qDebug() << Q_FUNC_INFO << m_method << m_path << m_version << m_authuser << m_authpass;
+    // qDebug() << Q_FUNC_INFO << m_method << m_path << m_version << m_authuser << m_authpass << m_rangestart << m_rangeend;
 }
 
 class KHTTPThread : public QThread
 {
     Q_OBJECT
 public:
-    KHTTPThread(QObject *parent, QFile *file, QTcpSocket *client, QAtomicInt *ref);
+    KHTTPThread(QObject *parent, QFile *file, QTcpSocket *client, QAtomicInt *ref,
+                const quint64 start, const qint64 size);
 
 protected:
     void run() final;
@@ -392,18 +421,25 @@ private:
     QFile* m_file;
     QTcpSocket *m_client;
     QAtomicInt* m_ref;
+    quint64 m_start;
+    qint64 m_size;
 };
 
-KHTTPThread::KHTTPThread(QObject *parent, QFile *file, QTcpSocket *client, QAtomicInt *ref)
+KHTTPThread::KHTTPThread(QObject *parent, QFile *file, QTcpSocket *client, QAtomicInt *ref,
+                         const quint64 start, const qint64 size)
     : QThread(parent),
     m_file(file),
     m_client(client),
-    m_ref(ref)
+    m_ref(ref),
+    m_start(start),
+    m_size(size)
 {
 }
 
 void KHTTPThread::run()
 {
+    m_file->seek(m_start);
+    quint64 httptowrite = m_size;
     QByteArray httpbuffer(KHTTP_BUFFSIZE, '\0');
     qint64 httpfileresult = m_file->read(httpbuffer.data(), httpbuffer.size());
     while (httpfileresult > 0) {
@@ -414,8 +450,18 @@ void KHTTPThread::run()
             break;
         }
 
-        m_client->write(httpbuffer.constData(), httpfileresult);
+        const qint64 httpwriteresult = m_client->write(httpbuffer.constData(), qMin(quint64(httpfileresult), httptowrite));
         m_client->flush();
+
+        if (httpwriteresult > 0) {
+            httptowrite -= httpwriteresult;
+        }
+
+        // qDebug() << Q_FUNC_INFO << httpfileresult << httpwriteresult << httptowrite;
+        if (httptowrite <= 0) {
+            kDebug(s_khttpdebugarea) << "client range data written" << m_client->peerAddress() << m_client->peerPort();
+            break;
+        }
 
         // TODO: this check should be done before every write
         if (m_client->state() != QTcpSocket::ConnectedState) {
@@ -429,7 +475,6 @@ void KHTTPThread::run()
         httpfileresult = m_file->read(httpbuffer.data(), httpbuffer.size());
     }
 
-    m_client->flush();
     kDebug(s_khttpdebugarea) << "done with client" << m_client->peerAddress() << m_client->peerPort();
     m_client->disconnectFromHost();
     m_client->deleteLater();
@@ -561,13 +606,47 @@ void KHTTPPrivate::slotNewConnection()
             khttpheaders.insert("Last-Modified", httpfilelastmodified);
         }
 
+        const qint64 httpfilesize = httpfile->size();
+        qint64 httprangesize = httpfilesize;
+        const quint64 httprangestart = khttpheadersparser.rangeStart();
+        quint64 httprangeend = khttpheadersparser.rangeEnd();
+        if (httprangestart != 0 || httprangeend != 0) {
+            bool httprangevalid = true;
+            if (httprangeend == 0) {
+                // not specified
+                httprangeend = httpfilesize;
+            }
+            kDebug(s_khttpdebugarea) << "ranged request" << responsefilepath << httprangestart << httprangeend;
+            if (httprangestart > httpfilesize || httprangeend > httpfilesize) {
+                httprangevalid = false;
+            }
+            // if valid change status and insert required headers for a ranged request, otherwise
+            // just ignore the range request
+            if (httprangevalid) {
+                responsestatus = 206;
+                khttpheaders.insert("Cache-Control", "no-cache");
+                khttpheaders.insert("ETag", QByteArray::number(qHash(httpfile)));
+                khttpheaders.insert("Expires", HTTPDate(QDateTime::currentDateTimeUtc()));
+                khttpheaders.insert("Content-Location", responseurl);
+                khttpheaders.insert("Vary", "*");
+                QByteArray httpcontentrange = "bytes ";
+                httpcontentrange.append(QByteArray::number(httprangestart));
+                httpcontentrange.append("-");
+                httpcontentrange.append(QByteArray::number(httprangeend));
+                httpcontentrange.append("/");
+                httpcontentrange.append(QByteArray::number(httpfilesize));
+                khttpheaders.insert("Content-Range", httpcontentrange);
+                httprangesize = (httprangeend - httprangestart);
+            }
+        }
+
         kDebug(s_khttpdebugarea) << "sending file to client" << responsefilepath << khttpheaders;
-        const QByteArray httpdata = HTTPData(responsestatus, khttpheaders, httpfile->size());
+        const QByteArray httpdata = HTTPData(responsestatus, khttpheaders, httprangesize);
         client->write(httpdata);
         client->flush();
 
         if (get) {
-            m_filepool->start(new KHTTPThread(m_filepool, httpfile, client, &m_ref));
+            m_filepool->start(new KHTTPThread(m_filepool, httpfile, client, &m_ref, httprangestart, httprangesize));
         } else {
             kDebug(s_khttpdebugarea) << "done with client" << client->peerAddress() << client->peerPort();
             client->disconnectFromHost();

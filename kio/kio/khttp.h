@@ -91,8 +91,8 @@ protected:
         @p outdata is the content, @p outhttpstatus is a standard HTTP status (e.g. 404) and
         @p outheaders is map of additional headers to be send (e.g. "Content-Type"). All
         output arguments are optional, by default 404 reply is send.
-        @note Prefer @p outfilepath over @p outdata for serving files, Large File Support is
-        transparent.
+        @note Prefer @p outfilepath over @p outdata for serving files, Large File Support and range
+        are transparent.
         @link https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
         @link https://en.wikipedia.org/wiki/Large-file_support
     */
