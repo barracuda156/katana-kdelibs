@@ -60,22 +60,8 @@ static bool isKDirShare(const QString &dirpath)
     return kdirsharereply.value();
 }
 
-static QString kTrashIcon(const QString &emptyIcon)
-{
-    // need to find if the trash is empty, preferably without using a KIO job. kio_trash leaves an
-    // entry in its config file
-    KConfig trashConfig("trashrc", KConfig::SimpleConfig);
-    if (trashConfig.group("Status").readEntry("Empty", true)) {
-        return emptyIcon;
-    }
-    // the default icon for the protocol
-    return QString::fromLatin1("user-trash-full");
-}
-
 // avoid creating these QStrings again and again
 static const QLatin1String s_dot = QLatin1String(".");
-static const QLatin1String s_trashprotocol = QLatin1String("trash");
-static const QLatin1String s_usertrash = QLatin1String("user-trash");
 
 class KFileItemPrivate : public QSharedData
 {
@@ -561,48 +547,17 @@ QString KFileItem::iconName() const
         return d->m_iconName;
     }
 
-    KMimeType::Ptr mime;
     // Use guessed mimetype for the icon
     if (!d->m_guessedMimeType.isEmpty()) {
-        mime = KMimeType::mimeType(d->m_guessedMimeType);
-    } else {
-        mime = mimeTypePtr();
-    }
-
-    if (d->m_bIsLocalUrl && isDesktopFile()) {
-        KDesktopFile cfg(d->m_url.toLocalFile());
-        d->m_iconName = cfg.readIcon();
-        if (cfg.hasLinkType()) {
-            const KConfigGroup group = cfg.desktopGroup();
-            const QString type = cfg.readPath();
-            const QString emptyIcon = group.readEntry("EmptyIcon");
-            if (!emptyIcon.isEmpty()) {
-                const KUrl url(cfg.readUrl());
-                if (url.protocol() == s_trashprotocol) {
-                    d->m_iconName = kTrashIcon(emptyIcon);
-                }
-            }
-        }
-        if (!d->m_iconName.isEmpty()) {
-            return d->m_iconName;
-        }
-    }
-
-    // root of protocol has priority over the MIME type icon (see KMimeType::iconNameForUrl)
-    const QString urlPath = d->m_url.path();
-    if (urlPath.isEmpty() || urlPath == QDir::separator()) {
-        if (d->m_url.protocol() == s_trashprotocol) {
-            d->m_iconName = kTrashIcon(s_usertrash);
-        } else {
-            d->m_iconName = KProtocolInfo::icon(d->m_url.protocol());
-        }
-        if (!d->m_iconName.isEmpty()) {
+        KMimeType::Ptr mime = KMimeType::mimeType(d->m_guessedMimeType);
+        if (mime) {
+            d->m_iconName = mime->iconName(d->m_url);
             return d->m_iconName;
         }
     }
 
     // kDebug() << "finding icon for" << d->m_url << ":" << d->m_iconName;
-    d->m_iconName = mime->iconName(d->m_url);
+    d->m_iconName = KMimeType::iconNameForUrl(d->m_url, d->m_fileMode);
     return d->m_iconName;
 }
 

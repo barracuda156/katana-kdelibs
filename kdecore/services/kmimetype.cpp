@@ -121,6 +121,19 @@ static QString kFolderIconName(const KUrl &_url)
     return icon;
 }
 
+static QString kTrashIcon(const QString &emptyIcon)
+{
+    // need to find if the trash is empty, preferably without using a KIO job. kio_trash leaves an
+    // entry in its config file
+    KConfig trashConfig(QLatin1String("trashrc"), KConfig::SimpleConfig);
+    if (trashConfig.group("Status").readEntry("Empty", true)) {
+        return emptyIcon;
+    }
+    // the default icon for the protocol
+    return QString::fromLatin1("user-trash-full");
+}
+
+
 KMimeType::KMimeType(const QString &fullpath, const QString &name)
     : QSharedData(),
     d_ptr(new KMimeTypePrivate(fullpath))
@@ -309,33 +322,50 @@ bool KMimeType::isBinaryData(const QString &fileName)
     return isBufferBinaryData(file.read(32));
 }
 
-QString KMimeType::iconNameForUrl(const KUrl &_url, mode_t mode)
+QString KMimeType::iconNameForUrl(const KUrl &url, mode_t mode)
 {
-    const KMimeType::Ptr mt = findByUrl(_url, mode);
+    static const QLatin1String s_trashprotocol = QLatin1String("trash");
+    static const QString s_usertrash = QString::fromLatin1("user-trash");
+
+    QString i;
+    // root of protocol has priority over the MIME type icon (see KMimeType::iconNameForUrl)
+    if (url.path().length() <= 1) {
+        if (url.protocol() == s_trashprotocol) {
+            i = kTrashIcon(s_usertrash);
+        } else {
+            i = KProtocolInfo::icon(url.protocol());
+        }
+    }
+    if (!i.isEmpty()) {
+        return i;
+    }
+
+    const KMimeType::Ptr mt = findByUrl(url, mode);
     if (!mt) {
         return QString();
     }
-    static const QString unknown = QString::fromLatin1("unknown");
-    const QString mimeTypeIcon = mt->iconName(_url);
-    QString i = mimeTypeIcon;
 
-    // if icon is not found maybe use the one for the protocol
-    if (i == unknown || i.isEmpty() || mt->name() == defaultMimeType()
-        // and for the root of the protocol (e.g. trash:/) the protocol icon has priority over the mimetype icon
-        || _url.path().length() <= 1)
-    {
-        i = favIconForUrl(_url); // maybe there is a favicon?
-
-        if (i.isEmpty()) {
-            i = KProtocolInfo::icon(_url.protocol());
+    static const QString s_applicationxdestkop = QString::fromLatin1("application/x-desktop");
+    if (url.isLocalFile() && mt->is(s_applicationxdestkop)) {
+        KDesktopFile cfg(url.toLocalFile());
+        i = cfg.readIcon();
+        if (cfg.hasLinkType()) {
+            const KConfigGroup group = cfg.desktopGroup();
+            const QString type = cfg.readPath();
+            const QString emptyIcon = group.readEntry("EmptyIcon");
+            if (!emptyIcon.isEmpty()) {
+                const KUrl cfgurl(cfg.readUrl());
+                if (cfgurl.protocol() == s_trashprotocol) {
+                    i = kTrashIcon(emptyIcon);
+                }
+            }
         }
-
-        // root of protocol: if we found nothing, revert to mimeTypeIcon (which is usually "folder")
-        if (_url.path().length() <= 1 && (i == unknown || i.isEmpty())) {
-            i = mimeTypeIcon;
+        if (!i.isEmpty()) {
+            return i;
         }
     }
-    return (!i.isEmpty() ? i : unknown);
+
+    return mt->iconName(url);
 }
 
 QString KMimeType::favIconForUrl(const KUrl &url, bool download)
