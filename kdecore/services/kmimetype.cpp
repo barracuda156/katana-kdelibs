@@ -328,7 +328,7 @@ QString KMimeType::iconNameForUrl(const KUrl &url, mode_t mode)
     static const QString s_usertrash = QString::fromLatin1("user-trash");
 
     QString i;
-    // root of protocol has priority over the MIME type icon (see KMimeType::iconNameForUrl)
+    // root of protocol has priority over the MIME type icon
     if (url.path().length() <= 1) {
         if (url.protocol() == s_trashprotocol) {
             i = kTrashIcon(s_usertrash);
