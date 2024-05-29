@@ -447,28 +447,26 @@ QString KMimeType::iconName(const KUrl &url) const
         }
     }
 
+    d->ensureXmlDataLoaded();
+    if (!d->m_iconName.isEmpty()) {
+        return d->m_iconName;
+    }
+
     static QHash<QUrl, QString> iconNameCache;
     QString iconNameFromCache = iconNameCache.value(d->m_strName);
     if (!iconNameFromCache.isEmpty()) {
         return iconNameFromCache;
     }
-    d->ensureXmlDataLoaded();
-    QString result;
-    if (!d->m_iconName.isEmpty()) {
-        result = d->m_iconName;
-    } else {
-        // Make default icon name from the mimetype name
-        // Don't store this in m_iconName, it would make the filetype editor
-        // write out icon names in every local mimetype definition file.
-        QString icon = d->m_strName;
-        const int slashindex = icon.indexOf(QLatin1Char('/'));
-        if (slashindex != -1) {
-            icon[slashindex] = QLatin1Char('-');
-        }
-        result = icon;
+    // Make default icon name from the mimetype name
+    // Don't store this in m_iconName, it would make the filetype editor
+    // write out icon names in every local mimetype definition file.
+    QString icon = d->m_strName;
+    const int slashindex = icon.indexOf(QLatin1Char('/'));
+    if (slashindex != -1) {
+        icon[slashindex] = QLatin1Char('-');
     }
-    iconNameCache.insert(d->m_strName, result);
-    return result;
+    iconNameCache.insert(d->m_strName, icon);
+    return icon;
 }
 
 QString KMimeType::comment(const KUrl &url) const
