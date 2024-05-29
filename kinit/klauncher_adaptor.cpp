@@ -445,6 +445,11 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
         } else {
             urlmimetype = kioudsentry.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
         }
+        const QString kiotargeturl = kioudsentry.stringValue(KIO::UDSEntry::UDS_TARGET_URL);
+        // unless the target URL is the same have to run that (see KFileItem::run)
+        if (!kiotargeturl.isEmpty() && url != kiotargeturl) {
+            return start_service_by_url(kiotargeturl, envs, window, temp);
+        }
         if (urlmimetype.isEmpty()) {
             // NOTE: scheme handlers are not valid MIME type but are used as such (e.g. in .desktop
             // files) despite the fact that none of the scheme handlers actually has a entry in the
