@@ -80,7 +80,7 @@ namespace KIO
         KUrl::List dirs;
         KUrl::List m_srcList;
         KUrl::List::iterator m_currentStat;
-	QSet<QString> m_parentDirs;
+        QSet<QString> m_parentDirs;
         QTimer *m_reportTimer;
 
         void statNextSrc();

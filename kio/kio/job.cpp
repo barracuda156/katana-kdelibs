@@ -1705,6 +1705,7 @@ public:
     QString m_displayPrefix;
     unsigned long m_processedEntries;
     KUrl m_redirectionURL;
+    KUrl::List m_visited;
 
     /**
      * @internal
@@ -1778,7 +1779,7 @@ void ListJobPrivate::slotListEntries(const KIO::UDSEntryList &list)
                 itemURL.addPath(fileName);
             }
 
-            if (entry.isDir() && !entry.isLink()) {
+            if (entry.isDir()) {
                 const QString filename = itemURL.fileName();
                 QString displayName = entry.stringValue(KIO::UDSEntry::UDS_DISPLAY_NAME);
                 if (displayName.isEmpty()) {
@@ -1786,18 +1787,36 @@ void ListJobPrivate::slotListEntries(const KIO::UDSEntryList &list)
                 }
                 // skip hidden dirs when listing if requested
                 if (filename != ".." && filename != "." && (includeHidden || filename[0] != '.')) {
-                    ListJob *job = ListJobPrivate::newJobNoUi(
-                        itemURL,
-                        true /*recursive*/,
-                        m_prefix + filename + '/',
-                        m_displayPrefix + displayName + '/',
-                        includeHidden
-                    );
-                    q->connect(
-                        job, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)),
-                        SLOT(gotEntries(KIO::Job*,KIO::UDSEntryList))
-                    );
-                    q->addSubjob(job);
+                    bool listItem = true;
+                    if (entry.isLink()) {
+                        const KUrl linkDest(itemURL, entry.stringValue(KIO::UDSEntry::UDS_LINK_DEST));
+                        if (!m_visited.contains(linkDest.path())) {
+                            m_visited.append(linkDest);
+                        } else {
+                            // the link was already listed
+                            listItem = false;
+                        }
+                    }
+                    if (m_visited.contains(itemURL)) {
+                        // the directory was already listed
+                        listItem = false;
+                    }
+                    if (listItem) {
+                        m_visited.append(itemURL);
+                        ListJob *job = ListJobPrivate::newJobNoUi(
+                            itemURL,
+                            true /*recursive*/,
+                            m_prefix + filename + '/',
+                            m_displayPrefix + displayName + '/',
+                            includeHidden
+                        );
+                        job->d_func()->m_visited = m_visited;
+                        q->connect(
+                            job, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)),
+                            SLOT(gotEntries(KIO::Job*,KIO::UDSEntryList))
+                        );
+                        q->addSubjob(job);
+                    }
                 }
             }
         }

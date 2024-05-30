@@ -111,8 +111,8 @@ void DirectorySizeJobPrivate::processNextItem()
     while (m_currentItem < m_lstItems.count())
     {
         const KFileItem item = m_lstItems[m_currentItem++];
-	if ( !item.isLink() )
-	{
+        if ( !item.isLink() )
+        {
             if ( item.isDir() )
             {
                 //kDebug(7007) << "dir -> listing";

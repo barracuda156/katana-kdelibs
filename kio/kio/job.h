@@ -37,7 +37,7 @@ namespace KIO {
      *                    directory (unix-style), -1 for default permissions.
      * @return A pointer to the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * mkdir( const KUrl& url, int permissions = -1 ); // TODO KDE5: return a MkdirJob and make that class public again
+    KIO_EXPORT SimpleJob* mkdir(const KUrl &url, int permissions = -1); // TODO KDE5: return a MkdirJob and make that class public again
 
     /**
      * Removes a single directory.
@@ -49,7 +49,7 @@ namespace KIO {
      * @param url The URL of the directory to remove.
      * @return A pointer to the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * rmdir( const KUrl& url );
+    KIO_EXPORT SimpleJob* rmdir(const KUrl &url);
 
     /**
      * Changes permissions on a file or directory.
@@ -60,7 +60,7 @@ namespace KIO {
      * @param permissions The permissions to set.
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * chmod( const KUrl& url, int permissions );
+    KIO_EXPORT SimpleJob* chmod(const KUrl &url, int permissions);
 
     /**
      * Changes ownership and group of a file or directory.
@@ -70,7 +70,7 @@ namespace KIO {
      * @param group the new group
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * chown( const KUrl& url, const QString& owner, const QString& group );
+    KIO_EXPORT SimpleJob* chown(const KUrl &url, const QString &owner, const QString &group);
 
     /**
      * Changes the modification time on a file or directory.
@@ -79,7 +79,7 @@ namespace KIO {
      * @param permissions The permissions to set.
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob *setModificationTime( const KUrl& url, const QDateTime& mtime );
+    KIO_EXPORT SimpleJob* setModificationTime(const KUrl &url, const QDateTime &mtime);
 
 
     /**
@@ -93,7 +93,7 @@ namespace KIO {
      * @param flags Can be Overwrite here
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * rename( const KUrl& src, const KUrl & dest, JobFlags flags = DefaultFlags );
+    KIO_EXPORT SimpleJob* rename(const KUrl &src, const KUrl &dest, JobFlags flags = DefaultFlags);
 
     /**
      * Create or move a symlink.
@@ -105,7 +105,7 @@ namespace KIO {
      * @param flags Can be Overwrite and HideProgressInfo
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * symlink( const QString & target, const KUrl& dest, JobFlags flags = DefaultFlags );
+    KIO_EXPORT SimpleJob* symlink(const QString &target, const KUrl&dest, JobFlags flags = DefaultFlags);
 
     /**
      * Execute any command that is specific to one slave (protocol).
@@ -117,7 +117,7 @@ namespace KIO {
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob * special( const KUrl& url, const QByteArray & data, JobFlags flags = DefaultFlags );
+    KIO_EXPORT SimpleJob* special(const KUrl& url, const QByteArray &data, JobFlags flags = DefaultFlags);
 
     /**
      * Find all details for one file or directory.
@@ -126,7 +126,7 @@ namespace KIO {
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT StatJob * stat( const KUrl& url, JobFlags flags = DefaultFlags );
+    KIO_EXPORT StatJob* stat(const KUrl &url, JobFlags flags = DefaultFlags);
     /**
      * Find all details for one file or directory.
      * This version of the call includes two additional booleans, @p sideIsSource and @p details.
@@ -154,8 +154,8 @@ namespace KIO {
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT StatJob * stat( const KUrl& url, KIO::StatJob::StatSide side,
-                               short int details, JobFlags flags = DefaultFlags );
+    KIO_EXPORT StatJob* stat(const KUrl &url, KIO::StatJob::StatSide side,
+                             short int details, JobFlags flags = DefaultFlags);
     /**
      * Get (a.k.a. read).
      * This is the job to use in order to "download" a file into memory.
@@ -165,7 +165,7 @@ namespace KIO {
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT TransferJob *get( const KUrl& url, JobFlags flags = DefaultFlags );
+    KIO_EXPORT TransferJob* get(const KUrl &url, JobFlags flags = DefaultFlags);
 
     /**
      * Put (a.k.a. write)
@@ -177,8 +177,8 @@ namespace KIO {
      * @return the job handling the operation.
      * @see get()
      */
-    KIO_EXPORT TransferJob *put( const KUrl& url, int permissions,
-                                 JobFlags flags = DefaultFlags );
+    KIO_EXPORT TransferJob* put(const KUrl& url, int permissions,
+                                JobFlags flags = DefaultFlags);
 
     /**
      * Get (a.k.a. read), into a single QByteArray.
@@ -188,7 +188,7 @@ namespace KIO {
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT StoredTransferJob *storedGet( const KUrl& url, JobFlags flags = DefaultFlags );
+    KIO_EXPORT StoredTransferJob* storedGet(const KUrl &url, JobFlags flags = DefaultFlags);
 
     /**
      * Put (a.k.a. write) data from a single QByteArray.
@@ -201,8 +201,8 @@ namespace KIO {
      * Setting Resume means that the data will be appended to @p dest if @p dest exists.
      * @return the job handling the operation.
      */
-    KIO_EXPORT StoredTransferJob *storedPut( const QByteArray& arr, const KUrl& url, int permissions,
-                                             JobFlags flags = DefaultFlags );
+    KIO_EXPORT StoredTransferJob* storedPut(const QByteArray &arr, const KUrl &url, int permissions,
+                                            JobFlags flags = DefaultFlags);
 
     /**
      * Copy a single file.
@@ -216,8 +216,8 @@ namespace KIO {
      * Setting Resume means that the data will be appended to @p dest if @p dest exists.
      * @return the job handling the operation.
      */
-    KIO_EXPORT FileCopyJob *file_copy( const KUrl& src, const KUrl& dest, int permissions=-1,
-                                       JobFlags flags = DefaultFlags );
+    KIO_EXPORT FileCopyJob* file_copy(const KUrl &src, const KUrl &dest, int permissions = -1,
+                                      JobFlags flags = DefaultFlags);
 
     /**
      * Move a single file.
@@ -231,8 +231,8 @@ namespace KIO {
      * Setting Resume means that the data will be appended to @p dest if @p dest exists.
      * @return the job handling the operation.
      */
-    KIO_EXPORT FileCopyJob *file_move( const KUrl& src, const KUrl& dest, int permissions=-1,
-                                       JobFlags flags = DefaultFlags );
+    KIO_EXPORT FileCopyJob* file_move(const KUrl &src, const KUrl &dest, int permissions = -1,
+                                      JobFlags flags = DefaultFlags);
 
     /**
      * Delete a single file.
@@ -241,7 +241,7 @@ namespace KIO {
      * @param flags Can be HideProgressInfo here
      * @return the job handling the operation.
      */
-    KIO_EXPORT SimpleJob *file_delete( const KUrl& src, JobFlags flags = DefaultFlags );
+    KIO_EXPORT SimpleJob* file_delete(const KUrl &src, JobFlags flags = DefaultFlags);
 
     /**
      * List the contents of @p url, which is assumed to be a directory.
@@ -255,8 +255,8 @@ namespace KIO {
      *                      files/dirs (whose names start with dot)
      * @return the job handling the operation.
      */
-    KIO_EXPORT ListJob *listDir( const KUrl& url, JobFlags flags = DefaultFlags,
-                                 bool includeHidden = true );
+    KIO_EXPORT ListJob* listDir(const KUrl &url, JobFlags flags = DefaultFlags,
+                                bool includeHidden = true);
 
     /**
      * The same as the previous method, but recurses subdirectories.
@@ -271,8 +271,8 @@ namespace KIO {
      *                      files/dirs (whose names start with dot)
      * @return the job handling the operation.
      */
-    KIO_EXPORT ListJob *listRecursive( const KUrl& url, JobFlags flags = DefaultFlags,
-                            bool includeHidden = true );
+    KIO_EXPORT ListJob* listRecursive(const KUrl &url, JobFlags flags = DefaultFlags,
+                                      bool includeHidden = true);
 }
 
 #endif
