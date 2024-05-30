@@ -91,11 +91,18 @@ KConfigDialogManager::~KConfigDialogManager()
 void KConfigDialogManager::initMaps()
 {
   if ( s_propertyMap->isEmpty() ) {
-    s_propertyMap->insert( "KButtonGroup", "current" );
+    // TODO: incomplete
+    s_propertyMap->insert( "QCheckBox", "checked" );
+    s_propertyMap->insert( "QSlider", "value" );
+    s_propertyMap->insert( "QDoubleSpinBox", "value" );
+    s_propertyMap->insert( "QLineEdit", "text" );
+    s_propertyMap->insert( "QSpinBox", "value" );
     s_propertyMap->insert( "KColorButton", "color" );
     s_propertyMap->insert( "KColorCombo", "color" );
-    //s_propertyMap->insert( "KUrlRequester", "url" );
-    //s_propertyMap->insert( "KUrlComboRequester", "url" );
+    s_propertyMap->insert( "KIntNumInput", "value" );
+    s_propertyMap->insert( "KDoubleNumInput", "value" );
+    s_propertyMap->insert( "KButtonGroup", "current" );
+    s_propertyMap->insert( "KFontRequester", "font" );
   }
 
   if( s_changedMap->isEmpty() )
@@ -104,12 +111,11 @@ void KConfigDialogManager::initMaps()
     s_changedMap->insert("QCheckBox", SIGNAL(stateChanged(int)));
     s_changedMap->insert("QPushButton", SIGNAL(clicked(bool)));
     s_changedMap->insert("QRadioButton", SIGNAL(toggled(bool)));
-    // We can only store one thing, so you can't have
-    // a ButtonGroup that is checkable.
+    // can only store one thing so can't have a ButtonGroup that is checkable
     // s_changedMap->insert("QButtonGroup", SIGNAL(buttonClicked(int)));
     s_changedMap->insert("QGroupBox", SIGNAL(toggled(bool)));
     s_changedMap->insert("QComboBox", SIGNAL(activated(int)));
-    //s_changedMap->insert("QComboBox", SIGNAL(textChanged(QString)));
+    // s_changedMap->insert("QComboBox", SIGNAL(textChanged(QString)));
     s_changedMap->insert("QDateEdit", SIGNAL(dateChanged(QDate)));
     s_changedMap->insert("QDateTimeEdit", SIGNAL(timeChanged(QTime)));
     s_changedMap->insert("QDateTimeEdit", SIGNAL(dateTimeChanged(QDateTime)));
