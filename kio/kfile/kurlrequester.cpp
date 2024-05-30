@@ -38,21 +38,20 @@
 class KUrlDragPushButton : public KPushButton
 {
 public:
-    KUrlDragPushButton( QWidget *parent)
-        : KPushButton( parent)
+    KUrlDragPushButton(QWidget *parent)
+        : KPushButton(parent)
     {
-        setDragEnabled( true );
+        setDragEnabled(true);
     }
-    ~KUrlDragPushButton() {}
 
-    void setURL( const KUrl& url )
+    void setURL(const KUrl &url)
     {
         m_urls.clear();
-        m_urls.append( url );
+        m_urls.append(url);
     }
 
 protected:
-    virtual QDrag *dragObject()
+    virtual QDrag* dragObject()
     {
         if (m_urls.isEmpty()) {
             return nullptr;
@@ -67,7 +66,6 @@ protected:
 
 private:
     KUrl::List m_urls;
-
 };
 
 
@@ -96,47 +94,44 @@ public:
 
     void init();
 
-    void setText( const QString& text ) {
-        if ( combo )
-        {
-            if (combo->isEditable())
-            {
-               combo->setEditText( text );
-            }
-            else
-            {
-               int i = combo->findText( text );
-               if ( i == -1 )
-               {
-                  combo->addItem( text );
-                  combo->setCurrentIndex( combo->count()-1 );
-               }
-               else
-               {
-                  combo->setCurrentIndex( i );
+    void setText(const QString &text)
+    {
+        if (combo) {
+            if (combo->isEditable()) {
+               combo->setEditText(text);
+            } else {
+               int i = combo->findText(text);
+               if (i == -1) {
+                  combo->addItem(text);
+                  combo->setCurrentIndex(combo->count() - 1);
+               } else {
+                  combo->setCurrentIndex(i);
                }
             }
-        }
-        else
-        {
-            edit->setText( text );
+        } else {
+            edit->setText(text);
         }
     }
 
-    void connectSignals( QObject *receiver )
+    void connectSignals(QObject *receiver)
     {
         QObject *sender;
-        if ( combo )
+        if (combo) {
             sender = combo;
-        else
+        } else {
             sender = edit;
+        }
 
-        if (combo )
-            connect( sender, SIGNAL(editTextChanged(QString)),
-                     receiver, SIGNAL(textChanged(QString)));
-        else
-            connect( sender, SIGNAL(textChanged(QString)),
-                     receiver, SIGNAL(textChanged(QString)));
+        if (combo) {
+            connect(
+                sender, SIGNAL(editTextChanged(QString)),
+                receiver, SIGNAL(textChanged(QString)));
+        } else {
+            connect(
+                sender, SIGNAL(textChanged(QString)),
+                receiver, SIGNAL(textChanged(QString))
+            );
+        }
 
         connect( sender, SIGNAL(returnPressed()),
                  receiver, SIGNAL(returnPressed()));
@@ -152,13 +147,15 @@ public:
             edit->setCompletionObject( comp );
     }
 
-    void updateCompletionStartDir( const KUrl &newStartDir )
+    void updateCompletionStartDir(const KUrl &newStartDir)
     {
-        if ( newStartDir.isLocalFile() )
+        if (newStartDir.isLocalFile()) {
             myCompletion->setDir(newStartDir.toLocalFile());
+        }
     }
 
-    QString text() const {
+    QString text() const
+    {
         return combo ? combo->currentText() : edit->text();
     }
 
@@ -166,27 +163,29 @@ public:
      * replaces ~user or $FOO, if necessary
      * if text() is a relative path, make it absolute using startDir()
      */
-    KUrl url() const {
+    KUrl url() const
+    {
         const QString txt = text();
         KUrlCompletion *comp;
-        if ( combo )
+        if (combo) {
             comp = qobject_cast<KUrlCompletion*>(combo->completionObject());
-        else
+        } else {
             comp = qobject_cast<KUrlCompletion*>(edit->completionObject());
+        }
 
         KUrl enteredPath;
         KUrl baseDir(m_startDir);
-        if ( comp )
-            enteredPath = KUrl( comp->replacedPath( txt ) );
-        else
-            enteredPath = KUrl( txt );
+        if (comp) {
+            enteredPath = KUrl(comp->replacedPath(txt));
+        } else {
+            enteredPath = KUrl(txt);
+        }
 
-        if ( enteredPath.isRelative() && !txt.isEmpty() ) {
+        if (enteredPath.isRelative() && !txt.isEmpty()) {
             baseDir.addPath(enteredPath.path());
             return baseDir;
-        } else {
-            return enteredPath;
         }
+        return enteredPath;
     }
 
     // slots
@@ -196,9 +195,9 @@ public:
 
     KUrl m_startDir;
     bool m_startDirCustomized;
-    KUrlRequester *m_parent;
-    KLineEdit *edit;
-    KComboBox *combo;
+    KUrlRequester* m_parent;
+    KLineEdit* edit;
+    KComboBox* combo;
     KFile::Modes fileDialogMode;
     QString fileDialogFilter;
     KEditListWidget::CustomEditor editor;
@@ -210,7 +209,7 @@ public:
 
 
 
-KUrlRequester::KUrlRequester( QWidget *editWidget, QWidget *parent)
+KUrlRequester::KUrlRequester(QWidget *editWidget, QWidget *parent)
     : KHBox(parent),
     d(new KUrlRequesterPrivate(this))
 {
@@ -254,8 +253,8 @@ void KUrlRequester::KUrlRequesterPrivate::init()
     m_parent->setSpacing(-1); // use default spacing
 
     if (!combo && !edit) {
-        edit = new KLineEdit( m_parent );
-        edit->setClearButtonShown( true );
+        edit = new KLineEdit(m_parent);
+        edit->setClearButtonShown(true);
     }
 
     QWidget *widget = combo ? (QWidget*) combo : (QWidget*) edit;
@@ -268,7 +267,7 @@ void KUrlRequester::KUrlRequesterPrivate::init()
 
     m_parent->connect(myButton, SIGNAL(pressed()), SLOT(_k_slotUpdateUrl()));
 
-    widget->installEventFilter( m_parent );
+    widget->installEventFilter(m_parent);
     m_parent->setFocusProxy( widget );
     m_parent->setFocusPolicy(Qt::StrongFocus);
 
@@ -292,7 +291,7 @@ void KUrlRequester::setUrl( const KUrl& url )
 }
 
 
-void KUrlRequester::setText(const QString& text)
+void KUrlRequester::setText(const QString &text)
 {
     d->setText(text);
 }
