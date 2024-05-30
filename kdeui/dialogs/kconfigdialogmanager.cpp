@@ -91,18 +91,41 @@ KConfigDialogManager::~KConfigDialogManager()
 void KConfigDialogManager::initMaps()
 {
   if ( s_propertyMap->isEmpty() ) {
-    // TODO: incomplete
-    s_propertyMap->insert( "QCheckBox", "checked" );
-    s_propertyMap->insert( "QSlider", "value" );
-    s_propertyMap->insert( "QDoubleSpinBox", "value" );
-    s_propertyMap->insert( "QLineEdit", "text" );
-    s_propertyMap->insert( "QSpinBox", "value" );
-    s_propertyMap->insert( "KColorButton", "color" );
-    s_propertyMap->insert( "KColorCombo", "color" );
-    s_propertyMap->insert( "KIntNumInput", "value" );
-    s_propertyMap->insert( "KDoubleNumInput", "value" );
-    s_propertyMap->insert( "KButtonGroup", "current" );
-    s_propertyMap->insert( "KFontRequester", "font" );
+    s_propertyMap->insert("QCheckBox", "checked");
+    s_propertyMap->insert("QPushButton", "toggled");
+    s_propertyMap->insert("QRadioButton", "checked");
+    s_propertyMap->insert("QGroupBox", "text");
+    s_propertyMap->insert("QComboBox", "currentText");
+    s_propertyMap->insert("QDateEdit", "date");
+    s_propertyMap->insert("QDateTimeEdit", "dateTime");
+    s_propertyMap->insert("QDial", "value");
+    s_propertyMap->insert("QDoubleSpinBox", "value");
+    s_propertyMap->insert("QLineEdit", "text");
+    s_propertyMap->insert("QSlider", "value");
+    s_propertyMap->insert("QSpinBox", "value");
+    s_propertyMap->insert("QTextEdit", "html");
+    s_propertyMap->insert("QTextBrowser", "html");
+    s_propertyMap->insert("QPlainTextEdit", "plainText");
+    // s_propertyMap->insert( "QTabWidget", "");
+
+    s_propertyMap->insert("KComboBox", "currentText");
+    s_propertyMap->insert("KFontRequester", "font");
+    s_propertyMap->insert("KHistoryCombo", "historyItems");
+    s_propertyMap->insert("KColorCombo", "color");
+    s_propertyMap->insert("KColorButton", "color");
+    s_propertyMap->insert("KCalendarWidget", "selectedDate");
+    s_propertyMap->insert("KTimeEdit", "time");
+    s_propertyMap->insert("KEditListWidget", "items");
+    // s_propertyMap->insert("KListWidget", "");
+    s_propertyMap->insert("KLineEdit", "text");
+    s_propertyMap->insert("KRestrictedLine", "text");
+    s_propertyMap->insert("KTextEdit", "html");
+    s_propertyMap->insert("KUrlRequester",  "text");
+    s_propertyMap->insert("KUrlComboRequester",  "text");
+    s_propertyMap->insert("KUrlComboBox",  "urls");
+    s_propertyMap->insert("KIntNumInput", "value");
+    s_propertyMap->insert("KDoubleNumInput", "value");
+    s_propertyMap->insert("KButtonGroup", "current");
   }
 
   if( s_changedMap->isEmpty() )
@@ -130,25 +153,24 @@ void KConfigDialogManager::initMaps()
     s_changedMap->insert("QTabWidget", SIGNAL(currentChanged(int)));
 
     // KDE
-    s_changedMap->insert( "KComboBox", SIGNAL(activated(int)));
-    s_changedMap->insert( "KFontRequester", SIGNAL(fontSelected(QFont)));
-    s_changedMap->insert( "KHistoryCombo", SIGNAL(activated(int)));
-    s_changedMap->insert( "KColorCombo", SIGNAL(activated(QColor)));
-    s_changedMap->insert( "KColorButton", SIGNAL(changed(QColor)));
-    s_changedMap->insert( "KCalendarWidget", SIGNAL(activated(QDate)));
-    s_changedMap->insert( "KTimeEdit", SIGNAL(timeChanged(QTime)));
-    s_changedMap->insert( "KEditListBox", SIGNAL(changed()));
-    s_changedMap->insert( "KEditListWidget", SIGNAL(changed()));
-    s_changedMap->insert( "KListWidget", SIGNAL(itemSelectionChanged()));
-    s_changedMap->insert( "KLineEdit", SIGNAL(textChanged(QString)));
-    s_changedMap->insert( "KRestrictedLine", SIGNAL(textChanged(QString)));
-    s_changedMap->insert( "KTextEdit", SIGNAL(textChanged()));
-    s_changedMap->insert( "KUrlRequester",  SIGNAL(textChanged(QString)));
-    s_changedMap->insert( "KUrlComboRequester",  SIGNAL(textChanged(QString)));
-    s_changedMap->insert( "KUrlComboBox",  SIGNAL(urlActivated(KUrl)));
-    s_changedMap->insert( "KIntNumInput", SIGNAL(valueChanged(int)));
-    s_changedMap->insert( "KDoubleNumInput", SIGNAL(valueChanged(double)));
-    s_changedMap->insert( "KButtonGroup", SIGNAL(changed(int)));
+    s_changedMap->insert("KComboBox", SIGNAL(activated(int)));
+    s_changedMap->insert("KFontRequester", SIGNAL(fontSelected(QFont)));
+    s_changedMap->insert("KHistoryCombo", SIGNAL(activated(int)));
+    s_changedMap->insert("KColorCombo", SIGNAL(activated(QColor)));
+    s_changedMap->insert("KColorButton", SIGNAL(changed(QColor)));
+    s_changedMap->insert("KCalendarWidget", SIGNAL(activated(QDate)));
+    s_changedMap->insert("KTimeEdit", SIGNAL(timeChanged(QTime)));
+    s_changedMap->insert("KEditListWidget", SIGNAL(changed()));
+    s_changedMap->insert("KListWidget", SIGNAL(itemSelectionChanged()));
+    s_changedMap->insert("KLineEdit", SIGNAL(textChanged(QString)));
+    s_changedMap->insert("KRestrictedLine", SIGNAL(textChanged(QString)));
+    s_changedMap->insert("KTextEdit", SIGNAL(textChanged()));
+    s_changedMap->insert("KUrlRequester",  SIGNAL(textChanged(QString)));
+    s_changedMap->insert("KUrlComboRequester",  SIGNAL(textChanged(QString)));
+    s_changedMap->insert("KUrlComboBox",  SIGNAL(urlActivated(KUrl)));
+    s_changedMap->insert("KIntNumInput", SIGNAL(valueChanged(int)));
+    s_changedMap->insert("KDoubleNumInput", SIGNAL(valueChanged(double)));
+    s_changedMap->insert("KButtonGroup", SIGNAL(changed(int)));
   }
 }
 
