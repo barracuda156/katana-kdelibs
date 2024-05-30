@@ -517,10 +517,9 @@ void KUrlRequester::setFileDialogModality(Qt::WindowModality modality)
     d->fileDialogModality = modality;
 }
 
-const KEditListWidget::CustomEditor &KUrlRequester::customEditor()
+const KEditListWidget::CustomEditor& KUrlRequester::customEditor()
 {
-    setSizePolicy(QSizePolicy( QSizePolicy::Preferred,
-                               QSizePolicy::Fixed));
+    setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
 
     KLineEdit *edit = d->edit;
     if ( !edit && d->combo )
@@ -538,7 +537,7 @@ const KEditListWidget::CustomEditor &KUrlRequester::customEditor()
 }
 
 KUrlComboRequester::KUrlComboRequester( QWidget *parent)
-  : KUrlRequester( new KComboBox(false), parent), d(0)
+    : KUrlRequester( new KComboBox(false), parent)
 {
 }
 
