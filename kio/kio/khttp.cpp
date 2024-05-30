@@ -608,7 +608,7 @@ void KHTTPPrivate::slotNewConnection()
 
         const qint64 httpfilesize = httpfile->size();
         qint64 httprangesize = httpfilesize;
-        const quint64 httprangestart = khttpheadersparser.rangeStart();
+        quint64 httprangestart = khttpheadersparser.rangeStart();
         quint64 httprangeend = khttpheadersparser.rangeEnd();
         if (httprangestart != 0 || httprangeend != 0) {
             bool httprangevalid = true;
@@ -619,6 +619,8 @@ void KHTTPPrivate::slotNewConnection()
             kDebug(s_khttpdebugarea) << "ranged request" << responsefilepath << httprangestart << httprangeend;
             if (httprangestart > httpfilesize || httprangeend > httpfilesize) {
                 httprangevalid = false;
+                httprangestart = 0;
+                httprangesize = httpfilesize;
             }
             // if valid change status and insert required headers for a ranged request, otherwise
             // just ignore the range request
