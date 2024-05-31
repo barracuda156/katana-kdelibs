@@ -91,7 +91,9 @@ void KDirListerPrivate::processEntries(KIO::Job *job, const KIO::UDSEntryList &e
         if (m_parent->matchesFilter(item) && m_parent->matchesMimeFilter(item)) {
             kDebug(7003) << "filtered entry" << item;
             filteredItems.append(item);
-            if (watch && recursive && item.isDir()) {
+            // NOTE: each non-local item is watched so that any change triggers update
+            // (_k_slotUpdateDirectory)
+            if (watch && ((recursive && item.isDir()) || !item.isLocalFile())) {
                 watchUrl(item.url());
             }
         }
