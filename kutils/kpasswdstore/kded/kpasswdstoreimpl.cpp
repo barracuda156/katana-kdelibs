@@ -98,6 +98,7 @@ bool KPasswdStoreImpl::isOpen() const
 bool KPasswdStoreImpl::openStore(const qlonglong windowid)
 {
     if (m_cacheonly && m_passwdtimer.elapsed() < m_timeout) {
+        kDebug() << "cache store" << m_storeid;
         return false;
     }
 
@@ -134,17 +135,19 @@ bool KPasswdStoreImpl::openStore(const qlonglong windowid)
                 ksettings.setBoolean(askkey, true);
             }
         }
+        kDebug() << "store is now cache only" << m_storeid;
         setCacheOnly(true);
         return false;
-    } else {
-        setCacheOnly(false);
     }
+    kDebug() << "store is now open" << m_storeid;
+    setCacheOnly(false);
     return true;
 }
 
 bool KPasswdStoreImpl::closeStore()
 {
     clearPasswd();
+    kDebug() << "store is now closed" << m_storeid;
     return true;
 }
 
@@ -162,6 +165,7 @@ bool KPasswdStoreImpl::cacheOnly() const
 QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windowid)
 {
     if (m_cacheonly) {
+        kDebug() << "returning password from cache" << m_storeid << key;
         return m_cachemap.value(key, QString());
     }
 
@@ -169,6 +173,7 @@ QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windo
         return QString();
     }
 
+    kDebug() << "returning encrypted password" << m_storeid << key;
     bool ok = false;
     QString storekey = m_storeid;
     storekey.append(QLatin1Char('/'));
@@ -183,22 +188,27 @@ QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windo
 bool KPasswdStoreImpl::storePasswd(const QByteArray &key, const QString &passwd, const qlonglong windowid)
 {
     if (m_cacheonly) {
+        kDebug() << "storing password temporary" << key;
         m_cachemap.insert(key, passwd);
         return true;
     }
 
     if (!openStore(windowid)) {
-        return storePasswd(key, passwd, windowid);
-    }
-
-    if (passwd.isEmpty()) {
         return false;
     }
 
-    bool ok = false;
     QString storekey = m_storeid;
     storekey.append(QLatin1Char('/'));
     storekey.append(QString::fromLatin1(key.constData(), key.size()));
+    if (passwd.isEmpty()) {
+        kDebug() << "password is empty" << m_storeid << key;
+        m_passwdstore.setString(storekey, QString());
+        m_passwdstore.sync();
+        return false;
+    }
+
+    kDebug() << "storing encrypted password" << m_storeid << key;
+    bool ok = false;
     m_passwdstore.setString(storekey, encryptPasswd(passwd, &ok));
     m_passwdstore.sync();
     return ok;
@@ -210,6 +220,7 @@ bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerr
 
 #if defined(HAVE_OPENSSL)
     if (!m_passwd.isEmpty() && m_passwdtimer.elapsed() >= m_timeout) {
+        kDebug() << "timeout, will re-open" << m_storeid;
         m_passwd.clear();
     }
     m_passwdtimer.start();
