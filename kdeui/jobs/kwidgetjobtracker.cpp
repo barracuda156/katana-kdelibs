@@ -23,7 +23,6 @@
 #include "kwidgetjobtracker.h"
 #include "kwidgetjobtracker_p.h"
 
-#include <QProcess>
 #include <QTimer>
 #include <QLabel>
 #include <QProgressBar>
@@ -43,6 +42,7 @@
 #include <klocale.h>
 #include <kwindowsystem.h>
 #include <kseparator.h>
+#include <ktoolinvocation.h>
 
 void KWidgetJobTracker::Private::_k_showProgressWidget()
 {
@@ -627,14 +627,14 @@ void KWidgetJobTracker::Private::ProgressWidget::_k_keepOpenToggled(bool keepOpe
 
 void KWidgetJobTracker::Private::ProgressWidget::_k_openFile()
 {
-    QProcess::startDetached("kde-open", QStringList() << location.prettyUrl());
+    KToolInvocation::self()->startServiceForUrl(location.url());
 }
 
 void KWidgetJobTracker::Private::ProgressWidget::_k_openLocation()
 {
     KUrl dirLocation(location);
     dirLocation.setFileName(QString());
-    QProcess::startDetached("kde-open", QStringList() << dirLocation.prettyUrl());
+    KToolInvocation::self()->startServiceForUrl(dirLocation.url());
 }
 
 void KWidgetJobTracker::Private::ProgressWidget::_k_pauseResumeClicked()
