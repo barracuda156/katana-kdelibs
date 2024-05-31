@@ -37,8 +37,7 @@
 #include "kcmoduleloader.h"
 #include "kcmoduleproxy.h"
 
-#include <QtCore/QStringList>
-#include <QtCore/QProcess>
+#include <QStringList>
 
 bool KCMultiDialogPrivate::resolveChanges(KCModuleProxy *currentProxy)
 {
