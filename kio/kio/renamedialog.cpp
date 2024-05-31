@@ -243,11 +243,12 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
             UDSEntry srcUds;
 
             srcUds.insert(UDSEntry::UDS_NAME, d->src.fileName());
+            srcUds.insert(UDSEntry::UDS_URL, d->src.url());
             srcUds.insert(UDSEntry::UDS_MODIFICATION_TIME, mtimeSrc);
             srcUds.insert(UDSEntry::UDS_CREATION_TIME, ctimeSrc);
             srcUds.insert(UDSEntry::UDS_SIZE, sizeSrc);
 
-            d->srcItem = KFileItem(srcUds, d->src);
+            d->srcItem = KFileItem(srcUds);
         }
 
         if (d->dest.isLocalFile()) {
@@ -256,11 +257,12 @@ RenameDialog::RenameDialog(QWidget *parent, const QString & _caption,
             UDSEntry destUds;
 
             destUds.insert(UDSEntry::UDS_NAME, d->dest.fileName());
+            destUds.insert(UDSEntry::UDS_URL, d->dest.url());
             destUds.insert(UDSEntry::UDS_MODIFICATION_TIME, mtimeDest);
             destUds.insert(UDSEntry::UDS_CREATION_TIME, ctimeDest);
             destUds.insert(UDSEntry::UDS_SIZE, sizeDest);
 
-            d->destItem = KFileItem(destUds, d->dest);
+            d->destItem = KFileItem(destUds);
         }
 
         d->m_srcPreview = d->createPixmapWidget(parent);

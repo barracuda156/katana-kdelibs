@@ -325,7 +325,7 @@ KPropertiesDialog::KPropertiesDialog(const KUrl &url, QWidget* parent)
     KIO::UDSEntry entry;
     KIO::NetAccess::stat(url, entry, parent);
 
-    d->m_items.append(KFileItem(entry, url));
+    d->m_items.append(KFileItem(entry));
     d->init();
 }
 
@@ -1350,8 +1350,8 @@ void KFilePropsPlugin::slotCopyFinished(KJob *job)
         //       the file is copied from a template.
         if (d->m_bFromTemplate) {
             KIO::UDSEntry entry;
-            KIO::NetAccess::stat(properties->kurl(), entry, 0);
-            KFileItem item(entry, properties->kurl());
+            KIO::NetAccess::stat(properties->kurl(), entry, nullptr);
+            KFileItem item(entry);
             KDesktopFile config(item.localPath());
             KConfigGroup cg = config.desktopGroup();
             QString nameStr = nameFromFileName(properties->kurl().fileName());

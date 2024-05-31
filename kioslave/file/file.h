@@ -53,7 +53,7 @@ public:
     void del(const KUrl &url, bool isfile) final;
 
 private:
-    bool createUDSEntry(const QString &filename, const QByteArray &path, KIO::UDSEntry &entry,
+    bool createUDSEntry(const QString &filename, const QString &path, KIO::UDSEntry &entry,
                         short int details);
     int setACL(const char *path, mode_t perm, bool _directoryDefault);
 

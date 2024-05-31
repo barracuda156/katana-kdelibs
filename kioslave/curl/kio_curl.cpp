@@ -455,6 +455,7 @@ void CurlProtocol::stat(const KUrl &url)
             kDebug(7103) << "Faking root directory for" << url.prettyUrl();
             KIO::UDSEntry kioudsentry;
             kioudsentry.insert(KIO::UDSEntry::UDS_NAME, QLatin1String("."));
+            kioudsentry.insert(KIO::UDSEntry::UDS_URL, url.url());
             kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
             kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
             kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
@@ -493,6 +494,7 @@ void CurlProtocol::stat(const KUrl &url)
     kDebug(7103) << "Content length" << curlcontentlength;
     kDebug(7103) << "MIME type" << httpmimetype;
     kioudsentry.insert(KIO::UDSEntry::UDS_NAME, staturlfilename);
+    kioudsentry.insert(KIO::UDSEntry::UDS_URL, url.url());
     kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, qlonglong(curlcontentlength));
     kioudsentry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, qlonglong(curlfiletime));
     if (!httpmimetype.isEmpty()) {
@@ -1203,7 +1205,9 @@ QList<KIO::UDSEntry> CurlProtocol::udsEntries()
         KIO::UDSEntry kioudsentry;
         const mode_t stdmode = ftpModeFromString(ftpmode);
         const qlonglong ftpmodtime = ftpTimeFromString(ftpmonth, ftpday, ftphouroryear, currentdate.year());
-        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, SlaveBase::decodeName(ftpfilepath));
+        const QString filename = SlaveBase::decodeName(ftpfilepath);
+        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, filename);
+        kioudsentry.insert(KIO::UDSEntry::UDS_URL, p_url.url(KUrl::AddTrailingSlash) + filename);
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, stdmode & S_IFMT);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, stdmode & 07777);
         kioudsentry.insert(KIO::UDSEntry::UDS_SIZE, ftpsize);

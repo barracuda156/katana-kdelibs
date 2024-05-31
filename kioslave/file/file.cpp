@@ -591,19 +591,21 @@ QString FileProtocol::getGroupName(gid_t gid) const
     return mGroupcache[gid];
 }
 
-bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &path, UDSEntry &entry,
+bool FileProtocol::createUDSEntry(const QString &filename, const QString &path, UDSEntry &entry,
                                   short int details)
 {
     assert(entry.count() == 0); // by contract :-)
     // entry.reserve( 8 ); // speed up QHash insertion
 
     entry.insert(KIO::UDSEntry::UDS_NAME, filename);
+    entry.insert(KIO::UDSEntry::UDS_URL, path);
 
     mode_t type;
     mode_t access;
     KDE_struct_stat buff;
 
-    if (KDE_lstat(path.data(), &buff) == 0) {
+    const QByteArray _path(QFile::encodeName(path));
+    if (KDE_lstat(_path.data(), &buff) == 0) {
         if (details > 2) {
             entry.insert(KIO::UDSEntry::UDS_DEVICE_ID, buff.st_dev);
             entry.insert(KIO::UDSEntry::UDS_INODE, buff.st_ino);
@@ -612,11 +614,11 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
         if (S_ISLNK(buff.st_mode)) {
             char buffer2[1000];
             ::memset(buffer2, 0, 1000 * sizeof(char));
-            readlink(path.data(), buffer2, 999);
+            readlink(_path.data(), buffer2, 999);
             entry.insert(KIO::UDSEntry::UDS_LINK_DEST, QFile::decodeName(buffer2));
 
             // A symlink -> follow it only if details>1
-            if (details > 1 && KDE_stat(path.data(), &buff) == -1) {
+            if (details > 1 && KDE_stat(_path.data(), &buff) == -1) {
                 // It is a link pointing to nowhere
                 type = S_IFMT - 1;
                 access = S_IRWXU | S_IRWXG | S_IRWXO;
@@ -629,7 +631,7 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
             }
         }
     } else {
-        // kWarning() << "lstat didn't work on " << path.data();
+        // kWarning() << "lstat didn't work on " << _path.data();
         return false;
     }
 
@@ -645,7 +647,7 @@ bool FileProtocol::createUDSEntry(const QString &filename, const QByteArray &pat
     if (details > 0) {
         /* Append an atom indicating whether the file has extended acl information. If it's a
          * directory and it has a default ACL, also append that. */
-        appendACLAtoms(path, entry, type);
+        appendACLAtoms(_path, entry, type);
     }
 #endif
 

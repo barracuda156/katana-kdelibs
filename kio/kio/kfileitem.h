@@ -70,12 +70,8 @@ public:
      * This is the preferred constructor when using KIO::listDir().
      *
      * @param entry the KIO entry used to get the file, contains info about it
-     * @param dirUrl the URL of the directory containing this item.
-     *
-     * When creating KFileItems out of the UDSEntry emitted by a KIO list job,
-     * use KFileItem(entry, listjob->url());
      */
-    KFileItem(const KIO::UDSEntry &entry, const KUrl &dirUrl);
+    KFileItem(const KIO::UDSEntry &entry);
 
     /**
      * Creates an item representing a file.

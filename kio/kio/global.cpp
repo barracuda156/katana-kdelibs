@@ -989,7 +989,7 @@ QPixmap KIO::pixmapForUrl(const KUrl &url, KIconLoader::Group group,
     } else {
         KIO::UDSEntry entry;
         KIO::NetAccess::stat(url, entry, nullptr);
-        fileitem = KFileItem(entry, url);
+        fileitem = KFileItem(entry);
     }
     return KIconLoader::global()->loadIcon(fileitem.iconName(), group, force_size, state, fileitem.overlays(), path);
 }

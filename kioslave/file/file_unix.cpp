@@ -376,42 +376,9 @@ void FileProtocol::listDir(const KUrl &url)
         entry.clear();
 
         const QString filename = QFile::decodeName(ep->d_name);
-
-        /*
-         * details == 0 (if statement) is the fast code path.
-         * We only get the file name and type. After that we emit
-         * the result.
-         *
-         * The else statement is the slow path that requests all
-         * file information in file.cpp. It executes a stat call
-         * for every entry thus becoming slower.
-         *
-         */
-        if (details == 0) {
-            entry.insert(KIO::UDSEntry::UDS_NAME, filename);
-#ifdef HAVE_DIRENT_D_TYPE
-            entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, (ep->d_type == DT_DIR) ? S_IFDIR : S_IFREG);
-            const bool isSymLink = (ep->d_type == DT_LNK);
-#else
-            // oops, no fast way, we need to stat (e.g. on Solaris)
-            if (KDE_lstat(ep->d_name, &st) == -1) {
-                continue; // how can stat fail?
-            }
-            entry.insert(KIO::UDSEntry::UDS_FILE_TYPE,
-                          (S_ISDIR(st.st_mode)) ? S_IFDIR : S_IFREG );
-            const bool isSymLink = S_ISLNK(st.st_mode);
-#endif
-            if (isSymLink) {
-                // for symlinks obey the UDSEntry contract and provide UDS_LINK_DEST
-                // even if we don't know the link dest (and DeleteJob doesn't care...)
-                entry.insert(KIO::UDSEntry::UDS_LINK_DEST, QLatin1String("Dummy Link Target"));
-            }
+        const QString filepath = path + QDir::separator() + filename;
+        if (createUDSEntry(filename, filepath, entry, details)) {
             listEntry(entry, false);
-
-        } else {
-            if (createUDSEntry(filename, QByteArray(ep->d_name), entry, details)) {
-                listEntry(entry, false);
-            }
         }
     }
 
@@ -611,13 +578,12 @@ void FileProtocol::stat(const KUrl &url)
         return;
     }
 
-    const QString path(url.path(KUrl::RemoveTrailingSlash));
-    const QByteArray _path(QFile::encodeName(path));
+    const QString path(url.path());
     const QString sDetails = metaData(QLatin1String("details"));
     const int details = (sDetails.isEmpty() ? 2 : sDetails.toInt());
 
     UDSEntry entry;
-    if (!createUDSEntry(url.fileName(), _path, entry, details)) {
+    if (!createUDSEntry(url.fileName(), path, entry, details)) {
         error(KIO::ERR_DOES_NOT_EXIST, path);
         return;
     }
