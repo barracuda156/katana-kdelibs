@@ -39,6 +39,7 @@ class KLockFilePrivate
 public:
     KLockFilePrivate();
 
+    QString m_lockname;
     QByteArray m_lockfile;
     int m_lockfd;
 };
@@ -51,6 +52,7 @@ KLockFilePrivate::KLockFilePrivate()
 KLockFile::KLockFile(const QString &file)
     : d(new KLockFilePrivate())
 {
+    d->m_lockname = file;
     // NOTE: KConfig may attempt to create KLockFile from its destructor when KGlobal is no more
     // thus QStandardPaths::writableLocation() is used here
     d->m_lockfile = QFile::encodeName(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation));
@@ -78,10 +80,12 @@ bool KLockFile::tryLock()
 
 void KLockFile::lock()
 {
+    kDebug() << "locking" << d->m_lockname << d->m_lockfile;
     while (!tryLock() && !d->m_lockfile.isEmpty()) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, KLOCKFILE_TIMEOUT);
         QThread::msleep(KLOCKFILE_SLEEPTIME);
     }
+    kDebug() << "locked" << d->m_lockname << d->m_lockfile;
 }
 
 bool KLockFile::isLocked() const
@@ -95,8 +99,9 @@ void KLockFile::unlock()
         QT_CLOSE(d->m_lockfd);
         if (Q_UNLIKELY(::unlink(d->m_lockfile.constData()) == -1)) {
             const int savederrno = errno;
-            kWarning() << "Could not remove lock file" << qt_error_string(savederrno);
+            kWarning() << "could not remove lock file" << qt_error_string(savederrno);
         }
         d->m_lockfd = -1;
+        kDebug() << "unlocked" << d->m_lockname << d->m_lockfile;
     }
 }
