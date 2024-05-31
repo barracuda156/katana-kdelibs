@@ -51,9 +51,7 @@ public:
 
     void _k_valueChanged(int value)
     {
-        if (suffix.isEmpty()) {
-            spinbox->setSuffix(QString());
-        } else {
+        if (!suffix.isEmpty()) {
             spinbox->setSuffix(suffix.subs(value).toString());
         }
         slider->setValue(value);
@@ -206,6 +204,7 @@ void KIntNumInput::setValue(int value)
 void KIntNumInput::setSuffix(const KLocalizedString &suffix)
 {
     d->suffix = suffix;
+    d->spinbox->setSuffix(QString());
     d->_k_valueChanged(d->spinbox->value());
 }
 
@@ -245,9 +244,7 @@ public:
 
     void _k_valueChanged(double value)
     {
-        if (suffix.isEmpty()) {
-            spinbox->setSuffix(QString());
-        } else {
+        if (!suffix.isEmpty()) {
             spinbox->setSuffix(suffix.subs(value).toString());
         }
         slider->setValue(qRound(value));
@@ -417,6 +414,7 @@ void KDoubleNumInput::setValue(double value)
 void KDoubleNumInput::setSuffix(const KLocalizedString &suffix)
 {
     d->suffix = suffix;
+    d->spinbox->setSuffix(QString());
     d->_k_valueChanged(d->spinbox->value());
 }
 
