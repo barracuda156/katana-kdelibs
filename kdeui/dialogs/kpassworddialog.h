@@ -225,15 +225,6 @@ public:
     void setPassword(const QString &password);
 
     /**
-     * Presets a number of login+password pairs that the user can choose from.
-     * The passwords can be empty if you simply want to offer usernames to choose from.
-     *
-     * This require the flag ShowUnernameLine to be set in the constructor, and not the flag UsernameReadOnly
-     * @param knownLogins map of known logins: the keys are usernames, the values are passwords.
-     */
-    void setKnownLogins(const QMap<QString, QString> &knownLogins);
-
-    /**
      * @internal
      */
     void accept();
@@ -264,8 +255,6 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d, void actuallyAccept())
-    Q_PRIVATE_SLOT(d, void activated(const QString &userName))
-    Q_PRIVATE_SLOT(d, void updateFields())
 
 private:
     class KPasswordDialogPrivate;

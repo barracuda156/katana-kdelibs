@@ -22,10 +22,10 @@
 #include "kiconloader.h"
 #include "klineedit.h"
 #include "klocale.h"
-#include "kdebug.h"
 #include "kconfiggroup.h"
 #include "ktitlewidget.h"
 #include "kpixmapwidget.h"
+#include "kdebug.h"
 
 #include <QCheckBox>
 #include <QLayout>
@@ -41,23 +41,18 @@ class KPasswordDialog::KPasswordDialogPrivate
 public:
     KPasswordDialogPrivate(KPasswordDialog *q)
         : q(q),
-        userEditCombo(nullptr),
         pixmapWidget(nullptr),
         commentRow(0)
     {
     }
 
     void actuallyAccept();
-    void activated(const QString &userName);
 
-    void updateFields();
     void init();
 
     KPasswordDialog *q;
     KPasswordDialogFlags m_flags;
     Ui_KPasswordDialog ui;
-    QMap<QString,QString> knownLogins;
-    KComboBox* userEditCombo;
     KPixmapWidget* pixmapWidget;
     unsigned int commentRow;
 };
@@ -79,15 +74,6 @@ KPasswordDialog::KPasswordDialog(QWidget *parent,
 KPasswordDialog::~KPasswordDialog()
 {
     delete d;
-}
-
-void KPasswordDialog::KPasswordDialogPrivate::updateFields()
-{
-    if (m_flags & KPasswordDialog::UsernameReadOnly) {
-        ui.userEdit->setReadOnly(true);
-        ui.credentialsGroup->setFocusProxy(ui.passEdit);
-    }
-    ui.credentialsGroup->setEnabled(!q->anonymousMode());
 }
 
 void KPasswordDialog::KPasswordDialogPrivate::init()
@@ -116,7 +102,11 @@ void KPasswordDialog::KPasswordDialogPrivate::init()
         ui.keepCheckBox->hide();
     }
 
-    updateFields();
+    if (m_flags & KPasswordDialog::UsernameReadOnly) {
+        ui.userEdit->setReadOnly(true);
+        ui.credentialsGroup->setFocusProxy(ui.passEdit);
+    }
+    ui.credentialsGroup->setEnabled(!q->anonymousMode());
 
     QRect desktop = QApplication::desktop()->screenGeometry(q->window());
     q->setMinimumWidth(qMin(1000, qMax(q->sizeHint().width(), desktop.width() / 4)));
@@ -148,7 +138,6 @@ void KPasswordDialog::setUsername(const QString &user)
     if (user.isEmpty()) {
         return;
     }
-    d->activated(user);
     if (d->ui.userEdit->isVisibleTo(this)) {
         d->ui.passEdit->setFocus();
     }
@@ -294,53 +283,6 @@ void KPasswordDialog::setUsernameReadOnly(bool readOnly)
     d->ui.userEdit->setReadOnly(readOnly);
     if (readOnly && d->ui.userEdit->hasFocus()) {
         d->ui.passEdit->setFocus();
-    }
-}
-
-void KPasswordDialog::setKnownLogins(const QMap<QString, QString> &knownLogins)
-{
-    const int nr = knownLogins.count();
-    if (nr == 0) {
-        return;
-    }
-
-    if (nr == 1) {
-        d->ui.userEdit->setText(knownLogins.begin().key());
-        setPassword(knownLogins.begin().value());
-        return;
-    }
-
-    Q_ASSERT(!d->ui.userEdit->isReadOnly());
-    if (!d->userEditCombo) {
-        int row = -1;
-        QFormLayout::ItemRole userEditRole = QFormLayout::FieldRole;
-
-        d->ui.formLayout->getWidgetPosition(d->ui.userEdit, &row, &userEditRole);
-        d->ui.formLayout->removeWidget(d->ui.userEdit);
-        delete d->ui.userEdit;
-        d->userEditCombo = new KComboBox(true, d->ui.credentialsGroup );
-        d->ui.userEdit = d->userEditCombo->lineEdit();
-        d->ui.userNameLabel->setBuddy(d->userEditCombo );
-        d->ui.formLayout->setWidget(row > -1 ? row : 0, userEditRole, d->userEditCombo);
-
-        setTabOrder(d->ui.userEdit, d->ui.anonymousRadioButton);
-        setTabOrder(d->ui.anonymousRadioButton, d->ui.passEdit);
-        setTabOrder(d->ui.passEdit, d->ui.keepCheckBox);
-        connect(d->ui.userEdit, SIGNAL(returnPressed()), d->ui.passEdit, SLOT(setFocus()));
-    }
-
-    d->knownLogins = knownLogins;
-    d->userEditCombo->addItems( knownLogins.keys() );
-    d->userEditCombo->setFocus();
-
-    connect(d->userEditCombo, SIGNAL(activated(QString)), this, SLOT(activated(QString)));
-}
-
-void KPasswordDialog::KPasswordDialogPrivate::activated(const QString &userName)
-{
-    QMap<QString, QString>::ConstIterator it = knownLogins.constFind(userName);
-    if (it != knownLogins.constEnd()) {
-        q->setPassword(it.value());
     }
 }
 
