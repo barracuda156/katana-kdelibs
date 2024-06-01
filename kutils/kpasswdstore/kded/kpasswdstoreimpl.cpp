@@ -161,6 +161,7 @@ bool KPasswdStoreImpl::openStore(const qlonglong windowid)
 bool KPasswdStoreImpl::closeStore()
 {
     clearPasswd();
+    m_cachemap.clear();
     kDebug() << "store is now closed" << m_storeid;
     return true;
 }
