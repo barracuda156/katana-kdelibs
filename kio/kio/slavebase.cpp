@@ -575,15 +575,20 @@ bool SlaveBase::openPasswordDialog(AuthInfo& info, const QString &errorMsg)
     Q_ASSERT(passwdstore);
 
     if (!passwdstore->isOpen() && passwdstore->openStore()) {
+        kDebug(7019) << "opening store for authorization" << info.url.prettyUrl();
         if (checkCachedAuthentication(info)) {
+            // do not store the authorization, it was just pulled from the cache
+            info.keepPassword = false;
             return true;
         }
     }
 
     if (metaData(QLatin1String("no-auth-prompt")).compare(QLatin1String("true"), Qt::CaseInsensitive) == 0) {
+        kDebug(7019) << "not asking for authorization" << info.url.prettyUrl();
         return false;
     }
 
+    kDebug(7019) << "asking for authorization" << info.url.prettyUrl();
     const qlonglong windowId = metaData(QLatin1String("window-id")).toLongLong();
     QWidget *windowWidget = QWidget::find(windowId);
 
@@ -934,21 +939,26 @@ bool SlaveBase::checkCachedAuthentication(AuthInfo &info)
     if (!passwdstore->isOpen() && !passwdstore->cacheOnly()) {
         // let it fail the first time, if authorization is really required openPasswordDialog()
         // will open the store and call this method
+        kDebug(7019) << "initial cache check rejected" << info.url.prettyUrl();
         return false;
     }
+
     const qlonglong windowId = metaData(QLatin1String("window-id")).toLongLong();
     QByteArray authkey = authInfoKey(info);
     QString passwd = passwdstore->getPasswd(authkey, windowId);
     if (!passwd.isEmpty()) {
+        kDebug(7019) << "using first cached authorization" << info.url.prettyUrl();
         info = authInfoFromData(passwd.toLatin1());
         return true;
     }
     authkey = authInfoKey2(info);
     passwd = passwdstore->getPasswd(authkey, windowId);
     if (!passwd.isEmpty()) {
+        kDebug(7019) << "using second cached authorization" << info.url.prettyUrl();
         info = authInfoFromData(passwd.toLatin1());
         return true;
     }
+    kDebug(7019) << "no cached authorization" << info.url.prettyUrl();
     return false;
 }
 
