@@ -107,6 +107,12 @@ bool KPasswdStoreImpl::openStore(const qlonglong windowid)
         return false;
     }
 
+    if (isOpen()) {
+        kDebug() << "store already open" << m_storeid;
+        m_passwdtimer.start();
+        return true;
+    }
+
     bool cancel = false;
     quint8 retry = m_retries;
     while (retry > 0 && !ensurePasswd(windowid, retry < m_retries, &cancel)) {
