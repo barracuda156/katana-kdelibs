@@ -169,6 +169,9 @@ void KPasswdStoreImpl::setCacheOnly(const bool cacheonly)
 {
     m_cacheonly = cacheonly;
     m_cachemap.clear();
+    if (cacheonly) {
+        clearPasswd();
+    }
 }
 
 bool KPasswdStoreImpl::cacheOnly() const
