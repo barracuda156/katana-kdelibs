@@ -1087,7 +1087,7 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
     }
 
     if (curlresult != CURLE_OK) {
-        KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
             kDebug(7103) << "Authorizing" << url.prettyUrl();
             kioauthinfo.keepPassword = true;
