@@ -48,8 +48,6 @@ public:
 
     void actuallyAccept();
 
-    void init();
-
     KPasswordDialog *q;
     KPasswordDialogFlags m_flags;
     Ui_KPasswordDialog ui;
@@ -60,57 +58,54 @@ public:
 KPasswordDialog::KPasswordDialog(QWidget *parent,
                                  const KPasswordDialogFlags flags,
                                  const KDialog::ButtonCodes otherButtons)
-   : KDialog(parent),
-   d(new KPasswordDialogPrivate(this))
+    : KDialog(parent),
+    d(new KPasswordDialogPrivate(this))
 {
     setCaption(i18n("Password"));
     setWindowIcon(KIcon("dialog-password"));
     setButtons(KDialog::Ok | KDialog::Cancel | otherButtons);
     setDefaultButton(KDialog::Ok);
+
     d->m_flags = flags;
-    d->init();
+
+    d->ui.setupUi(mainWidget());
+    d->ui.errorMessage->setHidden(true);
+
+    // Row 4: Username field
+    if (d->m_flags & KPasswordDialog::ShowUsernameLine) {
+        d->ui.userEdit->setFocus();
+        d->ui.credentialsGroup->setFocusProxy(d->ui.userEdit);
+        connect(d->ui.userEdit, SIGNAL(returnPressed()), d->ui.passEdit, SLOT(setFocus()));
+    } else {
+        d->ui.userNameLabel->hide();
+        d->ui.userEdit->hide();
+        d->ui.passEdit->setFocus();
+        d->ui.credentialsGroup->setFocusProxy(d->ui.passEdit);
+    }
+
+    if (!(d->m_flags & KPasswordDialog::ShowAnonymousLoginCheckBox)) {
+        d->ui.anonymousRadioButton->hide();
+        d->ui.usePasswordButton->hide();
+    }
+
+    if (!(d->m_flags & KPasswordDialog::ShowKeepPassword)) {
+        d->ui.keepCheckBox->hide();
+    }
+
+    if (d->m_flags & KPasswordDialog::UsernameReadOnly) {
+        d->ui.userEdit->setReadOnly(true);
+        d->ui.credentialsGroup->setFocusProxy(d->ui.passEdit);
+    }
+    d->ui.credentialsGroup->setEnabled(!anonymousMode());
+
+    QRect desktop = QApplication::desktop()->screenGeometry(window());
+    setMinimumWidth(qMin(1000, qMax(sizeHint().width(), desktop.width() / 4)));
+    setPixmap(KIcon("dialog-password").pixmap(KIconLoader::SizeHuge));
 }
 
 KPasswordDialog::~KPasswordDialog()
 {
     delete d;
-}
-
-void KPasswordDialog::KPasswordDialogPrivate::init()
-{
-    ui.setupUi(q->mainWidget());
-    ui.errorMessage->setHidden(true);
-
-    // Row 4: Username field
-    if (m_flags & KPasswordDialog::ShowUsernameLine) {
-        ui.userEdit->setFocus();
-        ui.credentialsGroup->setFocusProxy(ui.userEdit);
-        QObject::connect(ui.userEdit, SIGNAL(returnPressed()), ui.passEdit, SLOT(setFocus()));
-    } else {
-        ui.userNameLabel->hide();
-        ui.userEdit->hide();
-        ui.passEdit->setFocus();
-        ui.credentialsGroup->setFocusProxy(ui.passEdit);
-    }
-
-    if (!(m_flags & KPasswordDialog::ShowAnonymousLoginCheckBox)) {
-        ui.anonymousRadioButton->hide();
-        ui.usePasswordButton->hide();
-    }
-
-    if (!(m_flags & KPasswordDialog::ShowKeepPassword)) {
-        ui.keepCheckBox->hide();
-    }
-
-    if (m_flags & KPasswordDialog::UsernameReadOnly) {
-        ui.userEdit->setReadOnly(true);
-        ui.credentialsGroup->setFocusProxy(ui.passEdit);
-    }
-    ui.credentialsGroup->setEnabled(!q->anonymousMode());
-
-    QRect desktop = QApplication::desktop()->screenGeometry(q->window());
-    q->setMinimumWidth(qMin(1000, qMax(q->sizeHint().width(), desktop.width() / 4)));
-    q->setPixmap(KIcon("dialog-password").pixmap(KIconLoader::SizeHuge));
 }
 
 void KPasswordDialog::setPixmap(const QPixmap &pixmap)
@@ -230,7 +225,7 @@ void KPasswordDialog::showErrorMessage(const QString &message, const ErrorType t
     d->ui.errorMessage->setText(message, KTitleWidget::ErrorMessage);
 
     QFont bold = font();
-    bold.setBold( true );
+    bold.setBold(true);
     switch (type) {
         case KPasswordDialog::PasswordError: {
             d->ui.passwordLabel->setFont(bold);
