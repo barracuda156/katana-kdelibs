@@ -1080,12 +1080,11 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
         if (curlresult != CURLE_OK) {
             return curlresult;
         }
-        curlresult = curl_easy_perform(m_curl);
     } else {
         kDebug(7103) << "No cached authorization" << url.prettyUrl();
-        curlresult = curl_easy_perform(m_curl);
     }
 
+    curlresult = curl_easy_perform(m_curl);
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
