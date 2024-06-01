@@ -904,7 +904,7 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
 
     if (ftp && !m_isftp && !m_issftp) {
         // only for FTP or SFTP
-        error(KIO::ERR_INTERNAL, url.prettyUrl());
+        error(KIO::ERR_UNSUPPORTED_ACTION, url.prettyUrl());
         return false;
     }
 
