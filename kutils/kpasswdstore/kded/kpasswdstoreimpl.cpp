@@ -178,7 +178,11 @@ void KPasswdStoreImpl::setCacheOnly(const bool cacheonly)
 
 bool KPasswdStoreImpl::cacheOnly() const
 {
+#if defined(HAVE_OPENSSL)
     return (m_cacheonly && m_passwdtimer.elapsed() < m_timeout);
+#else
+    return m_cacheonly;
+#endif
 }
 
 QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windowid)
