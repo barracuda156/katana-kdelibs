@@ -92,11 +92,16 @@ QString KPasswdStoreImpl::storeID() const
 
 bool KPasswdStoreImpl::isOpen() const
 {
-    return (m_passwdtimer.elapsed() < m_timeout);
+#if defined(HAVE_OPENSSL)
+    return (!m_passwd.isEmpty() && m_passwdtimer.elapsed() < m_timeout);
+#else
+    return false;
+#endif
 }
 
 bool KPasswdStoreImpl::openStore(const qlonglong windowid)
 {
+#if defined(HAVE_OPENSSL)
     if (m_cacheonly && m_passwdtimer.elapsed() < m_timeout) {
         kDebug() << "cache store" << m_storeid;
         return false;
@@ -142,6 +147,9 @@ bool KPasswdStoreImpl::openStore(const qlonglong windowid)
     kDebug() << "store is now open" << m_storeid;
     setCacheOnly(false);
     return true;
+#else
+    return false;
+#endif
 }
 
 bool KPasswdStoreImpl::closeStore()
@@ -293,8 +301,10 @@ bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerr
     }
     return hasPasswd();
 #else
-    // not used
-    return true;
+    Q_UNUSED(windowid);
+    Q_UNUSED(showerror);
+    Q_UNUSED(cancel);
+    return false;
 #endif
 }
 
