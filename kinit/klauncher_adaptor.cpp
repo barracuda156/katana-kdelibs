@@ -66,6 +66,15 @@ static inline void showError(const QString &error, const quint64 window)
     KMessageBox::errorWId(static_cast<WId>(window), error);
 }
 
+static inline void showDetailedError(const QString &error, const QString &detail, const quint64 window)
+{
+    if (detail.isEmpty()) {
+        showError(error, window);
+        return;
+    }
+    KMessageBox::detailedErrorWId(static_cast<WId>(window), error, detail);
+}
+
 // TODO: QWidget::find() does not find external windows
 static inline QWidget* findWindow(const quint64 window)
 {
@@ -144,10 +153,10 @@ void KLauncherProcess::slotProcessStateChanged(QProcess::ProcessState state)
             if (processerror.isEmpty()) {
                 showError(i18n("Application exited abnormally: %1", m_appexe), m_window);
             } else {
-                KMessageBox::detailedErrorWId(
-                    static_cast<WId>(m_window),
+                showDetailedError(
                     i18n("Application exited abnormally: %1", m_appexe),
-                    QString::fromLocal8Bit(processerror.constData(), processerror.size())
+                    QString::fromLocal8Bit(processerror.constData(), processerror.size()),
+                    m_window
                 );
             }
         }
@@ -161,6 +170,7 @@ void KLauncherProcess::slotProcessStateChanged(QProcess::ProcessState state)
                     kDebug() << "uploading" << download << "to" << uploadurl;
                     if (!KIO::NetAccess::upload(download, uploadurl, findWindow(m_window))) {
                         kWarning() << "could not upload" << download;
+                        // no message box here
                     }
                 }
             }
@@ -389,7 +399,11 @@ bool KLauncherAdaptor::start_service_by_storage_id(const QString &serviceName,
                 const QString prettyurl = realurl.prettyUrl();
                 if (!KIO::NetAccess::download(realurl, urldestination, findWindow(window))) {
                     kError() << "could not download" << prettyurl;
-                    showError(i18n("Could not download URL: %1", prettyurl), window);
+                    showDetailedError(
+                        i18n("Could not download URL: %1", prettyurl),
+                        KIO::NetAccess::lastErrorString(),
+                        window
+                    );
                     removeTemp(temp, urls);
                     removeTemp(true, downloaded.keys());
                     return false;
@@ -432,6 +446,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
 {
     const KUrl realurl = KUrl(url);
     QString urlmimetype;
+    QString mimetypedetail;
     if (realurl.isLocalFile()) {
         KMimeType::Ptr kmimetype = KMimeType::findByUrl(realurl);
         if (kmimetype) {
@@ -440,6 +455,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
     } else {
         KIO::UDSEntry kioudsentry;
         if (!KIO::NetAccess::stat(realurl, kioudsentry, findWindow(window))) {
+            mimetypedetail = KIO::NetAccess::lastErrorString();
             kWarning() << "could not stat URL for MIME type" << url;
             urlmimetype = KProtocolManager::defaultMimetype(realurl);
         } else {
@@ -463,7 +479,7 @@ bool KLauncherAdaptor::start_service_by_url(const QString &url, const QStringLis
     }
     if (urlmimetype.isEmpty()) {
         kError() << "invalid MIME type for path" << url;
-        showError(i18n("Could not determine the MIME type of: %1", url), window);
+        showDetailedError(i18n("Could not determine the MIME type of: %1", url), mimetypedetail, window);
         removeTemp(temp, QStringList() << url);
         return false;
     }
