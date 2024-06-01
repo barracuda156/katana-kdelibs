@@ -34,18 +34,18 @@ AuthInfo::AuthInfo()
 }
 
 AuthInfo::AuthInfo(const AuthInfo &info)
+    : url(info.url),
+    username(info.username),
+    password(info.password),
+    prompt(info.prompt),
+    caption(info.caption),
+    comment(info.comment),
+    commentLabel(info.commentLabel),
+    readOnly(info.readOnly),
+    keepPassword(info.keepPassword),
+    anonymousMode(info.anonymousMode),
+    hideUserName(info.hideUserName)
 {
-    url = info.url;
-    username = info.username;
-    password = info.password;
-    prompt = info.prompt;
-    caption = info.caption;
-    comment = info.comment;
-    commentLabel = info.commentLabel;
-    readOnly = info.readOnly;
-    keepPassword = info.keepPassword;
-    anonymousMode = info.anonymousMode;
-    hideUserName = info.hideUserName;
 }
 
 AuthInfo& AuthInfo::operator=(const AuthInfo &info)
