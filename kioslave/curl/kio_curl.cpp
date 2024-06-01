@@ -1067,8 +1067,6 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
     return true;
 }
 
-// NOTE: redirection is done so that the URL in navigation is corrected, notably its user and
-// password part
 CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
 {
     CURLcode curlresult = CURLE_OK;
@@ -1083,16 +1081,6 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
             return curlresult;
         }
         curlresult = curl_easy_perform(m_curl);
-        if (curlresult != CURLE_OK) {
-            KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
-            if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
-                kDebug(7103) << "Going to redirect for cached authorization";
-                KUrl newurl(url);
-                newurl.setUserName(kioauthinfo.username);
-                newurl.setPassword(kioauthinfo.password);
-                *redirecturl = newurl;
-            }
-        }
     } else {
         kDebug(7103) << "No cached authorization" << url.prettyUrl();
         curlresult = curl_easy_perform(m_curl);
@@ -1122,18 +1110,17 @@ CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
                     cacheAuthentication(kioauthinfo);
                 }
                 curlresult = curl_easy_perform(m_curl);
-                if (curlresult != CURLE_OK) {
-                    kioerror = curlToKIOError(curlresult, m_curl);
-                    if (kioerror != KIO::ERR_COULD_NOT_LOGIN) {
-                        kDebug(7103) << "Going to redirect for authorization";
-                        KUrl newurl(url);
-                        newurl.setUserName(kioauthinfo.username);
-                        newurl.setPassword(kioauthinfo.password);
-                        *redirecturl = newurl;
-                    }
-                }
             }
         }
+    }
+
+    // NOTE: redirection is done so that the URL in navigation is corrected, notably its user part.
+    // the password is not made visible for security reasons
+    if (kioauthinfo.username != url.userName()) {
+        kDebug(7103) << "Going to redirect for authorization";
+        KUrl newurl(url);
+        newurl.setUserName(kioauthinfo.username);
+        *redirecturl = newurl;
     }
 
     return curlresult;
