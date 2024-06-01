@@ -1069,22 +1069,25 @@ bool CurlProtocol::setupCurl(const KUrl &url, const bool ftp)
 
 CURLcode CurlProtocol::performCurl(const KUrl &url, KUrl *redirecturl)
 {
-    CURLcode curlresult = CURLE_OK;
     KIO::AuthInfo kioauthinfo;
     kioauthinfo.url = url;
     kioauthinfo.username = url.userName();
     kioauthinfo.password = url.password();
-    if (checkCachedAuthentication(kioauthinfo)) {
-        kDebug(7103) << "Authorizing from cache" << url.prettyUrl();
-        curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
-        if (curlresult != CURLE_OK) {
-            return curlresult;
+    CURLcode curlresult = curl_easy_perform(m_curl);
+    if (curlresult != CURLE_OK) {
+        const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
+        if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
+            if (checkCachedAuthentication(kioauthinfo)) {
+                kDebug(7103) << "Authorizing from cache" << url.prettyUrl();
+                curlresult = setupAuth(kioauthinfo.username, kioauthinfo.password);
+                if (curlresult != CURLE_OK) {
+                    return curlresult;
+                }
+                curlresult = curl_easy_perform(m_curl);
+            }
         }
-    } else {
-        kDebug(7103) << "No cached authorization" << url.prettyUrl();
     }
 
-    curlresult = curl_easy_perform(m_curl);
     if (curlresult != CURLE_OK) {
         const KIO::Error kioerror = curlToKIOError(curlresult, m_curl);
         if (kioerror == KIO::ERR_COULD_NOT_LOGIN) {
