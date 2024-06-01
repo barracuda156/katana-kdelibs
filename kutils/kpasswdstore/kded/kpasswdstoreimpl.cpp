@@ -102,8 +102,9 @@ bool KPasswdStoreImpl::isOpen() const
 bool KPasswdStoreImpl::openStore(const qlonglong windowid)
 {
 #if defined(HAVE_OPENSSL)
-    if (m_cacheonly && m_passwdtimer.elapsed() < m_timeout) {
+    if (cacheOnly()) {
         kDebug() << "cache store" << m_storeid;
+        m_passwdtimer.start();
         return false;
     }
 
@@ -177,12 +178,12 @@ void KPasswdStoreImpl::setCacheOnly(const bool cacheonly)
 
 bool KPasswdStoreImpl::cacheOnly() const
 {
-    return m_cacheonly;
+    return (m_cacheonly && m_passwdtimer.elapsed() < m_timeout);
 }
 
 QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windowid)
 {
-    if (m_cacheonly) {
+    if (cacheOnly()) {
         kDebug() << "returning password from cache" << m_storeid << key;
         return m_cachemap.value(key, QString());
     }
@@ -205,7 +206,7 @@ QString KPasswdStoreImpl::getPasswd(const QByteArray &key, const qlonglong windo
 
 bool KPasswdStoreImpl::storePasswd(const QByteArray &key, const QString &passwd, const qlonglong windowid)
 {
-    if (m_cacheonly) {
+    if (cacheOnly()) {
         kDebug() << "storing password temporary" << key;
         m_cachemap.insert(key, passwd);
         return true;
@@ -234,7 +235,7 @@ bool KPasswdStoreImpl::storePasswd(const QByteArray &key, const QString &passwd,
 
 bool KPasswdStoreImpl::ensurePasswd(const qlonglong windowid, const bool showerror, bool *cancel)
 {
-    Q_ASSERT(!cacheonly);
+    Q_ASSERT(!m_cacheonly);
 
 #if defined(HAVE_OPENSSL)
     if (!m_passwd.isEmpty() && m_passwdtimer.elapsed() >= m_timeout) {
