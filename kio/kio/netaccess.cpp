@@ -339,6 +339,9 @@ void NetAccess::enter_loop()
 
 void NetAccess::slotResult(KJob *job)
 {
+    // don't register the job, it has finished
+    d->m_statJob = nullptr;
+
     lastErrorCode = job->error();
     d->bJobOK = (job->error() == KJob::NoError);
     if (!d->bJobOK) {
@@ -377,7 +380,9 @@ void NetAccess::slotRedirection(KIO::Job *job, const KUrl &url)
 
 void NetAccess::slotShowProgress()
 {
-    Q_ASSERT(d->m_statJob != nullptr);
+    if (!d->m_statJob) {
+        return;
+    }
     KIO::getJobTracker()->registerJob(d->m_statJob);
     KIO::JobPrivate::emitStating(d->m_statJob, d->m_statJob->url());
 }
