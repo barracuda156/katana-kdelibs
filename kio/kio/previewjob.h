@@ -74,42 +74,9 @@ namespace KIO {
          */
         PreviewJob(const KFileItemList &items,
                    const QSize &size,
-                   const QStringList *enabledPlugins = 0);
+                   const QStringList *enabledPlugins = nullptr);
 
         virtual ~PreviewJob();
-
-        /**
-         * Sets the size of the MIME-type icon which overlays the preview. If zero
-         * is passed no overlay will be shown at all. The setting has no effect if
-         * the preview plugin that will be used does not use icon overlays. Per
-         * default the size is set to 0.
-         * @since 4.7
-         */
-        void setOverlayIconSize(int size);
-
-        /**
-         * @return The size of the MIME-type icon which overlays the preview.
-         * @see PreviewJob::setOverlayIconSize()
-         * @since 4.7
-         */
-        int overlayIconSize() const;
-
-        /**
-         * Sets the alpha-value for the MIME-type icon which overlays the preview.
-         * The alpha-value may range from 0 (= fully transparent) to 255 (= opaque).
-         * Per default the value is set to 70.
-         * @see PreviewJob::setOverlayIconSize()
-         * @since 4.7
-         */
-        void setOverlayIconAlpha(int alpha);
-
-        /**
-         * @return The alpha-value for the MIME-type icon which overlays the preview.
-         *         Per default 70 is returned.
-         * @see PreviewJob::setOverlayIconAlpha()
-         * @since 4.7
-         */
-        int overlayIconAlpha() const;
 
         /**
          * Sets the scale type for the generated preview. Per default
@@ -132,7 +99,7 @@ namespace KIO {
          *
          * @param url the url of the item that should be removed from the preview queue
          */
-        void removeItem( const KUrl& url );
+        void removeItem(const KUrl &url);
 
         /**
          * If @p ignoreSize is true, then the preview is always
@@ -162,17 +129,17 @@ namespace KIO {
          * @param item the file of the preview
          * @param preview the preview image
          */
-        void gotPreview( const KFileItem& item, const QPixmap &preview );
+        void gotPreview(const KFileItem &item, const QPixmap &preview);
         /**
          * Emitted when a thumbnail for @p item could not be created,
          * either because a ThumbCreator for its MIME type does not
          * exist, or because something went wrong.
          * @param item the file that failed
          */
-        void failed( const KFileItem& item );
+        void failed(const KFileItem &item);
 
     protected Q_SLOTS:
-        virtual void slotResult( KJob *job );
+        virtual void slotResult(KJob *job);
 
     private:
         Q_PRIVATE_SLOT(d_func(), void startPreview())

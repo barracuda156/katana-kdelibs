@@ -60,8 +60,7 @@ static const QString thumbExt = QLatin1String(".") + thumbFormat;
 // kde-workspace/kioslave/thumbnail/thumbnail.h
 enum PreviewDefaults {
     MaxLocalSize = 20, // 20 MB
-    MaxRemoteSize = 5, // 5 MB
-    IconAlpha = 125
+    MaxRemoteSize = 5  // 5 MB
 };
 
 struct KIO::PreviewItem
@@ -127,10 +126,6 @@ public:
     QString tempName;
     KIO::filesize_t maximumLocalSize;
     KIO::filesize_t maximumRemoteSize;
-    // the size for the icon overlay
-    int iconSize;
-    // the transparency of the blended mimetype icon
-    int iconAlpha;
     // Root of thumbnail cache
     QString thumbRoot;
 
@@ -149,8 +144,8 @@ public:
 
 PreviewJob::PreviewJob(const KFileItemList &items,
                        const QSize &size,
-                       const QStringList *enabledPlugins) :
-    KIO::Job(*new PreviewJobPrivate)
+                       const QStringList *enabledPlugins)
+    : KIO::Job(*new PreviewJobPrivate)
 {
     Q_D(PreviewJob);
     const KConfigGroup globalConfig(KGlobal::config(), "PreviewSettings");
@@ -173,8 +168,6 @@ PreviewJob::PreviewJob(const KFileItemList &items,
     d->height = size.height();
     d->cacheWidth = d->width;
     d->cacheHeight = d->height;
-    d->iconSize = 0; // when zero KIconLoader::currentSize(KIconLoader::Desktop) is used
-    d->iconAlpha = globalConfig.readEntry("IconAlpha", int(PreviewDefaults::IconAlpha));
     d->bScale = true;
     d->bSave = true;
     d->succeeded = false;
@@ -189,30 +182,6 @@ PreviewJob::PreviewJob(const KFileItemList &items,
 
 PreviewJob::~PreviewJob()
 {
-}
-
-void PreviewJob::setOverlayIconSize(int size)
-{
-    Q_D(PreviewJob);
-    d->iconSize = size;
-}
-
-int PreviewJob::overlayIconSize() const
-{
-    Q_D(const PreviewJob);
-    return d->iconSize;
-}
-
-void PreviewJob::setOverlayIconAlpha(int alpha)
-{
-    Q_D(PreviewJob);
-    d->iconAlpha = qBound(0, alpha, 255);
-}
-
-int PreviewJob::overlayIconAlpha() const
-{
-    Q_D(const PreviewJob);
-    return d->iconAlpha;
 }
 
 void PreviewJob::setScaleType(ScaleType type)
@@ -252,7 +221,7 @@ PreviewJob::ScaleType PreviewJob::scaleType() const
 void PreviewJobPrivate::startPreview()
 {
     Q_Q(PreviewJob);
-    // Look for images and store the items in our todo list :)
+    // Look for images and store the items in the todo list :)
     bool bNeedCache = false;
     foreach (const KFileItem &kit, initialItems) {
         PreviewItem item;
@@ -308,7 +277,7 @@ void PreviewJobPrivate::startPreview()
             items.append(item);
             if (!bNeedCache && bSave &&
                 (kit.url().protocol() != "file" ||
-                 !kit.url().directory( KUrl::AddTrailingSlash ).startsWith(thumbRoot)) &&
+                 !kit.url().directory(KUrl::AddTrailingSlash ).startsWith(thumbRoot)) &&
                 itemplugin->property("CacheThumbnail").toBool()) {
                 bNeedCache = true;
             }
@@ -334,7 +303,7 @@ void PreviewJobPrivate::startPreview()
     determineNextFile();
 }
 
-void PreviewJob::removeItem( const KUrl& url )
+void PreviewJob::removeItem(const KUrl &url)
 {
     Q_D(PreviewJob);
     for (QList<PreviewItem>::Iterator it = d->items.begin(); it != d->items.end(); ++it) {
@@ -375,8 +344,8 @@ void PreviewJobPrivate::determineNextFile()
         currentItem = items.first();
         succeeded = false;
         items.removeFirst();
-        KIO::Job *job = KIO::stat( currentItem.item.url(), KIO::HideProgressInfo );
-        job->addMetaData( "no-auth-prompt", "true" );
+        KIO::Job *job = KIO::stat(currentItem.item.url(), KIO::HideProgressInfo);
+        job->addMetaData("no-auth-prompt", "true");
         q->addSubjob(job);
     }
 }
@@ -519,8 +488,6 @@ void PreviewJobPrivate::createThumbnail(const QString &pixPath)
     job->addMetaData("mimeType", currentItem.item.mimetype());
     job->addMetaData("width", QString::number(save ? cacheWidth : width));
     job->addMetaData("height", QString::number(save ? cacheHeight : height));
-    job->addMetaData("iconSize", QString::number(save ? 64 : iconSize));
-    job->addMetaData("iconAlpha", QString::number(iconAlpha));
     job->addMetaData("plugin", currentItem.plugin->library());
 }
 
@@ -529,7 +496,7 @@ void PreviewJobPrivate::slotThumbData(KIO::Job *, const QByteArray &data)
     bool save = bSave &&
                 currentItem.plugin->property("CacheThumbnail").toBool() &&
                 (currentItem.item.url().protocol() != "file" ||
-                 !currentItem.item.url().directory( KUrl::AddTrailingSlash ).startsWith(thumbRoot));
+                 !currentItem.item.url().directory(KUrl::AddTrailingSlash).startsWith(thumbRoot));
     const QString imagePath = QFile::decodeName(data);
     QImage thumb = QImage(imagePath);
     if (save && !thumb.isNull()) {

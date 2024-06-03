@@ -19,8 +19,6 @@
 
 #include "thumbcreator.h"
 
-#include <qglobal.h>
-
 ThumbCreator::~ThumbCreator()
 {
 }
@@ -30,9 +28,9 @@ ThumbCreator::Flags ThumbCreator::flags() const
     return None;
 }
 
-QWidget *ThumbCreator::createConfigurationWidget()
+QWidget* ThumbCreator::createConfigurationWidget()
 {
-    return 0;
+    return nullptr;
 }
 
 void ThumbCreator::writeConfiguration(const QWidget *configurationWidget)

@@ -99,7 +99,8 @@ public:
    * The flags of this plugin.
    * @see flags()
    */
-    enum Flags { None = 0, DrawFrame = 1, BlendIcon = 2 };
+    enum Flags { None = 0, DrawFrame = 1 };
+
     virtual ~ThumbCreator();
 
     /**
@@ -141,14 +142,14 @@ public:
      * Configurable=true
      * \endcode
      */
-    virtual QWidget *createConfigurationWidget();
+    virtual QWidget* createConfigurationWidget();
 
     /**
      * Writes the configuration that is specified by \p configurationWidget.
      * The passed configuration widget is the instance created by
      * ThumbCreator::createConfigurationWidget().
      */
-    virtual void writeConfiguration(const QWidget* configurationWidget);
+    virtual void writeConfiguration(const QWidget *configurationWidget);
 };
 
 typedef ThumbCreator *(*newCreator)();
