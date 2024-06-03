@@ -111,11 +111,11 @@ public:
      */
     enum Group {
         /// No group
-        NoGroup=-1,
+        NoGroup = -1,
         /// Desktop icons
-        Desktop=0,
+        Desktop = 0,
         /// First group
-        FirstGroup=0,
+        FirstGroup = 0,
         /// Toolbar icons
         Toolbar,
         /// Main toolbar icons
@@ -137,17 +137,17 @@ public:
      */
     enum StdSizes {
         /// small icons for menu entries
-        SizeSmall=16,
+        SizeSmall = 16,
         /// slightly larger small icons for toolbars, panels, etc
-        SizeSmallMedium=22,
+        SizeSmallMedium = 22,
         /// medium sized icons for the desktop
-        SizeMedium=32,
+        SizeMedium = 32,
         /// large sized icons for the panel
-        SizeLarge=48,
+        SizeLarge = 48,
         /// huge sized icons for iconviews
-        SizeHuge=64,
+        SizeHuge = 64,
         /// enormous sized icons for iconviews
-        SizeEnormous=128
+        SizeEnormous = 128
     };
 
     /**
@@ -172,7 +172,7 @@ public:
      * iconloader object yourself. That one is the current KComponentData's
      * (typically KApplication's) iconloader.
      */
-    explicit KIconLoader(const QString& appname=QString(), KStandardDirs *dirs = 0, QObject* parent = 0);
+    explicit KIconLoader(const QString &appname = QString(), KStandardDirs *dirs = nullptr, QObject *parent = nullptr);
 
     /**
      * Constructs an iconloader.
@@ -183,7 +183,7 @@ public:
      * iconloader object yourself. That one is the current KComponentData's
      * (typically KApplication's) iconloader.
      */
-    explicit KIconLoader(const KComponentData &componentData, QObject* parent = 0);
+    explicit KIconLoader(const KComponentData &componentData, QObject *parent = nullptr);
 
     /**
      * Cleanup
@@ -200,7 +200,7 @@ public:
      * Adds @p appname to the list of application specific directories.
      * @param appname The application name.
      */
-    void addAppDir(const QString& appname);
+    void addAppDir(const QString &appname);
 
     /**
      * Loads an icon. It will try very hard to find an icon which is
@@ -230,10 +230,10 @@ public:
      * @return the QPixmap. Can be null when not found, depending on
      *         @p canReturnNull.
      */
-    QPixmap loadIcon(const QString& name, KIconLoader::Group group, int size=0,
-                     int state=KIconLoader::DefaultState, const QStringList &overlays = QStringList(),
-                     QString *path_store=0L,
-                     bool canReturnNull=false) const;
+    QPixmap loadIcon(const QString &name, KIconLoader::Group group, int size = 0,
+                     int state = KIconLoader::DefaultState, const QStringList &overlays = QStringList(),
+                     QString *path_store = nullptr,
+                     bool canReturnNull = false) const;
 
     /**
      * Loads an icon for a mimetype.
@@ -253,9 +253,9 @@ public:
      * @return the QPixmap. Can not be null, the
      * "unknown" pixmap is returned when no appropriate icon has been found.
      */
-    QPixmap loadMimeTypeIcon( const QString& iconName, KIconLoader::Group group, int size=0,
-                              int state=KIconLoader::DefaultState, const QStringList &overlays = QStringList(),
-                              QString *path_store=0 ) const;
+    QPixmap loadMimeTypeIcon(const QString &iconName, KIconLoader::Group group, int size = 0,
+                             int state = KIconLoader::DefaultState, const QStringList &overlays = QStringList(),
+                             QString *path_store = nullptr) const;
 
     /**
      * Returns the path of an icon.
@@ -271,8 +271,8 @@ public:
      * @return the path of an icon, can be null or the "unknown" icon when
      *         not found, depending on @p canReturnNull.
      */
-    QString iconPath(const QString& name, int group_or_size,
-                     bool canReturnNull=false) const;
+    QString iconPath(const QString &name, int group_or_size,
+                     bool canReturnNull = false) const;
 
     /**
      * Loads an animated icon as a series of still frames.
@@ -283,7 +283,7 @@ public:
      * @return A QStringList containing the absolute path of all the frames
      * making up the animation.
      */
-    QStringList loadAnimated(const QString& name, KIconLoader::Group group, int size=0) const;
+    QStringList loadAnimated(const QString &name, KIconLoader::Group group, int size = 0) const;
 
     /**
      * Queries all available icons for a specific group, having a specific
@@ -295,7 +295,7 @@ public:
      * @param context The icon context.
      * @return a list of all icons
      */
-    QStringList queryIcons(int group_or_size, KIconLoader::Context context=KIconLoader::Any) const;
+    QStringList queryIcons(int group_or_size, KIconLoader::Context context = KIconLoader::Any) const;
 
     /**
      * Queries all available icons for a specific context.
@@ -309,12 +309,12 @@ public:
      * available for that context
      */
     QStringList queryIconsByContext(int group_or_size,
-                                    KIconLoader::Context context=KIconLoader::Any) const;
+                                    KIconLoader::Context context = KIconLoader::Any) const;
 
     /**
      * @internal
      */
-    bool hasContext( KIconLoader::Context context ) const;
+    bool hasContext(KIconLoader::Context context) const;
 
     /**
      * Returns a list of all icons (*.png or *.xpm extension) in the
@@ -322,7 +322,7 @@ public:
      * @param iconsDir the directory to search in
      * @return A QStringList containing the icon paths
      */
-    QStringList queryIconsByDir( const QString& iconsDir ) const;
+    QStringList queryIconsByDir(const QString &iconsDir) const;
 
     /**
      * Returns the current size of the icon group.
@@ -342,13 +342,13 @@ public:
      * therefore it's not recommended to store the pointer anywhere.
      * @return a pointer to the current theme. 0 if no theme set.
      */
-    KIconTheme *theme() const;
+    KIconTheme* theme() const;
 
     /**
      * Returns a pointer to the KIconEffect object used by the icon loader.
      * @return the KIconEffect.
      */
-    KIconEffect *iconEffect() const;
+    KIconEffect* iconEffect() const;
 
     /**
      * Called by KComponentData::newIconLoader to reconfigure the icon loader.
@@ -356,7 +356,7 @@ public:
      * @param _dirs the new standard directories. If 0, the directories
      *              from KGlobal will be taken.
      */
-    void reconfigure( const QString& _appname, KStandardDirs *_dirs );
+    void reconfigure(const QString &_appname, KStandardDirs *_dirs);
 
     /**
      * Returns the unknown icon. An icon that is used when no other icon
@@ -395,7 +395,7 @@ public:
      */
     void drawOverlays(const QStringList &overlays, QPixmap &pixmap, KIconLoader::Group group, int state = KIconLoader::DefaultState) const;
 
- public Q_SLOTS:
+public Q_SLOTS:
    /**
     * Re-initialize the global icon loader
     */
@@ -407,7 +407,7 @@ Q_SIGNALS:
      */
     void iconLoaderSettingsChanged();
 
- private:
+private:
     // @internal the data object
     KIconLoaderPrivate *d;
 };

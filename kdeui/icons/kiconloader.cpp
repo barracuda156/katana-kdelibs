@@ -431,7 +431,7 @@ void KIconLoader::reconfigure(const QString &_appname, KStandardDirs *_dirs)
 
 void KIconLoaderPrivate::init( const QString &_appname, KStandardDirs *_dirs)
 {
-    extraDesktopIconsLoaded=false;
+    extraDesktopIconsLoaded = false;
     mIconThemeInited = false;
     mpThemeRoot = 0;
 
@@ -606,7 +606,7 @@ void KIconLoaderPrivate::addThemeByName(const QString &themename, const QString 
         delete theme;
         return;
     }
-    KIconThemeNode *n = new KIconThemeNode(theme);
+    KIconThemeNode* n = new KIconThemeNode(theme);
     mThemesInTree.append(themename + appname);
     links.append(n);
     addInheritedThemes(n, appname);
@@ -614,7 +614,9 @@ void KIconLoaderPrivate::addThemeByName(const QString &themename, const QString 
 
 void KIconLoader::addExtraDesktopThemes()
 {
-    if ( d->extraDesktopIconsLoaded ) return;
+    if (d->extraDesktopIconsLoaded) {
+        return;
+    }
 
     d->initIconThemes();
 
@@ -622,27 +624,23 @@ void KIconLoader::addExtraDesktopThemes()
     const QStringList icnlibs = KGlobal::dirs()->resourceDirs("icon");
     QStringList::ConstIterator it;
     char buf[1000];
-    int r;
-    for (it=icnlibs.begin(); it!=icnlibs.end(); ++it)
-    {
-        QDir dir(*it);
+    foreach (const QString &it, icnlibs) {
+        QDir dir(it);
         if (!dir.exists())
             continue;
         const QStringList lst = dir.entryList(QStringList( "default.*" ), QDir::Dirs);
-        QStringList::ConstIterator it2;
-        for (it2=lst.begin(); it2!=lst.end(); ++it2)
-        {
-            if (!KStandardDirs::exists(*it + *it2 + "/index.theme"))
+        foreach (const QString &it2, lst) {
+            if (!KStandardDirs::exists(it + it2 + "/index.theme")) {
                 continue;
-            r=readlink( QFile::encodeName(*it + *it2) , buf, sizeof(buf)-1);
-            if ( r>0 )
-            {
-                buf[r]=0;
-                const QDir dir2( buf );
-                QString themeName=dir2.dirName();
-
-                if (!list.contains(themeName))
+            }
+            const int r = readlink(QFile::encodeName(it + it2), buf, sizeof(buf) - 1);
+            if (r > 0) {
+                buf[r] = 0;
+                const QDir dir2(buf);
+                const QString themeName = dir2.dirName();
+                if (!list.contains(themeName)) {
                     list.append(themeName);
+                }
             }
         }
     }
@@ -1263,19 +1261,17 @@ QStringList KIconLoader::queryIconsByContext(int group_or_size,
     // Eliminate duplicate entries (same icon in different directories)
     QString name;
     QStringList res2, entries;
-    QStringList::ConstIterator it;
-    for (it=result.constBegin(); it!=result.constEnd(); ++it)
-    {
-        int n = (*it).lastIndexOf('/');
-        if (n == -1)
-            name = *it;
-        else
-            name = (*it).mid(n+1);
+    foreach (const QString &it, result) {
+        const int n = it.lastIndexOf('/');
+        if (n == -1) {
+            name = it;
+        } else {
+            name = it.mid(n + 1);
+        }
         name = d->removeIconExtension(name);
-        if (!entries.contains(name))
-        {
+        if (!entries.contains(name)) {
             entries += name;
-            res2 += *it;
+            res2 += it;
         }
     }
     return res2;
@@ -1306,19 +1302,17 @@ QStringList KIconLoader::queryIcons(int group_or_size, KIconLoader::Context cont
     // Eliminate duplicate entries (same icon in different directories)
     QString name;
     QStringList res2, entries;
-    QStringList::ConstIterator it;
-    for (it=result.constBegin(); it!=result.constEnd(); ++it)
-    {
-        int n = (*it).lastIndexOf('/');
-        if (n == -1)
-            name = *it;
-        else
-            name = (*it).mid(n+1);
+    foreach (const QString &it, result) {
+        const int n = it.lastIndexOf('/');
+        if (n == -1) {
+            name = it;
+        } else {
+            name = it.mid(n+1);
+        }
         name = d->removeIconExtension(name);
-        if (!entries.contains(name))
-        {
+        if (!entries.contains(name)) {
             entries += name;
-            res2 += *it;
+            res2 += it;
         }
     }
     return res2;
@@ -1357,39 +1351,39 @@ bool KIconLoader::alphaBlending(KIconLoader::Group group) const
 
 // Easy access functions
 
-QPixmap DesktopIcon(const QString& name, int force_size, int state, const QStringList &overlays)
+QPixmap DesktopIcon(const QString &name, int force_size, int state, const QStringList &overlays)
 {
-    KIconLoader *loader = KIconLoader::global();
+    KIconLoader* loader = KIconLoader::global();
     return loader->loadIcon(name, KIconLoader::Desktop, force_size, state, overlays);
 }
 
-QPixmap BarIcon(const QString& name, int force_size, int state, const QStringList &overlays)
+QPixmap BarIcon(const QString &name, int force_size, int state, const QStringList &overlays)
 {
-    KIconLoader *loader = KIconLoader::global();
+    KIconLoader* loader = KIconLoader::global();
     return loader->loadIcon(name, KIconLoader::Toolbar, force_size, state, overlays);
 }
 
-QPixmap SmallIcon(const QString& name, int force_size, int state, const QStringList &overlays)
+QPixmap SmallIcon(const QString &name, int force_size, int state, const QStringList &overlays)
 {
-    KIconLoader *loader = KIconLoader::global();
+    KIconLoader* loader = KIconLoader::global();
     return loader->loadIcon(name, KIconLoader::Small, force_size, state, overlays);
 }
 
-QPixmap MainBarIcon(const QString& name, int force_size, int state, const QStringList &overlays)
+QPixmap MainBarIcon(const QString &name, int force_size, int state, const QStringList &overlays)
 {
-    KIconLoader *loader = KIconLoader::global();
+    KIconLoader* loader = KIconLoader::global();
     return loader->loadIcon(name, KIconLoader::MainToolbar, force_size, state, overlays);
 }
 
-QPixmap UserIcon(const QString& name, int state, const QStringList &overlays)
+QPixmap UserIcon(const QString &name, int state, const QStringList &overlays)
 {
-    KIconLoader *loader = KIconLoader::global();
+    KIconLoader* loader = KIconLoader::global();
     return loader->loadIcon(name, KIconLoader::User, 0, state, overlays);
 }
 
 int IconSize(KIconLoader::Group group)
 {
-    KIconLoader *loader = KIconLoader::global();
+    KIconLoader* loader = KIconLoader::global();
     return loader->currentSize(group);
 }
 
@@ -1426,7 +1420,7 @@ void KIconLoader::newIconLoader()
         KIconTheme::reconfigure();
     }
 
-    reconfigure( objectName(), d->mpDirs );
+    reconfigure(objectName(), d->mpDirs);
     emit iconLoaderSettingsChanged();
 }
 
