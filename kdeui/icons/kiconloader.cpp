@@ -259,7 +259,7 @@ public:
      * @internal
      * Returns size suitable for overlay image based on the width and height of @p size.
      */
-    int overlaySize(const QSize &size) const;
+    static int overlaySize(const QSize &size);
 
     KIconLoader *const q;
 
@@ -790,7 +790,7 @@ bool KIconLoaderPrivate::findCachedPixmapWithPath(const QString &key, QPixmap &d
     return false;
 }
 
-int KIconLoaderPrivate::overlaySize(const QSize &size) const
+int KIconLoaderPrivate::overlaySize(const QSize &size)
 {
     const int minSize = qMin(size.width(), size.height());
     if (minSize < 32) {
@@ -1116,7 +1116,7 @@ QPixmap KIconLoader::loadIcon(const QString& _name, KIconLoader::Group group, in
             }
 
             // ensure the icon size is suitable for overlay
-            const int iconSize = d->overlaySize(img.size());
+            const int iconSize = KIconLoaderPrivate::overlaySize(img.size());
             favIcon = favIcon.scaled(QSize(iconSize, iconSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
             QPainter p(&img);
