@@ -170,7 +170,7 @@ public:
      * tries to find an icon with the name. It tries some extension and
      * match strategies
      */
-    QString findMatchingIcon(const QString &name, int size) const;
+    QString findMatchingIcon(const QString &name, int size);
 
     /**
      * @internal
@@ -178,7 +178,7 @@ public:
      * This is one layer above findMatchingIcon -- it also implements generic fallbacks
      * such as generic icons for mimetypes.
      */
-    QString findMatchingIconWithGenericFallbacks(const QString &name, int size) const;
+    QString findMatchingIconWithGenericFallbacks(const QString &name, int size);
 
     /**
      * @internal
@@ -212,7 +212,7 @@ public:
      * @internal
      * return the path for the unknown icon in that size
      */
-    QString unknownIconPath(int size) const;
+    QString unknownIconPath(int size);
 
     /**
      * Checks if name ends in one of the supported icon formats (i.e. .png)
@@ -280,58 +280,10 @@ public:
     QString appname;
 
     void drawOverlays(const KIconLoader *loader, KIconLoader::Group group, int state, QPixmap &pix, const QStringList &overlays);
+
+    bool genericIconsLoaded;
+    QHash<QString, QString> mGenericIcons;
 };
-
-class KIconLoaderGlobalData
-{
-public:
-    KIconLoaderGlobalData() {
-        const QStringList genericIconsFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", "generic-icons");
-        //kDebug() << genericIconsFiles;
-        foreach (const QString &file, genericIconsFiles) {
-            parseGenericIconsFiles(file);
-        }
-    }
-
-    QString genericIconFor(const QString& icon) const {
-        return m_genericIcons.value(icon);
-    }
-
-private:
-    void parseGenericIconsFiles(const QString& fileName);
-    QHash<QString, QString> m_genericIcons;
-};
-
-void KIconLoaderGlobalData::parseGenericIconsFiles(const QString& fileName)
-{
-    QFile file(fileName);
-    if (file.open(QIODevice::ReadOnly)) {
-        while (!file.atEnd()) {
-            const QByteArray line = file.readLine().trimmed();
-            if (line.isEmpty() || line[0] == '#') {
-                continue;
-            }
-            const int pos = line.indexOf(':');
-            if (pos == -1) {
-                // syntax error
-                continue;
-            }
-            QByteArray mimeIcon = line.left(pos);
-            const int slashindex = mimeIcon.indexOf('/');
-            if (slashindex != -1) {
-                mimeIcon[slashindex] = '-';
-            }
-            const QString mimeIconStr = QString::fromLatin1(mimeIcon.constData(), mimeIcon.size());
-
-            const QByteArray genericIcon = line.mid(pos+1);
-            const QString genericIconStr = QString::fromLatin1(genericIcon.constData(), genericIcon.size());
-            m_genericIcons.insert(mimeIconStr, genericIconStr);
-            //kDebug(264) << mimeIconStr << "->" << genericIconStr;
-        }
-    }
-}
-
-K_GLOBAL_STATIC(KIconLoaderGlobalData, s_globalData)
 
 void KIconLoaderPrivate::drawOverlays(const KIconLoader *iconLoader, KIconLoader::Group group, int state, QPixmap &pix, const QStringList &overlays)
 {
@@ -396,6 +348,7 @@ void KIconLoaderPrivate::drawOverlays(const KIconLoader *iconLoader, KIconLoader
     }
 }
 
+
 KIconLoader::KIconLoader(const QString &_appname, KStandardDirs *_dirs, QObject* parent)
     : QObject(parent)
 {
@@ -433,6 +386,7 @@ void KIconLoaderPrivate::init( const QString &_appname, KStandardDirs *_dirs)
 {
     extraDesktopIconsLoaded = false;
     mIconThemeInited = false;
+    genericIconsLoaded = false;
     mpThemeRoot = 0;
 
     if (_dirs) {
@@ -622,7 +576,6 @@ void KIconLoader::addExtraDesktopThemes()
 
     QStringList list;
     const QStringList icnlibs = KGlobal::dirs()->resourceDirs("icon");
-    QStringList::ConstIterator it;
     char buf[1000];
     foreach (const QString &it, icnlibs) {
         QDir dir(it);
@@ -645,17 +598,15 @@ void KIconLoader::addExtraDesktopThemes()
         }
     }
 
-    for (it = list.constBegin(); it != list.constEnd(); ++it)
-    {
+    foreach (const QString &it, list) {
         // Don't add the KDE defaults once more, we have them anyways.
-        if (*it == QLatin1String("default.kde")
-            || *it == QLatin1String("default.kde4")) {
+        if (it == QLatin1String("default.kde") || it == QLatin1String("default.kde4")) {
             continue;
         }
-        d->addThemeByName(*it, "");
+        d->addThemeByName(it, "");
     }
 
-    d->extraDesktopIconsLoaded=true;
+    d->extraDesktopIconsLoaded = true;
 
 }
 
@@ -803,23 +754,54 @@ int KIconLoaderPrivate::overlaySize(const QSize &size)
     return 64;
 }
 
-QString KIconLoaderPrivate::findMatchingIconWithGenericFallbacks(const QString& name, int size) const
+QString KIconLoaderPrivate::findMatchingIconWithGenericFallbacks(const QString& name, int size)
 {
     QString icon = findMatchingIcon(name, size);
     if (!icon.isEmpty()) {
         return icon;
     }
 
-    const QString genericIcon = s_globalData->genericIconFor(name);
+    if (!genericIconsLoaded) {
+        const QStringList genericIconsFiles = KGlobal::dirs()->findAllResources("xdgdata-mime", "generic-icons");
+        // kDebug() << genericIconsFiles;
+        foreach (const QString &fileName, genericIconsFiles) {
+            QFile file(fileName);
+            if (file.open(QIODevice::ReadOnly)) {
+                while (!file.atEnd()) {
+                    const QByteArray line = file.readLine().trimmed();
+                    if (line.isEmpty() || line[0] == '#') {
+                        continue;
+                    }
+                    const int pos = line.indexOf(':');
+                    if (pos == -1) {
+                        // syntax error
+                        continue;
+                    }
+                    QByteArray mimeIcon = line.left(pos);
+                    const int slashindex = mimeIcon.indexOf('/');
+                    if (slashindex != -1) {
+                        mimeIcon[slashindex] = '-';
+                    }
+                    const QString mimeIconStr = QString::fromLatin1(mimeIcon.constData(), mimeIcon.size());
+
+                    const QByteArray genericIcon = line.mid(pos+1);
+                    const QString genericIconStr = QString::fromLatin1(genericIcon.constData(), genericIcon.size());
+                    mGenericIcons.insert(mimeIconStr, genericIconStr);
+                    //kDebug(264) << mimeIconStr << "->" << genericIconStr;
+                }
+            }
+        }
+    }
+    const QString genericIcon = mGenericIcons.value(name);
     if (!genericIcon.isEmpty()) {
         icon = findMatchingIcon(genericIcon, size);
     }
     return icon;
 }
 
-QString KIconLoaderPrivate::findMatchingIcon(const QString& name, int size) const
+QString KIconLoaderPrivate::findMatchingIcon(const QString& name, int size)
 {
-    const_cast<KIconLoaderPrivate*>(this)->initIconThemes();
+    initIconThemes();
 
     QString icon;
 
@@ -907,7 +889,7 @@ QString KIconLoaderPrivate::findMatchingIcon(const QString& name, int size) cons
     return icon;
 }
 
-inline QString KIconLoaderPrivate::unknownIconPath(int size) const
+inline QString KIconLoaderPrivate::unknownIconPath(int size)
 {
     static const QString str_unknown = QString::fromLatin1("unknown");
 
@@ -992,7 +974,7 @@ QPixmap KIconLoader::loadMimeTypeIcon(const QString& _iconName, KIconLoader::Gro
     }
 
     if (!d->extraDesktopIconsLoaded) {
-        const QPixmap pixmap = loadIcon( iconName, group, size, state, overlays, path_store, true );
+        const QPixmap pixmap = loadIcon(iconName, group, size, state, overlays, path_store, true);
         if (!pixmap.isNull() ) {
             return pixmap;
         }
