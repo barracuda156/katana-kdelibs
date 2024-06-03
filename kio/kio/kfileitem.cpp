@@ -60,9 +60,6 @@ static bool isKDirShare(const QString &dirpath)
     return kdirsharereply.value();
 }
 
-// avoid creating these QStrings again and again
-static const QLatin1String s_dot = QLatin1String(".");
-
 class KFileItemPrivate : public QSharedData
 {
 public:

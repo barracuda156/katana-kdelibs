@@ -65,6 +65,8 @@ using namespace KIO;
 
 #define MAX_IPC_SIZE (1024*32)
 
+static const QLatin1String s_dot = QLatin1String(".");
+
 static bool same_inode(const KDE_struct_stat &src, const KDE_struct_stat &dest)
 {
     if (src.st_ino == dest.st_ino && src.st_dev == dest.st_dev) {
@@ -347,22 +349,6 @@ void FileProtocol::listDir(const KUrl &url)
         return;
     }
 
-    /*
-        set the current dir to the path to speed up
-        in not having to pass an absolute path.
-        We restore the path later to get out of the
-        path - the kernel wouldn't unmount or delete
-        directories we keep as active directory. And
-        as the slave runs in the background, it's hard
-        to see for the user what the problem would be
-    */
-    const QString pathBuffer(QDir::currentPath());
-    if (!QDir::setCurrent(path)) {
-        closedir(dp);
-        error(ERR_CANNOT_ENTER_DIRECTORY, path);
-        return;
-    }
-
     const QString sDetails = metaData(QLatin1String("details"));
     const int details = (sDetails.isEmpty() ? 2 : sDetails.toInt());
     //kDebug(7101) << "========= LIST " << url << "details=" << details << " =========";
@@ -376,7 +362,10 @@ void FileProtocol::listDir(const KUrl &url)
         entry.clear();
 
         const QString filename = QFile::decodeName(ep->d_name);
-        const QString filepath = path + QDir::separator() + filename;
+        QString filepath = path + QDir::separator();
+        if (filename != s_dot) {
+            filepath += filename;
+        }
         if (createUDSEntry(filename, filepath, entry, details)) {
             listEntry(entry, false);
         }
@@ -384,9 +373,6 @@ void FileProtocol::listDir(const KUrl &url)
 
     closedir(dp);
     listEntry(entry, true); // ready
-
-    // Restore the path
-    QDir::setCurrent(pathBuffer);
 
     finished();
 }
