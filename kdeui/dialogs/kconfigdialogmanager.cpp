@@ -95,7 +95,7 @@ void KConfigDialogManager::initMaps()
     s_propertyMap->insert("QPushButton", "toggled");
     s_propertyMap->insert("QRadioButton", "checked");
     s_propertyMap->insert("QGroupBox", "text");
-    s_propertyMap->insert("QComboBox", "currentText");
+    // s_propertyMap->insert("QComboBox", "currentText");
     s_propertyMap->insert("QDateEdit", "date");
     s_propertyMap->insert("QDateTimeEdit", "dateTime");
     s_propertyMap->insert("QDial", "value");
@@ -108,7 +108,7 @@ void KConfigDialogManager::initMaps()
     s_propertyMap->insert("QPlainTextEdit", "plainText");
     // s_propertyMap->insert( "QTabWidget", "");
 
-    s_propertyMap->insert("KComboBox", "currentText");
+    // s_propertyMap->insert("KComboBox", "currentText");
     s_propertyMap->insert("KFontRequester", "font");
     s_propertyMap->insert("KHistoryCombo", "historyItems");
     s_propertyMap->insert("KColorCombo", "color");
