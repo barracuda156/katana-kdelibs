@@ -260,7 +260,7 @@ namespace KIO {
 
     /**
      * The same as the previous method, but recurses subdirectories.
-     * Directory links are not followed.
+     * Directory links are followed.
      *
      * "." and ".." are returned but only for the toplevel directory.
      * Filter them out if you don't want them.

@@ -542,7 +542,7 @@ void CopyJobPrivate::slotReport()
 
 void CopyJobPrivate::slotEntries(KIO::Job* job, const UDSEntryList& list)
 {
-    //Q_Q(CopyJob);
+    // Q_Q(CopyJob);
     foreach ( const UDSEntry& entry, list ) {
         addCopyInfoFromUDSEntry(entry, static_cast<SimpleJob *>(job)->url(), m_bCurrentSrcIsDir, m_currentDest);
     }
