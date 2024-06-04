@@ -1765,11 +1765,7 @@ void ListJobPrivate::slotListEntries(const KIO::UDSEntryList &list)
             const UDSEntry &entry = *it;
 
             KUrl itemURL;
-            // const UDSEntry::ConstIterator end2 = entry.end();
-            // UDSEntry::ConstIterator it2 = entry.find(KIO::UDSEntry::UDS_URL);
-            // if ( it2 != end2 )
             if (entry.contains(KIO::UDSEntry::UDS_URL)) {
-                // itemURL = it2.value().toString();
                 itemURL = entry.stringValue(KIO::UDSEntry::UDS_URL);
             } else {
                 // no URL, use the name
@@ -1790,7 +1786,7 @@ void ListJobPrivate::slotListEntries(const KIO::UDSEntryList &list)
                     bool listItem = true;
                     if (entry.isLink()) {
                         const KUrl linkDest(itemURL, entry.stringValue(KIO::UDSEntry::UDS_LINK_DEST));
-                        if (!m_visited.contains(linkDest.path())) {
+                        if (!m_visited.contains(linkDest)) {
                             m_visited.append(linkDest);
                         } else {
                             // the link was already listed
