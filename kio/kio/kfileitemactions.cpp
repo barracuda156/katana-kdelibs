@@ -515,7 +515,8 @@ void KFileItemActions::addOpenWithActionsTo(QMenu* topMenu, const QString& trade
             }
 
             QString openWithActionName;
-            if (menu != topMenu) { // submenu
+            if (menu != topMenu) {
+                // submenu
                 menu->addSeparator();
                 openWithActionName = i18nc("@action:inmenu Open With", "&Other...");
             } else {
@@ -527,9 +528,8 @@ void KFileItemActions::addOpenWithActionsTo(QMenu* topMenu, const QString& trade
             openWithAct->setObjectName("openwith_browse"); // for the unittest
             QObject::connect(openWithAct, SIGNAL(triggered()), d, SLOT(slotOpenWithDialog()));
             menu->addAction(openWithAct);
-        }
-        else // no app offers -> Open With...
-        {
+        } else {
+            // no app offers -> Open With...
             KAction *act = new KAction(d->m_parentWidget);
             d->m_ownActions.append(act);
             act->setText(i18nc("@title:menu", "&Open With..."));

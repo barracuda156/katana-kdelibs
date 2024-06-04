@@ -19,19 +19,19 @@
  **/
 
 #include "kurifilter.h"
+#include "kiconloader.h"
+#include "kservicetypetrader.h"
+#include "kmimetype.h"
+#include "kstandarddirs.h"
+#include "kfileitem.h"
+#include "kio/netaccess.h"
+#include "kdebug.h"
 
-#include <kdebug.h>
-#include <kiconloader.h>
-#include <kservicetypetrader.h>
-#include <kmimetype.h>
-#include <kstandarddirs.h>
-
-#include <QtCore/qhash.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qelapsedtimer.h>
-#include <QtCore/qcoreapplication.h>
-#include <QtNetwork/QHostInfo>
-#include <QtNetwork/QHostAddress>
+#include <qhash.h>
+#include <qthread.h>
+#include <qelapsedtimer.h>
+#include <qcoreapplication.h>
+#include <qhostinfo.h>
 
 typedef QList<KUriFilterPlugin *> KUriFilterPluginList;
 typedef QMap<QString, KUriFilterSearchProvider*> SearchProviderMap;
@@ -40,53 +40,52 @@ typedef QMap<QString, KUriFilterSearchProvider*> SearchProviderMap;
 static QString lookupIconNameFor(const KUrl &url, KUriFilterData::UriTypes type)
 {
     QString iconName;
-
-    switch ( type )
-    {
-        case KUriFilterData::NetProtocol:
+    switch (type) {
+        case KUriFilterData::NetProtocol: {
             iconName = KMimeType::favIconForUrl(url, true);
-            if (iconName.isEmpty())
-                iconName = KMimeType::iconNameForUrl( url );
-            else
+            if (iconName.isEmpty()) {
+                KIO::UDSEntry entry;
+                KIO::NetAccess::stat(url, entry, nullptr);
+                iconName = KFileItem(entry).iconName();
+            } else {
                 iconName = KStandardDirs::locate("cache", iconName + QLatin1String(".png"));
-            break;
-        case KUriFilterData::LocalFile:
-        case KUriFilterData::LocalDir:
-        {
-            iconName = KMimeType::iconNameForUrl( url );
+            }
             break;
         }
-        case KUriFilterData::Executable:
-        {
+        case KUriFilterData::LocalFile:
+        case KUriFilterData::LocalDir: {
+            iconName = KMimeType::iconNameForUrl(url);
+            break;
+        }
+        case KUriFilterData::Executable: {
             QString exeName = url.path();
-            exeName = exeName.mid( exeName.lastIndexOf( '/' ) + 1 ); // strip path if given
-            KService::Ptr service = KService::serviceByDesktopName( exeName );
-            if (service && service->icon() != QLatin1String( "unknown" ))
+            exeName = exeName.mid(exeName.lastIndexOf('/') + 1); // strip path if given
+            KService::Ptr service = KService::serviceByDesktopName(exeName);
+            if (service && service->icon() != QLatin1String("unknown")) {
                 iconName = service->icon();
             // Try to find an icon with the same name as the binary (useful for non-kde apps)
             // Use iconPath rather than loadIcon() as the latter uses QPixmap (not threadsafe)
-            else if ( !KIconLoader::global()->iconPath( exeName, KIconLoader::NoGroup, true ).isNull() )
+            } else if (!KIconLoader::global()->iconPath(exeName, KIconLoader::NoGroup, true).isNull()) {
                 iconName = exeName;
-            else
+            } else {
                 // not found, use default
                 iconName = QLatin1String("system-run");
+            }
             break;
         }
-        case KUriFilterData::Shell:
-        {
+        case KUriFilterData::Shell: {
             iconName = QLatin1String("konsole");
             break;
         }
         case KUriFilterData::Error:
-        case KUriFilterData::Blocked:
-        {
+        case KUriFilterData::Blocked: {
             iconName = QLatin1String("error");
             break;
         }
-        default:
+        default: {
             break;
+        }
     }
-
     return iconName;
 }
 
