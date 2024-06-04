@@ -359,7 +359,10 @@ void FileProtocol::listDir(const KUrl &url)
         entry.clear();
 
         const QString filename = QFile::decodeName(ep->d_name);
-        QString filepath = path + QDir::separator();
+        QString filepath = path;
+        if (!filepath.endsWith(QDir::separator())) {
+             filepath += QDir::separator();
+        }
         if (filename != s_dot) {
             filepath += filename;
         }
