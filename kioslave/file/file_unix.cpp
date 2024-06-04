@@ -65,8 +65,6 @@ using namespace KIO;
 
 #define MAX_IPC_SIZE (1024*32)
 
-static const QLatin1String s_dot = QLatin1String(".");
-
 static bool same_inode(const KDE_struct_stat &src, const KDE_struct_stat &dest)
 {
     if (src.st_ino == dest.st_ino && src.st_dev == dest.st_dev) {
@@ -363,9 +361,7 @@ void FileProtocol::listDir(const KUrl &url)
         if (!filepath.endsWith(QDir::separator())) {
              filepath += QDir::separator();
         }
-        if (filename != s_dot) {
-            filepath += filename;
-        }
+        filepath += filename;
         if (createUDSEntry(filename, filepath, entry, details)) {
             listEntry(entry, false);
         }

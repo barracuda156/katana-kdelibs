@@ -1761,13 +1761,9 @@ void ListJobPrivate::slotListEntries(const KIO::UDSEntryList &list)
         foreach (const UDSEntry &entry, list) {
 
             KUrl itemURL;
-#if 0
-            // FIXME: lists the directory twice if used
             if (entry.contains(KIO::UDSEntry::UDS_URL)) {
                 itemURL = entry.stringValue(KIO::UDSEntry::UDS_URL);
             } else {
-#endif
-            {
                 // no URL, use the name
                 itemURL = q->url();
                 const QString fileName = entry.stringValue(KIO::UDSEntry::UDS_NAME);
