@@ -1165,7 +1165,13 @@ void KFileWidgetPrivate::removeDummyHistoryEntry()
 void KFileWidgetPrivate::setLocationText(const KUrl& url)
 {
     if (!url.isEmpty()) {
-        QPixmap urlIcon = KIO::pixmapForUrl(url, KIconLoader::Small);
+        QPixmap urlIcon;
+        const QString u = url.url();
+        if (!KUrl::isRelativeUrl(u)) {
+            urlIcon = KIO::pixmapForUrl(url, KIconLoader::Small);
+        } else {
+            urlIcon = KIO::pixmapForUrl(KUrl(this->url, u), KIconLoader::Small);
+        }
         if (url.hasPath()) {
             if (!url.directory().isEmpty()) {
                 KUrl u(url);
@@ -1494,7 +1500,7 @@ void KFileWidgetPrivate::_k_fileCompletion( const QString& match )
     );
 }
 
-void KFileWidgetPrivate::_k_slotLocationChanged( const QString& text )
+void KFileWidgetPrivate::_k_slotLocationChanged(const QString &text)
 {
     locationEdit->lineEdit()->setModified(true);
 
@@ -1505,7 +1511,7 @@ void KFileWidgetPrivate::_k_slotLocationChanged( const QString& text )
     if (text.isEmpty()) {
         removeDummyHistoryEntry();
     } else {
-        setDummyHistoryEntry( text );
+        setDummyHistoryEntry(text);
     }
 
     if (!locationEdit->lineEdit()->text().isEmpty()) {
