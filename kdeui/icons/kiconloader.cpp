@@ -382,7 +382,7 @@ void KIconLoader::reconfigure(const QString &_appname, KStandardDirs *_dirs)
     d->init(_appname, _dirs);
 }
 
-void KIconLoaderPrivate::init( const QString &_appname, KStandardDirs *_dirs)
+void KIconLoaderPrivate::init(const QString &_appname, KStandardDirs *_dirs)
 {
     extraDesktopIconsLoaded = false;
     mIconThemeInited = false;
@@ -1391,14 +1391,14 @@ QPixmap KIconLoader::unknown()
 /*** the global icon loader ***/
 K_GLOBAL_STATIC_WITH_ARGS(KIconLoader, globalIconLoader, (KGlobal::mainComponent(), 0))
 
-KIconLoader *KIconLoader::global()
+KIconLoader* KIconLoader::global()
 {
     return globalIconLoader;
 }
 
 void KIconLoader::newIconLoader()
 {
-    if ( global() == this) {
+    if (global() == this) {
         KIconTheme::reconfigure();
     }
 

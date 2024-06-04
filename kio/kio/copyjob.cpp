@@ -453,9 +453,7 @@ void CopyJobPrivate::sourceStated(const UDSEntry& entry, const KUrl& sourceUrl)
         }
 
         startListing( sourceUrl );
-    }
-    else
-    {
+    } else {
         //kDebug(7007) << "Source is a file (or a symlink), or we are linking -> no recursive listing";
 
         if (sourceUrl.isLocalFile()) {
@@ -552,13 +550,13 @@ void CopyJobPrivate::slotEntries(KIO::Job* job, const UDSEntryList& list)
 
 void CopyJobPrivate::slotSubError(ListJob* job, ListJob* subJob)
 {
-	const KUrl url = subJob->url();
-	kWarning() << url << subJob->errorString();
+    const KUrl url = subJob->url();
+    kWarning() << url << subJob->errorString();
 
-	Q_Q(CopyJob);
+    Q_Q(CopyJob);
 
-	emit q->warning(job, subJob->errorString(), QString());
-	skip(url, true);
+    emit q->warning(job, subJob->errorString(), QString());
+    skip(url, true);
 }
 
 
@@ -587,7 +585,7 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
             // Make URL from displayName
             url = srcUrl;
             if (srcIsDir) { // Only if src is a directory. Otherwise uSource is fine as is
-                //kDebug(7007) << "adding path" << displayName;
+                // kDebug(7007) << "adding path" << displayName;
                 url.addPath(fileName);
             }
         }
@@ -606,7 +604,7 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
             KProtocolInfo::FileNameUsedForCopying fnu = KProtocolManager::fileNameUsedForCopying(url);
             if (hasCustomURL &&
                  fnu == KProtocolInfo::FromUrl) {
-                //destFileName = url.fileName(); // Doesn't work for recursive listing
+                // destFileName = url.fileName(); // Doesn't work for recursive listing
                 // Count the number of prefixes used by the recursive listjob
                 int numberOfSlashes = fileName.count('/'); // don't make this a find()!
                 QString path = url.path();
@@ -622,9 +620,11 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
                     destFileName = path.mid(pos + 1);
                 }
 
-            } else if ( fnu == KProtocolInfo::Name ) { // destination filename taken from UDS_NAME
+            } else if (fnu == KProtocolInfo::Name) {
+                // destination filename taken from UDS_NAME
                 destFileName = fileName;
-            } else { // from display name (with fallback to name)
+            } else {
+                // from display name (with fallback to name)
                 const QString displayName = entry.stringValue(KIO::UDSEntry::UDS_DISPLAY_NAME);
                 destFileName = displayName.isEmpty() ? fileName : displayName;
             }
@@ -636,12 +636,13 @@ void CopyJobPrivate::addCopyInfoFromUDSEntry(const UDSEntry& entry, const KUrl& 
                 destFileName = KIO::encodeFileName(info.uSource.prettyUrl());
             }
 
-            //kDebug(7007) << " adding destFileName=" << destFileName;
+            // kDebug(7007) << " adding destFileName=" << destFileName;
             info.uDest.addPath(destFileName);
         }
-        //kDebug(7007) << " uDest(2)=" << info.uDest;
-        //kDebug(7007) << " " << info.uSource << "->" << info.uDest;
-        if (info.linkDest.isEmpty() && isDir && m_mode != CopyJob::Link) { // Dir
+        // kDebug(7007) << " uDest(2)=" << info.uDest;
+        // kDebug(7007) << " " << info.uSource << "->" << info.uDest;
+        if (info.linkDest.isEmpty() && isDir && m_mode != CopyJob::Link) {
+            // Dir
             dirs.append(info); // Directories
             if (m_mode == CopyJob::Move) {
                 dirsToRemove.append(info.uSource);
