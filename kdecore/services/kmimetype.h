@@ -63,12 +63,12 @@ public:
      * KIconLoader::loadMimeTypeIcon to load the icon.
      *
      * @param url URL for the file
-     * @param mode the mode of the file. The mode may modify the icon with overlays that show
-     *             special properties of the icon. Use 0 for default
+     * @param mode the mode of the file. Use 0 for default
+     * @param mimeType the mime type if known. Use empty string to determine it from @p url
      * @return the name of the icon. The name of a default icon if there is no icon for the mime
      *         type
      */
-    static QString iconNameForUrl(const KUrl &url, mode_t mode = 0);
+    static QString iconNameForUrl(const KUrl &url, mode_t mode = 0, const QString &mimeType = QString());
 
     /**
      * Return the "favicon" for the given @p url if available. Does NOT attempt to download the

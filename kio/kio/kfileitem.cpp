@@ -537,17 +537,16 @@ QString KFileItem::iconName() const
         return d->m_iconName;
     }
 
+    KMimeType::Ptr mime;
     // Use guessed mimetype for the icon
     if (!d->m_guessedMimeType.isEmpty()) {
-        KMimeType::Ptr mime = KMimeType::mimeType(d->m_guessedMimeType);
-        if (mime) {
-            d->m_iconName = mime->iconName(d->m_url);
-            return d->m_iconName;
-        }
+        mime = KMimeType::mimeType(d->m_guessedMimeType);
+    } else {
+        mime = mimeTypePtr();
     }
 
     // kDebug() << "finding icon for" << d->m_url << ":" << d->m_iconName;
-    d->m_iconName = KMimeType::iconNameForUrl(d->m_url, d->m_fileMode);
+    d->m_iconName = KMimeType::iconNameForUrl(d->m_url, d->m_fileMode, mime ? mime->name() : QString());
     return d->m_iconName;
 }
 

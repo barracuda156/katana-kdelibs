@@ -322,7 +322,7 @@ bool KMimeType::isBinaryData(const QString &fileName)
     return isBufferBinaryData(file.read(32));
 }
 
-QString KMimeType::iconNameForUrl(const KUrl &url, mode_t mode)
+QString KMimeType::iconNameForUrl(const KUrl &url, mode_t mode, const QString &_mimeType)
 {
     static const QLatin1String s_trashprotocol = QLatin1String("trash");
     static const QString s_usertrash = QString::fromLatin1("user-trash");
@@ -340,7 +340,7 @@ QString KMimeType::iconNameForUrl(const KUrl &url, mode_t mode)
         return i;
     }
 
-    const KMimeType::Ptr mt = findByUrl(url, mode);
+    const KMimeType::Ptr mt = (_mimeType.isEmpty() ? findByUrl(url, mode) : KMimeType::mimeType(_mimeType));
     if (!mt) {
         return QString();
     }
