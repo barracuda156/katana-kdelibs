@@ -1018,11 +1018,8 @@ void JobTest::deleteDirectory()
     QVERIFY(!QFile::exists(dest));
 }
 
-void JobTest::deleteSymlink(bool using_fast_path)
+void JobTest::deleteSymlink()
 {
-    extern KIO_EXPORT bool kio_resolve_local_urls;
-    kio_resolve_local_urls = !using_fast_path;
-
     const QString src = homeTmpDir() + "dirFromHome";
     createTestDirectory(src);
     QVERIFY(QDir(src).exists());
@@ -1039,22 +1036,10 @@ void JobTest::deleteSymlink(bool using_fast_path)
     QVERIFY(ok);
     QVERIFY(!QDir(dest).exists());
     QVERIFY(QDir(src).exists());
-
-    kio_resolve_local_urls = true;
 }
 
-
-void JobTest::deleteSymlink()
+void JobTest::deleteManyDirs()
 {
-    deleteSymlink(true);
-    deleteSymlink(false);
-}
-
-void JobTest::deleteManyDirs(bool using_fast_path)
-{
-    extern KIO_EXPORT bool kio_resolve_local_urls;
-    kio_resolve_local_urls = !using_fast_path;
-
     const int numDirs = 50;
     KUrl::List dirs;
     for (int i = 0; i < numDirs; ++i) {
@@ -1073,13 +1058,6 @@ void JobTest::deleteManyDirs(bool using_fast_path)
     }
 
     kDebug() << "Deleted" << numDirs << "dirs in" << dt.elapsed() << "milliseconds";
-    kio_resolve_local_urls = true;
-}
-
-void JobTest::deleteManyDirs()
-{
-    deleteManyDirs(true);
-    deleteManyDirs(false);
 }
 
 static void createManyFiles(const QString& baseDir, int numFiles)
@@ -1112,11 +1090,8 @@ void JobTest::deleteManyFilesIndependently()
     kDebug() << "Deleted" << numFiles << "files in" << dt.elapsed() << "milliseconds";
 }
 
-void JobTest::deleteManyFilesTogether(bool using_fast_path)
+void JobTest::deleteManyFilesTogether()
 {
-    extern KIO_EXPORT bool kio_resolve_local_urls;
-    kio_resolve_local_urls = !using_fast_path;
-
     QElapsedTimer dt;
     dt.start();
     const int numFiles = 100; // Use 1000 for performance testing
@@ -1135,14 +1110,6 @@ void JobTest::deleteManyFilesTogether(bool using_fast_path)
     bool ok = KIO::NetAccess::synchronousRun(job, 0);
     QVERIFY(ok);
     kDebug() << "Deleted" << numFiles << "files in" << dt.elapsed() << "milliseconds";
-
-    kio_resolve_local_urls = true;
-}
-
-void JobTest::deleteManyFilesTogether()
-{
-    deleteManyFilesTogether(true);
-    deleteManyFilesTogether(false);
 }
 
 void JobTest::rmdirEmpty()

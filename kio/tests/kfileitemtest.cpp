@@ -122,8 +122,9 @@ void KFileItemTest::testRootDirectory()
     KUrl url(rootPath);
     KIO::UDSEntry entry;
     entry.insert(KIO::UDSEntry::UDS_NAME, ".");
+    entry.insert(KIO::UDSEntry::UDS_URL, rootPath);
     entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
-    KFileItem fileItem(entry, rootPath);
+    KFileItem fileItem(entry);
     QCOMPARE(fileItem.text(), QString("."));
     QVERIFY(fileItem.isLocalFile());
     QCOMPARE(fileItem.localPath(), url.path());
@@ -216,8 +217,9 @@ void KFileItemTest::testRename()
     KIO::UDSEntry entry;
     const QString origName = QString::fromLatin1("foo");
     entry.insert(KIO::UDSEntry::UDS_NAME, origName);
+    entry.insert(KIO::UDSEntry::UDS_URL, "/dir/foo");
     entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
-    KFileItem fileItem(entry, KUrl("/dir/foo"));
+    KFileItem fileItem(entry);
     QCOMPARE(fileItem.name(), origName);
     QCOMPARE(fileItem.text(), origName);
     const QString newName = QString::fromLatin1("FiNeX_rocks");

@@ -94,10 +94,6 @@ private:
     void copyLocalDirectory( const QString& src, const QString& dest, int flags = 0 );
     void moveLocalFile( const QString& src, const QString& dest );
     void moveLocalDirectory( const QString& src, const QString& dest );
-    //void copyFileToSystem( bool resolve_local_urls );
-    void deleteSymlink(bool using_fast_path);
-    void deleteManyDirs(bool using_fast_path);
-    void deleteManyFilesTogether(bool using_fast_path);
     void moveDestAlreadyExistsAutoRename(const QString& destDir, bool moveDirs);
 
     int m_result;
