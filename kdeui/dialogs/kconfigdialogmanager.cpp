@@ -46,19 +46,16 @@ static const int s_kconfigdialogmanagerarea = 300;
 class KConfigDialogManager::Private
 {
 public:
-    Private(KConfigDialogManager *q)
-        : q(q),
-        insideGroupBox(false)
+    Private()
+        : insideGroupBox(false)
     {
     }
 
 public:
-    KConfigDialogManager *q;
-
     /**
      * KConfigSkeleton object used to store settings
      */
-    KCoreConfigSkeleton *m_conf;
+    KCoreConfigSkeleton* m_conf;
 
     /**
      * Dialog being managed
@@ -73,7 +70,7 @@ public:
 
 KConfigDialogManager::KConfigDialogManager(QWidget *parent, KCoreConfigSkeleton *conf)
     : QObject(parent),
-    d(new Private(this))
+    d(new Private())
 {
     d->m_conf = conf;
     d->m_dialog = parent;
@@ -82,7 +79,7 @@ KConfigDialogManager::KConfigDialogManager(QWidget *parent, KCoreConfigSkeleton 
 
 KConfigDialogManager::KConfigDialogManager(QWidget *parent, KConfigSkeleton *conf)
     : QObject(parent),
-    d(new Private(this))
+    d(new Private())
 {
     d->m_conf = conf;
     d->m_dialog = parent;
@@ -327,9 +324,9 @@ bool KConfigDialogManager::parseChildren(const QWidget *widget, bool trackChange
             QHash<QString, QByteArray>::const_iterator changedIt = s_changedMap->constFind(childWidget->metaObject()->className());
             if (changedIt != s_changedMap->constEnd()) {
                 if ((!d->insideGroupBox || !qobject_cast<QRadioButton*>(childWidget)) &&
-                    !qobject_cast<QGroupBox*>(childWidget) &&!qobject_cast<QTabWidget*>(childWidget)) {
+                    !qobject_cast<QGroupBox*>(childWidget) &&!qobject_cast<QTabWidget*>(childWidget))
+                {
                     kDebug(s_kconfigdialogmanagerarea) << "Widget '" << widgetName << "' (" << childWidget->metaObject()->className() << ") remains unmanaged.";
-                    }
                 }
             }
         }
