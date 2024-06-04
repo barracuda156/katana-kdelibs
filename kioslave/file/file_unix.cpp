@@ -354,9 +354,6 @@ void FileProtocol::listDir(const KUrl &url)
     //kDebug(7101) << "========= LIST " << url << "details=" << details << " =========";
     UDSEntry entry;
 
-#ifndef HAVE_DIRENT_D_TYPE
-    KDE_struct_stat st;
-#endif
     KDE_struct_dirent *ep;
     while ((ep = KDE_readdir(dp)) != 0 ) {
         entry.clear();
