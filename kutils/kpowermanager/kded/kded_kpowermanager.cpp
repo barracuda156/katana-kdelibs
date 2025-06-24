@@ -63,12 +63,14 @@ KPowerManagerModule::~KPowerManagerModule()
 
 void KPowerManagerModule::slotPowerSaveStatusChanged(bool save_power)
 {
+#ifndef __APPLE__
     setPowerProfile(save_power);
     if (save_power) {
         KNotification::event("kpowermanager/PowerSave");
     } else {
         KNotification::event("kpowermanager/Performance");
     }
+#endif
 }
 
 #include "moc_kded_kpowermanager.cpp"
