@@ -40,6 +40,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#ifdef __APPLE__
+#undef HAVE_FDATASYNC
+#endif
+
 class KSaveFile::Private
 {
 public:
