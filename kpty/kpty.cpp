@@ -301,7 +301,7 @@ void KPty::login(const char *user, const char *remotehost)
 
 #if defined(HAVE_UTIL_LOGINX)
     ::loginx(&l_struct);
-#elif defined(HAVE_LOGIN) || defined(HAVE_UTIL_LOGIN)
+#elif (defined(HAVE_LOGIN) || defined(HAVE_UTIL_LOGIN)) && !defined(__APPLE__)
     ::login(&l_struct);
 #elif defined(HAVE_UTMPX)
 # ifdef _PATH_UTMPX
