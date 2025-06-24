@@ -695,14 +695,14 @@ unsigned long KApplication::userTimestamp() const
 void KApplication::quitOnSignal()
 {
     sigset_t handlermask;
-    ::sigemptyset(&handlermask);
+    sigemptyset(&handlermask);
     int counter = 0;
     while (s_quit_signals[counter]) {
         KDE_signal(s_quit_signals[counter], quit_handler);
-        ::sigaddset(&handlermask, s_quit_signals[counter]);
+        sigaddset(&handlermask, s_quit_signals[counter]);
         counter++;
     }
-    ::sigprocmask(SIG_UNBLOCK, &handlermask, NULL);
+    sigprocmask(SIG_UNBLOCK, &handlermask, NULL);
 }
 
 void KApplication::quitOnDisconnected()
