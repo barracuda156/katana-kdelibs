@@ -12,16 +12,10 @@
 #   SHARED_MIME_INFO_MINIMUM_VERSION is set, the version specified in the find_package()
 #   call takes precedence.
 
-
 # Copyright (c) 2007, Pino Toscano, <toscano.pino@tiscali.it>
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
-
-# the minimum version of shared-mime-database we require
-if(NOT SharedMimeInfo_FIND_VERSION)
-    set(SharedMimeInfo_FIND_VERSION "0.91")
-endif()
 
 find_program (UPDATE_MIME_DATABASE_EXECUTABLE NAMES update-mime-database)
 

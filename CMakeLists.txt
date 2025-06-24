@@ -120,7 +120,7 @@ set_package_properties(LibDeflate PROPERTIES
     PURPOSE "Compression and decompression of DEFLATE/zlib/gzip format"
 )
 
-find_package(SharedMimeInfo 0.91)
+find_package(SharedMimeInfo)
 set_package_properties(SharedMimeInfo PROPERTIES
     DESCRIPTION "Shared Mime Info"
     URL "http://freedesktop.org/wiki/Software/shared-mime-info"
