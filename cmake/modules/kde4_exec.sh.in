@@ -17,8 +17,21 @@ fi
 bin="$1"
 shift
 
+uname_s="$(uname -s)"
 cd "$(dirname "$bin")"
-if [ -z "$DBUS_SESSION_BUS_ADDRESS" ];then
-    exec dbus-run-session -- @CMAKE_CROSSCOMPILING_EMULATOR@ "./$(basename "$bin")" "$@"
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+    if [ "$uname_s" = "Darwin" ]; then
+        if [ ! -S "$DBUS_LAUNCHD_SESSION_BUS_SOCKET" ]; then
+            launchctl load -w /Library/LaunchAgents/org.freedesktop.dbus-session.plist 2>/dev/null || true
+        fi
+        sleep 1
+        if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$DBUS_LAUNCHD_SESSION_BUS_SOCKET" ]; then
+            export DBUS_SESSION_BUS_ADDRESS="unix:path=$DBUS_LAUNCHD_SESSION_BUS_SOCKET"
+        fi
+        exec @CMAKE_CROSSCOMPILING_EMULATOR@ "./$(basename "$bin")" "$@"
+    else
+        exec dbus-run-session -- @CMAKE_CROSSCOMPILING_EMULATOR@ "./$(basename "$bin")" "$@"
+    fi
+else
+    exec @CMAKE_CROSSCOMPILING_EMULATOR@ "./$(basename "$bin")" "$@"
 fi
-exec @CMAKE_CROSSCOMPILING_EMULATOR@ "./$(basename "$bin")" "$@"
