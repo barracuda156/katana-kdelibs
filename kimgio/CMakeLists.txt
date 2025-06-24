@@ -25,7 +25,10 @@ if(WEBP_FOUND)
     kde4_add_plugin(kimg_webp webp.cpp)
     target_link_libraries(kimg_webp
         ${QT_QTGUI_LIBRARY}
-        ${WEBP_LIBRARIES}
+        webp
+        webpdecoder
+        webpdemux
+        webpmux
         kdecore
     )
     set_target_properties(kimg_webp PROPERTIES
