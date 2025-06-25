@@ -814,7 +814,13 @@ bool KUrlCompletionPrivate::userCompletion(const KUrlCompletionPrivate::MyURL& u
 // Environment variables
 //
 
-extern char** environ; // Array of environment variables
+// Array of environment variables
+#ifdef __APPLE__
+#include <crt_externs.h>
+#define environ (*_NSGetEnviron())
+#else
+extern char** environ;
+#endif
 
 bool KUrlCompletionPrivate::envCompletion(const KUrlCompletionPrivate::MyURL& url, QString* pMatch)
 {
