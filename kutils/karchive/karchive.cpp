@@ -41,6 +41,8 @@
 #  include <string.h>
 #endif
 
+#include <limits.h>
+
 #ifndef PATH_MAX
 #  define PATH_MAX _POSIX_PATH_MAX
 #endif
